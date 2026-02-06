@@ -195,7 +195,7 @@ export async function getOversightMessages(
       .from('messages')
       .select(`
         *,
-        sender:users (*)
+        sender:users!messages_sender_id_fkey (*)
       `)
       .eq('chat_id', chatId)
       .order('created_at', { ascending: true });
