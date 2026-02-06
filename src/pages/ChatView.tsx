@@ -40,6 +40,7 @@ import {
   ChatSearchModal,
 } from '../components/chat';
 import { SOSButton } from '../components/sos';
+import { CallButton } from '../components/call';
 import { UserRole } from '../types/database';
 
 const ChatView: React.FC = () => {
@@ -312,6 +313,8 @@ const ChatView: React.FC = () => {
           </IonButtons>
           <IonTitle>{getChatDisplayName()}</IonTitle>
           <IonButtons slot="end">
+            <CallButton chatId={chatId} type="voice" />
+            <CallButton chatId={chatId} type="video" />
             <IonButton onClick={() => setShowSearch(true)}>
               <IonIcon icon={searchOutline} />
             </IonButton>

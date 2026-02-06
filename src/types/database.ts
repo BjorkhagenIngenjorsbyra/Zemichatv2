@@ -233,6 +233,23 @@ export interface CallLog {
   duration_seconds: number | null;
 }
 
+export enum SignalType {
+  RING = 'ring',
+  CANCEL = 'cancel',
+  DECLINE = 'decline',
+  BUSY = 'busy',
+}
+
+export interface CallSignal {
+  id: string;
+  chat_id: string;
+  call_log_id: string;
+  caller_id: string;
+  signal_type: SignalType;
+  expires_at: string;
+  created_at: string;
+}
+
 export interface PushToken {
   id: string;
   user_id: string;
@@ -349,6 +366,11 @@ export interface Database {
         Insert: Pick<CallLog, 'chat_id' | 'initiator_id' | 'type' | 'status'> & Partial<Omit<CallLog, 'id' | 'chat_id' | 'initiator_id' | 'type' | 'status'>>;
         Update: Partial<Omit<CallLog, 'id'>>;
       };
+      call_signals: {
+        Row: CallSignal;
+        Insert: Pick<CallSignal, 'chat_id' | 'call_log_id' | 'caller_id' | 'signal_type' | 'expires_at'> & Partial<Omit<CallSignal, 'id' | 'chat_id' | 'call_log_id' | 'caller_id' | 'signal_type' | 'expires_at'>>;
+        Update: Partial<Omit<CallSignal, 'id'>>;
+      };
       push_tokens: {
         Row: PushToken;
         Insert: Pick<PushToken, 'user_id' | 'token' | 'platform'> & Partial<Omit<PushToken, 'id' | 'user_id' | 'token' | 'platform'>>;
@@ -368,6 +390,7 @@ export interface Database {
       report_status: ReportStatus;
       call_type: CallType;
       call_status: CallStatus;
+      signal_type: SignalType;
       platform_type: PlatformType;
     };
     Functions: {

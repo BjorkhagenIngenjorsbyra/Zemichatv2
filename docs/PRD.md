@@ -174,15 +174,21 @@ Samtal initieras från två platser:
 - Skärmdelning
 - Minimerat samtalsfönster (fortsätt chatta under samtal)
 
-### 6.3 Ej inkluderat
+### 6.3 Samtalsbegränsningar
+- **Videosamtal:** Max 60 minuter per samtal
+- **Varning vid 55 minuter:** "Samtalet avslutas om 5 minuter"
+- Samtalet avslutas automatiskt efter 60 minuter
+- Röstsamtal har ingen tidsgräns
+
+### 6.4 Ej inkluderat
 - ❌ Inspelning av samtal
 
-### 6.4 Behörighet
+### 6.5 Behörighet
 - Man kan ringa alla på sin vänlista
 - Team Owner godkänner alla kontakter för Texters
 - Team Owner kan stänga av samtalsfunktioner per Texter
 
-### 6.5 Samtalshistorik
+### 6.6 Samtalshistorik
 - Visas som meddelanden i chatten: "Röstsamtal, 3 min"
 - Missade samtal markerade
 
@@ -428,7 +434,7 @@ Team Owner kan skapa templates åt sina Texters:
 |------|------|-----------|------------|
 | **Free** | 0 kr | Max 3 (1 Owner + 2) | Endast text |
 | **Basic** | 25 kr/mån | Max 10 | Text + Bilder |
-| **Pro** | 50 kr/mån | Max 10 | Allt inkl. samtal |
+| **Pro** | 69 kr/mån | Max 10 | Allt inkl. samtal |
 
 ### 18.1 Trial
 - 10 dagar gratis Pro-funktionalitet

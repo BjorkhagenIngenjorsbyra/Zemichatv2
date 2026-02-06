@@ -4,7 +4,15 @@ import { IonReactRouter } from '@ionic/react-router';
 
 /* Auth */
 import { AuthProvider } from './contexts/AuthContext';
+import { CallProvider } from './contexts/CallContext';
+import { SubscriptionProvider } from './contexts/SubscriptionContext';
 import { PrivateRoute, PublicRoute } from './components/PrivateRoute';
+
+/* Call */
+import { IncomingCallModal, CallView, CallPiP } from './components/call';
+
+/* Subscription */
+import { Paywall } from './components/subscription';
 
 /* Pages */
 import Login from './pages/Login';
@@ -59,9 +67,11 @@ setupIonicReact();
 const App: React.FC = () => (
   <IonApp>
     <AuthProvider>
-      <IonReactRouter>
-        <IonRouterOutlet>
-          <Switch>
+      <SubscriptionProvider>
+        <CallProvider>
+          <IonReactRouter>
+          <IonRouterOutlet>
+            <Switch>
             {/* Public routes - redirect to dashboard if authenticated */}
             <PublicRoute exact path="/login">
               <Login />
@@ -127,9 +137,19 @@ const App: React.FC = () => (
             </Route>
           </Switch>
         </IonRouterOutlet>
-      </IonReactRouter>
-    </AuthProvider>
-  </IonApp>
+
+          {/* Global call overlays */}
+          <IncomingCallModal />
+          <CallView />
+          <CallPiP />
+
+          {/* Subscription paywall */}
+          <Paywall />
+        </IonReactRouter>
+      </CallProvider>
+    </SubscriptionProvider>
+  </AuthProvider>
+</IonApp>
 );
 
 export default App;

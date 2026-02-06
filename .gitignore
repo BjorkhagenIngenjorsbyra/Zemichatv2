@@ -18,6 +18,7 @@
 .env.development.local
 .env.test.local
 .env.production.local
+supabase/.env.local
 /.nx
 /.nx/cache
 /.vscode/*
@@ -30,3 +31,9 @@ yarn-error.log*
 
 # Optional eslint cache
 .eslintcache
+
+# Android keystore and secrets
+*.jks
+*.keystore
+android/keystore.properties
+.env.production

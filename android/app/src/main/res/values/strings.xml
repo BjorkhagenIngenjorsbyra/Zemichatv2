@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Zemichat</string>
+    <string name="title_activity_main">Zemichat</string>
+    <string name="package_name">com.zemichat.app</string>
+    <string name="custom_url_scheme">com.zemichat.app</string>
+</resources>

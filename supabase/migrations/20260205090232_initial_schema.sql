@@ -12,6 +12,9 @@ CREATE EXTENSION IF NOT EXISTS postgis SCHEMA extensions;
 -- pgcrypto required for password hashing (crypt, gen_salt)
 CREATE EXTENSION IF NOT EXISTS pgcrypto SCHEMA extensions;
 
+-- Set search path to include extensions schema for PostGIS types
+SET search_path TO public, extensions;
+
 -- ============================================================
 -- 1. ENUM TYPES
 -- ============================================================
