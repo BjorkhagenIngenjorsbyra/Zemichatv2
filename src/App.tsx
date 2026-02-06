@@ -1,7 +1,16 @@
-import { Redirect, Route } from 'react-router-dom';
+import { Redirect, Route, Switch } from 'react-router-dom';
 import { IonApp, IonRouterOutlet, setupIonicReact } from '@ionic/react';
 import { IonReactRouter } from '@ionic/react-router';
-import Home from './pages/Home';
+
+/* Auth */
+import { AuthProvider } from './contexts/AuthContext';
+import { PrivateRoute, PublicRoute } from './components/PrivateRoute';
+
+/* Pages */
+import Login from './pages/Login';
+import Signup from './pages/Signup';
+import CreateTeam from './pages/CreateTeam';
+import Dashboard from './pages/Dashboard';
 
 /* Core CSS required for Ionic components to work properly */
 import '@ionic/react/css/core.css';
@@ -37,16 +46,41 @@ setupIonicReact();
 
 const App: React.FC = () => (
   <IonApp>
-    <IonReactRouter>
-      <IonRouterOutlet>
-        <Route exact path="/home">
-          <Home />
-        </Route>
-        <Route exact path="/">
-          <Redirect to="/home" />
-        </Route>
-      </IonRouterOutlet>
-    </IonReactRouter>
+    <AuthProvider>
+      <IonReactRouter>
+        <IonRouterOutlet>
+          <Switch>
+            {/* Public routes - redirect to dashboard if authenticated */}
+            <PublicRoute exact path="/login">
+              <Login />
+            </PublicRoute>
+            <PublicRoute exact path="/signup">
+              <Signup />
+            </PublicRoute>
+
+            {/* Semi-protected route - needs auth but not profile */}
+            <PrivateRoute exact path="/create-team" requireProfile={false}>
+              <CreateTeam />
+            </PrivateRoute>
+
+            {/* Protected routes - need auth and profile */}
+            <PrivateRoute exact path="/dashboard">
+              <Dashboard />
+            </PrivateRoute>
+
+            {/* Default redirect */}
+            <Route exact path="/">
+              <Redirect to="/login" />
+            </Route>
+
+            {/* Catch-all redirect */}
+            <Route>
+              <Redirect to="/login" />
+            </Route>
+          </Switch>
+        </IonRouterOutlet>
+      </IonReactRouter>
+    </AuthProvider>
   </IonApp>
 );
 

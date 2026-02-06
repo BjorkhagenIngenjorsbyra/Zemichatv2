@@ -1,2 +1,159 @@
-/* For information on how to create your own theme, please refer to:
-http://ionicframework.com/docs/theming/ */
+/* Typography - Outfit font - must be first */
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@200;300;400;500;600;700;800;900&display=swap');
+
+/**
+ * Zemichat Design System - CSS Variables
+ * Based on DESIGN.md specifications
+ */
+
+:root {
+  /* Background & Foreground */
+  --background: 220 50% 7%;
+  --foreground: 210 40% 98%;
+
+  /* Card */
+  --card: 220 39% 11%;
+  --card-foreground: 210 40% 98%;
+
+  /* Popover */
+  --popover: 220 39% 11%;
+  --popover-foreground: 210 40% 98%;
+
+  /* Primary (Amethyst Purple) */
+  --primary: 258 90% 80%;
+  --primary-foreground: 220 50% 7%;
+
+  /* Secondary (Mint Green) */
+  --secondary: 142 76% 36%;
+  --secondary-foreground: 210 40% 98%;
+
+  /* Accent (Mint Green) */
+  --accent: 142 76% 36%;
+  --accent-foreground: 220 50% 7%;
+
+  /* Muted */
+  --muted: 215 16% 47%;
+  --muted-foreground: 215 16% 70%;
+
+  /* Border & Input */
+  --border: 215 25% 27%;
+  --input: 215 25% 27%;
+  --ring: 258 90% 80%;
+
+  /* Destructive */
+  --destructive: 0 72% 65%;
+  --destructive-foreground: 0 0% 100%;
+
+  /* Chat Bubbles */
+  --bubble-sent: 258 90% 80%;
+  --bubble-sent-foreground: 220 50% 7%;
+  --bubble-received: 215 25% 27%;
+  --bubble-received-foreground: 210 40% 98%;
+
+  /* Radius */
+  --radius: 1.5rem;
+
+  /* Shadows */
+  --shadow-soft: 0 4px 20px -4px hsl(0 0% 0% / 0.3);
+  --shadow-medium: 0 8px 30px -6px hsl(0 0% 0% / 0.4);
+  --shadow-lifted: 0 12px 40px -8px hsl(0 0% 0% / 0.5);
+
+  /* Sidebar */
+  --sidebar-width: 16rem;
+  --sidebar-width-mobile: 18rem;
+  --sidebar-width-icon: 3rem;
+}
+
+* {
+  font-family: 'Outfit', 'Manrope', 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+}
+
+/* Base dark theme */
+html, body {
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+}
+
+/* Safe area padding for mobile */
+.safe-bottom {
+  padding-bottom: max(1rem, env(safe-area-inset-bottom));
+}
+
+.safe-top {
+  padding-top: max(1rem, env(safe-area-inset-top));
+}
+
+/* Utility classes */
+.shadow-soft {
+  box-shadow: var(--shadow-soft);
+}
+
+.shadow-medium {
+  box-shadow: var(--shadow-medium);
+}
+
+.shadow-lifted {
+  box-shadow: var(--shadow-lifted);
+}
+
+/* Button glow effect */
+.glow-primary {
+  box-shadow: 0 4px 12px rgba(167, 139, 250, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.glow-primary:hover {
+  box-shadow: 0 6px 16px rgba(167, 139, 250, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+/* Ionic overrides for dark theme */
+ion-content {
+  --background: hsl(var(--background));
+  --color: hsl(var(--foreground));
+}
+
+ion-page {
+  background: hsl(var(--background));
+}
+
+ion-header {
+  --background: hsl(var(--background));
+}
+
+ion-toolbar {
+  --background: hsl(var(--background));
+  --color: hsl(var(--foreground));
+}
+
+ion-input {
+  --background: hsl(var(--card));
+  --color: hsl(var(--foreground));
+  --placeholder-color: hsl(var(--muted-foreground));
+  --border-radius: 1rem;
+  --padding-start: 1rem;
+  --padding-end: 1rem;
+}
+
+ion-button {
+  --border-radius: 9999px;
+  font-weight: 700;
+}
+
+/* Animations */
+@keyframes bounce-in {
+  0% { opacity: 0; transform: scale(0.9); }
+  50% { transform: scale(1.02); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes slide-up {
+  0% { opacity: 0; transform: translateY(20px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+.animate-bounce-in {
+  animation: bounce-in 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.animate-slide-up {
+  animation: slide-up 0.3s ease-out;
+}
