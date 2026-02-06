@@ -26,6 +26,7 @@ import {
   settingsOutline,
   ellipseOutline,
   ellipse,
+  eyeOutline,
 } from 'ionicons/icons';
 import { useAuthContext } from '../contexts/AuthContext';
 import { getTeamMembers } from '../services/members';
@@ -109,7 +110,13 @@ const Dashboard: React.FC = () => {
             <div className="profile-info">
               <h2 className="profile-name">{profile?.display_name || t('dashboard.user')}</h2>
               <p className="profile-zemi">{profile?.zemi_number}</p>
-              <span className="role-badge owner">{t('roles.teamOwner')}</span>
+              <span className={`role-badge ${profile?.role}`}>
+                {profile?.role === 'owner'
+                  ? t('roles.teamOwner')
+                  : profile?.role === 'super'
+                    ? t('roles.super')
+                    : t('roles.texter')}
+              </span>
             </div>
           </div>
 
@@ -129,6 +136,13 @@ const Dashboard: React.FC = () => {
                 <IonLabel>
                   <h3>{t('dashboard.createTexter')}</h3>
                   <p>{t('dashboard.createTexterDescription')}</p>
+                </IonLabel>
+              </IonItem>
+              <IonItem button detail routerLink="/oversight" className="action-item">
+                <IonIcon icon={eyeOutline} slot="start" className="action-icon" />
+                <IonLabel>
+                  <h3>{t('dashboard.oversight')}</h3>
+                  <p>{t('dashboard.oversightDescription')}</p>
                 </IonLabel>
               </IonItem>
               <IonItem button detail className="action-item">
@@ -169,8 +183,16 @@ const Dashboard: React.FC = () => {
               <IonList className="member-list">
                 {otherMembers.map((member) => {
                   const badge = getRoleBadge(member.role);
+                  const detailLink =
+                    member.role === 'texter' ? `/texter/${member.id}` : undefined;
                   return (
-                    <IonItem key={member.id} button detail className="member-item">
+                    <IonItem
+                      key={member.id}
+                      button
+                      detail
+                      routerLink={detailLink}
+                      className="member-item"
+                    >
                       <IonAvatar slot="start" className="member-avatar">
                         {member.avatar_url ? (
                           <img src={member.avatar_url} alt={member.display_name || 'Avatar'} />
@@ -278,6 +300,16 @@ const Dashboard: React.FC = () => {
           .role-badge.owner {
             background: hsl(var(--primary) / 0.15);
             color: hsl(var(--primary));
+          }
+
+          .role-badge.super {
+            background: hsl(var(--secondary) / 0.15);
+            color: hsl(var(--secondary));
+          }
+
+          .role-badge.texter {
+            background: hsl(var(--muted) / 0.3);
+            color: hsl(var(--muted-foreground));
           }
 
           .section {

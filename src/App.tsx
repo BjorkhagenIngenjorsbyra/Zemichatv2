@@ -12,6 +12,9 @@ import TexterLogin from './pages/TexterLogin';
 import Signup from './pages/Signup';
 import CreateTeam from './pages/CreateTeam';
 import Dashboard from './pages/Dashboard';
+import TexterDetail from './pages/TexterDetail';
+import OwnerOversight from './pages/OwnerOversight';
+import OwnerChatView from './pages/OwnerChatView';
 import ChatList from './pages/ChatList';
 import NewChat from './pages/NewChat';
 import ChatView from './pages/ChatView';
@@ -73,6 +76,15 @@ const App: React.FC = () => (
             {/* Protected routes - need auth and profile */}
             <PrivateRoute exact path="/dashboard">
               <Dashboard />
+            </PrivateRoute>
+            <PrivateRoute exact path="/texter/:userId">
+              <TexterDetail />
+            </PrivateRoute>
+            <PrivateRoute exact path="/oversight">
+              <OwnerOversight />
+            </PrivateRoute>
+            <PrivateRoute exact path="/oversight/chat/:chatId">
+              <OwnerChatView />
             </PrivateRoute>
             <PrivateRoute exact path="/chats">
               <ChatList />
