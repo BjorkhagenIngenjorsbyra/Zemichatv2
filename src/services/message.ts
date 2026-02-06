@@ -34,11 +34,7 @@ export async function getChatMessages(
       .from('messages')
       .select(`
         *,
-        sender:users!messages_sender_id_fkey (*),
-        reply_to:messages!messages_reply_to_id_fkey (
-          *,
-          sender:users!messages_sender_id_fkey (*)
-        )
+        sender:users!messages_sender_id_fkey (*)
       `)
       .eq('chat_id', chatId)
       .is('deleted_at', null)
@@ -55,9 +51,36 @@ export async function getChatMessages(
       return { messages: [], error: new Error(error.message) };
     }
 
+    const messages = (data || []) as unknown as MessageWithSender[];
+
+    // Fetch reply_to messages separately for messages that have replies
+    const replyIds = messages
+      .filter((m) => m.reply_to_id)
+      .map((m) => m.reply_to_id as string);
+
+    if (replyIds.length > 0) {
+      const { data: replyMessages } = await supabase
+        .from('messages')
+        .select(`
+          *,
+          sender:users!messages_sender_id_fkey (*)
+        `)
+        .in('id', replyIds);
+
+      if (replyMessages) {
+        const replyMap = new Map(
+          (replyMessages as unknown as MessageWithSender[]).map((m) => [m.id, m])
+        );
+        for (const msg of messages) {
+          if (msg.reply_to_id && replyMap.has(msg.reply_to_id)) {
+            msg.reply_to = replyMap.get(msg.reply_to_id);
+          }
+        }
+      }
+    }
+
     // Reverse to get oldest first
-    const messages = (data || []).reverse() as unknown as MessageWithSender[];
-    return { messages, error: null };
+    return { messages: messages.reverse(), error: null };
   } catch (err) {
     return {
       messages: [],

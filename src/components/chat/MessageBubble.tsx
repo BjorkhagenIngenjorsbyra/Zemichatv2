@@ -1,4 +1,6 @@
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useSwipeable } from 'react-swipeable';
 import { type MessageWithSender } from '../../services/message';
 import { type GroupedReaction } from '../../services/reaction';
 import ImageMessage from './ImageMessage';
@@ -26,6 +28,8 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
   onToggleReaction,
 }) => {
   const { t } = useTranslation();
+  const [swipeOffset, setSwipeOffset] = useState(0);
+  const SWIPE_THRESHOLD = 60;
 
   const formatMessageTime = (dateStr: string): string => {
     const date = new Date(dateStr);
@@ -37,6 +41,27 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
       onReact(message);
     }
   };
+
+  const swipeHandlers = useSwipeable({
+    onSwiping: (e) => {
+      // Only allow swiping right (to reply)
+      if (e.deltaX > 0) {
+        setSwipeOffset(Math.min(e.deltaX, SWIPE_THRESHOLD + 20));
+      }
+    },
+    onSwipedRight: (e) => {
+      if (e.deltaX >= SWIPE_THRESHOLD && onReply) {
+        onReply(message);
+      }
+      setSwipeOffset(0);
+    },
+    onSwiped: () => {
+      setSwipeOffset(0);
+    },
+    trackMouse: false,
+    trackTouch: true,
+    preventScrollOnSwipe: true,
+  });
 
   const renderContent = () => {
     switch (message.type) {
@@ -100,45 +125,85 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
 
   return (
     <div
-      className={`message-bubble ${isOwn ? 'own' : 'other'}`}
-      onContextMenu={(e) => {
-        e.preventDefault();
-        handleLongPress();
-      }}
+      {...swipeHandlers}
+      className="swipe-container"
+      style={{ transform: `translateX(${swipeOffset}px)` }}
     >
-      {showSenderName && !isOwn && (
-        <span className="sender-name">{message.sender?.display_name}</span>
+      {/* Reply indicator */}
+      {swipeOffset > 0 && (
+        <div
+          className="reply-indicator"
+          style={{ opacity: Math.min(swipeOffset / SWIPE_THRESHOLD, 1) }}
+        >
+          <span className="reply-icon">↩️</span>
+        </div>
       )}
 
-      {message.reply_to && (
-        <QuotedMessage
-          message={message.reply_to}
-          isOwn={isOwn}
-          onClick={() => {
-            // Scroll to original message
-          }}
-        />
-      )}
+      <div
+        className={`message-bubble ${isOwn ? 'own' : 'other'}`}
+        onContextMenu={(e) => {
+          e.preventDefault();
+          handleLongPress();
+        }}
+      >
+        {showSenderName && !isOwn && (
+          <span className="sender-name">{message.sender?.display_name}</span>
+        )}
 
-      {renderContent()}
+        {message.reply_to && (
+          <QuotedMessage
+            message={message.reply_to}
+            isOwn={isOwn}
+            onClick={() => {
+              // Scroll to original message
+            }}
+          />
+        )}
 
-      <div className="message-footer">
-        <span className="message-time">
-          {formatMessageTime(message.created_at)}
-          {message.is_edited && (
-            <span className="edited-tag"> ({t('message.edited')})</span>
-          )}
-        </span>
+        {renderContent()}
+
+        <div className="message-footer">
+          <span className="message-time">
+            {formatMessageTime(message.created_at)}
+            {message.is_edited && (
+              <span className="edited-tag"> ({t('message.edited')})</span>
+            )}
+          </span>
+        </div>
+
+        {reactions.length > 0 && (
+          <MessageReactions
+            reactions={reactions}
+            onToggle={(emoji) => onToggleReaction?.(message.id, emoji)}
+          />
+        )}
       </div>
 
-      {reactions.length > 0 && (
-        <MessageReactions
-          reactions={reactions}
-          onToggle={(emoji) => onToggleReaction?.(message.id, emoji)}
-        />
-      )}
-
       <style>{`
+        .swipe-container {
+          position: relative;
+          transition: transform 0.1s ease-out;
+          display: flex;
+          align-items: center;
+        }
+
+        .reply-indicator {
+          position: absolute;
+          left: -40px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 32px;
+          height: 32px;
+          background: hsl(var(--primary) / 0.2);
+          border-radius: 50%;
+          transition: opacity 0.1s ease;
+        }
+
+        .reply-icon {
+          font-size: 1rem;
+        }
+
         .message-bubble {
           max-width: 75%;
           padding: 0.75rem 1rem;
