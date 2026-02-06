@@ -125,7 +125,7 @@ BEGIN
 
   -- Create auth user using admin function
   -- Note: This requires the function to have SECURITY DEFINER and proper grants
-  v_texter_id := extensions.uuid_generate_v4();
+  v_texter_id := gen_random_uuid();
 
   INSERT INTO auth.users (
     id,
@@ -138,20 +138,36 @@ BEGIN
     created_at,
     updated_at,
     role,
-    aud
+    aud,
+    confirmation_token,
+    recovery_token,
+    email_change_token_new,
+    email_change_token_current,
+    email_change,
+    phone_change,
+    phone_change_token,
+    reauthentication_token
   )
   VALUES (
     v_texter_id,
     '00000000-0000-0000-0000-000000000000',
     v_fake_email,
-    crypt(texter_password, gen_salt('bf')),
+    extensions.crypt(texter_password, extensions.gen_salt('bf')),
     now(), -- Auto-confirm email for texters
     '{"provider": "email", "providers": ["email"]}'::jsonb,
     jsonb_build_object('display_name', texter_display_name, 'role', 'texter', 'zemi_number', v_zemi_number),
     now(),
     now(),
     'authenticated',
-    'authenticated'
+    'authenticated',
+    '', -- confirmation_token
+    '', -- recovery_token
+    '', -- email_change_token_new
+    '', -- email_change_token_current
+    '', -- email_change
+    '', -- phone_change
+    '', -- phone_change_token
+    ''  -- reauthentication_token
   );
 
   -- Create user profile

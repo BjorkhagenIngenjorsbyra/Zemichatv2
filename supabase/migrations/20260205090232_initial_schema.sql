@@ -9,6 +9,9 @@
 -- PostGIS required for geography type (messages.location, sos_alerts.location)
 CREATE EXTENSION IF NOT EXISTS postgis SCHEMA extensions;
 
+-- pgcrypto required for password hashing (crypt, gen_salt)
+CREATE EXTENSION IF NOT EXISTS pgcrypto SCHEMA extensions;
+
 -- ============================================================
 -- 1. ENUM TYPES
 -- ============================================================
