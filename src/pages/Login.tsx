@@ -1,5 +1,6 @@
 import { useState, FormEvent } from 'react';
 import { useHistory } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import {
   IonPage,
   IonContent,
@@ -11,6 +12,7 @@ import {
 import { signIn } from '../services/auth';
 
 const Login: React.FC = () => {
+  const { t } = useTranslation();
   const history = useHistory();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -30,7 +32,6 @@ const Login: React.FC = () => {
       return;
     }
 
-    // Redirect to dashboard - the auth context will handle profile check
     history.replace('/dashboard');
   };
 
@@ -39,8 +40,8 @@ const Login: React.FC = () => {
       <IonContent className="ion-padding" fullscreen>
         <div className="auth-container">
           <div className="auth-header">
-            <h1 className="auth-title">Zemichat</h1>
-            <p className="auth-subtitle">Logga in till ditt konto</p>
+            <h1 className="auth-title">{t('common.appName')}</h1>
+            <p className="auth-subtitle">{t('auth.loginTitle')}</p>
           </div>
 
           <form onSubmit={handleSubmit} className="auth-form">
@@ -53,7 +54,7 @@ const Login: React.FC = () => {
             <div className="input-group">
               <IonInput
                 type="email"
-                placeholder="E-postadress"
+                placeholder={t('auth.email')}
                 value={email}
                 onIonInput={(e) => setEmail(e.detail.value || '')}
                 required
@@ -65,7 +66,7 @@ const Login: React.FC = () => {
             <div className="input-group">
               <IonInput
                 type="password"
-                placeholder="Losenord"
+                placeholder={t('auth.password')}
                 value={password}
                 onIonInput={(e) => setPassword(e.detail.value || '')}
                 required
@@ -80,7 +81,7 @@ const Login: React.FC = () => {
               className="auth-button glow-primary"
               disabled={isLoading}
             >
-              {isLoading ? <IonSpinner name="crescent" /> : 'Logga in'}
+              {isLoading ? <IonSpinner name="crescent" /> : t('auth.login')}
             </IonButton>
 
             <div className="auth-links">
@@ -90,12 +91,12 @@ const Login: React.FC = () => {
                 routerLink="/forgot-password"
                 className="auth-link"
               >
-                Glomt losenord?
+                {t('auth.forgotPassword')}
               </IonButton>
             </div>
 
             <div className="auth-divider">
-              <span>eller</span>
+              <span>{t('common.or')}</span>
             </div>
 
             <IonButton
@@ -104,7 +105,16 @@ const Login: React.FC = () => {
               routerLink="/signup"
               className="auth-secondary-button"
             >
-              Skapa konto
+              {t('auth.signup')}
+            </IonButton>
+
+            <IonButton
+              fill="clear"
+              expand="block"
+              routerLink="/texter-login"
+              className="auth-texter-link"
+            >
+              {t('texterLogin.title')}
             </IonButton>
           </form>
         </div>
@@ -214,6 +224,12 @@ const Login: React.FC = () => {
             --border-radius: 9999px;
             font-weight: 600;
             height: 3rem;
+          }
+
+          .auth-texter-link {
+            --color: hsl(var(--muted-foreground));
+            font-size: 0.875rem;
+            margin-top: 0.5rem;
           }
         `}</style>
       </IonContent>

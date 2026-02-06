@@ -18,6 +18,11 @@ export interface SignInData {
   password: string;
 }
 
+export interface TexterSignInData {
+  zemiNumber: string;
+  password: string;
+}
+
 /**
  * Sign up a new Team Owner with email and password.
  * After successful auth signup, the user still needs to create their team.
@@ -46,6 +51,27 @@ export async function signUp({ email, password, displayName }: SignUpData): Prom
 export async function signIn({ email, password }: SignInData): Promise<AuthResult> {
   const { data, error } = await supabase.auth.signInWithPassword({
     email,
+    password,
+  });
+
+  return {
+    user: data.user,
+    session: data.session,
+    error,
+  };
+}
+
+/**
+ * Sign in as a Texter using Zemi-number and password.
+ * Texters don't have email - they use a fake email based on their Zemi-number.
+ */
+export async function signInAsTexter({ zemiNumber, password }: TexterSignInData): Promise<AuthResult> {
+  // Convert Zemi-number to fake email used during account creation
+  // Format: ZEMI-XXX-XXX -> zemixxx@texter.zemichat.local
+  const fakeEmail = zemiNumber.toLowerCase().replace(/-/g, '') + '@texter.zemichat.local';
+
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email: fakeEmail,
     password,
   });
 

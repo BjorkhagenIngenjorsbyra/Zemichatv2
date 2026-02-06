@@ -1,5 +1,5 @@
 import { supabase } from './supabase';
-import { PlanType, UserRole, type Team, type User } from '../types/database';
+import { type Team, type User } from '../types/database';
 
 export interface CreateTeamData {
   name: string;
@@ -14,71 +14,27 @@ export interface CreateTeamResult {
 }
 
 /**
- * Generate a unique Zemi number for a user.
- * Format: ZEMI-XXX-XXX where X is alphanumeric.
- */
-function generateZemiNumber(): string {
-  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // Exclude confusing chars: I, O, 0, 1
-  const segment = () =>
-    Array.from({ length: 3 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
-  return `ZEMI-${segment()}-${segment()}`;
-}
-
-/**
  * Create a new team and set up the owner user profile.
- * This is called after successful auth signup.
+ * Uses SECURITY DEFINER RPC function to handle circular FK atomically.
  */
 export async function createTeam({
   name,
-  ownerId,
   ownerDisplayName,
 }: CreateTeamData): Promise<CreateTeamResult> {
   try {
-    // Generate a unique Zemi number for the owner
-    const zemiNumber = generateZemiNumber();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data, error } = await (supabase.rpc as any)('create_team_with_owner', {
+      team_name: name,
+      owner_display_name: ownerDisplayName || null,
+    });
 
-    // Use a transaction via RPC or do sequential inserts
-    // Since we have circular FK (team.owner_id -> users, users.team_id -> teams),
-    // we need to insert team first with owner_id, then user with team_id.
-    // The RLS policies and schema allow this flow for owners.
-
-    // 1. Insert team with owner_id set to the auth user id
-    const { data: teamData, error: teamError } = await supabase
-      .from('teams')
-      .insert({
-        name,
-        owner_id: ownerId,
-        plan: PlanType.FREE,
-      } as never)
-      .select()
-      .single();
-
-    if (teamError) {
-      return { team: null, user: null, error: new Error(teamError.message) };
+    if (error) {
+      return { team: null, user: null, error: new Error(error.message) };
     }
 
-    const team = teamData as unknown as Team;
-
-    // 2. Insert user profile as owner
-    const { data: userData, error: userError } = await supabase
-      .from('users')
-      .insert({
-        id: ownerId,
-        team_id: team.id,
-        role: UserRole.OWNER,
-        zemi_number: zemiNumber,
-        display_name: ownerDisplayName || null,
-      } as never)
-      .select()
-      .single();
-
-    if (userError) {
-      // Rollback: delete the team we just created
-      await supabase.from('teams').delete().eq('id', team.id);
-      return { team: null, user: null, error: new Error(userError.message) };
-    }
-
-    return { team, user: userData as unknown as User, error: null };
+    // The RPC returns { team: {...}, user: {...} }
+    const result = data as { team: Team; user: User };
+    return { team: result.team, user: result.user, error: null };
   } catch (err) {
     return {
       team: null,

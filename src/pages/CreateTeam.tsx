@@ -1,5 +1,6 @@
 import { useState, FormEvent, useEffect } from 'react';
 import { useHistory } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import {
   IonPage,
   IonContent,
@@ -12,20 +13,19 @@ import { useAuthContext } from '../contexts/AuthContext';
 import { createTeam } from '../services/team';
 
 const CreateTeam: React.FC = () => {
+  const { t } = useTranslation();
   const history = useHistory();
   const { authUser, hasProfile, refreshProfile } = useAuthContext();
   const [teamName, setTeamName] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Redirect if user already has a team
   useEffect(() => {
     if (hasProfile) {
       history.replace('/dashboard');
     }
   }, [hasProfile, history]);
 
-  // Redirect if not authenticated
   useEffect(() => {
     if (!authUser) {
       history.replace('/login');
@@ -37,12 +37,12 @@ const CreateTeam: React.FC = () => {
     setError(null);
 
     if (!teamName.trim()) {
-      setError('Ange ett teamnamn');
+      setError(t('team.enterTeamName'));
       return;
     }
 
     if (!authUser) {
-      setError('Du maste vara inloggad');
+      setError(t('common.error'));
       return;
     }
 
@@ -62,10 +62,7 @@ const CreateTeam: React.FC = () => {
       return;
     }
 
-    // Refresh profile to update the auth context
     await refreshProfile();
-
-    // Redirect to dashboard
     history.replace('/dashboard');
   };
 
@@ -75,12 +72,10 @@ const CreateTeam: React.FC = () => {
         <div className="create-team-container">
           <div className="create-team-header">
             <div className="step-indicator">
-              <span className="step-badge">Steg 2 av 2</span>
+              <span className="step-badge">{t('team.stepOf', { current: 2, total: 2 })}</span>
             </div>
-            <h1 className="create-team-title">Skapa ditt team</h1>
-            <p className="create-team-subtitle">
-              Ge ditt team ett namn - det kan vara din familj, organisation eller vad du vill
-            </p>
+            <h1 className="create-team-title">{t('team.createTitle')}</h1>
+            <p className="create-team-subtitle">{t('team.createSubtitle')}</p>
           </div>
 
           <form onSubmit={handleSubmit} className="create-team-form">
@@ -91,10 +86,10 @@ const CreateTeam: React.FC = () => {
             )}
 
             <div className="input-group">
-              <label className="input-label">Teamnamn</label>
+              <label className="input-label">{t('team.teamName')}</label>
               <IonInput
                 type="text"
-                placeholder="t.ex. Familjen Andersson"
+                placeholder={t('team.teamNamePlaceholder')}
                 value={teamName}
                 onIonInput={(e) => setTeamName(e.detail.value || '')}
                 required
@@ -105,13 +100,13 @@ const CreateTeam: React.FC = () => {
 
             <div className="info-box">
               <p>
-                <strong>Som Team Owner kan du:</strong>
+                <strong>{t('team.ownerCapabilities')}</strong>
               </p>
               <ul>
-                <li>Bjuda in familjemedlemmar som Super eller Texter</li>
-                <li>Se alla meddelanden fran dina Texters</li>
-                <li>Hantera instellningar och behorigher</li>
-                <li>Godkanna vanforfrågningar for Texters</li>
+                <li>{t('team.capability1')}</li>
+                <li>{t('team.capability2')}</li>
+                <li>{t('team.capability3')}</li>
+                <li>{t('team.capability4')}</li>
               </ul>
             </div>
 
@@ -121,7 +116,7 @@ const CreateTeam: React.FC = () => {
               className="create-team-button glow-primary"
               disabled={isLoading}
             >
-              {isLoading ? <IonSpinner name="crescent" /> : 'Skapa team'}
+              {isLoading ? <IonSpinner name="crescent" /> : t('team.createButton')}
             </IonButton>
           </form>
         </div>

@@ -8,9 +8,13 @@ import { PrivateRoute, PublicRoute } from './components/PrivateRoute';
 
 /* Pages */
 import Login from './pages/Login';
+import TexterLogin from './pages/TexterLogin';
 import Signup from './pages/Signup';
 import CreateTeam from './pages/CreateTeam';
 import Dashboard from './pages/Dashboard';
+import ChatList from './pages/ChatList';
+import NewChat from './pages/NewChat';
+import ChatView from './pages/ChatView';
 
 /* Core CSS required for Ionic components to work properly */
 import '@ionic/react/css/core.css';
@@ -54,6 +58,9 @@ const App: React.FC = () => (
             <PublicRoute exact path="/login">
               <Login />
             </PublicRoute>
+            <PublicRoute exact path="/texter-login">
+              <TexterLogin />
+            </PublicRoute>
             <PublicRoute exact path="/signup">
               <Signup />
             </PublicRoute>
@@ -66,6 +73,15 @@ const App: React.FC = () => (
             {/* Protected routes - need auth and profile */}
             <PrivateRoute exact path="/dashboard">
               <Dashboard />
+            </PrivateRoute>
+            <PrivateRoute exact path="/chats">
+              <ChatList />
+            </PrivateRoute>
+            <PrivateRoute exact path="/new-chat">
+              <NewChat />
+            </PrivateRoute>
+            <PrivateRoute exact path="/chat/:chatId">
+              <ChatView />
             </PrivateRoute>
 
             {/* Default redirect */}

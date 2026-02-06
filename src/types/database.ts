@@ -370,5 +370,28 @@ export interface Database {
       call_status: CallStatus;
       platform_type: PlatformType;
     };
+    Functions: {
+      create_team_with_owner: {
+        Args: {
+          team_name: string;
+          owner_display_name?: string | null;
+        };
+        Returns: {
+          team: Team;
+          user: User;
+        };
+      };
+      create_texter: {
+        Args: {
+          texter_display_name: string;
+          texter_password: string;
+        };
+        Returns: {
+          user: User;
+          zemi_number: string;
+          password: string;
+        };
+      };
+    };
   };
 }

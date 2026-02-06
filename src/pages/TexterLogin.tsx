@@ -8,74 +8,73 @@ import {
   IonButton,
   IonText,
   IonSpinner,
-  IonIcon,
 } from '@ionic/react';
-import { arrowBack } from 'ionicons/icons';
-import { signUp } from '../services/auth';
+import { signInAsTexter } from '../services/auth';
 
-const Signup: React.FC = () => {
+const TexterLogin: React.FC = () => {
   const { t } = useTranslation();
   const history = useHistory();
-  const [displayName, setDisplayName] = useState('');
-  const [email, setEmail] = useState('');
+  const [zemiNumber, setZemiNumber] = useState('');
   const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+
+  const formatZemiNumber = (value: string): string => {
+    // Remove all non-alphanumeric characters
+    const cleaned = value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+
+    // Format as ZEMI-XXX-XXX
+    if (cleaned.length <= 4) {
+      return cleaned;
+    } else if (cleaned.length <= 7) {
+      return cleaned.slice(0, 4) + '-' + cleaned.slice(4);
+    } else {
+      return cleaned.slice(0, 4) + '-' + cleaned.slice(4, 7) + '-' + cleaned.slice(7, 10);
+    }
+  };
+
+  const handleZemiNumberChange = (value: string | null | undefined) => {
+    const formatted = formatZemiNumber(value || '');
+    setZemiNumber(formatted);
+  };
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError(null);
 
-    if (password !== confirmPassword) {
-      setError(t('auth.passwordsNotMatch'));
+    if (!zemiNumber.trim()) {
+      setError(t('texterLogin.zemiNumber'));
       return;
     }
 
-    if (password.length < 8) {
-      setError(t('auth.passwordTooShort', { min: 8 }));
+    if (!password) {
+      setError(t('texter.password'));
       return;
     }
 
     setIsLoading(true);
 
-    const { error: signUpError, user } = await signUp({
-      email,
+    const { error: signInError } = await signInAsTexter({
+      zemiNumber: zemiNumber.trim(),
       password,
-      displayName: displayName || undefined,
     });
 
-    if (signUpError) {
-      setError(signUpError.message);
+    if (signInError) {
+      setError(signInError.message);
       setIsLoading(false);
       return;
     }
 
-    if (!user) {
-      setError(t('common.error'));
-      setIsLoading(false);
-      return;
-    }
-
-    history.replace('/create-team');
+    history.replace('/dashboard');
   };
 
   return (
     <IonPage>
       <IonContent className="ion-padding" fullscreen>
         <div className="auth-container">
-          <IonButton
-            fill="clear"
-            className="back-button"
-            onClick={() => history.goBack()}
-          >
-            <IonIcon icon={arrowBack} slot="start" />
-            {t('common.back')}
-          </IonButton>
-
           <div className="auth-header">
-            <h1 className="auth-title">{t('auth.signupTitle')}</h1>
-            <p className="auth-subtitle">{t('auth.signupSubtitle')}</p>
+            <h1 className="auth-title">{t('common.appName')}</h1>
+            <p className="auth-subtitle">{t('texterLogin.subtitle')}</p>
           </div>
 
           <form onSubmit={handleSubmit} className="auth-form">
@@ -88,44 +87,22 @@ const Signup: React.FC = () => {
             <div className="input-group">
               <IonInput
                 type="text"
-                placeholder={t('auth.yourName')}
-                value={displayName}
-                onIonInput={(e) => setDisplayName(e.detail.value || '')}
-                className="auth-input"
-                fill="outline"
-              />
-            </div>
-
-            <div className="input-group">
-              <IonInput
-                type="email"
-                placeholder={t('auth.email')}
-                value={email}
-                onIonInput={(e) => setEmail(e.detail.value || '')}
+                placeholder={t('texterLogin.zemiPlaceholder')}
+                value={zemiNumber}
+                onIonInput={(e) => handleZemiNumberChange(e.detail.value)}
                 required
-                className="auth-input"
+                className="auth-input zemi-input"
                 fill="outline"
+                maxlength={12}
               />
             </div>
 
             <div className="input-group">
               <IonInput
                 type="password"
-                placeholder={t('auth.passwordMinLength')}
+                placeholder={t('texterLogin.password')}
                 value={password}
                 onIonInput={(e) => setPassword(e.detail.value || '')}
-                required
-                className="auth-input"
-                fill="outline"
-              />
-            </div>
-
-            <div className="input-group">
-              <IonInput
-                type="password"
-                placeholder={t('auth.confirmPassword')}
-                value={confirmPassword}
-                onIonInput={(e) => setConfirmPassword(e.detail.value || '')}
                 required
                 className="auth-input"
                 fill="outline"
@@ -138,14 +115,21 @@ const Signup: React.FC = () => {
               className="auth-button glow-primary"
               disabled={isLoading}
             >
-              {isLoading ? <IonSpinner name="crescent" /> : t('auth.signup')}
+              {isLoading ? <IonSpinner name="crescent" /> : t('texterLogin.loginButton')}
             </IonButton>
 
-            <p className="auth-terms">
-              {t('auth.termsText')}{' '}
-              <a href="/terms">{t('auth.termsLink')}</a> {t('common.and')}{' '}
-              <a href="/privacy">{t('auth.privacyLink')}</a>.
-            </p>
+            <div className="auth-divider">
+              <span>{t('common.or')}</span>
+            </div>
+
+            <IonButton
+              fill="outline"
+              expand="block"
+              routerLink="/login"
+              className="auth-secondary-button"
+            >
+              {t('texterLogin.ownerLogin')}
+            </IonButton>
           </form>
         </div>
 
@@ -153,26 +137,20 @@ const Signup: React.FC = () => {
           .auth-container {
             display: flex;
             flex-direction: column;
+            justify-content: center;
             min-height: 100%;
             max-width: 400px;
             margin: 0 auto;
-            padding: 1rem 2rem 2rem;
-          }
-
-          .back-button {
-            --color: hsl(var(--muted-foreground));
-            align-self: flex-start;
-            margin-left: -0.5rem;
-            margin-bottom: 1rem;
+            padding: 2rem;
           }
 
           .auth-header {
             text-align: center;
-            margin-bottom: 2rem;
+            margin-bottom: 2.5rem;
           }
 
           .auth-title {
-            font-size: 2rem;
+            font-size: 2.5rem;
             font-weight: 800;
             color: hsl(var(--primary));
             margin: 0 0 0.5rem 0;
@@ -183,7 +161,6 @@ const Signup: React.FC = () => {
             font-size: 1rem;
             color: hsl(var(--muted-foreground));
             margin: 0;
-            line-height: 1.5;
           }
 
           .auth-form {
@@ -201,7 +178,7 @@ const Signup: React.FC = () => {
           }
 
           .input-group {
-            margin-bottom: 0.25rem;
+            margin-bottom: 0.5rem;
           }
 
           .auth-input {
@@ -215,6 +192,13 @@ const Signup: React.FC = () => {
             --highlight-color-focused: hsl(var(--primary));
           }
 
+          .zemi-input {
+            font-family: monospace;
+            font-size: 1.1rem;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+          }
+
           .auth-button {
             --background: hsl(var(--primary));
             --color: hsl(var(--primary-foreground));
@@ -224,21 +208,32 @@ const Signup: React.FC = () => {
             margin-top: 0.5rem;
           }
 
-          .auth-terms {
-            font-size: 0.8rem;
+          .auth-divider {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin: 1rem 0;
+          }
+
+          .auth-divider::before,
+          .auth-divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: hsl(var(--border));
+          }
+
+          .auth-divider span {
             color: hsl(var(--muted-foreground));
-            text-align: center;
-            line-height: 1.5;
-            margin-top: 0.5rem;
+            font-size: 0.875rem;
           }
 
-          .auth-terms a {
-            color: hsl(var(--primary));
-            text-decoration: none;
-          }
-
-          .auth-terms a:hover {
-            text-decoration: underline;
+          .auth-secondary-button {
+            --border-color: hsl(var(--border));
+            --color: hsl(var(--foreground));
+            --border-radius: 9999px;
+            font-weight: 600;
+            height: 3rem;
           }
         `}</style>
       </IonContent>
@@ -246,4 +241,4 @@ const Signup: React.FC = () => {
   );
 };
 
-export default Signup;
+export default TexterLogin;
