@@ -5,6 +5,9 @@ export interface ChatWithDetails extends Chat {
   members: (ChatMember & { user: User })[];
   lastMessage?: Message;
   unreadCount: number;
+  isPinned: boolean;
+  isArchived: boolean;
+  isMuted: boolean;
 }
 
 export interface CreateChatData {
@@ -124,6 +127,9 @@ export async function getMyChats(): Promise<{ chats: ChatWithDetails[]; error: E
         members: membersByChat.get(m.chat_id) || [],
         lastMessage: lastMessageByChat.get(m.chat_id),
         unreadCount: m.unread_count,
+        isPinned: m.is_pinned,
+        isArchived: m.is_archived,
+        isMuted: m.is_muted,
       };
     });
 
@@ -289,17 +295,25 @@ export async function getChat(
 
     const { data: currentMember } = await supabase
       .from('chat_members')
-      .select('unread_count')
+      .select('unread_count, is_pinned, is_archived, is_muted')
       .eq('chat_id', chatId)
       .single();
 
-    const typedCurrentMember = currentMember as unknown as { unread_count: number } | null;
+    const typedCurrentMember = currentMember as unknown as {
+      unread_count: number;
+      is_pinned: boolean;
+      is_archived: boolean;
+      is_muted: boolean;
+    } | null;
 
     return {
       chat: {
         ...(chatData as unknown as Chat),
         members: (members || []) as unknown as ChatMemberWithUser[],
         unreadCount: typedCurrentMember?.unread_count || 0,
+        isPinned: typedCurrentMember?.is_pinned || false,
+        isArchived: typedCurrentMember?.is_archived || false,
+        isMuted: typedCurrentMember?.is_muted || false,
       },
       error: null,
     };
@@ -326,6 +340,156 @@ export async function markChatAsRead(chatId: string): Promise<{ error: Error | n
   const { error } = await supabase
     .from('chat_members')
     .update({ unread_count: 0, last_read_at: new Date().toISOString() } as never)
+    .eq('chat_id', chatId)
+    .eq('user_id', user.id);
+
+  if (error) {
+    return { error: new Error(error.message) };
+  }
+
+  return { error: null };
+}
+
+/**
+ * Pin a chat.
+ */
+export async function pinChat(chatId: string): Promise<{ error: Error | null }> {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { error: new Error('Not authenticated') };
+  }
+
+  const { error } = await supabase
+    .from('chat_members')
+    .update({ is_pinned: true } as never)
+    .eq('chat_id', chatId)
+    .eq('user_id', user.id);
+
+  if (error) {
+    return { error: new Error(error.message) };
+  }
+
+  return { error: null };
+}
+
+/**
+ * Unpin a chat.
+ */
+export async function unpinChat(chatId: string): Promise<{ error: Error | null }> {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { error: new Error('Not authenticated') };
+  }
+
+  const { error } = await supabase
+    .from('chat_members')
+    .update({ is_pinned: false } as never)
+    .eq('chat_id', chatId)
+    .eq('user_id', user.id);
+
+  if (error) {
+    return { error: new Error(error.message) };
+  }
+
+  return { error: null };
+}
+
+/**
+ * Archive a chat.
+ */
+export async function archiveChat(chatId: string): Promise<{ error: Error | null }> {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { error: new Error('Not authenticated') };
+  }
+
+  const { error } = await supabase
+    .from('chat_members')
+    .update({ is_archived: true } as never)
+    .eq('chat_id', chatId)
+    .eq('user_id', user.id);
+
+  if (error) {
+    return { error: new Error(error.message) };
+  }
+
+  return { error: null };
+}
+
+/**
+ * Unarchive a chat.
+ */
+export async function unarchiveChat(chatId: string): Promise<{ error: Error | null }> {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { error: new Error('Not authenticated') };
+  }
+
+  const { error } = await supabase
+    .from('chat_members')
+    .update({ is_archived: false } as never)
+    .eq('chat_id', chatId)
+    .eq('user_id', user.id);
+
+  if (error) {
+    return { error: new Error(error.message) };
+  }
+
+  return { error: null };
+}
+
+/**
+ * Mute a chat.
+ */
+export async function muteChat(chatId: string): Promise<{ error: Error | null }> {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { error: new Error('Not authenticated') };
+  }
+
+  const { error } = await supabase
+    .from('chat_members')
+    .update({ is_muted: true } as never)
+    .eq('chat_id', chatId)
+    .eq('user_id', user.id);
+
+  if (error) {
+    return { error: new Error(error.message) };
+  }
+
+  return { error: null };
+}
+
+/**
+ * Unmute a chat.
+ */
+export async function unmuteChat(chatId: string): Promise<{ error: Error | null }> {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { error: new Error('Not authenticated') };
+  }
+
+  const { error } = await supabase
+    .from('chat_members')
+    .update({ is_muted: false } as never)
     .eq('chat_id', chatId)
     .eq('user_id', user.id);
 

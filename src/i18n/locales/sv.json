@@ -111,13 +111,30 @@
     "startChatting": "Börja chatta med dina vänner",
     "selectFriend": "Välj en vän att chatta med",
     "noFriends": "Inga vänner än",
-    "addFriendsFirst": "Lägg till vänner för att börja chatta"
+    "addFriendsFirst": "Lägg till vänner för att börja chatta",
+    "holdToRecord": "Tryck för att spela in",
+    "releaseToSend": "Tryck för att skicka",
+    "slideToCancel": "Dra för att avbryta",
+    "addCaption": "Lägg till bildtext...",
+    "pinnedChats": "Fästa",
+    "archivedChats": "Arkiverade"
   },
   "message": {
     "image": "Bild",
     "voice": "Röstmeddelande",
     "video": "Video",
     "document": "Dokument",
-    "location": "Plats"
+    "location": "Plats",
+    "reply": "Svara",
+    "react": "Reagera",
+    "edited": "redigerat"
+  },
+  "actions": {
+    "pin": "Fäst",
+    "unpin": "Ta bort fäst",
+    "archive": "Arkivera",
+    "unarchive": "Avarkivera",
+    "mute": "Tysta",
+    "unmute": "Slå på ljud"
   }
 }

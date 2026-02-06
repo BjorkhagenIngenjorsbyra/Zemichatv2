@@ -20,11 +20,33 @@ import {
   IonRefresherContent,
   IonButtons,
   IonBackButton,
+  IonItemSliding,
+  IonItemOptions,
+  IonItemOption,
   RefresherEventDetail,
 } from '@ionic/react';
-import { add, chatbubblesOutline } from 'ionicons/icons';
+import {
+  add,
+  chatbubblesOutline,
+  pin,
+  archive,
+  volumeMute,
+  volumeHigh,
+  arrowUndo,
+  chevronDown,
+  chevronUp,
+} from 'ionicons/icons';
 import { useAuthContext } from '../contexts/AuthContext';
-import { getMyChats, type ChatWithDetails } from '../services/chat';
+import {
+  getMyChats,
+  pinChat,
+  unpinChat,
+  archiveChat,
+  unarchiveChat,
+  muteChat,
+  unmuteChat,
+  type ChatWithDetails,
+} from '../services/chat';
 
 const ChatList: React.FC = () => {
   const { t } = useTranslation();
@@ -32,6 +54,7 @@ const ChatList: React.FC = () => {
   const { profile } = useAuthContext();
   const [chats, setChats] = useState<ChatWithDetails[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [showArchived, setShowArchived] = useState(false);
 
   const loadChats = useCallback(async () => {
     const { chats: chatList } = await getMyChats();
@@ -47,6 +70,11 @@ const ChatList: React.FC = () => {
     await loadChats();
     event.detail.complete();
   };
+
+  // Separate chats into pinned, active, and archived
+  const pinnedChats = chats.filter((c) => c.isPinned && !c.isArchived);
+  const activeChats = chats.filter((c) => !c.isPinned && !c.isArchived);
+  const archivedChats = chats.filter((c) => c.isArchived);
 
   const getChatDisplayName = (chat: ChatWithDetails): string => {
     if (chat.name) return chat.name;
@@ -133,6 +161,113 @@ const ChatList: React.FC = () => {
     history.push('/new-chat');
   };
 
+  const handlePin = async (chat: ChatWithDetails) => {
+    if (chat.isPinned) {
+      await unpinChat(chat.id);
+    } else {
+      await pinChat(chat.id);
+    }
+    loadChats();
+  };
+
+  const handleArchive = async (chat: ChatWithDetails) => {
+    if (chat.isArchived) {
+      await unarchiveChat(chat.id);
+    } else {
+      await archiveChat(chat.id);
+    }
+    loadChats();
+  };
+
+  const handleMute = async (chat: ChatWithDetails) => {
+    if (chat.isMuted) {
+      await unmuteChat(chat.id);
+    } else {
+      await muteChat(chat.id);
+    }
+    loadChats();
+  };
+
+  const renderChatItem = (chat: ChatWithDetails) => {
+    const avatar = getChatAvatar(chat);
+    const displayName = getChatDisplayName(chat);
+    const initial = getAvatarInitial(chat);
+    const lastMessagePreview = getLastMessagePreview(chat);
+
+    return (
+      <IonItemSliding key={chat.id}>
+        <IonItem
+          button
+          detail={false}
+          className="chat-item"
+          onClick={() => openChat(chat.id)}
+        >
+          <IonAvatar slot="start" className="chat-avatar">
+            {avatar ? (
+              <img src={avatar} alt={displayName} />
+            ) : (
+              <div className="avatar-placeholder">{initial}</div>
+            )}
+          </IonAvatar>
+
+          <IonLabel>
+            <div className="chat-header">
+              <div className="chat-name-row">
+                {chat.isPinned && (
+                  <IonIcon icon={pin} className="pin-icon" />
+                )}
+                {chat.isMuted && (
+                  <IonIcon icon={volumeMute} className="mute-icon" />
+                )}
+                <h2 className="chat-name">{displayName}</h2>
+              </div>
+              {chat.lastMessage && (
+                <span className="chat-time">
+                  {formatLastMessageTime(chat.lastMessage.created_at)}
+                </span>
+              )}
+            </div>
+            <div className="chat-preview">
+              <p className="last-message">{lastMessagePreview}</p>
+              {chat.unreadCount > 0 && (
+                <IonBadge color="primary" className="unread-badge">
+                  {chat.unreadCount}
+                </IonBadge>
+              )}
+            </div>
+          </IonLabel>
+        </IonItem>
+
+        <IonItemOptions side="end">
+          <IonItemOption
+            color={chat.isPinned ? 'medium' : 'primary'}
+            onClick={() => handlePin(chat)}
+          >
+            <IonIcon slot="icon-only" icon={chat.isPinned ? arrowUndo : pin} />
+          </IonItemOption>
+          <IonItemOption
+            color={chat.isMuted ? 'success' : 'medium'}
+            onClick={() => handleMute(chat)}
+          >
+            <IonIcon
+              slot="icon-only"
+              icon={chat.isMuted ? volumeHigh : volumeMute}
+            />
+          </IonItemOption>
+          <IonItemOption
+            color={chat.isArchived ? 'success' : 'warning'}
+            onClick={() => handleArchive(chat)}
+          >
+            <IonIcon
+              slot="icon-only"
+              icon={chat.isArchived ? arrowUndo : archive}
+            />
+          </IonItemOption>
+        </IonItemOptions>
+      </IonItemSliding>
+    );
+  };
+
   return (
     <IonPage>
       <IonHeader>
@@ -160,51 +295,51 @@ const ChatList: React.FC = () => {
             <p>{t('chat.startChatting')}</p>
           </div>
         ) : (
-          <IonList className="chat-list">
-            {chats.map((chat) => {
-              const avatar = getChatAvatar(chat);
-              const displayName = getChatDisplayName(chat);
-              const initial = getAvatarInitial(chat);
-              const lastMessagePreview = getLastMessagePreview(chat);
+          <>
+            {/* Pinned Section */}
+            {pinnedChats.length > 0 && (
+              <div className="chat-section">
+                <div className="section-header">
+                  <IonIcon icon={pin} />
+                  <span>{t('chat.pinnedChats')}</span>
+                </div>
+                <IonList className="chat-list">
+                  {pinnedChats.map(renderChatItem)}
+                </IonList>
+              </div>
+            )}
 
-              return (
-                <IonItem
-                  key={chat.id}
-                  button
-                  detail={false}
-                  className="chat-item"
-                  onClick={() => openChat(chat.id)}
+            {/* Active Chats */}
+            {activeChats.length > 0 && (
+              <IonList className="chat-list">
+                {activeChats.map(renderChatItem)}
+              </IonList>
+            )}
+
+            {/* Archived Section (Collapsible) */}
+            {archivedChats.length > 0 && (
+              <div className="chat-section archived-section">
+                <button
+                  className="section-header clickable"
+                  onClick={() => setShowArchived(!showArchived)}
                 >
-                  <IonAvatar slot="start" className="chat-avatar">
-                    {avatar ? (
-                      <img src={avatar} alt={displayName} />
-                    ) : (
-                      <div className="avatar-placeholder">{initial}</div>
-                    )}
-                  </IonAvatar>
-
-                  <IonLabel>
-                    <div className="chat-header">
-                      <h2 className="chat-name">{displayName}</h2>
-                      {chat.lastMessage && (
-                        <span className="chat-time">
-                          {formatLastMessageTime(chat.lastMessage.created_at)}
-                        </span>
-                      )}
-                    </div>
-                    <div className="chat-preview">
-                      <p className="last-message">{lastMessagePreview}</p>
-                      {chat.unreadCount > 0 && (
-                        <IonBadge color="primary" className="unread-badge">
-                          {chat.unreadCount}
-                        </IonBadge>
-                      )}
-                    </div>
-                  </IonLabel>
-                </IonItem>
-              );
-            })}
-          </IonList>
+                  <IonIcon icon={archive} />
+                  <span>
+                    {t('chat.archivedChats')} ({archivedChats.length})
+                  </span>
+                  <IonIcon
+                    icon={showArchived ? chevronUp : chevronDown}
+                    className="chevron"
+                  />
+                </button>
+                {showArchived && (
+                  <IonList className="chat-list">
+                    {archivedChats.map(renderChatItem)}
+                  </IonList>
+                )}
+              </div>
+            )}
+          </>
         )}
 
         <IonFab vertical="bottom" horizontal="end" slot="fixed">
@@ -246,6 +381,44 @@ const ChatList: React.FC = () => {
           .empty-state p {
             margin: 0;
             color: hsl(var(--muted-foreground));
+          }
+
+          .chat-section {
+            margin-bottom: 1rem;
+          }
+
+          .section-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 0;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: hsl(var(--muted-foreground));
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+          }
+
+          .section-header.clickable {
+            cursor: pointer;
+            background: none;
+            border: none;
+            width: 100%;
+            justify-content: flex-start;
+          }
+
+          .section-header.clickable:hover {
+            color: hsl(var(--foreground));
+          }
+
+          .section-header .chevron {
+            margin-left: auto;
+          }
+
+          .archived-section {
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid hsl(var(--border));
           }
 
           .chat-list {
@@ -294,12 +467,26 @@ const ChatList: React.FC = () => {
             margin-bottom: 0.25rem;
           }
 
+          .chat-name-row {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            flex: 1;
+            min-width: 0;
+          }
+
+          .pin-icon,
+          .mute-icon {
+            font-size: 0.75rem;
+            color: hsl(var(--muted-foreground));
+            flex-shrink: 0;
+          }
+
           .chat-name {
             font-weight: 600;
             font-size: 1rem;
             color: hsl(var(--foreground));
             margin: 0;
-            flex: 1;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
@@ -344,6 +531,11 @@ const ChatList: React.FC = () => {
             --background: hsl(var(--primary));
             --color: hsl(var(--primary-foreground));
             --box-shadow: 0 4px 16px hsl(var(--primary) / 0.4);
+          }
+
+          ion-item-option {
+            --padding-start: 1rem;
+            --padding-end: 1rem;
           }
         `}</style>
       </IonContent>

@@ -23,6 +23,20 @@ import {
   subscribeToMessages,
   type MessageWithSender,
 } from '../services/message';
+import {
+  toggleReaction,
+  getReactionsForMessages,
+  type GroupedReaction,
+} from '../services/reaction';
+import { uploadImage, uploadVoice, uploadDocument } from '../services/storage';
+import { MessageType, type Message, type User } from '../types/database';
+import {
+  MessageBubble,
+  QuotedMessage,
+  EmojiPicker,
+  MediaPicker,
+  VoiceRecorder,
+} from '../components/chat';
 
 const ChatView: React.FC = () => {
   const { t } = useTranslation();
@@ -37,10 +51,25 @@ const ChatView: React.FC = () => {
   const contentRef = useRef<HTMLIonContentElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
+  // Reply state
+  const [replyTo, setReplyTo] = useState<MessageWithSender | null>(null);
+
+  // Reactions state
+  const [reactions, setReactions] = useState<Map<string, GroupedReaction[]>>(new Map());
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [emojiPickerTarget, setEmojiPickerTarget] = useState<MessageWithSender | null>(null);
+
   const scrollToBottom = useCallback(() => {
     setTimeout(() => {
       contentRef.current?.scrollToBottom(300);
     }, 100);
+  }, []);
+
+  const loadReactions = useCallback(async (messageIds: string[]) => {
+    if (messageIds.length === 0) return;
+
+    const { reactionsByMessage } = await getReactionsForMessages(messageIds);
+    setReactions(reactionsByMessage);
   }, []);
 
   const loadChat = useCallback(async () => {
@@ -58,11 +87,15 @@ const ChatView: React.FC = () => {
     setMessages(chatMessages);
     setIsLoading(false);
 
+    // Load reactions for all messages
+    const messageIds = chatMessages.map((m) => m.id);
+    loadReactions(messageIds);
+
     // Mark as read
     await markChatAsRead(chatId);
 
     scrollToBottom();
-  }, [chatId, history, scrollToBottom]);
+  }, [chatId, history, scrollToBottom, loadReactions]);
 
   useEffect(() => {
     loadChat();
@@ -82,6 +115,9 @@ const ChatView: React.FC = () => {
       });
       scrollToBottom();
 
+      // Load reactions for new message
+      loadReactions([newMessage.id]);
+
       // Mark as read if not from self
       if (newMessage.sender_id !== profile?.id) {
         markChatAsRead(chatId);
@@ -89,7 +125,7 @@ const ChatView: React.FC = () => {
     });
 
     return unsubscribe;
-  }, [chatId, profile?.id, scrollToBottom]);
+  }, [chatId, profile?.id, scrollToBottom, loadReactions]);
 
   const getChatDisplayName = (): string => {
     if (!chat) return '';
@@ -114,11 +150,14 @@ const ChatView: React.FC = () => {
     const { error } = await sendMessage({
       chatId,
       content: text,
+      replyToId: replyTo?.id,
     });
 
     if (error) {
       console.error('Failed to send message:', error);
       setMessageText(text); // Restore text on error
+    } else {
+      setReplyTo(null);
     }
 
     setIsSending(false);
@@ -132,9 +171,89 @@ const ChatView: React.FC = () => {
     }
   };
 
-  const formatMessageTime = (dateStr: string): string => {
-    const date = new Date(dateStr);
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  const handleImageSelect = async (file: File, caption?: string) => {
+    if (!chatId) return;
+
+    const result = await uploadImage(file, chatId);
+    if (result.error || !result.url) {
+      console.error('Failed to upload image:', result.error);
+      return;
+    }
+
+    await sendMessage({
+      chatId,
+      content: caption,
+      type: MessageType.IMAGE,
+      mediaUrl: result.url,
+      mediaMetadata: result.metadata as unknown as Record<string, unknown> | undefined,
+      replyToId: replyTo?.id,
+    });
+
+    setReplyTo(null);
+  };
+
+  const handleDocumentSelect = async (file: File) => {
+    if (!chatId) return;
+
+    const result = await uploadDocument(file, chatId);
+    if (result.error || !result.url) {
+      console.error('Failed to upload document:', result.error);
+      return;
+    }
+
+    await sendMessage({
+      chatId,
+      type: MessageType.DOCUMENT,
+      mediaUrl: result.url,
+      mediaMetadata: result.metadata as unknown as Record<string, unknown> | undefined,
+      replyToId: replyTo?.id,
+    });
+
+    setReplyTo(null);
+  };
+
+  const handleVoiceRecord = async (blob: Blob, duration: number, mimeType: string) => {
+    if (!chatId) return;
+
+    const result = await uploadVoice(blob, chatId, duration, mimeType);
+    if (result.error || !result.url) {
+      console.error('Failed to upload voice message:', result.error);
+      return;
+    }
+
+    await sendMessage({
+      chatId,
+      type: MessageType.VOICE,
+      mediaUrl: result.url,
+      mediaMetadata: result.metadata as unknown as Record<string, unknown> | undefined,
+      replyToId: replyTo?.id,
+    });
+
+    setReplyTo(null);
+  };
+
+  const handleReply = (message: MessageWithSender) => {
+    setReplyTo(message);
+    inputRef.current?.focus();
+  };
+
+  const handleOpenEmojiPicker = (message: MessageWithSender) => {
+    setEmojiPickerTarget(message);
+    setShowEmojiPicker(true);
+  };
+
+  const handleSelectReaction = async (emoji: string) => {
+    if (!emojiPickerTarget) return;
+
+    await toggleReaction(emojiPickerTarget.id, emoji);
+
+    // Refresh reactions
+    loadReactions([emojiPickerTarget.id]);
+  };
+
+  const handleToggleReaction = async (messageId: string, emoji: string) => {
+    await toggleReaction(messageId, emoji);
+    loadReactions([messageId]);
   };
 
   const formatDateDivider = (dateStr: string): string => {
@@ -185,6 +304,7 @@ const ChatView: React.FC = () => {
             {messages.map((message, index) => {
               const isOwn = message.sender_id === profile?.id;
               const showDivider = shouldShowDateDivider(message, index);
+              const messageReactions = reactions.get(message.id) || [];
 
               return (
                 <div key={message.id}>
@@ -194,16 +314,15 @@ const ChatView: React.FC = () => {
                     </div>
                   )}
                   <div className={`message-wrapper ${isOwn ? 'own' : 'other'}`}>
-                    <div className={`message-bubble ${isOwn ? 'own' : 'other'}`}>
-                      {!isOwn && !chat?.is_group && (
-                        <span className="sender-name">{message.sender?.display_name}</span>
-                      )}
-                      <p className="message-content">{message.content}</p>
-                      <span className="message-time">
-                        {formatMessageTime(message.created_at)}
-                        {message.is_edited && <span className="edited-tag"> (edited)</span>}
-                      </span>
-                    </div>
+                    <MessageBubble
+                      message={message}
+                      isOwn={isOwn}
+                      reactions={messageReactions}
+                      showSenderName={chat?.is_group && !isOwn}
+                      onReply={() => handleReply(message)}
+                      onReact={() => handleOpenEmojiPicker(message)}
+                      onToggleReaction={handleToggleReaction}
+                    />
                   </div>
                 </div>
               );
@@ -264,58 +383,34 @@ const ChatView: React.FC = () => {
           .message-wrapper.other {
             justify-content: flex-start;
           }
-
-          .message-bubble {
-            max-width: 75%;
-            padding: 0.75rem 1rem;
-            border-radius: 1rem;
-            position: relative;
-          }
-
-          .message-bubble.own {
-            background: hsl(var(--primary));
-            color: hsl(var(--primary-foreground));
-            border-bottom-right-radius: 0.25rem;
-          }
-
-          .message-bubble.other {
-            background: hsl(var(--card));
-            color: hsl(var(--foreground));
-            border: 1px solid hsl(var(--border));
-            border-bottom-left-radius: 0.25rem;
-          }
-
-          .sender-name {
-            display: block;
-            font-size: 0.75rem;
-            font-weight: 600;
-            color: hsl(var(--primary));
-            margin-bottom: 0.25rem;
-          }
-
-          .message-content {
-            margin: 0;
-            word-wrap: break-word;
-            white-space: pre-wrap;
-            line-height: 1.4;
-          }
-
-          .message-time {
-            display: block;
-            font-size: 0.65rem;
-            opacity: 0.7;
-            margin-top: 0.25rem;
-            text-align: right;
-          }
-
-          .edited-tag {
-            font-style: italic;
-          }
         `}</style>
       </IonContent>
 
       <IonFooter>
+        {replyTo && (
+          <div className="reply-preview">
+            <QuotedMessage
+              message={replyTo as Message & { sender?: User }}
+              isOwn={false}
+              onClick={() => {}}
+            />
+            <button
+              className="cancel-reply"
+              onClick={() => setReplyTo(null)}
+              aria-label="Cancel reply"
+            >
+              ×
+            </button>
+          </div>
+        )}
+
         <div className="input-container">
+          <MediaPicker
+            onImageSelect={handleImageSelect}
+            onDocumentSelect={handleDocumentSelect}
+            disabled={isSending}
+          />
+
           <textarea
             ref={inputRef}
             className="message-input"
@@ -325,17 +420,54 @@ const ChatView: React.FC = () => {
             onKeyDown={handleKeyDown}
             rows={1}
           />
-          <IonButton
-            className="send-button"
-            fill="clear"
-            onClick={handleSend}
-            disabled={!messageText.trim() || isSending}
-          >
-            <IonIcon icon={send} />
-          </IonButton>
+
+          {messageText.trim() ? (
+            <IonButton
+              className="send-button"
+              fill="clear"
+              onClick={handleSend}
+              disabled={!messageText.trim() || isSending}
+            >
+              <IonIcon icon={send} />
+            </IonButton>
+          ) : (
+            <VoiceRecorder
+              onRecord={handleVoiceRecord}
+              disabled={isSending}
+            />
+          )}
         </div>
 
         <style>{`
+          .reply-preview {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: hsl(var(--card));
+            border-top: 1px solid hsl(var(--border));
+          }
+
+          .reply-preview > div {
+            flex: 1;
+            margin: 0;
+          }
+
+          .cancel-reply {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 1.5rem;
+            height: 1.5rem;
+            border-radius: 50%;
+            background: hsl(var(--muted) / 0.3);
+            border: none;
+            cursor: pointer;
+            font-size: 1.25rem;
+            color: hsl(var(--foreground));
+            line-height: 1;
+          }
+
           .input-container {
             display: flex;
             align-items: flex-end;
@@ -380,6 +512,16 @@ const ChatView: React.FC = () => {
           }
         `}</style>
       </IonFooter>
+
+      {showEmojiPicker && (
+        <EmojiPicker
+          onSelect={handleSelectReaction}
+          onClose={() => {
+            setShowEmojiPicker(false);
+            setEmojiPickerTarget(null);
+          }}
+        />
+      )}
     </IonPage>
   );
 };

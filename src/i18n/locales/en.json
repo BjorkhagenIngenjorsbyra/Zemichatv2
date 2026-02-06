@@ -111,13 +111,30 @@
     "startChatting": "Start chatting with your friends",
     "selectFriend": "Select a friend to chat with",
     "noFriends": "No friends yet",
-    "addFriendsFirst": "Add friends to start chatting"
+    "addFriendsFirst": "Add friends to start chatting",
+    "holdToRecord": "Tap to record",
+    "releaseToSend": "Tap to send",
+    "slideToCancel": "Slide to cancel",
+    "addCaption": "Add a caption...",
+    "pinnedChats": "Pinned",
+    "archivedChats": "Archived"
   },
   "message": {
     "image": "Image",
     "voice": "Voice message",
     "video": "Video",
     "document": "Document",
-    "location": "Location"
+    "location": "Location",
+    "reply": "Reply",
+    "react": "React",
+    "edited": "edited"
+  },
+  "actions": {
+    "pin": "Pin",
+    "unpin": "Unpin",
+    "archive": "Archive",
+    "unarchive": "Unarchive",
+    "mute": "Mute",
+    "unmute": "Unmute"
   }
 }

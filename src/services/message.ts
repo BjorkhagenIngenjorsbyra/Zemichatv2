@@ -4,13 +4,16 @@ import type { RealtimeChannel } from '@supabase/supabase-js';
 
 export interface MessageWithSender extends Message {
   sender: User;
+  reply_to?: Message & { sender: User };
 }
 
 export interface SendMessageData {
   chatId: string;
-  content: string;
+  content?: string;
   type?: MessageType;
   replyToId?: string;
+  mediaUrl?: string;
+  mediaMetadata?: Record<string, unknown>;
 }
 
 export interface SendMessageResult {
@@ -31,7 +34,11 @@ export async function getChatMessages(
       .from('messages')
       .select(`
         *,
-        sender:users!messages_sender_id_fkey (*)
+        sender:users!messages_sender_id_fkey (*),
+        reply_to:messages!messages_reply_to_id_fkey (
+          *,
+          sender:users!messages_sender_id_fkey (*)
+        )
       `)
       .eq('chat_id', chatId)
       .is('deleted_at', null)
@@ -67,6 +74,8 @@ export async function sendMessage({
   content,
   type = MessageType.TEXT,
   replyToId,
+  mediaUrl,
+  mediaMetadata,
 }: SendMessageData): Promise<SendMessageResult> {
   try {
     const {
@@ -83,8 +92,10 @@ export async function sendMessage({
         chat_id: chatId,
         sender_id: user.id,
         type,
-        content,
+        content: content || null,
         reply_to_id: replyToId || null,
+        media_url: mediaUrl || null,
+        media_metadata: mediaMetadata || null,
       } as never)
       .select()
       .single();
