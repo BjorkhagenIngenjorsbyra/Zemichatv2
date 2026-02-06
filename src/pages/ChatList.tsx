@@ -20,6 +20,7 @@ import {
   IonRefresherContent,
   IonButtons,
   IonBackButton,
+  IonButton,
   IonItemSliding,
   IonItemOptions,
   IonItemOption,
@@ -35,6 +36,7 @@ import {
   arrowUndo,
   chevronDown,
   chevronUp,
+  searchOutline,
 } from 'ionicons/icons';
 import { useAuthContext } from '../contexts/AuthContext';
 import {
@@ -47,6 +49,7 @@ import {
   unmuteChat,
   type ChatWithDetails,
 } from '../services/chat';
+import { ChatSearchModal } from '../components/chat';
 
 const ChatList: React.FC = () => {
   const { t } = useTranslation();
@@ -55,6 +58,7 @@ const ChatList: React.FC = () => {
   const [chats, setChats] = useState<ChatWithDetails[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showArchived, setShowArchived] = useState(false);
+  const [showSearch, setShowSearch] = useState(false);
 
   const loadChats = useCallback(async () => {
     const { chats: chatList } = await getMyChats();
@@ -276,6 +280,11 @@ const ChatList: React.FC = () => {
             <IonBackButton defaultHref="/dashboard" />
           </IonButtons>
           <IonTitle>{t('dashboard.chats')}</IonTitle>
+          <IonButtons slot="end">
+            <IonButton onClick={() => setShowSearch(true)}>
+              <IonIcon icon={searchOutline} />
+            </IonButton>
+          </IonButtons>
         </IonToolbar>
       </IonHeader>
 
@@ -539,6 +548,11 @@ const ChatList: React.FC = () => {
           }
         `}</style>
       </IonContent>
+
+      <ChatSearchModal
+        isOpen={showSearch}
+        onClose={() => setShowSearch(false)}
+      />
     </IonPage>
   );
 };

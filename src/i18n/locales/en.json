@@ -252,5 +252,39 @@
     "permissionMessage": "Stay updated with messages and alerts.",
     "enable": "Enable",
     "later": "Later"
+  },
+  "mfa": {
+    "setupTitle": "Set Up 2FA",
+    "scanQRCode": "Scan QR Code",
+    "scanDescription": "Scan this QR code with your authenticator app (Google Authenticator, Authy, etc.)",
+    "manualEntry": "Or enter this code manually:",
+    "enterCode": "Enter Verification Code",
+    "enterCodeDescription": "Enter the 6-digit code from your authenticator app",
+    "verify": "Verify",
+    "invalidCode": "Please enter a valid 6-digit code",
+    "setupComplete": "2FA Enabled!",
+    "setupCompleteDescription": "Your account is now protected with two-factor authentication.",
+    "verifyTitle": "Two-Factor Authentication",
+    "verifyDescription": "Enter the code from your authenticator app",
+    "newCode": "Request New Code",
+    "useAnotherAccount": "Use another account"
+  },
+  "quietHours": {
+    "title": "Quiet Hours",
+    "description": "Notifications will be silenced during quiet hours",
+    "enabled": "Quiet hours enabled",
+    "disabled": "Quiet hours disabled",
+    "startTime": "Start time",
+    "endTime": "End time"
+  },
+  "search": {
+    "title": "Search",
+    "placeholder": "Search messages...",
+    "noResults": "No results found",
+    "searching": "Searching...",
+    "inChat": "Search in chat",
+    "global": "Search all chats",
+    "results": "{{count}} results",
+    "results_one": "{{count}} result"
   }
 }

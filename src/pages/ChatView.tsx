@@ -14,7 +14,7 @@ import {
   IonIcon,
   IonButton,
 } from '@ionic/react';
-import { send } from 'ionicons/icons';
+import { send, searchOutline } from 'ionicons/icons';
 import { useAuthContext } from '../contexts/AuthContext';
 import { getChat, markChatAsRead, type ChatWithDetails } from '../services/chat';
 import {
@@ -37,6 +37,7 @@ import {
   MediaPicker,
   VoiceRecorder,
   QuickMessageBar,
+  ChatSearchModal,
 } from '../components/chat';
 import { SOSButton } from '../components/sos';
 import { UserRole } from '../types/database';
@@ -61,6 +62,9 @@ const ChatView: React.FC = () => {
   const [reactions, setReactions] = useState<Map<string, GroupedReaction[]>>(new Map());
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [emojiPickerTarget, setEmojiPickerTarget] = useState<MessageWithSender | null>(null);
+
+  // Search state
+  const [showSearch, setShowSearch] = useState(false);
 
   const scrollToBottom = useCallback(() => {
     setTimeout(() => {
@@ -307,11 +311,12 @@ const ChatView: React.FC = () => {
             <IonBackButton defaultHref="/chats" />
           </IonButtons>
           <IonTitle>{getChatDisplayName()}</IonTitle>
-          {profile?.role === UserRole.TEXTER && (
-            <IonButtons slot="end">
-              <SOSButton size="small" />
-            </IonButtons>
-          )}
+          <IonButtons slot="end">
+            <IonButton onClick={() => setShowSearch(true)}>
+              <IonIcon icon={searchOutline} />
+            </IonButton>
+            {profile?.role === UserRole.TEXTER && <SOSButton size="small" />}
+          </IonButtons>
         </IonToolbar>
       </IonHeader>
 
@@ -552,6 +557,12 @@ const ChatView: React.FC = () => {
           }}
         />
       )}
+
+      <ChatSearchModal
+        isOpen={showSearch}
+        onClose={() => setShowSearch(false)}
+        chatId={chatId}
+      />
     </IonPage>
   );
 };

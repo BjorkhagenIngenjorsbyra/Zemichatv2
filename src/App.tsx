@@ -21,6 +21,8 @@ import ChatView from './pages/ChatView';
 import Friends from './pages/Friends';
 import AddFriend from './pages/AddFriend';
 import OwnerApprovals from './pages/OwnerApprovals';
+import MFASetup from './pages/MFASetup';
+import MFAVerify from './pages/MFAVerify';
 
 /* Core CSS required for Ionic components to work properly */
 import '@ionic/react/css/core.css';
@@ -71,9 +73,12 @@ const App: React.FC = () => (
               <Signup />
             </PublicRoute>
 
-            {/* Semi-protected route - needs auth but not profile */}
+            {/* Semi-protected routes - needs auth but not profile */}
             <PrivateRoute exact path="/create-team" requireProfile={false}>
               <CreateTeam />
+            </PrivateRoute>
+            <PrivateRoute exact path="/mfa-verify" requireProfile={false}>
+              <MFAVerify />
             </PrivateRoute>
 
             {/* Protected routes - need auth and profile */}
@@ -106,6 +111,9 @@ const App: React.FC = () => (
             </PrivateRoute>
             <PrivateRoute exact path="/owner-approvals">
               <OwnerApprovals />
+            </PrivateRoute>
+            <PrivateRoute exact path="/mfa-setup">
+              <MFASetup />
             </PrivateRoute>
 
             {/* Default redirect */}

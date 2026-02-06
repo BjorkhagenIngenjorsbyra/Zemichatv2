@@ -2,6 +2,12 @@ import { useState, useEffect, useCallback } from 'react';
 import type { User as SupabaseUser, Session } from '@supabase/supabase-js';
 import { getSession, onAuthStateChange, signOut as authSignOut } from '../services/auth';
 import { getMyProfile, hasTeamProfile } from '../services/team';
+import {
+  initializePushNotifications,
+  cleanupPushNotifications,
+  getPermissionStatus,
+  type PermissionStatus,
+} from '../services/push';
 import type { User } from '../types/database';
 
 export interface AuthState {
@@ -11,8 +17,10 @@ export interface AuthState {
   session: Session | null;
   profile: User | null;
   hasProfile: boolean;
+  pushPermission: PermissionStatus;
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
+  initializePush: () => Promise<void>;
 }
 
 /**
@@ -25,6 +33,7 @@ export function useAuth(): AuthState {
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<User | null>(null);
   const [hasProfile, setHasProfile] = useState(false);
+  const [pushPermission, setPushPermission] = useState<PermissionStatus>(getPermissionStatus());
 
   const refreshProfile = useCallback(async () => {
     if (!authUser) {
@@ -89,11 +98,18 @@ export function useAuth(): AuthState {
   }, [authUser, isLoading, refreshProfile]);
 
   const signOut = useCallback(async () => {
+    // Cleanup push notifications before signing out
+    await cleanupPushNotifications();
     await authSignOut();
     setAuthUser(null);
     setSession(null);
     setProfile(null);
     setHasProfile(false);
+  }, []);
+
+  const initializePush = useCallback(async () => {
+    const { permissionStatus } = await initializePushNotifications();
+    setPushPermission(permissionStatus);
   }, []);
 
   return {
@@ -103,7 +119,9 @@ export function useAuth(): AuthState {
     session,
     profile,
     hasProfile,
+    pushPermission,
     signOut,
     refreshProfile,
+    initializePush,
   };
 }
