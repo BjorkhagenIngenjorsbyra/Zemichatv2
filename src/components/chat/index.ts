@@ -6,3 +6,4 @@ export { default as MessageReactions } from './MessageReactions';
 export { default as EmojiPicker } from './EmojiPicker';
 export { default as MediaPicker } from './MediaPicker';
 export { default as VoiceRecorder } from './VoiceRecorder';
+export { default as QuickMessageBar } from './QuickMessageBar';

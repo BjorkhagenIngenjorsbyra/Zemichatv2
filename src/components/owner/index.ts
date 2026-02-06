@@ -1,0 +1,1 @@
+export { QuickMessageManager } from './QuickMessageManager';

@@ -36,7 +36,10 @@ import {
   EmojiPicker,
   MediaPicker,
   VoiceRecorder,
+  QuickMessageBar,
 } from '../components/chat';
+import { SOSButton } from '../components/sos';
+import { UserRole } from '../types/database';
 
 const ChatView: React.FC = () => {
   const { t } = useTranslation();
@@ -237,6 +240,23 @@ const ChatView: React.FC = () => {
     inputRef.current?.focus();
   };
 
+  const handleQuickMessage = async (content: string) => {
+    if (!chatId || isSending) return;
+
+    setIsSending(true);
+
+    const { error } = await sendMessage({
+      chatId,
+      content,
+    });
+
+    if (error) {
+      console.error('Failed to send quick message:', error);
+    }
+
+    setIsSending(false);
+  };
+
   const handleOpenEmojiPicker = (message: MessageWithSender) => {
     setEmojiPickerTarget(message);
     setShowEmojiPicker(true);
@@ -287,6 +307,11 @@ const ChatView: React.FC = () => {
             <IonBackButton defaultHref="/chats" />
           </IonButtons>
           <IonTitle>{getChatDisplayName()}</IonTitle>
+          {profile?.role === UserRole.TEXTER && (
+            <IonButtons slot="end">
+              <SOSButton size="small" />
+            </IonButtons>
+          )}
         </IonToolbar>
       </IonHeader>
 
@@ -387,6 +412,11 @@ const ChatView: React.FC = () => {
       </IonContent>
 
       <IonFooter>
+        <QuickMessageBar
+          onSend={handleQuickMessage}
+          disabled={isSending}
+        />
+
         {replyTo && (
           <div className="reply-preview">
             <QuotedMessage

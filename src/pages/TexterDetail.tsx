@@ -39,6 +39,7 @@ import {
   deactivateMember,
   reactivateMember,
 } from '../services/members';
+import { QuickMessageManager } from '../components/owner';
 import { type User, type TexterSettings } from '../types/database';
 
 const TexterDetail: React.FC = () => {
@@ -275,6 +276,13 @@ const TexterDetail: React.FC = () => {
               </IonItem>
             </IonList>
           </div>
+
+          {/* Quick Messages */}
+          {userId && (
+            <div className="section">
+              <QuickMessageManager userId={userId} />
+            </div>
+          )}
 
           {/* Capability Toggles */}
           {settings && (

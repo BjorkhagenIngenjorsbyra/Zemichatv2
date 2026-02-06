@@ -17,7 +17,7 @@ import {
   IonSpinner,
   IonRefresher,
   IonRefresherContent,
-  RefresherEventDetail,
+  type RefresherEventDetail,
 } from '@ionic/react';
 import {
   logOutOutline,
@@ -27,11 +27,16 @@ import {
   ellipseOutline,
   ellipse,
   eyeOutline,
+  peopleOutline,
+  checkmarkCircleOutline,
 } from 'ionicons/icons';
 import { useAuthContext } from '../contexts/AuthContext';
 import { getTeamMembers } from '../services/members';
+import { getAllTexterPendingRequests } from '../services/friend';
+import { getUnacknowledgedAlerts, acknowledgeSosAlert, type SosAlertWithTexter } from '../services/sos';
 import { CreateTexterModal } from '../components/CreateTexterModal';
-import type { User } from '../types/database';
+import { SOSAlertCard } from '../components/sos';
+import { type User, UserRole } from '../types/database';
 
 const Dashboard: React.FC = () => {
   const { t } = useTranslation();
@@ -39,6 +44,11 @@ const Dashboard: React.FC = () => {
   const [members, setMembers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showCreateTexter, setShowCreateTexter] = useState(false);
+  const [pendingApprovalsCount, setPendingApprovalsCount] = useState(0);
+  const [sosAlerts, setSosAlerts] = useState<SosAlertWithTexter[]>([]);
+  const [acknowledgingAlertId, setAcknowledgingAlertId] = useState<string | null>(null);
+
+  const isOwner = profile?.role === UserRole.OWNER;
 
   const loadMembers = useCallback(async () => {
     const { members: teamMembers } = await getTeamMembers();
@@ -46,12 +56,35 @@ const Dashboard: React.FC = () => {
     setIsLoading(false);
   }, []);
 
+  const loadApprovalsCount = useCallback(async () => {
+    if (!isOwner) return;
+    const { totalCount } = await getAllTexterPendingRequests();
+    setPendingApprovalsCount(totalCount);
+  }, [isOwner]);
+
+  const loadSosAlerts = useCallback(async () => {
+    if (!isOwner) return;
+    const { alerts } = await getUnacknowledgedAlerts();
+    setSosAlerts(alerts);
+  }, [isOwner]);
+
+  const handleAcknowledgeSos = async (alertId: string) => {
+    setAcknowledgingAlertId(alertId);
+    const { error } = await acknowledgeSosAlert(alertId);
+    if (!error) {
+      setSosAlerts((prev) => prev.filter((a) => a.id !== alertId));
+    }
+    setAcknowledgingAlertId(null);
+  };
+
   useEffect(() => {
     loadMembers();
-  }, [loadMembers]);
+    loadApprovalsCount();
+    loadSosAlerts();
+  }, [loadMembers, loadApprovalsCount, loadSosAlerts]);
 
   const handleRefresh = async (event: CustomEvent<RefresherEventDetail>) => {
-    await loadMembers();
+    await Promise.all([loadMembers(), loadApprovalsCount(), loadSosAlerts()]);
     await refreshProfile();
     event.detail.complete();
   };
@@ -120,6 +153,21 @@ const Dashboard: React.FC = () => {
             </div>
           </div>
 
+          {/* SOS Alerts (high priority, shown first for Owners) */}
+          {isOwner && sosAlerts.length > 0 && (
+            <div className="section sos-section">
+              <h3 className="section-title sos-title">{t('sos.unacknowledged')}</h3>
+              {sosAlerts.map((alert) => (
+                <SOSAlertCard
+                  key={alert.id}
+                  alert={alert}
+                  onAcknowledge={handleAcknowledgeSos}
+                  isAcknowledging={acknowledgingAlertId === alert.id}
+                />
+              ))}
+            </div>
+          )}
+
           {/* Quick Actions */}
           <div className="section">
             <h3 className="section-title">{t('dashboard.quickActions')}</h3>
@@ -131,20 +179,45 @@ const Dashboard: React.FC = () => {
                   <p>{t('dashboard.chatsDescription')}</p>
                 </IonLabel>
               </IonItem>
-              <IonItem button detail className="action-item" onClick={() => setShowCreateTexter(true)}>
-                <IonIcon icon={personAddOutline} slot="start" className="action-icon" />
+              <IonItem button detail routerLink="/friends" className="action-item">
+                <IonIcon icon={peopleOutline} slot="start" className="action-icon" />
                 <IonLabel>
-                  <h3>{t('dashboard.createTexter')}</h3>
-                  <p>{t('dashboard.createTexterDescription')}</p>
+                  <h3>{t('dashboard.friends')}</h3>
+                  <p>{t('dashboard.friendsDescription')}</p>
                 </IonLabel>
               </IonItem>
-              <IonItem button detail routerLink="/oversight" className="action-item">
-                <IonIcon icon={eyeOutline} slot="start" className="action-icon" />
-                <IonLabel>
-                  <h3>{t('dashboard.oversight')}</h3>
-                  <p>{t('dashboard.oversightDescription')}</p>
-                </IonLabel>
-              </IonItem>
+              {isOwner && (
+                <IonItem button detail routerLink="/owner-approvals" className="action-item">
+                  <IonIcon icon={checkmarkCircleOutline} slot="start" className="action-icon" />
+                  <IonLabel>
+                    <h3>{t('dashboard.approvals')}</h3>
+                    <p>{t('dashboard.approvalsDescription')}</p>
+                  </IonLabel>
+                  {pendingApprovalsCount > 0 && (
+                    <IonBadge slot="end" color="danger">
+                      {pendingApprovalsCount}
+                    </IonBadge>
+                  )}
+                </IonItem>
+              )}
+              {isOwner && (
+                <IonItem button detail className="action-item" onClick={() => setShowCreateTexter(true)}>
+                  <IonIcon icon={personAddOutline} slot="start" className="action-icon" />
+                  <IonLabel>
+                    <h3>{t('dashboard.createTexter')}</h3>
+                    <p>{t('dashboard.createTexterDescription')}</p>
+                  </IonLabel>
+                </IonItem>
+              )}
+              {isOwner && (
+                <IonItem button detail routerLink="/oversight" className="action-item">
+                  <IonIcon icon={eyeOutline} slot="start" className="action-icon" />
+                  <IonLabel>
+                    <h3>{t('dashboard.oversight')}</h3>
+                    <p>{t('dashboard.oversightDescription')}</p>
+                  </IonLabel>
+                </IonItem>
+              )}
               <IonItem button detail className="action-item">
                 <IonIcon icon={settingsOutline} slot="start" className="action-icon" />
                 <IonLabel>
@@ -246,6 +319,14 @@ const Dashboard: React.FC = () => {
             border-radius: 1.5rem;
             padding: 1.5rem;
             margin-bottom: 2rem;
+          }
+
+          .sos-section {
+            margin-bottom: 1.5rem;
+          }
+
+          .sos-title {
+            color: hsl(var(--destructive)) !important;
           }
 
           .profile-avatar {

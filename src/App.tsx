@@ -18,6 +18,9 @@ import OwnerChatView from './pages/OwnerChatView';
 import ChatList from './pages/ChatList';
 import NewChat from './pages/NewChat';
 import ChatView from './pages/ChatView';
+import Friends from './pages/Friends';
+import AddFriend from './pages/AddFriend';
+import OwnerApprovals from './pages/OwnerApprovals';
 
 /* Core CSS required for Ionic components to work properly */
 import '@ionic/react/css/core.css';
@@ -94,6 +97,15 @@ const App: React.FC = () => (
             </PrivateRoute>
             <PrivateRoute exact path="/chat/:chatId">
               <ChatView />
+            </PrivateRoute>
+            <PrivateRoute exact path="/friends">
+              <Friends />
+            </PrivateRoute>
+            <PrivateRoute exact path="/add-friend">
+              <AddFriend />
+            </PrivateRoute>
+            <PrivateRoute exact path="/owner-approvals">
+              <OwnerApprovals />
             </PrivateRoute>
 
             {/* Default redirect */}

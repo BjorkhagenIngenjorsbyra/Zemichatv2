@@ -16,10 +16,11 @@ import {
   IonButtons,
   IonBackButton,
   IonSearchbar,
+  IonButton,
 } from '@ionic/react';
-import { personOutline } from 'ionicons/icons';
+import { personOutline, personAddOutline } from 'ionicons/icons';
 import { useAuthContext } from '../contexts/AuthContext';
-import { getTeamMembers } from '../services/members';
+import { getMyFriends, type FriendWithUser } from '../services/friend';
 import { createChat } from '../services/chat';
 import type { User } from '../types/database';
 
@@ -34,16 +35,15 @@ const NewChat: React.FC = () => {
   const [isCreating, setIsCreating] = useState(false);
 
   const loadContacts = useCallback(async () => {
-    // For now, just get team members as contacts
-    // Later we can add friends from other teams
-    const { members } = await getTeamMembers();
+    // Get accepted friends only
+    const { friends } = await getMyFriends();
 
-    // Filter out self
-    const otherMembers = members.filter((m) => m.id !== profile?.id);
-    setContacts(otherMembers);
-    setFilteredContacts(otherMembers);
+    // Extract user from each friendship
+    const friendUsers = friends.map((f: FriendWithUser) => f.user);
+    setContacts(friendUsers);
+    setFilteredContacts(friendUsers);
     setIsLoading(false);
-  }, [profile?.id]);
+  }, []);
 
   useEffect(() => {
     loadContacts();
@@ -114,6 +114,10 @@ const NewChat: React.FC = () => {
             <IonIcon icon={personOutline} className="empty-icon" />
             <h2>{t('chat.noFriends')}</h2>
             <p>{t('chat.addFriendsFirst')}</p>
+            <IonButton routerLink="/add-friend" className="add-friend-button">
+              <IonIcon icon={personAddOutline} slot="start" />
+              {t('friends.addFriend')}
+            </IonButton>
           </div>
         ) : (
           <>
@@ -180,8 +184,13 @@ const NewChat: React.FC = () => {
           }
 
           .empty-state p {
-            margin: 0;
+            margin: 0 0 1rem 0;
             color: hsl(var(--muted-foreground));
+          }
+
+          .add-friend-button {
+            --border-radius: 9999px;
+            font-weight: 600;
           }
 
           .section-label {
