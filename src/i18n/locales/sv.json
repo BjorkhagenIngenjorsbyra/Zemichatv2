@@ -41,7 +41,9 @@
     "passwordTooShort": "Lösenordet måste vara minst {{min}} tecken",
     "termsText": "Genom att skapa ett konto godkänner du våra",
     "termsLink": "användarvillkor",
-    "privacyLink": "integritetspolicy"
+    "privacyLink": "integritetspolicy",
+    "consentLabel": "Jag har läst och godkänner",
+    "consentRequired": "Du måste godkänna användarvillkoren och integritetspolicyn"
   },
   "team": {
     "createTitle": "Skapa ditt team",
@@ -326,7 +328,13 @@
     "deleteAccountButton": "Radera mitt konto permanent",
     "deleteAccountProgress": "Raderar all data...",
     "deleteAccountSuccess": "Ditt konto har raderats",
-    "deleteAccountError": "Kunde inte radera kontot"
+    "deleteAccountError": "Kunde inte radera kontot",
+    "deleteAccountSuperDescription": "Detta raderar permanent ditt konto, alla dina meddelanden, media och vänlistor. Du tas bort från teamet.",
+    "deleteAccountTexterMessage": "Kontakta din Team Owner för att radera ditt konto.",
+    "legal": "Juridiskt",
+    "privacyPolicy": "Integritetspolicy",
+    "termsOfService": "Användarvillkor",
+    "profileSaved": "Profilen har uppdaterats"
   },
   "call": {
     "call": "Samtal",

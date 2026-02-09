@@ -130,6 +130,12 @@ const TexterLogin: React.FC = () => {
             >
               {t('texterLogin.ownerLogin')}
             </IonButton>
+
+            <p className="auth-legal-links">
+              <a href="/privacy">{t('settings.privacyPolicy')}</a>
+              {' · '}
+              <a href="/terms">{t('settings.termsOfService')}</a>
+            </p>
           </form>
         </div>
 
@@ -234,6 +240,22 @@ const TexterLogin: React.FC = () => {
             --border-radius: 9999px;
             font-weight: 600;
             height: 3rem;
+          }
+
+          .auth-legal-links {
+            text-align: center;
+            font-size: 0.75rem;
+            color: hsl(var(--muted-foreground));
+            margin-top: 1.5rem;
+          }
+
+          .auth-legal-links a {
+            color: hsl(var(--muted-foreground));
+            text-decoration: none;
+          }
+
+          .auth-legal-links a:hover {
+            text-decoration: underline;
           }
         `}</style>
       </IonContent>

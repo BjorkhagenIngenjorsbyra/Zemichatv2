@@ -37,7 +37,9 @@
     "passwordTooShort": "Passordet må være minst {{min}} tegn",
     "termsText": "Ved å opprette en konto godtar du våre",
     "termsLink": "brukervilkår",
-    "privacyLink": "personvernregler"
+    "privacyLink": "personvernregler",
+    "consentLabel": "Jeg har lest og godtar",
+    "consentRequired": "Du må godta brukervilkårene og personvernreglene"
   },
   "team": {
     "createTitle": "Opprett teamet ditt",
@@ -198,5 +200,29 @@
     "fair": "OK",
     "good": "Bra",
     "strong": "Sterkt"
+  },
+  "settings": {
+    "title": "Innstillinger",
+    "profile": "Profil",
+    "exportData": "Last ned mine data",
+    "exportDataDescription": "Eksporter alle dine data som JSON-fil",
+    "exportDataProgress": "Samler inn dine data...",
+    "exportDataSuccess": "Dine data er lastet ned",
+    "exportDataError": "Kunne ikke eksportere dine data",
+    "deleteAccount": "Slett konto",
+    "deleteAccountDescription": "Dette sletter permanent kontoen din, alle teammedlemmer ({{count}} stk), alle meldinger, media og vennelister.",
+    "deleteAccountWarning": "Denne handlingen kan IKKE angres.",
+    "deleteAccountConfirmLabel": "Skriv SLETT for å bekrefte",
+    "deleteAccountConfirmWord": "SLETT",
+    "deleteAccountButton": "Slett kontoen min permanent",
+    "deleteAccountProgress": "Sletter alle data...",
+    "deleteAccountSuccess": "Kontoen din er slettet",
+    "deleteAccountError": "Kunne ikke slette kontoen",
+    "deleteAccountSuperDescription": "Dette sletter permanent kontoen din, alle dine meldinger, media og vennelister. Du blir fjernet fra teamet.",
+    "deleteAccountTexterMessage": "Kontakt din Team Owner for å slette kontoen din.",
+    "legal": "Juridisk",
+    "privacyPolicy": "Personvernerklæring",
+    "termsOfService": "Brukervilkår",
+    "profileSaved": "Profilen er oppdatert"
   }
 }

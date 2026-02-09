@@ -41,7 +41,9 @@
     "passwordTooShort": "Password must be at least {{min}} characters",
     "termsText": "By creating an account you agree to our",
     "termsLink": "terms of service",
-    "privacyLink": "privacy policy"
+    "privacyLink": "privacy policy",
+    "consentLabel": "I have read and accept the",
+    "consentRequired": "You must accept the terms of service and privacy policy"
   },
   "team": {
     "createTitle": "Create your team",
@@ -326,7 +328,13 @@
     "deleteAccountButton": "Delete my account permanently",
     "deleteAccountProgress": "Deleting all data...",
     "deleteAccountSuccess": "Your account has been deleted",
-    "deleteAccountError": "Could not delete the account"
+    "deleteAccountError": "Could not delete the account",
+    "deleteAccountSuperDescription": "This permanently deletes your account, all your messages, media, and friend lists. You will be removed from the team.",
+    "deleteAccountTexterMessage": "Contact your Team Owner to delete your account.",
+    "legal": "Legal",
+    "privacyPolicy": "Privacy Policy",
+    "termsOfService": "Terms of Service",
+    "profileSaved": "Profile updated"
   },
   "call": {
     "call": "Call",

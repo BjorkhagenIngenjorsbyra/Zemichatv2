@@ -8,6 +8,7 @@ import {
   IonButton,
   IonText,
   IonSpinner,
+  IonCheckbox,
 } from '@ionic/react';
 import { signUp } from '../services/auth';
 import { getInvitationByToken, claimInvitation, type InvitationPublicInfo } from '../services/invitations';
@@ -26,6 +27,7 @@ const SuperInvite: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [consentAccepted, setConsentAccepted] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -66,6 +68,11 @@ const SuperInvite: React.FC = () => {
 
     if (password.length < 8) {
       setError(t('auth.passwordTooShort', { min: 8 }));
+      return;
+    }
+
+    if (!consentAccepted) {
+      setError(t('auth.consentRequired'));
       return;
     }
 
@@ -236,11 +243,24 @@ const SuperInvite: React.FC = () => {
               />
             </div>
 
+            <div className="consent-row">
+              <IonCheckbox
+                checked={consentAccepted}
+                onIonChange={(e) => setConsentAccepted(e.detail.checked)}
+                className="consent-checkbox"
+              />
+              <label className="consent-label">
+                {t('auth.consentLabel')}{' '}
+                <a href="/terms">{t('auth.termsLink')}</a> {t('common.and')}{' '}
+                <a href="/privacy">{t('auth.privacyLink')}</a>
+              </label>
+            </div>
+
             <IonButton
               type="submit"
               expand="block"
               className="auth-button glow-primary"
-              disabled={isLoading}
+              disabled={isLoading || !consentAccepted}
             >
               {isLoading ? <IonSpinner name="crescent" /> : t('invite.claimButton')}
             </IonButton>
@@ -309,6 +329,32 @@ const SuperInvite: React.FC = () => {
             font-weight: 700;
             height: 3rem;
             margin-top: 0.5rem;
+          }
+          .consent-row {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            margin-top: 0.5rem;
+          }
+          .consent-checkbox {
+            --size: 20px;
+            --checkbox-background-checked: hsl(var(--primary));
+            --border-color: hsl(var(--border));
+            --border-color-checked: hsl(var(--primary));
+            margin-top: 2px;
+            flex-shrink: 0;
+          }
+          .consent-label {
+            font-size: 0.8rem;
+            color: hsl(var(--muted-foreground));
+            line-height: 1.5;
+          }
+          .consent-label a {
+            color: hsl(var(--primary));
+            text-decoration: none;
+          }
+          .consent-label a:hover {
+            text-decoration: underline;
           }
         `}</style>
       </IonContent>

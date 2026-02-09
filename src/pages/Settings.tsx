@@ -19,10 +19,15 @@ import {
   downloadOutline,
   trashOutline,
   warningOutline,
+  createOutline,
+  checkmarkOutline,
+  documentTextOutline,
+  shieldCheckmarkOutline,
+  informationCircleOutline,
 } from 'ionicons/icons';
 import { useAuthContext } from '../contexts/AuthContext';
 import { getTeamMembers } from '../services/members';
-import { exportUserData, deleteOwnerAccount, downloadJSON } from '../services/gdpr';
+import { exportUserData, deleteOwnerAccount, deleteSuperAccount, updateUserProfile, downloadJSON } from '../services/gdpr';
 import { UserRole } from '../types/database';
 
 const Settings: React.FC = () => {
@@ -31,6 +36,8 @@ const Settings: React.FC = () => {
   const { profile, signOut } = useAuthContext();
 
   const isOwner = profile?.role === UserRole.OWNER;
+  const isSuper = profile?.role === UserRole.SUPER;
+  const isTexter = profile?.role === UserRole.TEXTER;
 
   const [memberCount, setMemberCount] = useState(0);
   const [isExporting, setIsExporting] = useState(false);
@@ -39,6 +46,13 @@ const Settings: React.FC = () => {
   const [confirmText, setConfirmText] = useState('');
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
+
+  // Profile editing
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [editName, setEditName] = useState(profile?.display_name || '');
+  const [isSavingProfile, setIsSavingProfile] = useState(false);
+  const [profileSaved, setProfileSaved] = useState(false);
+  const [profileError, setProfileError] = useState<string | null>(null);
 
   const confirmWord = t('settings.deleteAccountConfirmWord');
   const canDelete = confirmText === confirmWord;
@@ -52,6 +66,12 @@ const Settings: React.FC = () => {
   useEffect(() => {
     loadMemberCount();
   }, [loadMemberCount]);
+
+  useEffect(() => {
+    if (profile?.display_name) {
+      setEditName(profile.display_name);
+    }
+  }, [profile?.display_name]);
 
   const handleExport = async () => {
     setIsExporting(true);
@@ -72,13 +92,32 @@ const Settings: React.FC = () => {
     setIsExporting(false);
   };
 
+  const handleSaveProfile = async () => {
+    if (!profile) return;
+    setIsSavingProfile(true);
+    setProfileError(null);
+    setProfileSaved(false);
+
+    const { error } = await updateUserProfile(editName.trim() || null);
+
+    if (error) {
+      setProfileError(error.message);
+    } else {
+      setProfileSaved(true);
+      setIsEditingProfile(false);
+    }
+    setIsSavingProfile(false);
+  };
+
   const handleDelete = async () => {
     if (!canDelete) return;
 
     setIsDeleting(true);
     setDeleteError(null);
 
-    const { error } = await deleteOwnerAccount();
+    const { error } = isOwner
+      ? await deleteOwnerAccount()
+      : await deleteSuperAccount();
 
     if (error) {
       setDeleteError(error.message);
@@ -109,8 +148,47 @@ const Settings: React.FC = () => {
             <div className="profile-card">
               <div className="profile-row">
                 <span className="profile-label">{t('texter.name')}</span>
-                <span className="profile-value">{profile?.display_name || '-'}</span>
+                {isEditingProfile ? (
+                  <div className="profile-edit-row">
+                    <IonInput
+                      value={editName}
+                      onIonInput={(e) => setEditName(e.detail.value || '')}
+                      placeholder={t('auth.yourName')}
+                      className="profile-edit-input"
+                    />
+                    <IonButton
+                      fill="clear"
+                      size="small"
+                      onClick={handleSaveProfile}
+                      disabled={isSavingProfile}
+                    >
+                      {isSavingProfile ? (
+                        <IonSpinner name="crescent" />
+                      ) : (
+                        <IonIcon icon={checkmarkOutline} />
+                      )}
+                    </IonButton>
+                  </div>
+                ) : (
+                  <div className="profile-value-row">
+                    <span className="profile-value">{profile?.display_name || '-'}</span>
+                    <IonButton
+                      fill="clear"
+                      size="small"
+                      onClick={() => setIsEditingProfile(true)}
+                      className="edit-btn"
+                    >
+                      <IonIcon icon={createOutline} />
+                    </IonButton>
+                  </div>
+                )}
               </div>
+              {profileSaved && (
+                <p className="success-text">{t('settings.profileSaved')}</p>
+              )}
+              {profileError && (
+                <p className="error-text">{profileError}</p>
+              )}
               <div className="profile-row">
                 <span className="profile-label">{t('texter.zemiNumber')}</span>
                 <span className="profile-value mono">{profile?.zemi_number}</span>
@@ -159,7 +237,32 @@ const Settings: React.FC = () => {
             </div>
           </div>
 
-          {/* Delete Account Section (Owner only) */}
+          {/* Legal Section */}
+          <div className="section">
+            <h3 className="section-title">{t('settings.legal')}</h3>
+            <div className="card legal-card">
+              <IonButton
+                fill="clear"
+                expand="block"
+                className="legal-link-btn"
+                routerLink="/privacy"
+              >
+                <IonIcon icon={shieldCheckmarkOutline} slot="start" />
+                {t('settings.privacyPolicy')}
+              </IonButton>
+              <IonButton
+                fill="clear"
+                expand="block"
+                className="legal-link-btn"
+                routerLink="/terms"
+              >
+                <IonIcon icon={documentTextOutline} slot="start" />
+                {t('settings.termsOfService')}
+              </IonButton>
+            </div>
+          </div>
+
+          {/* Delete Account Section - Owner */}
           {isOwner && (
             <div className="section danger-section">
               <h3 className="section-title danger-title">{t('settings.deleteAccount')}</h3>
@@ -211,6 +314,77 @@ const Settings: React.FC = () => {
                 {deleteError && (
                   <p className="error-text">{deleteError}</p>
                 )}
+              </div>
+            </div>
+          )}
+
+          {/* Delete Account Section - Super */}
+          {isSuper && (
+            <div className="section danger-section">
+              <h3 className="section-title danger-title">{t('settings.deleteAccount')}</h3>
+              <div className="card danger-card">
+                <div className="warning-header">
+                  <IonIcon icon={warningOutline} className="warning-icon" />
+                  <IonText>
+                    <p className="danger-description">
+                      {t('settings.deleteAccountSuperDescription')}
+                    </p>
+                    <p className="danger-warning">
+                      {t('settings.deleteAccountWarning')}
+                    </p>
+                  </IonText>
+                </div>
+
+                <div className="confirm-input">
+                  <label className="confirm-label">
+                    {t('settings.deleteAccountConfirmLabel')}
+                  </label>
+                  <IonInput
+                    value={confirmText}
+                    onIonInput={(e) => setConfirmText(e.detail.value || '')}
+                    placeholder={confirmWord}
+                    className="confirm-field"
+                    disabled={isDeleting}
+                  />
+                </div>
+
+                <IonButton
+                  expand="block"
+                  color="danger"
+                  onClick={handleDelete}
+                  disabled={!canDelete || isDeleting}
+                >
+                  {isDeleting ? (
+                    <>
+                      <IonSpinner name="crescent" slot="start" />
+                      {t('settings.deleteAccountProgress')}
+                    </>
+                  ) : (
+                    <>
+                      <IonIcon icon={trashOutline} slot="start" />
+                      {t('settings.deleteAccountButton')}
+                    </>
+                  )}
+                </IonButton>
+
+                {deleteError && (
+                  <p className="error-text">{deleteError}</p>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Texter - Cannot delete, show info */}
+          {isTexter && (
+            <div className="section">
+              <h3 className="section-title">{t('settings.deleteAccount')}</h3>
+              <div className="card info-card">
+                <div className="info-header">
+                  <IonIcon icon={informationCircleOutline} className="info-icon" />
+                  <p className="info-text">
+                    {t('settings.deleteAccountTexterMessage')}
+                  </p>
+                </div>
               </div>
             </div>
           )}
@@ -267,6 +441,36 @@ const Settings: React.FC = () => {
             font-family: monospace;
           }
 
+          .profile-value-row {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+          }
+
+          .profile-edit-row {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            flex: 1;
+            margin-left: 1rem;
+          }
+
+          .profile-edit-input {
+            --background: hsl(var(--background));
+            --border-color: hsl(var(--border));
+            --border-radius: 0.5rem;
+            --padding-start: 0.5rem;
+            border: 1px solid hsl(var(--border));
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+          }
+
+          .edit-btn {
+            --color: hsl(var(--muted-foreground));
+            --padding-start: 4px;
+            --padding-end: 4px;
+          }
+
           .role-badge {
             display: inline-block;
             padding: 0.25rem 0.75rem;
@@ -308,6 +512,25 @@ const Settings: React.FC = () => {
             font-size: 0.875rem;
             margin: 0.75rem 0 0 0;
             text-align: center;
+          }
+
+          .legal-card {
+            padding: 0;
+            overflow: hidden;
+          }
+
+          .legal-link-btn {
+            --color: hsl(var(--foreground));
+            --padding-start: 1rem;
+            justify-content: flex-start;
+            text-transform: none;
+            font-weight: 500;
+            letter-spacing: 0;
+            font-size: 0.9rem;
+          }
+
+          .legal-link-btn:not(:last-child) {
+            border-bottom: 1px solid hsl(var(--border));
           }
 
           .danger-section {
@@ -366,6 +589,30 @@ const Settings: React.FC = () => {
             --padding-start: 0.75rem;
             border: 1px solid hsl(var(--border));
             border-radius: 0.5rem;
+          }
+
+          .info-card {
+            border-color: hsl(var(--primary) / 0.3);
+          }
+
+          .info-header {
+            display: flex;
+            gap: 0.75rem;
+            align-items: flex-start;
+          }
+
+          .info-icon {
+            color: hsl(var(--primary));
+            font-size: 1.5rem;
+            flex-shrink: 0;
+            margin-top: 0.125rem;
+          }
+
+          .info-text {
+            color: hsl(var(--muted-foreground));
+            margin: 0;
+            font-size: 0.875rem;
+            line-height: 1.5;
           }
         `}</style>
       </IonContent>

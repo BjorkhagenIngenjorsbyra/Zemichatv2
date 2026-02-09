@@ -80,6 +80,7 @@ export interface User {
   status_message: string | null;
   last_seen_at: string | null;
   is_active: boolean;
+  consent_accepted_at: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -440,6 +441,16 @@ export interface Database {
       };
       delete_owner_account: {
         Args: Record<string, never>;
+        Returns: void;
+      };
+      delete_super_account: {
+        Args: Record<string, never>;
+        Returns: void;
+      };
+      update_user_profile: {
+        Args: {
+          new_display_name: string | null;
+        };
         Returns: void;
       };
       create_super_invitation: {

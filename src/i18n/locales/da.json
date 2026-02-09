@@ -37,7 +37,9 @@
     "passwordTooShort": "Adgangskoden skal være mindst {{min}} tegn",
     "termsText": "Ved at oprette en konto accepterer du vores",
     "termsLink": "brugervilkår",
-    "privacyLink": "privatlivspolitik"
+    "privacyLink": "privatlivspolitik",
+    "consentLabel": "Jeg har læst og accepterer",
+    "consentRequired": "Du skal acceptere brugervilkårene og privatlivspolitikken"
   },
   "team": {
     "createTitle": "Opret dit team",
@@ -198,5 +200,29 @@
     "fair": "OK",
     "good": "Godt",
     "strong": "Stærkt"
+  },
+  "settings": {
+    "title": "Indstillinger",
+    "profile": "Profil",
+    "exportData": "Download mine data",
+    "exportDataDescription": "Eksporter alle dine data som JSON-fil",
+    "exportDataProgress": "Samler dine data...",
+    "exportDataSuccess": "Dine data er downloadet",
+    "exportDataError": "Kunne ikke eksportere dine data",
+    "deleteAccount": "Slet konto",
+    "deleteAccountDescription": "Dette sletter permanent din konto, alle teammedlemmer ({{count}} stk), alle beskeder, medier og vennelister.",
+    "deleteAccountWarning": "Denne handling kan IKKE fortrydes.",
+    "deleteAccountConfirmLabel": "Skriv SLET for at bekræfte",
+    "deleteAccountConfirmWord": "SLET",
+    "deleteAccountButton": "Slet min konto permanent",
+    "deleteAccountProgress": "Sletter al data...",
+    "deleteAccountSuccess": "Din konto er slettet",
+    "deleteAccountError": "Kunne ikke slette kontoen",
+    "deleteAccountSuperDescription": "Dette sletter permanent din konto, alle dine beskeder, medier og vennelister. Du fjernes fra teamet.",
+    "deleteAccountTexterMessage": "Kontakt din Team Owner for at slette din konto.",
+    "legal": "Juridisk",
+    "privacyPolicy": "Privatlivspolitik",
+    "termsOfService": "Brugervilkår",
+    "profileSaved": "Profilen er opdateret"
   }
 }
