@@ -41,7 +41,8 @@ import {
 } from '../components/chat';
 import { SOSButton } from '../components/sos';
 import { CallButton } from '../components/call';
-import { UserRole } from '../types/database';
+import { UserRole, type TexterSettings } from '../types/database';
+import { getTexterSettings } from '../services/members';
 
 const ChatView: React.FC = () => {
   const { t } = useTranslation();
@@ -66,6 +67,9 @@ const ChatView: React.FC = () => {
 
   // Search state
   const [showSearch, setShowSearch] = useState(false);
+
+  // Texter call permissions
+  const [texterSettings, setTexterSettings] = useState<TexterSettings | null>(null);
 
   const scrollToBottom = useCallback(() => {
     setTimeout(() => {
@@ -108,6 +112,15 @@ const ChatView: React.FC = () => {
   useEffect(() => {
     loadChat();
   }, [loadChat]);
+
+  // Fetch texter settings to determine call button visibility
+  useEffect(() => {
+    if (profile?.role === UserRole.TEXTER) {
+      getTexterSettings(profile.id).then(({ settings }) => {
+        setTexterSettings(settings);
+      });
+    }
+  }, [profile]);
 
   // Subscribe to new messages
   useEffect(() => {
@@ -313,8 +326,8 @@ const ChatView: React.FC = () => {
           </IonButtons>
           <IonTitle>{getChatDisplayName()}</IonTitle>
           <IonButtons slot="end">
-            <CallButton chatId={chatId} type="voice" />
-            <CallButton chatId={chatId} type="video" />
+            <CallButton chatId={chatId} type="voice" hidden={texterSettings?.can_voice_call === false} />
+            <CallButton chatId={chatId} type="video" hidden={texterSettings?.can_video_call === false} />
             <IonButton onClick={() => setShowSearch(true)}>
               <IonIcon icon={searchOutline} />
             </IonButton>

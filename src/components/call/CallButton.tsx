@@ -9,12 +9,15 @@ interface CallButtonProps {
   chatId: string;
   type: 'voice' | 'video';
   disabled?: boolean;
+  hidden?: boolean;
 }
 
-const CallButton: React.FC<CallButtonProps> = ({ chatId, type, disabled = false }) => {
+const CallButton: React.FC<CallButtonProps> = ({ chatId, type, disabled = false, hidden = false }) => {
   const { t } = useTranslation();
   const { initiateCall, activeCall } = useCallContext();
   const [isLoading, setIsLoading] = useState(false);
+
+  if (hidden) return null;
 
   const handleClick = async () => {
     if (isLoading || activeCall) return;
