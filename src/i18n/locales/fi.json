@@ -251,6 +251,25 @@
     "termsOfService": "Käyttöehdot",
     "profileSaved": "Profiili päivitetty"
   },
+  "quietHours": {
+    "title": "Hiljaiset tunnit",
+    "description": "Ilmoitukset hiljennetään hiljaisina tunteina",
+    "enabled": "Hiljaiset tunnit käytössä",
+    "disabled": "Hiljaiset tunnit pois käytöstä",
+    "startTime": "Alkamisaika",
+    "endTime": "Päättymisaika",
+    "enable": "Ota hiljaiset tunnit käyttöön",
+    "activeDays": "Aktiiviset päivät",
+    "selectStartTime": "Valitse alkamisaika",
+    "selectEndTime": "Valitse päättymisaika",
+    "sunday": "Sunnuntai",
+    "monday": "Maanantai",
+    "tuesday": "Tiistai",
+    "wednesday": "Keskiviikko",
+    "thursday": "Torstai",
+    "friday": "Perjantai",
+    "saturday": "Lauantai"
+  },
   "support": {
     "title": "Palaute & Tuki",
     "settingsButton": "Palaute & Tuki",

@@ -278,7 +278,18 @@
     "enabled": "Tysta timmar aktiverat",
     "disabled": "Tysta timmar inaktiverat",
     "startTime": "Starttid",
-    "endTime": "Sluttid"
+    "endTime": "Sluttid",
+    "enable": "Aktivera tysta timmar",
+    "activeDays": "Aktiva dagar",
+    "selectStartTime": "Välj starttid",
+    "selectEndTime": "Välj sluttid",
+    "sunday": "Söndag",
+    "monday": "Måndag",
+    "tuesday": "Tisdag",
+    "wednesday": "Onsdag",
+    "thursday": "Torsdag",
+    "friday": "Fredag",
+    "saturday": "Lördag"
   },
   "search": {
     "title": "Sök",

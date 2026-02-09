@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import type { User as SupabaseUser, Session } from '@supabase/supabase-js';
 import { getSession, onAuthStateChange, signOut as authSignOut } from '../services/auth';
 import { getMyProfile, hasTeamProfile } from '../services/team';
@@ -34,6 +34,7 @@ export function useAuth(): AuthState {
   const [profile, setProfile] = useState<User | null>(null);
   const [hasProfile, setHasProfile] = useState(false);
   const [pushPermission, setPushPermission] = useState<PermissionStatus>(getPermissionStatus());
+  const initProfileLoaded = useRef(false);
 
   const refreshProfile = useCallback(async () => {
     if (!authUser) {
@@ -64,6 +65,20 @@ export function useAuth(): AuthState {
       if (initialSession) {
         setSession(initialSession);
         setAuthUser(initialSession.user);
+
+        // Load profile before declaring init complete to prevent
+        // false redirect to /create-team
+        const has = await hasTeamProfile();
+        if (!mounted) return;
+        setHasProfile(has);
+
+        if (has) {
+          const { user } = await getMyProfile();
+          if (!mounted) return;
+          setProfile(user);
+        }
+
+        initProfileLoaded.current = true;
       }
 
       setIsLoading(false);
@@ -93,6 +108,11 @@ export function useAuth(): AuthState {
   // Refresh profile when auth user changes
   useEffect(() => {
     if (authUser && !isLoading) {
+      if (initProfileLoaded.current) {
+        // Skip — already loaded in initialize()
+        initProfileLoaded.current = false;
+        return;
+      }
       refreshProfile();
     }
   }, [authUser, isLoading, refreshProfile]);

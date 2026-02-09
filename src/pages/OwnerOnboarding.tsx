@@ -1,12 +1,20 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useHistory } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { IonPage, IonContent } from '@ionic/react';
 import { OnboardingSlides, type OnboardingSlide } from '../components/OnboardingSlides';
 
+const TOUR_KEY = 'zemichat-owner-onboarding-done';
+
 const OwnerOnboarding: React.FC = () => {
   const { t } = useTranslation();
   const history = useHistory();
+
+  useEffect(() => {
+    if (localStorage.getItem(TOUR_KEY)) {
+      history.replace('/login');
+    }
+  }, [history]);
 
   const slides: OnboardingSlide[] = [
     {
@@ -47,6 +55,7 @@ const OwnerOnboarding: React.FC = () => {
   ];
 
   const handleComplete = () => {
+    localStorage.setItem(TOUR_KEY, 'true');
     history.push('/signup');
   };
 

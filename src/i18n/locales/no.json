@@ -251,6 +251,25 @@
     "termsOfService": "Brukervilkår",
     "profileSaved": "Profilen er oppdatert"
   },
+  "quietHours": {
+    "title": "Stille timer",
+    "description": "Varsler dempes under stille timer",
+    "enabled": "Stille timer aktivert",
+    "disabled": "Stille timer deaktivert",
+    "startTime": "Starttid",
+    "endTime": "Sluttid",
+    "enable": "Aktiver stille timer",
+    "activeDays": "Aktive dager",
+    "selectStartTime": "Velg starttid",
+    "selectEndTime": "Velg sluttid",
+    "sunday": "Søndag",
+    "monday": "Mandag",
+    "tuesday": "Tirsdag",
+    "wednesday": "Onsdag",
+    "thursday": "Torsdag",
+    "friday": "Fredag",
+    "saturday": "Lørdag"
+  },
   "support": {
     "title": "Tilbakemelding & Support",
     "settingsButton": "Tilbakemelding & Support",

@@ -278,7 +278,18 @@
     "enabled": "Quiet hours enabled",
     "disabled": "Quiet hours disabled",
     "startTime": "Start time",
-    "endTime": "End time"
+    "endTime": "End time",
+    "enable": "Enable quiet hours",
+    "activeDays": "Active days",
+    "selectStartTime": "Select start time",
+    "selectEndTime": "Select end time",
+    "sunday": "Sunday",
+    "monday": "Monday",
+    "tuesday": "Tuesday",
+    "wednesday": "Wednesday",
+    "thursday": "Thursday",
+    "friday": "Friday",
+    "saturday": "Saturday"
   },
   "search": {
     "title": "Search",
