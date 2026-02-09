@@ -224,5 +224,50 @@
     "privacyPolicy": "Tietosuojakäytäntö",
     "termsOfService": "Käyttöehdot",
     "profileSaved": "Profiili päivitetty"
+  },
+  "support": {
+    "title": "Palaute & Tuki",
+    "settingsButton": "Palaute & Tuki",
+    "faqTitle": "Usein kysytyt kysymykset",
+    "faq": {
+      "inviteFamily": {
+        "question": "Miten kutsun perheenjäseniä?",
+        "answer": "Mene hallintapaneeliin ja paina \"Luo Texter\" lapsille tai \"Kutsu Super\" aikuisille. Texterit saavat Zemi-numeron ja salasanan, Superit saavat kutsulinkkin sähköpostiin."
+      },
+      "howSos": {
+        "question": "Miten SOS-hälytys toimii?",
+        "answer": "Texterit voivat painaa SOS-painiketta lähettääkseen hätähälytyksen Team Ownerille sijainnillaan. Hälytys näkyy heti hallintapaneelissa."
+      },
+      "whyVisible": {
+        "question": "Miksi Team Owner näkee viestini?",
+        "answer": "Zemichat on suunniteltu antamaan vanhemmille näkyvyys lastensa viestintään. Team Owner näkee kaikki viestit Textereiltä, mukaan lukien poistetut. Superien yksityiset keskustelut (ilman Textereita) ovat kuitenkin suojattuja."
+      },
+      "upgradePro": {
+        "question": "Mitä Pro-paketti sisältää?",
+        "answer": "Pro antaa enemmän tiimin jäseniä, ääni- ja videopuhelut, asiakirjojen jakamisen, sijainnin jakamisen ja muuta. Mene hallintapaneeliin ja paina \"Päivitä\" nähdäksesi kaikki paketit."
+      },
+      "deleteAccount": {
+        "question": "Miten poistan tilini?",
+        "answer": "Mene Asetuksiin ja vieritä alas kohtaan \"Poista tili\". Team Ownerit poistavat koko tiimin. Superit voivat poistaa oman profiilinsa. Textereiden tulee pyytää Team Owneriaan."
+      }
+    },
+    "contactTitle": "Ota yhteyttä",
+    "contactDescription": "Lähetä sähköpostia suoraan tukitiimllemme.",
+    "contactButton": "Lähetä sähköposti",
+    "feedbackTitle": "Lähetä palautetta",
+    "feedbackDescription": "Kerro mitä mieltä olet tai ilmoita ongelmasta.",
+    "typeBug": "Bugi 🐛",
+    "typeSuggestion": "Ehdotus 💡",
+    "typeSupport": "Tuki 💬",
+    "subjectLabel": "Aihe",
+    "subjectPlaceholder": "Lyhyt kuvaus...",
+    "descriptionLabel": "Kuvaus",
+    "descriptionPlaceholder": "Kerro tarkemmin...",
+    "emailLabel": "Sähköposti vastausta varten",
+    "emailPlaceholder": "sinun@sahkoposti.fi",
+    "attachScreenshot": "Liitä kuvakaappaus",
+    "submitButton": "Lähetä",
+    "submitting": "Lähetetään...",
+    "successMessage": "Kiitos! Palaamme asiaan 24 tunnin kuluessa."
   }
 }

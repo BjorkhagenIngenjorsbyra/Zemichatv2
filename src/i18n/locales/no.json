@@ -224,5 +224,50 @@
     "privacyPolicy": "Personvernerklæring",
     "termsOfService": "Brukervilkår",
     "profileSaved": "Profilen er oppdatert"
+  },
+  "support": {
+    "title": "Tilbakemelding & Support",
+    "settingsButton": "Tilbakemelding & Support",
+    "faqTitle": "Vanlige spørsmål",
+    "faq": {
+      "inviteFamily": {
+        "question": "Hvordan inviterer jeg familiemedlemmer?",
+        "answer": "Gå til Dashboard og trykk på \"Opprett Texter\" for barn eller \"Inviter Super\" for voksne. Texters får et Zemi-nummer og passord, Supers mottar en invitasjonslenke via e-post."
+      },
+      "howSos": {
+        "question": "Hvordan fungerer SOS-alarmen?",
+        "answer": "Texters kan trykke på SOS-knappen for å sende en nødalarm til sin Team Owner med sin posisjon. Alarmen vises umiddelbart i Dashboard."
+      },
+      "whyVisible": {
+        "question": "Hvorfor kan min Team Owner se meldingene mine?",
+        "answer": "Zemichat er designet for å gi foreldre innsyn i barns kommunikasjon. Team Owner kan se alle meldinger fra Texters, inkludert slettede. Supers private chatter (uten Texters) er imidlertid beskyttet."
+      },
+      "upgradePro": {
+        "question": "Hva er inkludert i Pro-planen?",
+        "answer": "Pro gir flere teammedlemmer, tale- og videosamtaler, dokumentdeling, posisjonsdeling og mer. Gå til Dashboard og trykk på \"Oppgrader\" for å se alle planer."
+      },
+      "deleteAccount": {
+        "question": "Hvordan sletter jeg kontoen min?",
+        "answer": "Gå til Innstillinger og bla ned til \"Slett konto\". Team Owners sletter hele teamet. Supers kan slette sin egen profil. Texters må be sin Team Owner."
+      }
+    },
+    "contactTitle": "Kontakt oss",
+    "contactDescription": "Send e-post direkte til supportteamet vårt.",
+    "contactButton": "Send e-post",
+    "feedbackTitle": "Send tilbakemelding",
+    "feedbackDescription": "Fortell oss hva du synes eller rapporter et problem.",
+    "typeBug": "Feil 🐛",
+    "typeSuggestion": "Forslag 💡",
+    "typeSupport": "Support 💬",
+    "subjectLabel": "Emne",
+    "subjectPlaceholder": "Kort beskrivelse...",
+    "descriptionLabel": "Beskrivelse",
+    "descriptionPlaceholder": "Fortell oss mer i detalj...",
+    "emailLabel": "E-post for svar",
+    "emailPlaceholder": "din@epost.no",
+    "attachScreenshot": "Legg ved skjermbilde",
+    "submitButton": "Send",
+    "submitting": "Sender...",
+    "successMessage": "Takk! Vi svarer innen 24 timer."
   }
 }

@@ -32,6 +32,7 @@ import OwnerApprovals from './pages/OwnerApprovals';
 import MFASetup from './pages/MFASetup';
 import MFAVerify from './pages/MFAVerify';
 import Settings from './pages/Settings';
+import Support from './pages/Support';
 
 /* Onboarding */
 import OwnerOnboarding from './pages/OwnerOnboarding';
@@ -155,6 +156,9 @@ const App: React.FC = () => (
             </PrivateRoute>
             <PrivateRoute exact path="/invite-super">
               <InviteSuper />
+            </PrivateRoute>
+            <PrivateRoute exact path="/support">
+              <Support />
             </PrivateRoute>
 
             {/* Legal pages - accessible regardless of auth state */}

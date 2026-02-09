@@ -430,5 +430,50 @@
     "fair": "Fair",
     "good": "Good",
     "strong": "Strong"
+  },
+  "support": {
+    "title": "Feedback & Support",
+    "settingsButton": "Feedback & Support",
+    "faqTitle": "Frequently asked questions",
+    "faq": {
+      "inviteFamily": {
+        "question": "How do I invite family members?",
+        "answer": "Go to Dashboard and tap \"Create Texter\" for children or \"Invite Super\" for adults. Texters get a Zemi number and password, Supers receive an invitation link via email."
+      },
+      "howSos": {
+        "question": "How does the SOS alert work?",
+        "answer": "Texters can tap the SOS button to send an emergency alert to their Team Owner with their location. The alert appears immediately on the Dashboard."
+      },
+      "whyVisible": {
+        "question": "Why can my Team Owner see my messages?",
+        "answer": "Zemichat is designed to give parents visibility into their children's communication. Team Owner can see all messages from Texters, including deleted ones. However, Supers' private chats (without Texters) are protected."
+      },
+      "upgradePro": {
+        "question": "What's included in the Pro plan?",
+        "answer": "Pro gives you more team members, voice and video calls, document sharing, location sharing, and more. Go to Dashboard and tap \"Upgrade\" to see all plans."
+      },
+      "deleteAccount": {
+        "question": "How do I delete my account?",
+        "answer": "Go to Settings and scroll down to \"Delete account\". Team Owners delete the entire team. Supers can delete their own profile. Texters need to ask their Team Owner."
+      }
+    },
+    "contactTitle": "Contact us",
+    "contactDescription": "Send an email directly to our support team.",
+    "contactButton": "Send email",
+    "feedbackTitle": "Send feedback",
+    "feedbackDescription": "Tell us what you think or report an issue.",
+    "typeBug": "Bug 🐛",
+    "typeSuggestion": "Suggestion 💡",
+    "typeSupport": "Support 💬",
+    "subjectLabel": "Subject",
+    "subjectPlaceholder": "Short description...",
+    "descriptionLabel": "Description",
+    "descriptionPlaceholder": "Tell us more in detail...",
+    "emailLabel": "Email for reply",
+    "emailPlaceholder": "your@email.com",
+    "attachScreenshot": "Attach screenshot",
+    "submitButton": "Send",
+    "submitting": "Sending...",
+    "successMessage": "Thank you! We'll get back to you within 24 hours."
   }
 }

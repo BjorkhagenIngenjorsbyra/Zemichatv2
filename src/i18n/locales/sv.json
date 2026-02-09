@@ -430,5 +430,50 @@
     "fair": "OK",
     "good": "Bra",
     "strong": "Starkt"
+  },
+  "support": {
+    "title": "Feedback & Support",
+    "settingsButton": "Feedback & Support",
+    "faqTitle": "Vanliga frågor",
+    "faq": {
+      "inviteFamily": {
+        "question": "Hur bjuder jag in familjemedlemmar?",
+        "answer": "Gå till Dashboard och tryck på \"Skapa Texter\" för barn eller \"Bjud in Super\" för vuxna. Texters får ett Zemi-nummer och lösenord, Supers får en inbjudningslänk via e-post."
+      },
+      "howSos": {
+        "question": "Hur fungerar SOS-larmet?",
+        "answer": "Texters kan trycka på SOS-knappen för att skicka ett akutlarm till sin Team Owner med sin plats. Larmet syns direkt i Dashboard."
+      },
+      "whyVisible": {
+        "question": "Varför kan min Team Owner se mina meddelanden?",
+        "answer": "Zemichat är designat för att ge föräldrar insyn i barns kommunikation. Team Owner kan se alla meddelanden från Texters, inklusive borttagna. Supers privata chattar (utan Texters) är dock skyddade."
+      },
+      "upgradePro": {
+        "question": "Vad ingår i Pro-planen?",
+        "answer": "Pro ger fler teammedlemmar, röst- och videosamtal, dokumentdelning, platsdelning och mer. Gå till Dashboard och tryck på \"Uppgradera\" för att se alla planer."
+      },
+      "deleteAccount": {
+        "question": "Hur raderar jag mitt konto?",
+        "answer": "Gå till Inställningar och scrolla ner till \"Radera konto\". Team Owners raderar hela teamet. Supers kan radera sin egen profil. Texters måste be sin Team Owner."
+      }
+    },
+    "contactTitle": "Kontakta oss",
+    "contactDescription": "Skicka e-post direkt till vårt supportteam.",
+    "contactButton": "Skicka e-post",
+    "feedbackTitle": "Skicka feedback",
+    "feedbackDescription": "Berätta vad du tycker eller rapportera ett problem.",
+    "typeBug": "Bugg 🐛",
+    "typeSuggestion": "Förslag 💡",
+    "typeSupport": "Support 💬",
+    "subjectLabel": "Ämne",
+    "subjectPlaceholder": "Kort beskrivning...",
+    "descriptionLabel": "Beskrivning",
+    "descriptionPlaceholder": "Berätta mer i detalj...",
+    "emailLabel": "E-post för svar",
+    "emailPlaceholder": "din@email.se",
+    "attachScreenshot": "Bifoga skärmbild",
+    "submitButton": "Skicka",
+    "submitting": "Skickar...",
+    "successMessage": "Tack! Vi återkommer inom 24 timmar."
   }
 }

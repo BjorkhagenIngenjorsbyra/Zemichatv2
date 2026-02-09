@@ -24,6 +24,7 @@ import {
   documentTextOutline,
   shieldCheckmarkOutline,
   informationCircleOutline,
+  helpCircleOutline,
 } from 'ionicons/icons';
 import { useAuthContext } from '../contexts/AuthContext';
 import { getTeamMembers } from '../services/members';
@@ -258,6 +259,22 @@ const Settings: React.FC = () => {
               >
                 <IonIcon icon={documentTextOutline} slot="start" />
                 {t('settings.termsOfService')}
+              </IonButton>
+            </div>
+          </div>
+
+          {/* Feedback & Support Section */}
+          <div className="section">
+            <h3 className="section-title">{t('support.title')}</h3>
+            <div className="card legal-card">
+              <IonButton
+                fill="clear"
+                expand="block"
+                className="legal-link-btn"
+                routerLink="/support"
+              >
+                <IonIcon icon={helpCircleOutline} slot="start" />
+                {t('support.settingsButton')}
               </IonButton>
             </div>
           </div>

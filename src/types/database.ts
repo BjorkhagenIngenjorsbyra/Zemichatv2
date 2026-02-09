@@ -56,6 +56,12 @@ export enum PlatformType {
   ANDROID = 'android',
 }
 
+export enum SupportRequestType {
+  BUG = 'bug',
+  SUGGESTION = 'suggestion',
+  SUPPORT = 'support',
+}
+
 // ============================================================
 // TABLE INTERFACES
 // ============================================================
@@ -260,6 +266,18 @@ export interface PushToken {
   updated_at: string;
 }
 
+export interface SupportRequest {
+  id: string;
+  user_id: string;
+  type: SupportRequestType;
+  subject: string;
+  description: string;
+  email: string;
+  screenshot_url: string | null;
+  device_info: Record<string, unknown> | null;
+  created_at: string;
+}
+
 export interface UserSession {
   id: string;
   user_id: string;
@@ -401,6 +419,11 @@ export interface Database {
         Insert: Pick<TeamInvitation, 'team_id' | 'invited_by' | 'email' | 'token' | 'expires_at'> & Partial<Omit<TeamInvitation, 'id' | 'team_id' | 'invited_by' | 'email' | 'token' | 'expires_at'>>;
         Update: Partial<Omit<TeamInvitation, 'id'>>;
       };
+      support_requests: {
+        Row: SupportRequest;
+        Insert: Pick<SupportRequest, 'user_id' | 'type' | 'subject' | 'description' | 'email'> & Partial<Omit<SupportRequest, 'id' | 'user_id' | 'type' | 'subject' | 'description' | 'email'>>;
+        Update: Partial<Omit<SupportRequest, 'id'>>;
+      };
     };
     Enums: {
       plan_type: PlanType;
@@ -412,6 +435,7 @@ export interface Database {
       call_status: CallStatus;
       signal_type: SignalType;
       platform_type: PlatformType;
+      support_request_type: SupportRequestType;
     };
     Functions: {
       create_team_with_owner: {

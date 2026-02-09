@@ -224,5 +224,50 @@
     "privacyPolicy": "Privatlivspolitik",
     "termsOfService": "Brugervilkår",
     "profileSaved": "Profilen er opdateret"
+  },
+  "support": {
+    "title": "Feedback & Support",
+    "settingsButton": "Feedback & Support",
+    "faqTitle": "Ofte stillede spørgsmål",
+    "faq": {
+      "inviteFamily": {
+        "question": "Hvordan inviterer jeg familiemedlemmer?",
+        "answer": "Gå til Dashboard og tryk på \"Opret Texter\" for børn eller \"Inviter Super\" for voksne. Texters får et Zemi-nummer og adgangskode, Supers modtager et invitationslink via e-mail."
+      },
+      "howSos": {
+        "question": "Hvordan fungerer SOS-alarmen?",
+        "answer": "Texters kan trykke på SOS-knappen for at sende en nødalarm til deres Team Owner med deres placering. Alarmen vises straks i Dashboard."
+      },
+      "whyVisible": {
+        "question": "Hvorfor kan min Team Owner se mine beskeder?",
+        "answer": "Zemichat er designet til at give forældre indsigt i børns kommunikation. Team Owner kan se alle beskeder fra Texters, inklusive slettede. Supers private chats (uden Texters) er dog beskyttet."
+      },
+      "upgradePro": {
+        "question": "Hvad er inkluderet i Pro-planen?",
+        "answer": "Pro giver flere teammedlemmer, tale- og videoopkald, dokumentdeling, placeringsdeling og mere. Gå til Dashboard og tryk på \"Opgrader\" for at se alle planer."
+      },
+      "deleteAccount": {
+        "question": "Hvordan sletter jeg min konto?",
+        "answer": "Gå til Indstillinger og rul ned til \"Slet konto\". Team Owners sletter hele teamet. Supers kan slette deres egen profil. Texters skal bede deres Team Owner."
+      }
+    },
+    "contactTitle": "Kontakt os",
+    "contactDescription": "Send en e-mail direkte til vores supportteam.",
+    "contactButton": "Send e-mail",
+    "feedbackTitle": "Send feedback",
+    "feedbackDescription": "Fortæl os hvad du synes eller rapporter et problem.",
+    "typeBug": "Fejl 🐛",
+    "typeSuggestion": "Forslag 💡",
+    "typeSupport": "Support 💬",
+    "subjectLabel": "Emne",
+    "subjectPlaceholder": "Kort beskrivelse...",
+    "descriptionLabel": "Beskrivelse",
+    "descriptionPlaceholder": "Fortæl os mere i detaljer...",
+    "emailLabel": "E-mail til svar",
+    "emailPlaceholder": "din@email.dk",
+    "attachScreenshot": "Vedhæft skærmbillede",
+    "submitButton": "Send",
+    "submitting": "Sender...",
+    "successMessage": "Tak! Vi vender tilbage inden for 24 timer."
   }
 }
