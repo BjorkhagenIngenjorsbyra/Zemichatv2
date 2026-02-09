@@ -44,3 +44,8 @@ android/keystore.properties
 # Tool configs
 .claude/
 .playwright-mcp/
+nul
+
+# Supabase local
+supabase/.branches/
+supabase/.temp/
