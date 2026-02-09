@@ -213,6 +213,29 @@ describe('friendships RLS', () => {
       expectBlocked(res);
     });
 
+    it('Owner cannot set approved_by to someone else', async () => {
+      // Create a pending request to texter1
+      const { data: req } = await w.adminClient
+        .from('friendships')
+        .insert({
+          requester_id: w.team2.owner.id,
+          addressee_id: w.team1.texter.id,
+          status: 'pending',
+        })
+        .select()
+        .single();
+
+      // Owner1 accepts but sets approved_by to a different user (impersonation)
+      const res = await w.team1.owner.client
+        .from('friendships')
+        .update({ status: 'accepted', approved_by: w.team2.owner.id })
+        .eq('id', req!.id)
+        .select();
+      expectBlocked(res);
+
+      await w.adminClient.from('friendships').delete().eq('id', req!.id);
+    });
+
     it('Requester cannot accept their own outgoing request', async () => {
       // super2 sent the pending request, cannot accept it
       const res = await w.team2.super.client
