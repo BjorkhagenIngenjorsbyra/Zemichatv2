@@ -40,3 +40,7 @@ android/keystore.properties
 
 # Screenshots
 *.png
+
+# Tool configs
+.claude/
+.playwright-mcp/
