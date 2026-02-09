@@ -114,7 +114,7 @@ BEGIN
   END IF;
 
   -- Generate cryptographically secure token
-  v_token := encode(gen_random_bytes(32), 'hex');
+  v_token := encode(extensions.gen_random_bytes(32), 'hex');
 
   -- Create invitation (expires in 7 days)
   INSERT INTO team_invitations (
