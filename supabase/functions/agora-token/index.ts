@@ -4,10 +4,24 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 // Agora token generation using Deno-compatible implementation
 // Based on Agora's RTC Token Builder
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+// Allowed origins for CORS - restrict to known domains
+const ALLOWED_ORIGINS = [
+  'http://localhost:5173',
+  'http://localhost:8100',
+  'http://127.0.0.1:5173',
+  'http://127.0.0.1:8100',
+  'capacitor://localhost',    // Capacitor iOS
+  'http://localhost',         // Capacitor Android
+];
+
+function getCorsHeaders(req: Request): Record<string, string> {
+  const origin = req.headers.get('Origin') || '';
+  const allowedOrigin = ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
+  return {
+    'Access-Control-Allow-Origin': allowedOrigin,
+    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  };
+}
 
 interface RequestBody {
   chatId: string;
@@ -67,10 +81,16 @@ function generateAgoraToken(
   return `006${appId}${base64}`;
 }
 
+// UUID v4 format validation
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const VALID_CALL_TYPES = ['voice', 'video'] as const;
+
 serve(async (req) => {
+  const cors = getCorsHeaders(req);
+
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders });
+    return new Response('ok', { headers: cors });
   }
 
   try {
@@ -79,7 +99,7 @@ serve(async (req) => {
     if (!authHeader) {
       return new Response(
         JSON.stringify({ error: 'Missing authorization header' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 401, headers: { ...cors, 'Content-Type': 'application/json' } }
       );
     }
 
@@ -95,17 +115,26 @@ serve(async (req) => {
     if (authError || !user) {
       return new Response(
         JSON.stringify({ error: 'Unauthorized' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 401, headers: { ...cors, 'Content-Type': 'application/json' } }
       );
     }
 
-    // Parse request body
-    const { chatId, callType }: RequestBody = await req.json();
+    // Parse and validate request body
+    const body = await req.json();
+    const chatId = typeof body.chatId === 'string' ? body.chatId : '';
+    const callType = typeof body.callType === 'string' ? body.callType : '';
 
-    if (!chatId) {
+    if (!chatId || !UUID_REGEX.test(chatId)) {
       return new Response(
-        JSON.stringify({ error: 'Missing chatId' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        JSON.stringify({ error: 'Invalid or missing chatId' }),
+        { status: 400, headers: { ...cors, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    if (!VALID_CALL_TYPES.includes(callType as typeof VALID_CALL_TYPES[number])) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid callType, must be "voice" or "video"' }),
+        { status: 400, headers: { ...cors, 'Content-Type': 'application/json' } }
       );
     }
 
@@ -121,7 +150,7 @@ serve(async (req) => {
     if (membershipError || !membership) {
       return new Response(
         JSON.stringify({ error: 'Not a member of this chat' }),
-        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 403, headers: { ...cors, 'Content-Type': 'application/json' } }
       );
     }
 
@@ -135,7 +164,7 @@ serve(async (req) => {
     if (profileError || !userProfile) {
       return new Response(
         JSON.stringify({ error: 'User profile not found' }),
-        { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 404, headers: { ...cors, 'Content-Type': 'application/json' } }
       );
     }
 
@@ -147,14 +176,20 @@ serve(async (req) => {
         .eq('user_id', user.id)
         .single();
 
-      if (!settingsError && settings) {
-        const canCall = callType === 'video' ? settings.can_video_call : settings.can_voice_call;
-        if (!canCall) {
-          return new Response(
-            JSON.stringify({ error: 'Call permission denied' }),
-            { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-          );
-        }
+      // If settings are missing or errored, deny by default for safety
+      if (settingsError || !settings) {
+        return new Response(
+          JSON.stringify({ error: 'Call permission denied' }),
+          { status: 403, headers: { ...cors, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      const canCall = callType === 'video' ? settings.can_video_call : settings.can_voice_call;
+      if (!canCall) {
+        return new Response(
+          JSON.stringify({ error: 'Call permission denied' }),
+          { status: 403, headers: { ...cors, 'Content-Type': 'application/json' } }
+        );
       }
     }
 
@@ -166,7 +201,7 @@ serve(async (req) => {
       console.error('Missing Agora credentials in environment');
       return new Response(
         JSON.stringify({ error: 'Agora not configured' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 500, headers: { ...cors, 'Content-Type': 'application/json' } }
       );
     }
 
@@ -200,13 +235,14 @@ serve(async (req) => {
 
     return new Response(
       JSON.stringify(response),
-      { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { status: 200, headers: { ...cors, 'Content-Type': 'application/json' } }
     );
   } catch (error) {
     console.error('Error generating Agora token:', error);
+    const cors = getCorsHeaders(req);
     return new Response(
       JSON.stringify({ error: 'Internal server error' }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { status: 500, headers: { ...cors, 'Content-Type': 'application/json' } }
     );
   }
 });
