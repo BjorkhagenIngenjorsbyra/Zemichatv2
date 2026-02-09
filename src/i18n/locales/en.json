@@ -309,6 +309,24 @@
       "calls": "Voice & video calls"
     }
   },
+  "settings": {
+    "title": "Settings",
+    "profile": "Profile",
+    "exportData": "Download my data",
+    "exportDataDescription": "Export all your data as a JSON file",
+    "exportDataProgress": "Gathering your data...",
+    "exportDataSuccess": "Your data has been downloaded",
+    "exportDataError": "Could not export your data",
+    "deleteAccount": "Delete account",
+    "deleteAccountDescription": "This permanently deletes your account, all team members ({{count}}), all messages, media, and friend lists.",
+    "deleteAccountWarning": "This action CANNOT be undone.",
+    "deleteAccountConfirmLabel": "Type DELETE to confirm",
+    "deleteAccountConfirmWord": "DELETE",
+    "deleteAccountButton": "Delete my account permanently",
+    "deleteAccountProgress": "Deleting all data...",
+    "deleteAccountSuccess": "Your account has been deleted",
+    "deleteAccountError": "Could not delete the account"
+  },
   "call": {
     "call": "Call",
     "voiceCall": "Voice call",

@@ -218,7 +218,7 @@ const Dashboard: React.FC = () => {
                   </IonLabel>
                 </IonItem>
               )}
-              <IonItem button detail className="action-item">
+              <IonItem button detail routerLink="/settings" className="action-item">
                 <IonIcon icon={settingsOutline} slot="start" className="action-icon" />
                 <IonLabel>
                   <h3>{t('dashboard.settings')}</h3>

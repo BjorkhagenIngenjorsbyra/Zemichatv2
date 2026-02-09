@@ -415,6 +415,14 @@ export interface Database {
           password: string;
         };
       };
+      export_user_data: {
+        Args: Record<string, never>;
+        Returns: Record<string, unknown>;
+      };
+      delete_owner_account: {
+        Args: Record<string, never>;
+        Returns: void;
+      };
     };
   };
 }

@@ -309,6 +309,24 @@
       "calls": "Röst- och videosamtal"
     }
   },
+  "settings": {
+    "title": "Inställningar",
+    "profile": "Profil",
+    "exportData": "Ladda ner min data",
+    "exportDataDescription": "Exportera all din data som JSON-fil",
+    "exportDataProgress": "Samlar ihop din data...",
+    "exportDataSuccess": "Din data har laddats ner",
+    "exportDataError": "Kunde inte exportera din data",
+    "deleteAccount": "Radera konto",
+    "deleteAccountDescription": "Detta raderar permanent ditt konto, alla teammedlemmar ({{count}} st), alla meddelanden, media och vänlistor.",
+    "deleteAccountWarning": "Denna åtgärd kan INTE ångras.",
+    "deleteAccountConfirmLabel": "Skriv RADERA för att bekräfta",
+    "deleteAccountConfirmWord": "RADERA",
+    "deleteAccountButton": "Radera mitt konto permanent",
+    "deleteAccountProgress": "Raderar all data...",
+    "deleteAccountSuccess": "Ditt konto har raderats",
+    "deleteAccountError": "Kunde inte radera kontot"
+  },
   "call": {
     "call": "Samtal",
     "voiceCall": "Röstsamtal",

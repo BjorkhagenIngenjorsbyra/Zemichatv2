@@ -31,6 +31,7 @@ import AddFriend from './pages/AddFriend';
 import OwnerApprovals from './pages/OwnerApprovals';
 import MFASetup from './pages/MFASetup';
 import MFAVerify from './pages/MFAVerify';
+import Settings from './pages/Settings';
 
 /* Core CSS required for Ionic components to work properly */
 import '@ionic/react/css/core.css';
@@ -124,6 +125,9 @@ const App: React.FC = () => (
             </PrivateRoute>
             <PrivateRoute exact path="/mfa-setup">
               <MFASetup />
+            </PrivateRoute>
+            <PrivateRoute exact path="/settings">
+              <Settings />
             </PrivateRoute>
 
             {/* Default redirect */}
