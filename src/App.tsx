@@ -33,6 +33,13 @@ import MFASetup from './pages/MFASetup';
 import MFAVerify from './pages/MFAVerify';
 import Settings from './pages/Settings';
 
+/* Onboarding */
+import OwnerOnboarding from './pages/OwnerOnboarding';
+import SuperInvite from './pages/SuperInvite';
+import SuperTour from './pages/SuperTour';
+import TexterTour from './pages/TexterTour';
+import InviteSuper from './pages/InviteSuper';
+
 /* Core CSS required for Ionic components to work properly */
 import '@ionic/react/css/core.css';
 
@@ -74,6 +81,12 @@ const App: React.FC = () => (
           <IonRouterOutlet>
             <Switch>
             {/* Public routes - redirect to dashboard if authenticated */}
+            <PublicRoute exact path="/welcome">
+              <OwnerOnboarding />
+            </PublicRoute>
+            <PublicRoute exact path="/invite/:token">
+              <SuperInvite />
+            </PublicRoute>
             <PublicRoute exact path="/login">
               <Login />
             </PublicRoute>
@@ -90,6 +103,14 @@ const App: React.FC = () => (
             </PrivateRoute>
             <PrivateRoute exact path="/mfa-verify" requireProfile={false}>
               <MFAVerify />
+            </PrivateRoute>
+
+            {/* Onboarding tours - need auth and profile */}
+            <PrivateRoute exact path="/super-tour">
+              <SuperTour />
+            </PrivateRoute>
+            <PrivateRoute exact path="/texter-tour">
+              <TexterTour />
             </PrivateRoute>
 
             {/* Protected routes - need auth and profile */}
@@ -129,15 +150,18 @@ const App: React.FC = () => (
             <PrivateRoute exact path="/settings">
               <Settings />
             </PrivateRoute>
+            <PrivateRoute exact path="/invite-super">
+              <InviteSuper />
+            </PrivateRoute>
 
             {/* Default redirect */}
             <Route exact path="/">
-              <Redirect to="/login" />
+              <Redirect to="/welcome" />
             </Route>
 
             {/* Catch-all redirect */}
             <Route>
-              <Redirect to="/login" />
+              <Redirect to="/welcome" />
             </Route>
           </Switch>
         </IonRouterOutlet>

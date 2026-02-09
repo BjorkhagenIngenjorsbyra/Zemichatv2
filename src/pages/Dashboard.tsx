@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useHistory } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
   IonPage,
@@ -29,6 +30,7 @@ import {
   eyeOutline,
   peopleOutline,
   checkmarkCircleOutline,
+  mailOutline,
 } from 'ionicons/icons';
 import { useAuthContext } from '../contexts/AuthContext';
 import { getTeamMembers } from '../services/members';
@@ -40,6 +42,7 @@ import { type User, UserRole } from '../types/database';
 
 const Dashboard: React.FC = () => {
   const { t } = useTranslation();
+  const history = useHistory();
   const { profile, signOut, refreshProfile } = useAuthContext();
   const [members, setMembers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -82,6 +85,17 @@ const Dashboard: React.FC = () => {
     loadApprovalsCount();
     loadSosAlerts();
   }, [loadMembers, loadApprovalsCount, loadSosAlerts]);
+
+  // Redirect to first-login tour if not completed
+  useEffect(() => {
+    if (!profile) return;
+    if (profile.role === UserRole.SUPER && !localStorage.getItem('zemichat-super-tour-done')) {
+      history.replace('/super-tour');
+    }
+    if (profile.role === UserRole.TEXTER && !localStorage.getItem('zemichat-texter-tour-done')) {
+      history.replace('/texter-tour');
+    }
+  }, [profile, history]);
 
   const handleRefresh = async (event: CustomEvent<RefresherEventDetail>) => {
     await Promise.all([loadMembers(), loadApprovalsCount(), loadSosAlerts()]);
@@ -215,6 +229,15 @@ const Dashboard: React.FC = () => {
                   <IonLabel>
                     <h3>{t('dashboard.oversight')}</h3>
                     <p>{t('dashboard.oversightDescription')}</p>
+                  </IonLabel>
+                </IonItem>
+              )}
+              {isOwner && (
+                <IonItem button detail routerLink="/invite-super" className="action-item">
+                  <IonIcon icon={mailOutline} slot="start" className="action-icon" />
+                  <IonLabel>
+                    <h3>{t('invite.title')}</h3>
+                    <p>{t('dashboard.inviteSuperDescription')}</p>
                   </IonLabel>
                 </IonItem>
               )}

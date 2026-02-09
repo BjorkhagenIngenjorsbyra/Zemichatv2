@@ -268,6 +268,20 @@ export interface UserSession {
   created_at: string;
 }
 
+export interface TeamInvitation {
+  id: string;
+  team_id: string;
+  invited_by: string;
+  email: string;
+  role: UserRole;
+  token: string;
+  display_name: string | null;
+  expires_at: string;
+  claimed_at: string | null;
+  claimed_by: string | null;
+  created_at: string;
+}
+
 // ============================================================
 // SUPABASE DATABASE TYPE MAP
 // ============================================================
@@ -381,6 +395,11 @@ export interface Database {
         Insert: Pick<UserSession, 'user_id'> & Partial<Omit<UserSession, 'id' | 'user_id'>>;
         Update: Partial<Omit<UserSession, 'id'>>;
       };
+      team_invitations: {
+        Row: TeamInvitation;
+        Insert: Pick<TeamInvitation, 'team_id' | 'invited_by' | 'email' | 'token' | 'expires_at'> & Partial<Omit<TeamInvitation, 'id' | 'team_id' | 'invited_by' | 'email' | 'token' | 'expires_at'>>;
+        Update: Partial<Omit<TeamInvitation, 'id'>>;
+      };
     };
     Enums: {
       plan_type: PlanType;
@@ -422,6 +441,33 @@ export interface Database {
       delete_owner_account: {
         Args: Record<string, never>;
         Returns: void;
+      };
+      create_super_invitation: {
+        Args: {
+          invitation_email: string;
+          invitation_display_name?: string | null;
+        };
+        Returns: TeamInvitation;
+      };
+      claim_super_invitation: {
+        Args: {
+          invitation_token: string;
+        };
+        Returns: User;
+      };
+      get_invitation_public: {
+        Args: {
+          invitation_token: string;
+        };
+        Returns: {
+          id: string;
+          role: string;
+          email: string;
+          invited_display_name: string | null;
+          team_name: string;
+          inviter_name: string;
+          expires_at: string;
+        };
       };
     };
   };
