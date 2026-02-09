@@ -25,7 +25,6 @@ import {
   checkmark,
   close,
   banOutline,
-  personOutline,
   ellipsisVertical,
 } from 'ionicons/icons';
 import {
@@ -36,6 +35,7 @@ import {
   type PendingRequestWithUser,
 } from '../services/friend';
 import { type User } from '../types/database';
+import { SkeletonLoader, EmptyStateIllustration } from '../components/common';
 
 interface TexterRequestGroup {
   texter: User;
@@ -186,16 +186,18 @@ const OwnerApprovals: React.FC = () => {
 
       <IonContent fullscreen>
         <IonRefresher slot="fixed" onIonRefresh={handleRefresh}>
-          <IonRefresherContent />
+          <IonRefresherContent
+            pullingText={t('refresh.pulling')}
+            refreshingSpinner="crescent"
+            refreshingText={t('refresh.refreshing')}
+          />
         </IonRefresher>
 
         {isLoading ? (
-          <div className="loading-state">
-            <IonSpinner name="crescent" />
-          </div>
+          <SkeletonLoader variant="approval-list" />
         ) : texterGroups.length === 0 ? (
           <div className="empty-state">
-            <IonIcon icon={personOutline} className="empty-icon" />
+            <EmptyStateIllustration type="no-requests" />
             <h2>{t('ownerApprovals.noRequests')}</h2>
             <p>{t('ownerApprovals.noRequestsDescription')}</p>
           </div>

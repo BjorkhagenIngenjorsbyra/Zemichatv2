@@ -1,4 +1,4 @@
-import { useState, FormEvent, useEffect } from 'react';
+import { useState, FormEvent, useEffect, useRef } from 'react';
 import { useHistory } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
@@ -11,6 +11,8 @@ import {
 } from '@ionic/react';
 import { useAuthContext } from '../contexts/AuthContext';
 import { createTeam } from '../services/team';
+import { ConfettiAnimation } from '../components/ConfettiAnimation';
+import { hapticSuccess } from '../utils/haptics';
 
 const CreateTeam: React.FC = () => {
   const { t } = useTranslation();
@@ -19,12 +21,20 @@ const CreateTeam: React.FC = () => {
   const [teamName, setTeamName] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [showConfetti, setShowConfetti] = useState(false);
+  const redirectTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
 
   useEffect(() => {
-    if (hasProfile) {
+    if (hasProfile && !showConfetti) {
       history.replace('/dashboard');
     }
-  }, [hasProfile, history]);
+  }, [hasProfile, history, showConfetti]);
+
+  useEffect(() => {
+    return () => {
+      if (redirectTimer.current) clearTimeout(redirectTimer.current);
+    };
+  }, []);
 
   useEffect(() => {
     if (!authUser) {
@@ -63,7 +73,9 @@ const CreateTeam: React.FC = () => {
     }
 
     await refreshProfile();
-    history.replace('/dashboard');
+    setShowConfetti(true);
+    hapticSuccess();
+    redirectTimer.current = setTimeout(() => history.replace('/dashboard'), 2000);
   };
 
   return (
@@ -114,12 +126,14 @@ const CreateTeam: React.FC = () => {
               type="submit"
               expand="block"
               className="create-team-button glow-primary"
-              disabled={isLoading}
+              disabled={isLoading || showConfetti}
             >
               {isLoading ? <IonSpinner name="crescent" /> : t('team.createButton')}
             </IonButton>
           </form>
         </div>
+
+        <ConfettiAnimation active={showConfetti} duration={2000} />
 
         <style>{`
           .create-team-container {

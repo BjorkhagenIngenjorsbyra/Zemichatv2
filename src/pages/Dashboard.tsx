@@ -15,7 +15,6 @@ import {
   IonAvatar,
   IonText,
   IonBadge,
-  IonSpinner,
   IonRefresher,
   IonRefresherContent,
   type RefresherEventDetail,
@@ -39,6 +38,7 @@ import { getUnacknowledgedAlerts, acknowledgeSosAlert, type SosAlertWithTexter }
 import { CreateTexterModal } from '../components/CreateTexterModal';
 import { SOSAlertCard } from '../components/sos';
 import { type User, UserRole } from '../types/database';
+import { SkeletonLoader, EmptyStateIllustration } from '../components/common';
 
 const Dashboard: React.FC = () => {
   const { t } = useTranslation();
@@ -139,7 +139,11 @@ const Dashboard: React.FC = () => {
 
       <IonContent className="ion-padding" fullscreen>
         <IonRefresher slot="fixed" onIonRefresh={handleRefresh}>
-          <IonRefresherContent />
+          <IonRefresherContent
+            pullingText={t('refresh.pulling')}
+            refreshingSpinner="crescent"
+            refreshingText={t('refresh.refreshing')}
+          />
         </IonRefresher>
 
         <div className="dashboard-container">
@@ -262,12 +266,10 @@ const Dashboard: React.FC = () => {
             </div>
 
             {isLoading ? (
-              <div className="loading-state">
-                <IonSpinner name="crescent" />
-              </div>
+              <SkeletonLoader variant="member-list" />
             ) : otherMembers.length === 0 ? (
               <div className="empty-state">
-                <IonIcon icon={personAddOutline} className="empty-icon" />
+                <EmptyStateIllustration type="no-members" />
                 <IonText>
                   <p>{t('dashboard.noMembers')}</p>
                 </IonText>
@@ -277,7 +279,7 @@ const Dashboard: React.FC = () => {
               </div>
             ) : (
               <IonList className="member-list">
-                {otherMembers.map((member) => {
+                {otherMembers.map((member, index) => {
                   const badge = getRoleBadge(member.role);
                   const detailLink =
                     member.role === 'texter' ? `/texter/${member.id}` : undefined;
@@ -287,7 +289,8 @@ const Dashboard: React.FC = () => {
                       button
                       detail
                       routerLink={detailLink}
-                      className="member-item"
+                      className="member-item animate-fade-slide-in"
+                      style={{ animationDelay: `${Math.min(index * 0.03, 0.3)}s` }}
                     >
                       <IonAvatar slot="start" className="member-avatar">
                         {member.avatar_url ? (

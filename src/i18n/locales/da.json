@@ -107,7 +107,9 @@
     "typeMessage": "Skriv en besked...",
     "send": "Send",
     "noChats": "Ingen chats endnu",
-    "startChatting": "Begynd at chatte med dine venner"
+    "startChatting": "Begynd at chatte med dine venner",
+    "welcomeTitle": "Sig hej!",
+    "welcomeMessage": "Send din første besked for at starte samtalen"
   },
   "call": {
     "call": "Opkald",
@@ -314,5 +316,9 @@
     "submitButton": "Send",
     "submitting": "Sender...",
     "successMessage": "Tak! Vi vender tilbage inden for 24 timer."
+  },
+  "refresh": {
+    "pulling": "Træk for at opdatere",
+    "refreshing": "Opdaterer..."
   }
 }

@@ -107,7 +107,9 @@
     "typeMessage": "Kirjoita viesti...",
     "send": "Lähetä",
     "noChats": "Ei keskusteluja vielä",
-    "startChatting": "Aloita keskustelu ystäviesi kanssa"
+    "startChatting": "Aloita keskustelu ystäviesi kanssa",
+    "welcomeTitle": "Sano hei!",
+    "welcomeMessage": "Lähetä ensimmäinen viestisi aloittaaksesi keskustelun"
   },
   "call": {
     "call": "Puhelu",
@@ -314,5 +316,9 @@
     "submitButton": "Lähetä",
     "submitting": "Lähetetään...",
     "successMessage": "Kiitos! Palaamme asiaan 24 tunnin kuluessa."
+  },
+  "refresh": {
+    "pulling": "Vedä päivittääksesi",
+    "refreshing": "Päivitetään..."
   }
 }

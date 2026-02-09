@@ -7,6 +7,7 @@ import {
   IonSpinner,
 } from '@ionic/react';
 import { alertCircle, close } from 'ionicons/icons';
+import { hapticHeavy } from '../../utils/haptics';
 
 interface SOSConfirmModalProps {
   isOpen: boolean;
@@ -50,15 +51,8 @@ export const SOSConfirmModal: React.FC<SOSConfirmModalProps> = ({
     return () => clearInterval(interval);
   }, [isOpen, onCancel]);
 
-  // Try to trigger haptic feedback
-  const triggerHaptic = () => {
-    if (navigator.vibrate) {
-      navigator.vibrate(50);
-    }
-  };
-
   const handleConfirm = () => {
-    triggerHaptic();
+    hapticHeavy();
     onConfirm();
   };
 

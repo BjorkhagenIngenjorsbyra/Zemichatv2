@@ -12,7 +12,6 @@ import {
   IonLabel,
   IonAvatar,
   IonBadge,
-  IonSpinner,
   IonFab,
   IonFabButton,
   IonIcon,
@@ -28,7 +27,6 @@ import {
 } from '@ionic/react';
 import {
   add,
-  chatbubblesOutline,
   pin,
   archive,
   volumeMute,
@@ -50,6 +48,7 @@ import {
   type ChatWithDetails,
 } from '../services/chat';
 import { ChatSearchModal } from '../components/chat';
+import { SkeletonLoader, EmptyStateIllustration } from '../components/common';
 
 const ChatList: React.FC = () => {
   const { t } = useTranslation();
@@ -192,14 +191,18 @@ const ChatList: React.FC = () => {
     loadChats();
   };
 
-  const renderChatItem = (chat: ChatWithDetails) => {
+  const renderChatItem = (chat: ChatWithDetails, index: number) => {
     const avatar = getChatAvatar(chat);
     const displayName = getChatDisplayName(chat);
     const initial = getAvatarInitial(chat);
     const lastMessagePreview = getLastMessagePreview(chat);
 
     return (
-      <IonItemSliding key={chat.id}>
+      <IonItemSliding
+        key={chat.id}
+        className="animate-fade-slide-in"
+        style={{ animationDelay: `${Math.min(index * 0.03, 0.3)}s` }}
+      >
         <IonItem
           button
           detail={false}
@@ -290,16 +293,18 @@ const ChatList: React.FC = () => {
 
       <IonContent className="ion-padding" fullscreen>
         <IonRefresher slot="fixed" onIonRefresh={handleRefresh}>
-          <IonRefresherContent />
+          <IonRefresherContent
+            pullingText={t('refresh.pulling')}
+            refreshingSpinner="crescent"
+            refreshingText={t('refresh.refreshing')}
+          />
         </IonRefresher>
 
         {isLoading ? (
-          <div className="loading-state">
-            <IonSpinner name="crescent" />
-          </div>
+          <SkeletonLoader variant="chat-list" />
         ) : chats.length === 0 ? (
           <div className="empty-state">
-            <IonIcon icon={chatbubblesOutline} className="empty-icon" />
+            <EmptyStateIllustration type="no-chats" />
             <h2>{t('chat.noChats')}</h2>
             <p>{t('chat.startChatting')}</p>
           </div>

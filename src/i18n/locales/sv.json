@@ -126,7 +126,9 @@
     "slideToCancel": "Dra för att avbryta",
     "addCaption": "Lägg till bildtext...",
     "pinnedChats": "Fästa",
-    "archivedChats": "Arkiverade"
+    "archivedChats": "Arkiverade",
+    "welcomeTitle": "Säg hej!",
+    "welcomeMessage": "Skicka ditt första meddelande för att starta konversationen"
   },
   "message": {
     "image": "Bild",
@@ -490,5 +492,9 @@
     "submitButton": "Skicka",
     "submitting": "Skickar...",
     "successMessage": "Tack! Vi återkommer inom 24 timmar."
+  },
+  "refresh": {
+    "pulling": "Dra för att uppdatera",
+    "refreshing": "Uppdaterar..."
   }
 }

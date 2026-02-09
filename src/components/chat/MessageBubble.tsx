@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSwipeable } from 'react-swipeable';
+import { hapticMedium } from '../../utils/haptics';
 import { type MessageWithSender } from '../../services/message';
 import { type GroupedReaction } from '../../services/reaction';
 import ImageMessage from './ImageMessage';
@@ -38,6 +39,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
 
   const handleLongPress = () => {
     if (onReact) {
+      hapticMedium();
       onReact(message);
     }
   };

@@ -12,7 +12,6 @@ import {
   IonSegmentButton,
   IonLabel,
   IonList,
-  IonSpinner,
   IonIcon,
   IonFab,
   IonFabButton,
@@ -34,6 +33,7 @@ import {
 } from '../services/friend';
 import { FriendCard, FriendRequestCard } from '../components/friends';
 import { UserRole } from '../types/database';
+import { SkeletonLoader, EmptyStateIllustration } from '../components/common';
 
 type TabValue = 'friends' | 'requests';
 
@@ -129,18 +129,22 @@ const Friends: React.FC = () => {
 
       <IonContent fullscreen>
         <IonRefresher slot="fixed" onIonRefresh={handleRefresh}>
-          <IonRefresherContent />
+          <IonRefresherContent
+            pullingText={t('refresh.pulling')}
+            refreshingSpinner="crescent"
+            refreshingText={t('refresh.refreshing')}
+          />
         </IonRefresher>
 
         {isLoading ? (
-          <div className="loading-state">
-            <IonSpinner name="crescent" />
+          <div style={{ padding: '1rem' }}>
+            <SkeletonLoader variant="friend-list" />
           </div>
         ) : activeTab === 'friends' ? (
           <div className="friends-container">
             {friends.length === 0 ? (
               <div className="empty-state">
-                <IonIcon icon={peopleOutline} className="empty-icon" />
+                <EmptyStateIllustration type="no-friends" />
                 <h2>{t('friends.noFriends')}</h2>
                 <p>{t('friends.addFriendsHint')}</p>
               </div>
@@ -166,7 +170,7 @@ const Friends: React.FC = () => {
           <div className="requests-container">
             {incomingRequests.length === 0 && outgoingRequests.length === 0 ? (
               <div className="empty-state">
-                <IonIcon icon={timeOutline} className="empty-icon" />
+                <EmptyStateIllustration type="no-requests" />
                 <h2>{t('friends.noRequests')}</h2>
               </div>
             ) : (

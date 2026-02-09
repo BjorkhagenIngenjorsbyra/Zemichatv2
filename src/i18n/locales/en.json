@@ -126,7 +126,9 @@
     "slideToCancel": "Slide to cancel",
     "addCaption": "Add a caption...",
     "pinnedChats": "Pinned",
-    "archivedChats": "Archived"
+    "archivedChats": "Archived",
+    "welcomeTitle": "Say hello!",
+    "welcomeMessage": "Send your first message to start the conversation"
   },
   "message": {
     "image": "Image",
@@ -490,5 +492,9 @@
     "submitButton": "Send",
     "submitting": "Sending...",
     "successMessage": "Thank you! We'll get back to you within 24 hours."
+  },
+  "refresh": {
+    "pulling": "Pull to refresh",
+    "refreshing": "Refreshing..."
   }
 }

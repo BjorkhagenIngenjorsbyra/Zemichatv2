@@ -1,4 +1,5 @@
 import { QUICK_REACTIONS } from '../../services/reaction';
+import { hapticLight } from '../../utils/haptics';
 
 interface EmojiPickerProps {
   onSelect: (emoji: string) => void;
@@ -7,6 +8,7 @@ interface EmojiPickerProps {
 
 const EmojiPicker: React.FC<EmojiPickerProps> = ({ onSelect, onClose }) => {
   const handleSelect = (emoji: string) => {
+    hapticLight();
     onSelect(emoji);
     onClose();
   };

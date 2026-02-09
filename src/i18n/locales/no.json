@@ -107,7 +107,9 @@
     "typeMessage": "Skriv en melding...",
     "send": "Send",
     "noChats": "Ingen chatter ennå",
-    "startChatting": "Begynn å chatte med vennene dine"
+    "startChatting": "Begynn å chatte med vennene dine",
+    "welcomeTitle": "Si hei!",
+    "welcomeMessage": "Send din første melding for å starte samtalen"
   },
   "call": {
     "call": "Samtale",
@@ -314,5 +316,9 @@
     "submitButton": "Send",
     "submitting": "Sender...",
     "successMessage": "Takk! Vi svarer innen 24 timer."
+  },
+  "refresh": {
+    "pulling": "Dra for å oppdatere",
+    "refreshing": "Oppdaterer..."
   }
 }

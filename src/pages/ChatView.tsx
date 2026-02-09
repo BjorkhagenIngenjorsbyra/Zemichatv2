@@ -8,7 +8,6 @@ import {
   IonToolbar,
   IonTitle,
   IonFooter,
-  IonSpinner,
   IonButtons,
   IonBackButton,
   IonIcon,
@@ -29,6 +28,8 @@ import {
   type GroupedReaction,
 } from '../services/reaction';
 import { uploadImage, uploadVoice, uploadDocument } from '../services/storage';
+import { hapticLight } from '../utils/haptics';
+import { SkeletonLoader } from '../components/common';
 import { MessageType, type Message, type User } from '../types/database';
 import {
   MessageBubble,
@@ -179,6 +180,7 @@ const ChatView: React.FC = () => {
       setMessageText(text); // Restore text on error
     } else {
       setReplyTo(null);
+      hapticLight();
     }
 
     setIsSending(false);
@@ -282,6 +284,7 @@ const ChatView: React.FC = () => {
 
   const handleSelectReaction = async (emoji: string) => {
     if (!emojiPickerTarget) return;
+    hapticLight();
 
     await toggleReaction(emojiPickerTarget.id, emoji);
 
@@ -338,12 +341,12 @@ const ChatView: React.FC = () => {
 
       <IonContent ref={contentRef} className="chat-content" fullscreen>
         {isLoading ? (
-          <div className="loading-state">
-            <IonSpinner name="crescent" />
-          </div>
+          <SkeletonLoader variant="messages" />
         ) : messages.length === 0 ? (
-          <div className="empty-state">
-            <p>{t('chat.startChatting')}</p>
+          <div className="welcome-banner">
+            <div className="welcome-icon">👋</div>
+            <h3>{t('chat.welcomeTitle')}</h3>
+            <p>{t('chat.welcomeMessage')}</p>
           </div>
         ) : (
           <div className="messages-container">
@@ -381,18 +384,32 @@ const ChatView: React.FC = () => {
             --background: hsl(var(--background));
           }
 
-          .loading-state {
+          .welcome-banner {
             display: flex;
-            justify-content: center;
+            flex-direction: column;
             align-items: center;
+            justify-content: center;
+            text-align: center;
             height: 100%;
+            padding: 2rem;
+            animation: fade-slide-in 0.4s ease-out both;
           }
 
-          .empty-state {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100%;
+          .welcome-icon {
+            font-size: 3rem;
+            margin-bottom: 0.75rem;
+          }
+
+          .welcome-banner h3 {
+            margin: 0 0 0.5rem 0;
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: hsl(var(--foreground));
+          }
+
+          .welcome-banner p {
+            margin: 0;
+            font-size: 0.95rem;
             color: hsl(var(--muted-foreground));
           }
 

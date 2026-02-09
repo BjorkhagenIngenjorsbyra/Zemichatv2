@@ -13,7 +13,6 @@ import {
   IonItem,
   IonLabel,
   IonAvatar,
-  IonSpinner,
   IonIcon,
   IonBadge,
   IonSearchbar,
@@ -24,7 +23,6 @@ import {
   RefresherEventDetail,
 } from '@ionic/react';
 import {
-  chatbubblesOutline,
   personOutline,
   timeOutline,
   imageOutline,
@@ -33,6 +31,7 @@ import {
 } from 'ionicons/icons';
 import { getTexterChats, type TexterChatOverview } from '../services/oversight';
 import { MessageType } from '../types/database';
+import { SkeletonLoader, EmptyStateIllustration } from '../components/common';
 
 const OwnerOversight: React.FC = () => {
   const { t } = useTranslation();
@@ -228,16 +227,18 @@ const OwnerOversight: React.FC = () => {
 
       <IonContent fullscreen>
         <IonRefresher slot="fixed" onIonRefresh={handleRefresh}>
-          <IonRefresherContent />
+          <IonRefresherContent
+            pullingText={t('refresh.pulling')}
+            refreshingSpinner="crescent"
+            refreshingText={t('refresh.refreshing')}
+          />
         </IonRefresher>
 
         {isLoading ? (
-          <div className="loading-state">
-            <IonSpinner name="crescent" />
-          </div>
+          <SkeletonLoader variant="oversight-list" />
         ) : filteredChats.length === 0 ? (
           <div className="empty-state">
-            <IonIcon icon={chatbubblesOutline} className="empty-icon" />
+            <EmptyStateIllustration type="no-chats" />
             <h3>{t('oversight.noChats')}</h3>
             <p>{t('oversight.noChatsDescription')}</p>
           </div>
