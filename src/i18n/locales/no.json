@@ -201,6 +201,32 @@
     "good": "Bra",
     "strong": "Sterkt"
   },
+  "paywall": {
+    "title": "Oppgrader",
+    "upgradeTitle": "Lås opp premiumfunksjoner",
+    "featureRequires": "Denne funksjonen krever en premiumplan",
+    "trialOffer": "Prøv Plus Ringa i {{days}} dager!",
+    "startTrial": "Start prøveperiode",
+    "recommended": "Anbefalt",
+    "month": "mnd",
+    "oneTimePurchase": "engangskjøp",
+    "planStart": "Start",
+    "planPlus": "Plus",
+    "planPlusRinga": "Plus Ringa",
+    "subscribe": "Abonner på {{plan}}",
+    "restorePurchases": "Gjenopprett kjøp",
+    "termsText": "Betaling belastes din App Store- eller Google Play-konto. Abonnementet fornyes automatisk med mindre det avbrytes minst 24 timer før periodens slutt.",
+    "features": {
+      "maxUsers": "Opptil {{count}} brukere",
+      "textMessages": "Tekstmeldinger",
+      "images": "Bilder",
+      "voice": "Talemeldinger",
+      "video": "Videomeldinger",
+      "documents": "Dokumenter",
+      "location": "Posisjonsdeling",
+      "calls": "Tale- og videosamtaler"
+    }
+  },
   "settings": {
     "title": "Innstillinger",
     "profile": "Profil",
@@ -243,8 +269,8 @@
         "answer": "Zemichat er designet for å gi foreldre innsyn i barns kommunikasjon. Team Owner kan se alle meldinger fra Texters, inkludert slettede. Supers private chatter (uten Texters) er imidlertid beskyttet."
       },
       "upgradePro": {
-        "question": "Hva er inkludert i Pro-planen?",
-        "answer": "Pro gir flere teammedlemmer, tale- og videosamtaler, dokumentdeling, posisjonsdeling og mer. Gå til Dashboard og trykk på \"Oppgrader\" for å se alle planer."
+        "question": "Hva er inkludert i Plus Ringa-planen?",
+        "answer": "Plus Ringa gir flere teammedlemmer, tale- og videosamtaler, dokumentdeling, posisjonsdeling og mer. Gå til Dashboard og trykk på \"Oppgrader\" for å se alle planer."
       },
       "deleteAccount": {
         "question": "Hvordan sletter jeg kontoen min?",

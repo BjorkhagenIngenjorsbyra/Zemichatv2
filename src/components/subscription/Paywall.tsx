@@ -16,6 +16,20 @@ import { useSubscription } from '../../contexts/SubscriptionContext';
 import { PlanType } from '../../types/database';
 import { PLAN_FEATURES, PLAN_PRICING, type RevenueCatPackage } from '../../types/subscription';
 
+type PlanId = 'start' | 'plus' | 'plus_ringa';
+
+const PLAN_ID_TO_TYPE: Record<PlanId, PlanType> = {
+  start: PlanType.FREE,
+  plus: PlanType.BASIC,
+  plus_ringa: PlanType.PRO,
+};
+
+const PLAN_ID_TO_I18N: Record<PlanId, string> = {
+  start: 'paywall.planStart',
+  plus: 'paywall.planPlus',
+  plus_ringa: 'paywall.planPlusRinga',
+};
+
 const Paywall: React.FC = () => {
   const { t } = useTranslation();
   const {
@@ -31,15 +45,16 @@ const Paywall: React.FC = () => {
     isTrialActive,
   } = useSubscription();
 
-  const [selectedPlan, setSelectedPlan] = useState<'basic' | 'pro'>('pro');
+  const [selectedPlan, setSelectedPlan] = useState<PlanId>('plus_ringa');
   const [isProcessing, setIsProcessing] = useState(false);
 
   const handlePurchase = async () => {
     if (!currentOffering) return;
 
     setIsProcessing(true);
+    const planType = PLAN_ID_TO_TYPE[selectedPlan];
     const pkg = currentOffering.availablePackages.find(
-      (p) => p.product.identifier === PLAN_PRICING[selectedPlan === 'basic' ? PlanType.BASIC : PlanType.PRO].productId
+      (p) => p.product.identifier === PLAN_PRICING[planType].productId
     );
 
     if (pkg) {
@@ -68,9 +83,20 @@ const Paywall: React.FC = () => {
 
   const plans = [
     {
-      id: 'basic' as const,
-      name: 'Basic',
-      price: PLAN_PRICING[PlanType.BASIC].monthlyPrice,
+      id: 'start' as const,
+      name: t('paywall.planStart'),
+      price: PLAN_PRICING[PlanType.FREE].price,
+      isOneTime: true,
+      features: [
+        t('paywall.features.maxUsers', { count: PLAN_FEATURES[PlanType.FREE].maxUsers }),
+        t('paywall.features.textMessages'),
+      ],
+    },
+    {
+      id: 'plus' as const,
+      name: t('paywall.planPlus'),
+      price: PLAN_PRICING[PlanType.BASIC].price,
+      isOneTime: false,
       features: [
         t('paywall.features.maxUsers', { count: PLAN_FEATURES[PlanType.BASIC].maxUsers }),
         t('paywall.features.textMessages'),
@@ -78,9 +104,10 @@ const Paywall: React.FC = () => {
       ],
     },
     {
-      id: 'pro' as const,
-      name: 'Pro',
-      price: PLAN_PRICING[PlanType.PRO].monthlyPrice,
+      id: 'plus_ringa' as const,
+      name: t('paywall.planPlusRinga'),
+      price: PLAN_PRICING[PlanType.PRO].price,
+      isOneTime: false,
       features: [
         t('paywall.features.maxUsers', { count: PLAN_FEATURES[PlanType.PRO].maxUsers }),
         t('paywall.features.textMessages'),
@@ -140,16 +167,20 @@ const Paywall: React.FC = () => {
             {plans.map((plan) => (
               <div
                 key={plan.id}
-                className={`plan-card ${selectedPlan === plan.id ? 'selected' : ''} ${plan.recommended ? 'recommended' : ''}`}
+                className={`plan-card ${selectedPlan === plan.id ? 'selected' : ''} ${'recommended' in plan && plan.recommended ? 'recommended' : ''}`}
                 onClick={() => setSelectedPlan(plan.id)}
               >
-                {plan.recommended && (
+                {'recommended' in plan && plan.recommended && (
                   <div className="recommended-badge">{t('paywall.recommended')}</div>
                 )}
                 <h3>{plan.name}</h3>
                 <div className="price">
                   <span className="amount">{plan.price}</span>
-                  <span className="period">kr/{t('paywall.month')}</span>
+                  <span className="period">
+                    {plan.isOneTime
+                      ? ` kr (${t('paywall.oneTimePurchase')})`
+                      : ` kr/${t('paywall.month')}`}
+                  </span>
                 </div>
                 <ul className="features">
                   {plan.features.map((feature, i) => (
@@ -173,7 +204,7 @@ const Paywall: React.FC = () => {
             {isProcessing ? (
               <IonSpinner name="crescent" />
             ) : (
-              t('paywall.subscribe', { plan: selectedPlan === 'basic' ? 'Basic' : 'Pro' })
+              t('paywall.subscribe', { plan: t(PLAN_ID_TO_I18N[selectedPlan]) })
             )}
           </IonButton>
 

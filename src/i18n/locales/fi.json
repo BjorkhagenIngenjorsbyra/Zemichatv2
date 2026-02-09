@@ -201,6 +201,32 @@
     "good": "Hyvä",
     "strong": "Vahva"
   },
+  "paywall": {
+    "title": "Päivitä",
+    "upgradeTitle": "Avaa premium-ominaisuudet",
+    "featureRequires": "Tämä ominaisuus vaatii premium-paketin",
+    "trialOffer": "Kokeile Plus Ringaa {{days}} päivää!",
+    "startTrial": "Aloita kokeilujakso",
+    "recommended": "Suositeltu",
+    "month": "kk",
+    "oneTimePurchase": "kertaostos",
+    "planStart": "Start",
+    "planPlus": "Plus",
+    "planPlusRinga": "Plus Ringa",
+    "subscribe": "Tilaa {{plan}}",
+    "restorePurchases": "Palauta ostokset",
+    "termsText": "Maksu veloitetaan App Store- tai Google Play -tililtäsi. Tilaus uusiutuu automaattisesti, ellei sitä peruuteta vähintään 24 tuntia ennen jakson päättymistä.",
+    "features": {
+      "maxUsers": "Enintään {{count}} käyttäjää",
+      "textMessages": "Tekstiviestit",
+      "images": "Kuvat",
+      "voice": "Ääniviestit",
+      "video": "Videoviestit",
+      "documents": "Asiakirjat",
+      "location": "Sijainnin jakaminen",
+      "calls": "Ääni- ja videopuhelut"
+    }
+  },
   "settings": {
     "title": "Asetukset",
     "profile": "Profiili",
@@ -243,8 +269,8 @@
         "answer": "Zemichat on suunniteltu antamaan vanhemmille näkyvyys lastensa viestintään. Team Owner näkee kaikki viestit Textereiltä, mukaan lukien poistetut. Superien yksityiset keskustelut (ilman Textereita) ovat kuitenkin suojattuja."
       },
       "upgradePro": {
-        "question": "Mitä Pro-paketti sisältää?",
-        "answer": "Pro antaa enemmän tiimin jäseniä, ääni- ja videopuhelut, asiakirjojen jakamisen, sijainnin jakamisen ja muuta. Mene hallintapaneeliin ja paina \"Päivitä\" nähdäksesi kaikki paketit."
+        "question": "Mitä Plus Ringa -paketti sisältää?",
+        "answer": "Plus Ringa antaa enemmän tiimin jäseniä, ääni- ja videopuhelut, asiakirjojen jakamisen, sijainnin jakamisen ja muuta. Mene hallintapaneeliin ja paina \"Päivitä\" nähdäksesi kaikki paketit."
       },
       "deleteAccount": {
         "question": "Miten poistan tilini?",

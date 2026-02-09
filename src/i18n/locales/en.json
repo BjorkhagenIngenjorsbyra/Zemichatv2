@@ -294,10 +294,14 @@
     "title": "Upgrade",
     "upgradeTitle": "Unlock Premium Features",
     "featureRequires": "This feature requires a premium plan",
-    "trialOffer": "Try Pro free for {{days}} days!",
-    "startTrial": "Start Free Trial",
+    "trialOffer": "Try Plus Ringa for {{days}} days!",
+    "startTrial": "Start trial",
     "recommended": "Recommended",
     "month": "month",
+    "oneTimePurchase": "one-time purchase",
+    "planStart": "Start",
+    "planPlus": "Plus",
+    "planPlusRinga": "Plus Ringa",
     "subscribe": "Subscribe to {{plan}}",
     "restorePurchases": "Restore Purchases",
     "termsText": "Payment will be charged to your App Store or Google Play account. Subscription automatically renews unless cancelled at least 24 hours before the end of the current period.",
@@ -449,8 +453,8 @@
         "answer": "Zemichat is designed to give parents visibility into their children's communication. Team Owner can see all messages from Texters, including deleted ones. However, Supers' private chats (without Texters) are protected."
       },
       "upgradePro": {
-        "question": "What's included in the Pro plan?",
-        "answer": "Pro gives you more team members, voice and video calls, document sharing, location sharing, and more. Go to Dashboard and tap \"Upgrade\" to see all plans."
+        "question": "What's included in the Plus Ringa plan?",
+        "answer": "Plus Ringa gives you more team members, voice and video calls, document sharing, location sharing, and more. Go to Dashboard and tap \"Upgrade\" to see all plans."
       },
       "deleteAccount": {
         "question": "How do I delete my account?",

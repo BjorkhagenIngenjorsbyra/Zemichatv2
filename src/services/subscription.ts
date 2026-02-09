@@ -19,8 +19,8 @@ const REVENUECAT_API_KEY_ANDROID = import.meta.env.VITE_REVENUECAT_ANDROID_KEY |
 const REVENUECAT_API_KEY_IOS = import.meta.env.VITE_REVENUECAT_IOS_KEY || '';
 
 // Entitlement identifiers in RevenueCat
-const ENTITLEMENT_BASIC = 'basic';
-const ENTITLEMENT_PRO = 'pro';
+const ENTITLEMENT_BASIC = 'plus';
+const ENTITLEMENT_PRO = 'plus_ringa';
 
 // Trial duration in days
 const TRIAL_DURATION_DAYS = 10;
@@ -467,14 +467,26 @@ function createMockOffering(): RevenueCatOffering {
     serverDescription: 'Default Offering',
     availablePackages: [
       {
+        identifier: '$rc_start',
+        packageType: 'CUSTOM',
+        product: {
+          identifier: PLAN_PRICING[PlanType.FREE].productId,
+          priceString: `${PLAN_PRICING[PlanType.FREE].price} kr`,
+          price: PLAN_PRICING[PlanType.FREE].price,
+          currencyCode: 'SEK',
+          title: 'Start',
+          description: 'Text, max 3 användare',
+        },
+      },
+      {
         identifier: '$rc_monthly',
         packageType: 'MONTHLY',
         product: {
           identifier: PLAN_PRICING[PlanType.BASIC].productId,
-          priceString: `${PLAN_PRICING[PlanType.BASIC].monthlyPrice} kr/mån`,
-          price: PLAN_PRICING[PlanType.BASIC].monthlyPrice,
+          priceString: `${PLAN_PRICING[PlanType.BASIC].price} kr/mån`,
+          price: PLAN_PRICING[PlanType.BASIC].price,
           currencyCode: 'SEK',
-          title: 'Basic',
+          title: 'Plus',
           description: 'Text + Bilder, max 10 användare',
         },
       },
@@ -483,10 +495,10 @@ function createMockOffering(): RevenueCatOffering {
         packageType: 'MONTHLY',
         product: {
           identifier: PLAN_PRICING[PlanType.PRO].productId,
-          priceString: `${PLAN_PRICING[PlanType.PRO].monthlyPrice} kr/mån`,
-          price: PLAN_PRICING[PlanType.PRO].monthlyPrice,
+          priceString: `${PLAN_PRICING[PlanType.PRO].price} kr/mån`,
+          price: PLAN_PRICING[PlanType.PRO].price,
           currencyCode: 'SEK',
-          title: 'Pro',
+          title: 'Plus Ringa',
           description: 'Allt inklusive samtal, max 10 användare',
         },
       },

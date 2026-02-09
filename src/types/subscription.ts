@@ -59,26 +59,30 @@ export const PLAN_FEATURES: Record<PlanType, PlanFeatures> = {
 // ============================================================
 
 export interface PlanPricing {
-  monthlyPrice: number;
+  price: number;
+  isOneTime: boolean;
   currency: string;
   productId: string;
 }
 
 export const PLAN_PRICING: Record<PlanType, PlanPricing> = {
   [PlanType.FREE]: {
-    monthlyPrice: 0,
+    price: 20,
+    isOneTime: true,
     currency: 'SEK',
-    productId: '',
+    productId: 'zemichat_start',
   },
   [PlanType.BASIC]: {
-    monthlyPrice: 25,
+    price: 25,
+    isOneTime: false,
     currency: 'SEK',
-    productId: 'zemichat_basic_monthly',
+    productId: 'zemichat_plus_monthly',
   },
   [PlanType.PRO]: {
-    monthlyPrice: 69,
+    price: 69,
+    isOneTime: false,
     currency: 'SEK',
-    productId: 'zemichat_pro_monthly',
+    productId: 'zemichat_plus_ringa_monthly',
   },
 };
 

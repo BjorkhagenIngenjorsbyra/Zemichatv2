@@ -294,10 +294,14 @@
     "title": "Uppgradera",
     "upgradeTitle": "Lås upp premiumfunktioner",
     "featureRequires": "Denna funktion kräver en premiumplan",
-    "trialOffer": "Prova Pro gratis i {{days}} dagar!",
-    "startTrial": "Starta gratis provperiod",
+    "trialOffer": "Prova Plus Ringa i {{days}} dagar!",
+    "startTrial": "Starta provperiod",
     "recommended": "Rekommenderas",
     "month": "mån",
+    "oneTimePurchase": "engångsköp",
+    "planStart": "Start",
+    "planPlus": "Plus",
+    "planPlusRinga": "Plus Ringa",
     "subscribe": "Prenumerera på {{plan}}",
     "restorePurchases": "Återställ köp",
     "termsText": "Betalning debiteras ditt App Store- eller Google Play-konto. Prenumerationen förnyas automatiskt om den inte avbryts minst 24 timmar före periodens slut.",
@@ -449,8 +453,8 @@
         "answer": "Zemichat är designat för att ge föräldrar insyn i barns kommunikation. Team Owner kan se alla meddelanden från Texters, inklusive borttagna. Supers privata chattar (utan Texters) är dock skyddade."
       },
       "upgradePro": {
-        "question": "Vad ingår i Pro-planen?",
-        "answer": "Pro ger fler teammedlemmar, röst- och videosamtal, dokumentdelning, platsdelning och mer. Gå till Dashboard och tryck på \"Uppgradera\" för att se alla planer."
+        "question": "Vad ingår i Plus Ringa-planen?",
+        "answer": "Plus Ringa ger fler teammedlemmar, röst- och videosamtal, dokumentdelning, platsdelning och mer. Gå till Dashboard och tryck på \"Uppgradera\" för att se alla planer."
       },
       "deleteAccount": {
         "question": "Hur raderar jag mitt konto?",

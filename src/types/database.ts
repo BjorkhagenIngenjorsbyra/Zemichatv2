@@ -5,6 +5,7 @@
 // ENUMS
 // ============================================================
 
+// Display names: FREE = 'Start', BASIC = 'Plus', PRO = 'Plus Ringa'
 export enum PlanType {
   FREE = 'free',
   BASIC = 'basic',
