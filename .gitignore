@@ -37,3 +37,6 @@ yarn-error.log*
 *.keystore
 android/keystore.properties
 .env.production
+
+# Screenshots
+*.png
