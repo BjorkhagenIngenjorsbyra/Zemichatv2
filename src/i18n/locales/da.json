@@ -327,6 +327,71 @@
     "offline": "Ingen internetforbindelse",
     "backOnline": "Online igen"
   },
+  "message": {
+    "image": "Billede",
+    "voice": "Talebesked",
+    "video": "Video",
+    "document": "Dokument",
+    "location": "Placering",
+    "reply": "Svar",
+    "react": "Reager",
+    "edited": "redigeret",
+    "gif": "GIF",
+    "sticker": "Sticker",
+    "poll": "Afstemning"
+  },
+  "contextMenu": {
+    "reply": "Svar",
+    "copy": "Kopier tekst",
+    "edit": "Rediger besked",
+    "forward": "Videresend",
+    "forwardTo": "Videresend til",
+    "deleteForAll": "Slet for alle",
+    "messageDeleted": "Beskeden er slettet",
+    "forwarded": "Videresendt",
+    "editing": "Redigerer",
+    "editPlaceholder": "Rediger besked...",
+    "deletedVisibleToOwner": "Slettet af afsender — synligt for dig som Owner"
+  },
+  "gif": {
+    "searchPlaceholder": "Søg GIF...",
+    "noResults": "Ingen GIF'er fundet"
+  },
+  "sticker": {
+    "title": "Stickers"
+  },
+  "poll": {
+    "createTitle": "Opret afstemning",
+    "create": "Opret",
+    "question": "Spørgsmål",
+    "questionPlaceholder": "Stil et spørgsmål...",
+    "options": "Valgmuligheder",
+    "option": "Valgmulighed",
+    "addOption": "Tilføj valgmulighed",
+    "allowMultiple": "Tillad flere valg",
+    "vote": "stemme",
+    "votes": "stemmer",
+    "multipleAllowed": "Flere valg tilladt"
+  },
+  "muteOptions": {
+    "title": "Slå notifikationer fra",
+    "oneHour": "1 time",
+    "eightHours": "8 timer",
+    "oneWeek": "1 uge",
+    "always": "Altid"
+  },
+  "image": {
+    "save": "Gem billede",
+    "share": "Del"
+  },
+  "actions": {
+    "pin": "Fastgør",
+    "unpin": "Fjern fastgørelse",
+    "archive": "Arkiver",
+    "unarchive": "Fjern arkivering",
+    "mute": "Slå fra",
+    "unmute": "Slå til"
+  },
   "refresh": {
     "pulling": "Træk for at opdatere",
     "refreshing": "Opdaterer..."

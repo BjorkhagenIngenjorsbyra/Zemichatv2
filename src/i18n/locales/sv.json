@@ -144,7 +144,54 @@
     "location": "Plats",
     "reply": "Svara",
     "react": "Reagera",
-    "edited": "redigerat"
+    "edited": "redigerat",
+    "gif": "GIF",
+    "sticker": "Sticker",
+    "poll": "Omröstning"
+  },
+  "contextMenu": {
+    "reply": "Svara",
+    "copy": "Kopiera text",
+    "edit": "Redigera meddelande",
+    "forward": "Vidarebefordra",
+    "forwardTo": "Vidarebefordra till",
+    "deleteForAll": "Ta bort för alla",
+    "messageDeleted": "Meddelandet har tagits bort",
+    "forwarded": "Vidarebefordrat",
+    "editing": "Redigerar",
+    "editPlaceholder": "Redigera meddelande...",
+    "deletedVisibleToOwner": "Raderat av avsändaren — synligt för dig som Owner"
+  },
+  "gif": {
+    "searchPlaceholder": "Sök GIF...",
+    "noResults": "Inga GIF:ar hittades"
+  },
+  "sticker": {
+    "title": "Stickers"
+  },
+  "poll": {
+    "createTitle": "Skapa omröstning",
+    "create": "Skapa",
+    "question": "Fråga",
+    "questionPlaceholder": "Ställ en fråga...",
+    "options": "Alternativ",
+    "option": "Alternativ",
+    "addOption": "Lägg till alternativ",
+    "allowMultiple": "Tillåt flera val",
+    "vote": "röst",
+    "votes": "röster",
+    "multipleAllowed": "Flera val tillåtna"
+  },
+  "muteOptions": {
+    "title": "Tysta notiser",
+    "oneHour": "1 timme",
+    "eightHours": "8 timmar",
+    "oneWeek": "1 vecka",
+    "always": "Alltid"
+  },
+  "image": {
+    "save": "Spara bild",
+    "share": "Dela"
   },
   "actions": {
     "pin": "Fäst",

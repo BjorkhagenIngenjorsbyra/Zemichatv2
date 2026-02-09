@@ -132,76 +132,85 @@ const OwnerChatView: React.FC = () => {
     const isDeleted = !!message.deleted_at;
     const typeIcon = getMessageTypeIcon(message.type);
 
-    if (isDeleted) {
-      return (
-        <div className="message-deleted">
-          <IonIcon icon={trashOutline} />
-          <span>{t('oversight.deletedMessage')}</span>
-          <span className="deleted-time">
-            {new Date(message.deleted_at!).toLocaleString()}
-          </span>
-        </div>
-      );
-    }
+    // For deleted messages, show original content with a "deleted" banner
+    // (Owner transparency: content is preserved in DB, not nulled)
+    const deletedBanner = isDeleted ? (
+      <div className="message-deleted-banner">
+        <IonIcon icon={trashOutline} />
+        <span>{t('oversight.deletedMessage')}</span>
+        <span className="deleted-time">
+          {new Date(message.deleted_at!).toLocaleString()}
+        </span>
+      </div>
+    ) : null;
 
-    switch (message.type) {
-      case MessageType.IMAGE:
-        return (
-          <div className="message-media">
-            {message.media_url && (
-              <img src={message.media_url} alt="Image" className="message-image" />
-            )}
-            {message.content && <p className="message-caption">{message.content}</p>}
-          </div>
-        );
+    const renderContent = () => {
+      switch (message.type) {
+        case MessageType.IMAGE:
+          return (
+            <div className="message-media">
+              {message.media_url && (
+                <img src={message.media_url} alt="Image" className="message-image" />
+              )}
+              {message.content && <p className="message-caption">{message.content}</p>}
+            </div>
+          );
 
-      case MessageType.VOICE:
-        return (
-          <div className="message-voice">
-            <IonIcon icon={micOutline} />
-            <span>{t('message.voice')}</span>
-            {message.media_metadata && (
-              <span className="voice-duration">
-                {Math.round((message.media_metadata as { duration?: number }).duration || 0)}s
+        case MessageType.VOICE:
+          return (
+            <div className="message-voice">
+              <IonIcon icon={micOutline} />
+              <span>{t('message.voice')}</span>
+              {message.media_metadata && (
+                <span className="voice-duration">
+                  {Math.round((message.media_metadata as { duration?: number }).duration || 0)}s
+                </span>
+              )}
+            </div>
+          );
+
+        case MessageType.VIDEO:
+          return (
+            <div className="message-video">
+              <IonIcon icon={videocamOutline} />
+              <span>{t('message.video')}</span>
+            </div>
+          );
+
+        case MessageType.DOCUMENT:
+          return (
+            <div className="message-document">
+              <IonIcon icon={documentOutline} />
+              <span>
+                {(message.media_metadata as { name?: string })?.name || t('message.document')}
               </span>
-            )}
-          </div>
-        );
+            </div>
+          );
 
-      case MessageType.VIDEO:
-        return (
-          <div className="message-video">
-            <IonIcon icon={videocamOutline} />
-            <span>{t('message.video')}</span>
-          </div>
-        );
+        case MessageType.LOCATION:
+          return (
+            <div className="message-location">
+              <IonIcon icon={locationOutline} />
+              <span>{t('message.location')}</span>
+            </div>
+          );
 
-      case MessageType.DOCUMENT:
-        return (
-          <div className="message-document">
-            <IonIcon icon={documentOutline} />
-            <span>
-              {(message.media_metadata as { name?: string })?.name || t('message.document')}
-            </span>
-          </div>
-        );
+        default:
+          return (
+            <div className="message-text">
+              {typeIcon && <IonIcon icon={typeIcon} className="type-icon" />}
+              <p>{message.content}</p>
+            </div>
+          );
+      }
+    };
 
-      case MessageType.LOCATION:
-        return (
-          <div className="message-location">
-            <IonIcon icon={locationOutline} />
-            <span>{t('message.location')}</span>
-          </div>
-        );
-
-      default:
-        return (
-          <div className="message-text">
-            {typeIcon && <IonIcon icon={typeIcon} className="type-icon" />}
-            <p>{message.content}</p>
-          </div>
-        );
-    }
+    return (
+      <>
+        {deletedBanner}
+        {renderContent()}
+      </>
+    );
   };
 
   return (
@@ -368,15 +377,20 @@ const OwnerChatView: React.FC = () => {
             word-break: break-word;
           }
 
-          .message-deleted {
+          .message-deleted-banner {
             display: flex;
             align-items: center;
             gap: 0.5rem;
             color: hsl(var(--destructive));
             font-style: italic;
+            font-size: 0.8rem;
+            background: hsl(var(--destructive) / 0.08);
+            border-radius: 0.35rem;
+            padding: 0.25rem 0.5rem;
+            margin-bottom: 0.35rem;
           }
 
-          .message-deleted ion-icon {
+          .message-deleted-banner ion-icon {
             font-size: 1rem;
           }
 

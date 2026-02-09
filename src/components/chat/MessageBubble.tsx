@@ -9,6 +9,7 @@ import VoiceMessage from './VoiceMessage';
 import QuotedMessage from './QuotedMessage';
 import MessageReactions from './MessageReactions';
 import LinkPreview, { extractUrl } from './LinkPreview';
+import PollMessage from './PollMessage';
 
 export type ReadStatus = 'sent' | 'delivered' | 'read';
 
@@ -24,6 +25,10 @@ interface MessageBubbleProps {
   onReply?: (message: MessageWithSender) => void;
   onReact?: (message: MessageWithSender, rect: DOMRect) => void;
   onToggleReaction?: (messageId: string, emoji: string) => void;
+  onContextMenu?: (message: MessageWithSender, rect: DOMRect) => void;
+  userId?: string;
+  /** Current user's role — Owner sees original content of deleted-for-all messages */
+  userRole?: string;
 }
 
 const MessageBubble: React.FC<MessageBubbleProps> = ({
@@ -37,6 +42,9 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
   onReply,
   onReact,
   onToggleReaction,
+  onContextMenu,
+  userId,
+  userRole,
 }) => {
   const { t } = useTranslation();
   const [swipeOffset, setSwipeOffset] = useState(0);
@@ -52,12 +60,14 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
   };
 
   const handleLongPress = useCallback(() => {
-    if (onReact && bubbleRef.current) {
+    if (bubbleRef.current) {
       hapticMedium();
       const rect = bubbleRef.current.getBoundingClientRect();
-      onReact(message, rect);
+      // Show both reaction bar and context menu (WhatsApp-style)
+      onReact?.(message, rect);
+      onContextMenu?.(message, rect);
     }
-  }, [onReact, message]);
+  }, [onContextMenu, onReact, message]);
 
   const handleTap = useCallback(() => {
     const now = Date.now();
@@ -94,6 +104,16 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
     trackTouch: true,
     preventScrollOnSwipe: true,
   });
+
+  const renderTextWithMentions = (text: string) => {
+    const parts = text.split(/(@\w+)/g);
+    return parts.map((part, i) => {
+      if (part.startsWith('@')) {
+        return <span key={i} className="mention-highlight">{part}</span>;
+      }
+      return part;
+    });
+  };
 
   const renderContent = () => {
     switch (message.type) {
@@ -148,12 +168,27 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
             <span>{t('message.location')}</span>
           </div>
         );
+      case 'poll':
+        return <PollMessage messageId={message.id} isOwn={isOwn} />;
+      case 'gif':
+        return (
+          <div className="gif-message">
+            <img src={message.media_url || ''} alt="GIF" className="message-gif" loading="lazy" />
+            {message.content && <p className="message-caption">{message.content}</p>}
+          </div>
+        );
+      case 'sticker':
+        return <span className="sticker-message">{message.content}</span>;
       case 'text':
       default: {
         const url = message.content ? extractUrl(message.content) : null;
         return (
           <>
-            {message.content && <p className="message-content">{message.content}</p>}
+            {message.content && (
+              <p className="message-content">
+                {renderTextWithMentions(message.content)}
+              </p>
+            )}
             {url && <LinkPreview url={url} isOwn={isOwn} />}
           </>
         );
@@ -176,6 +211,25 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
     }
   };
 
+  if (message.deleted_at && message.deleted_for_all) {
+    const isOwnerViewing = userRole === 'owner';
+
+    if (isOwnerViewing) {
+      // Owner sees original content with a "deleted" indicator (transparency model)
+      // Fall through to normal rendering below, but we add an indicator
+    } else {
+      // Everyone else sees placeholder
+      return (
+        <div className={`message-bubble ${isOwn ? 'own' : 'other'} deleted-bubble`}>
+          <p className="deleted-message-text">{t('contextMenu.messageDeleted')}</p>
+          <div className="message-footer">
+            <span className="message-time">{formatMessageTime(message.created_at)}</span>
+          </div>
+        </div>
+      );
+    }
+  }
+
   return (
     <div
       {...swipeHandlers}
@@ -194,15 +248,26 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
 
       <div
         ref={bubbleRef}
-        className={`message-bubble ${isOwn ? 'own' : 'other'} ${isJustSent ? 'message-just-sent' : ''}`}
+        className={`message-bubble ${isOwn ? 'own' : 'other'} ${isJustSent ? 'message-just-sent' : ''} ${message.type === 'sticker' ? 'sticker-only' : ''}`}
         onClick={handleTap}
         onContextMenu={(e) => {
           e.preventDefault();
           handleLongPress();
         }}
       >
+        {/* Owner sees deleted-for-all messages with a warning banner */}
+        {message.deleted_at && message.deleted_for_all && userRole === 'owner' && (
+          <div className="owner-deleted-banner">
+            <span>🗑️</span> {t('contextMenu.deletedVisibleToOwner')}
+          </div>
+        )}
+
         {showSenderName && !isOwn && (
           <span className="sender-name">{message.sender?.display_name}</span>
+        )}
+
+        {message.forwarded_from_id && (
+          <span className="forwarded-tag">{t('contextMenu.forwarded')}</span>
         )}
 
         {message.reply_to && (
@@ -377,6 +442,66 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
 
         .location-icon {
           font-size: 1.25rem;
+        }
+
+        .deleted-bubble {
+          opacity: 0.6;
+        }
+
+        .deleted-message-text {
+          margin: 0;
+          font-style: italic;
+          font-size: 0.85rem;
+        }
+
+        .owner-deleted-banner {
+          display: flex;
+          align-items: center;
+          gap: 0.35rem;
+          font-size: 0.7rem;
+          font-weight: 600;
+          color: hsl(0 70% 50%);
+          background: hsl(0 70% 50% / 0.1);
+          border-radius: 0.35rem;
+          padding: 0.25rem 0.5rem;
+          margin-bottom: 0.35rem;
+        }
+
+        .forwarded-tag {
+          display: block;
+          font-size: 0.7rem;
+          font-style: italic;
+          opacity: 0.7;
+          margin-bottom: 0.25rem;
+        }
+
+        .message-gif {
+          max-width: 100%;
+          max-height: 250px;
+          border-radius: 0.5rem;
+          display: block;
+        }
+
+        .gif-message {
+          min-width: 150px;
+        }
+
+        .sticker-message {
+          font-size: 4rem;
+          line-height: 1.2;
+          display: block;
+          text-align: center;
+        }
+
+        .message-bubble.sticker-only {
+          background: transparent !important;
+          border: none !important;
+          padding: 0;
+        }
+
+        .mention-highlight {
+          font-weight: 600;
+          color: hsl(var(--primary));
         }
       `}</style>
     </div>

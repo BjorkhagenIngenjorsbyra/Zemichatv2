@@ -255,4 +255,4 @@ export async function getReactionsForMessages(
 /**
  * Default quick reaction emojis.
  */
-export const QUICK_REACTIONS = ['❤️', '😂', '😮', '😢', '😡', '👍'];
+export const QUICK_REACTIONS = ['❤️', '👍', '😂', '😮', '😢', '😡', '🎉'];

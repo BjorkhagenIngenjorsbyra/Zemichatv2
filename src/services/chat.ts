@@ -451,9 +451,12 @@ export async function unarchiveChat(chatId: string): Promise<{ error: Error | nu
 }
 
 /**
- * Mute a chat.
+ * Mute a chat with optional duration.
  */
-export async function muteChat(chatId: string): Promise<{ error: Error | null }> {
+export async function muteChat(
+  chatId: string,
+  duration?: 'hour' | '8hours' | 'week' | 'always'
+): Promise<{ error: Error | null }> {
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -462,9 +465,26 @@ export async function muteChat(chatId: string): Promise<{ error: Error | null }>
     return { error: new Error('Not authenticated') };
   }
 
+  let mutedUntil: string | null = null;
+  if (duration && duration !== 'always') {
+    const now = new Date();
+    switch (duration) {
+      case 'hour':
+        now.setHours(now.getHours() + 1);
+        break;
+      case '8hours':
+        now.setHours(now.getHours() + 8);
+        break;
+      case 'week':
+        now.setDate(now.getDate() + 7);
+        break;
+    }
+    mutedUntil = now.toISOString();
+  }
+
   const { error } = await supabase
     .from('chat_members')
-    .update({ is_muted: true } as never)
+    .update({ is_muted: true, muted_until: mutedUntil } as never)
     .eq('chat_id', chatId)
     .eq('user_id', user.id);
 
@@ -489,7 +509,7 @@ export async function unmuteChat(chatId: string): Promise<{ error: Error | null 
 
   const { error } = await supabase
     .from('chat_members')
-    .update({ is_muted: false } as never)
+    .update({ is_muted: false, muted_until: null } as never)
     .eq('chat_id', chatId)
     .eq('user_id', user.id);
 
@@ -498,4 +518,81 @@ export async function unmuteChat(chatId: string): Promise<{ error: Error | null 
   }
 
   return { error: null };
+}
+
+/**
+ * Mark a chat as unread (reminder to respond later).
+ */
+export async function markChatUnread(chatId: string): Promise<{ error: Error | null }> {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { error: new Error('Not authenticated') };
+  }
+
+  const { error } = await supabase
+    .from('chat_members')
+    .update({ marked_unread: true } as never)
+    .eq('chat_id', chatId)
+    .eq('user_id', user.id);
+
+  if (error) {
+    return { error: new Error(error.message) };
+  }
+
+  return { error: null };
+}
+
+/**
+ * Clear the marked_unread flag.
+ */
+export async function clearMarkedUnread(chatId: string): Promise<{ error: Error | null }> {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { error: new Error('Not authenticated') };
+  }
+
+  const { error } = await supabase
+    .from('chat_members')
+    .update({ marked_unread: false } as never)
+    .eq('chat_id', chatId)
+    .eq('user_id', user.id);
+
+  if (error) {
+    return { error: new Error(error.message) };
+  }
+
+  return { error: null };
+}
+
+/**
+ * Pin a chat (max 3 pinned).
+ */
+export async function pinChatWithLimit(chatId: string): Promise<{ error: Error | null }> {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { error: new Error('Not authenticated') };
+  }
+
+  // Check current pinned count
+  const { data: pinned } = await supabase
+    .from('chat_members')
+    .select('id')
+    .eq('user_id', user.id)
+    .eq('is_pinned', true)
+    .is('left_at', null);
+
+  if (pinned && pinned.length >= 3) {
+    return { error: new Error('Maximum 3 pinned chats allowed') };
+  }
+
+  return pinChat(chatId);
 }

@@ -6,6 +6,7 @@ interface InlineReactionBarProps {
   targetRect: { top: number; left: number; width: number; bottom: number };
   isOwn: boolean;
   onSelect: (emoji: string) => void;
+  onOpenFullPicker?: () => void;
   onClose: () => void;
 }
 
@@ -13,6 +14,7 @@ const InlineReactionBar: React.FC<InlineReactionBarProps> = ({
   targetRect,
   isOwn,
   onSelect,
+  onOpenFullPicker,
   onClose,
 }) => {
   const barRef = useRef<HTMLDivElement>(null);
@@ -43,9 +45,16 @@ const InlineReactionBar: React.FC<InlineReactionBarProps> = ({
     onClose();
   };
 
+  const handlePlusClick = () => {
+    hapticLight();
+    onClose();
+    onOpenFullPicker?.();
+  };
+
   // Position above the message bubble
   const BAR_HEIGHT = 48;
-  const BAR_WIDTH = QUICK_REACTIONS.length * 44 + 16; // approx width
+  const BUTTON_COUNT = QUICK_REACTIONS.length + (onOpenFullPicker ? 1 : 0);
+  const BAR_WIDTH = BUTTON_COUNT * 44 + 16; // approx width
   const GAP = 8;
 
   let top = targetRect.top - BAR_HEIGHT - GAP;
@@ -81,6 +90,15 @@ const InlineReactionBar: React.FC<InlineReactionBarProps> = ({
             {emoji}
           </button>
         ))}
+        {onOpenFullPicker && (
+          <button
+            className="reaction-btn reaction-plus-btn"
+            onClick={handlePlusClick}
+            aria-label="More reactions"
+          >
+            +
+          </button>
+        )}
       </div>
 
       <style>{`
@@ -133,6 +151,18 @@ const InlineReactionBar: React.FC<InlineReactionBarProps> = ({
 
         .reaction-btn:active {
           transform: scale(0.95);
+        }
+
+        .reaction-plus-btn {
+          font-size: 1.25rem;
+          font-weight: 700;
+          color: hsl(var(--muted-foreground));
+          background: hsl(var(--muted) / 0.3);
+        }
+
+        .reaction-plus-btn:hover {
+          background: hsl(var(--muted) / 0.6);
+          color: hsl(var(--foreground));
         }
       `}</style>
     </div>

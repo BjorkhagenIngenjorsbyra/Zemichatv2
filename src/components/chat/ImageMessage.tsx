@@ -1,6 +1,8 @@
 import { useState, useRef, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { IonSpinner, IonModal, IonIcon } from '@ionic/react';
-import { chevronBack, chevronForward, close } from 'ionicons/icons';
+import { chevronBack, chevronForward, close, download, shareSocial } from 'ionicons/icons';
+import { Capacitor } from '@capacitor/core';
 
 interface ImageMessageProps {
   mediaUrl: string | null;
@@ -16,6 +18,7 @@ const ImageMessage: React.FC<ImageMessageProps> = ({
   caption,
   galleryUrls,
 }) => {
+  const { t } = useTranslation();
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -190,6 +193,55 @@ const ImageMessage: React.FC<ImageMessageProps> = ({
     }
   }, [scale, hasGallery, goNext, goPrev]);
 
+  // Save image to gallery
+  const handleSaveImage = useCallback(async () => {
+    const url = currentUrl;
+    if (!url) return;
+
+    try {
+      if (Capacitor.isNativePlatform()) {
+        // On native, use Filesystem + MediaLibrary
+        const response = await fetch(url);
+        const blob = await response.blob();
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = metadata?.fileName || `image_${Date.now()}.jpg`;
+        a.click();
+        URL.revokeObjectURL(a.href);
+      } else {
+        // Web fallback: trigger download
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = metadata?.fileName || `image_${Date.now()}.jpg`;
+        a.target = '_blank';
+        a.click();
+      }
+    } catch (err) {
+      console.error('Failed to save image:', err);
+    }
+  }, [currentUrl, metadata?.fileName]);
+
+  // Share image externally
+  const handleShareImage = useCallback(async () => {
+    const url = currentUrl;
+    if (!url) return;
+
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: metadata?.fileName || 'Image',
+          url: url,
+        });
+      } else {
+        // Fallback: copy URL
+        await navigator.clipboard?.writeText(url);
+      }
+    } catch (err) {
+      // User cancelled share or not supported
+      console.log('Share cancelled:', err);
+    }
+  }, [currentUrl, metadata?.fileName]);
+
   // Double-tap to zoom
   const lastTapRef = useRef(0);
   const handleDoubleTap = useCallback((e: React.TouchEvent) => {
@@ -268,10 +320,19 @@ const ImageMessage: React.FC<ImageMessageProps> = ({
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
         >
-          {/* Close button */}
+          {/* Top bar buttons */}
           <button className="fullscreen-close" onClick={closeFullscreen}>
             <IonIcon icon={close} />
           </button>
+
+          <div className="fullscreen-actions">
+            <button className="fullscreen-action-btn" onClick={handleSaveImage} title={t('image.save')}>
+              <IonIcon icon={download} />
+            </button>
+            <button className="fullscreen-action-btn" onClick={handleShareImage} title={t('image.share')}>
+              <IonIcon icon={shareSocial} />
+            </button>
+          </div>
 
           <img
             src={currentUrl || ''}
@@ -386,6 +447,34 @@ const ImageMessage: React.FC<ImageMessageProps> = ({
           justify-content: center;
           cursor: pointer;
           margin-top: 0.5rem;
+        }
+
+        .fullscreen-actions {
+          position: absolute;
+          top: env(safe-area-inset-top, 0.75rem);
+          left: 0.75rem;
+          z-index: 10;
+          display: flex;
+          gap: 0.5rem;
+          margin-top: 0.5rem;
+        }
+
+        .fullscreen-action-btn {
+          width: 2.5rem;
+          height: 2.5rem;
+          border-radius: 50%;
+          background: rgba(0, 0, 0, 0.5);
+          border: none;
+          color: #fff;
+          font-size: 1.25rem;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+        }
+
+        .fullscreen-action-btn:active {
+          background: rgba(255, 255, 255, 0.2);
         }
 
         .fullscreen-image {

@@ -144,7 +144,53 @@
     "location": "Location",
     "reply": "Reply",
     "react": "React",
-    "edited": "edited"
+    "edited": "edited",
+    "gif": "GIF",
+    "sticker": "Sticker",
+    "poll": "Poll"
+  },
+  "contextMenu": {
+    "reply": "Reply",
+    "copy": "Copy text",
+    "edit": "Edit message",
+    "forward": "Forward",
+    "forwardTo": "Forward to",
+    "deleteForAll": "Delete for everyone",
+    "messageDeleted": "This message was deleted",
+    "forwarded": "Forwarded",
+    "editing": "Editing",
+    "editPlaceholder": "Edit message..."
+  },
+  "gif": {
+    "searchPlaceholder": "Search GIFs...",
+    "noResults": "No GIFs found"
+  },
+  "sticker": {
+    "title": "Stickers"
+  },
+  "poll": {
+    "createTitle": "Create poll",
+    "create": "Create",
+    "question": "Question",
+    "questionPlaceholder": "Ask a question...",
+    "options": "Options",
+    "option": "Option",
+    "addOption": "Add option",
+    "allowMultiple": "Allow multiple choices",
+    "vote": "vote",
+    "votes": "votes",
+    "multipleAllowed": "Multiple choices allowed"
+  },
+  "muteOptions": {
+    "title": "Mute notifications",
+    "oneHour": "1 hour",
+    "eightHours": "8 hours",
+    "oneWeek": "1 week",
+    "always": "Always"
+  },
+  "image": {
+    "save": "Save image",
+    "share": "Share"
   },
   "actions": {
     "pin": "Pin",

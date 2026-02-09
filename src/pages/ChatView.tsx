@@ -13,7 +13,7 @@ import {
   IonIcon,
   IonButton,
 } from '@ionic/react';
-import { send, searchOutline, arrowDown } from 'ionicons/icons';
+import { send, searchOutline, arrowDown, createOutline, barChartOutline } from 'ionicons/icons';
 import { Keyboard } from '@capacitor/keyboard';
 import { Capacitor } from '@capacitor/core';
 import { useAuthContext } from '../contexts/AuthContext';
@@ -22,6 +22,9 @@ import {
   getChatMessages,
   sendMessage,
   subscribeToMessages,
+  editMessage,
+  deleteMessageForAll,
+  forwardMessage,
   type MessageWithSender,
 } from '../services/message';
 import {
@@ -40,6 +43,7 @@ import {
   cleanupTypingChannel,
 } from '../services/typingIndicator';
 import { uploadImage, uploadVoice, uploadDocument } from '../services/storage';
+import { createPoll } from '../services/poll';
 import { hapticLight } from '../utils/haptics';
 import { SkeletonLoader } from '../components/common';
 import { MessageType, type Message, type User } from '../types/database';
@@ -58,7 +62,17 @@ import {
   QuickMessageBar,
   ChatSearchModal,
   InlineReactionBar,
+  EmojiPicker,
   TypingIndicator,
+} from '../components/chat';
+import {
+  MessageContextMenu,
+  ForwardPicker,
+  GifPicker,
+  StickerPicker,
+  MentionAutocomplete,
+  PollCreator,
+  PollMessage,
 } from '../components/chat';
 import type { ReadStatus } from '../components/chat/MessageBubble';
 import { SOSButton } from '../components/sos';
@@ -112,6 +126,31 @@ const ChatView: React.FC = () => {
 
   // Typing indicator
   const [typers, setTypers] = useState<{ userId: string; displayName: string }[]>([]);
+
+  // Context menu state
+  const [contextMenuTarget, setContextMenuTarget] = useState<MessageWithSender | null>(null);
+
+  // Edit mode state
+  const [editingMessage, setEditingMessage] = useState<MessageWithSender | null>(null);
+
+  // Forward state
+  const [forwardMessage_, setForwardMessage_] = useState<MessageWithSender | null>(null);
+  const [showForwardPicker, setShowForwardPicker] = useState(false);
+
+  // GIF & Sticker pickers
+  const [showGifPicker, setShowGifPicker] = useState(false);
+  const [showStickerPicker, setShowStickerPicker] = useState(false);
+
+  // Poll creator
+  const [showPollCreator, setShowPollCreator] = useState(false);
+
+  // Full emoji picker (opened from "+" in reaction bar)
+  const [showFullEmojiPicker, setShowFullEmojiPicker] = useState(false);
+  const [fullPickerMessageId, setFullPickerMessageId] = useState<string | null>(null);
+
+  // Mention autocomplete
+  const [mentionQuery, setMentionQuery] = useState('');
+  const [showMentions, setShowMentions] = useState(false);
 
   // --- Keyboard handling (native) ---
   useEffect(() => {
@@ -236,32 +275,39 @@ const ChatView: React.FC = () => {
   useEffect(() => {
     if (!chatId) return;
 
-    const unsubscribe = subscribeToMessages(chatId, (newMessage) => {
-      // Avoid duplicates
-      setMessages((prev) => {
-        if (prev.some((m) => m.id === newMessage.id)) {
-          return prev;
-        }
-        return [...prev, newMessage];
-      });
+    const unsubscribe = subscribeToMessages(
+      chatId,
+      (newMessage) => {
+        // Avoid duplicates
+        setMessages((prev) => {
+          if (prev.some((m) => m.id === newMessage.id)) {
+            return prev;
+          }
+          return [...prev, newMessage];
+        });
 
-      if (isNearBottom) {
-        scrollToBottom();
-      } else {
-        setNewMessageCount((n) => n + 1);
-      }
-
-      // Load reactions for new message
-      loadReactions([newMessage.id]);
-
-      // Mark as read if not from self and near bottom
-      if (newMessage.sender_id !== profile?.id) {
         if (isNearBottom) {
-          insertReadReceipts([newMessage.id]);
+          scrollToBottom();
+        } else {
+          setNewMessageCount((n) => n + 1);
         }
-        markChatAsRead(chatId);
+
+        loadReactions([newMessage.id]);
+
+        if (newMessage.sender_id !== profile?.id) {
+          if (isNearBottom) {
+            insertReadReceipts([newMessage.id]);
+          }
+          markChatAsRead(chatId);
+        }
+      },
+      // Handle message updates (edit, delete-for-all)
+      (updatedMessage) => {
+        setMessages((prev) =>
+          prev.map((m) => (m.id === updatedMessage.id ? updatedMessage : m))
+        );
       }
-    });
+    );
 
     return unsubscribe;
   }, [chatId, profile?.id, scrollToBottom, loadReactions, isNearBottom]);
@@ -311,6 +357,12 @@ const ChatView: React.FC = () => {
   const handleSend = async () => {
     if (!messageText.trim() || isSending || !chatId) return;
 
+    // If editing, save edit instead
+    if (editingMessage) {
+      await handleEditSave();
+      return;
+    }
+
     setIsSending(true);
     const text = messageText.trim();
     setMessageText('');
@@ -327,7 +379,6 @@ const ChatView: React.FC = () => {
     } else {
       setReplyTo(null);
       hapticLight();
-      // Trigger send animation
       if (message) {
         setLastSentId(message.id);
         setTimeout(() => setLastSentId(null), 400);
@@ -342,11 +393,26 @@ const ChatView: React.FC = () => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSend();
+    } else if (e.key === 'Escape' && editingMessage) {
+      handleEditCancel();
     }
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setMessageText(e.target.value);
+    const value = e.target.value;
+    setMessageText(value);
+
+    // Detect @mention
+    const cursorPos = e.target.selectionStart || value.length;
+    const textUpToCursor = value.slice(0, cursorPos);
+    const atMatch = textUpToCursor.match(/@(\w*)$/);
+
+    if (atMatch && chat?.is_group) {
+      setMentionQuery(atMatch[1]);
+      setShowMentions(true);
+    } else {
+      setShowMentions(false);
+    }
 
     // Send typing indicator
     if (chatId && profile?.id && profile?.display_name) {
@@ -440,6 +506,144 @@ const ChatView: React.FC = () => {
   const handleOpenReactionBar = (message: MessageWithSender, rect: DOMRect) => {
     const isOwn = message.sender_id === profile?.id;
     setReactionBarTarget({ message, rect, isOwn });
+  };
+
+  const handleContextMenu = (message: MessageWithSender, _rect: DOMRect) => {
+    setContextMenuTarget(message);
+  };
+
+  const handleContextMenuClose = () => {
+    setContextMenuTarget(null);
+  };
+
+  const handleCopy = async () => {
+    if (!contextMenuTarget?.content) return;
+    try {
+      await navigator.clipboard.writeText(contextMenuTarget.content);
+    } catch {
+      // Clipboard API not available
+    }
+    setContextMenuTarget(null);
+  };
+
+  const handleEditStart = () => {
+    if (!contextMenuTarget) return;
+    setEditingMessage(contextMenuTarget);
+    setMessageText(contextMenuTarget.content || '');
+    setContextMenuTarget(null);
+    inputRef.current?.focus();
+  };
+
+  const handleEditSave = async () => {
+    if (!editingMessage || !messageText.trim()) return;
+    setIsSending(true);
+    await editMessage(editingMessage.id, messageText.trim());
+    setEditingMessage(null);
+    setMessageText('');
+    setIsSending(false);
+  };
+
+  const handleEditCancel = () => {
+    setEditingMessage(null);
+    setMessageText('');
+  };
+
+  const handleDeleteForAll = async () => {
+    if (!contextMenuTarget) return;
+    await deleteMessageForAll(contextMenuTarget.id);
+    setContextMenuTarget(null);
+  };
+
+  const handleForwardStart = () => {
+    if (!contextMenuTarget) return;
+    setForwardMessage_(contextMenuTarget);
+    setShowForwardPicker(true);
+    setContextMenuTarget(null);
+  };
+
+  const handleForwardToChat = async (targetChatId: string) => {
+    if (!forwardMessage_) return;
+    await forwardMessage(
+      {
+        content: forwardMessage_.content,
+        type: forwardMessage_.type,
+        media_url: forwardMessage_.media_url,
+        media_metadata: forwardMessage_.media_metadata,
+        id: forwardMessage_.id,
+      },
+      targetChatId
+    );
+    setForwardMessage_(null);
+    setShowForwardPicker(false);
+  };
+
+  const handleGifSelect = async (gifUrl: string, width: number, height: number) => {
+    if (!chatId) return;
+    await sendMessage({
+      chatId,
+      type: MessageType.GIF,
+      mediaUrl: gifUrl,
+      mediaMetadata: { width, height },
+    });
+  };
+
+  const handleStickerSelect = async (emoji: string) => {
+    if (!chatId) return;
+    await sendMessage({
+      chatId,
+      content: emoji,
+      type: MessageType.STICKER,
+    });
+  };
+
+  const handlePollCreate = async (question: string, options: string[], allowsMultiple: boolean) => {
+    if (!chatId) return;
+
+    // First send a poll message
+    const { message: pollMsg } = await sendMessage({
+      chatId,
+      content: question,
+      type: MessageType.POLL,
+    });
+
+    if (pollMsg) {
+      await createPoll({
+        chatId,
+        messageId: pollMsg.id,
+        question,
+        options,
+        allowsMultiple,
+      });
+    }
+  };
+
+  const handleMentionSelect = (user: { display_name: string | null }) => {
+    const name = user.display_name || '';
+    // Replace the @query with @name
+    const cursorPos = inputRef.current?.selectionStart || messageText.length;
+    const textUpToCursor = messageText.slice(0, cursorPos);
+    const rest = messageText.slice(cursorPos);
+    const newText = textUpToCursor.replace(/@\w*$/, `@${name} `) + rest;
+    setMessageText(newText);
+    setShowMentions(false);
+    inputRef.current?.focus();
+  };
+
+  const handleOpenFullEmojiPicker = () => {
+    if (reactionBarTarget) {
+      setFullPickerMessageId(reactionBarTarget.message.id);
+      setReactionBarTarget(null);
+      setShowFullEmojiPicker(true);
+    }
+  };
+
+  const handleFullPickerSelect = async (emoji: string) => {
+    if (!fullPickerMessageId) return;
+    hapticLight();
+    await toggleReaction(fullPickerMessageId, emoji);
+    loadReactions([fullPickerMessageId]);
+    setShowFullEmojiPicker(false);
+    setFullPickerMessageId(null);
   };
 
   const handleSelectReaction = async (emoji: string) => {
@@ -572,6 +776,9 @@ const ChatView: React.FC = () => {
                       galleryUrls={galleryUrls}
                       onReply={() => handleReply(message)}
                       onReact={(msg, rect) => handleOpenReactionBar(msg, rect)}
+                      onContextMenu={(msg, rect) => handleContextMenu(msg, rect)}
+                      userId={profile?.id}
+                      userRole={profile?.role}
                       onToggleReaction={handleToggleReaction}
                     />
                   </div>
@@ -702,6 +909,18 @@ const ChatView: React.FC = () => {
           disabled={isSending}
         />
 
+        {editingMessage && (
+          <div className="edit-preview">
+            <div className="edit-preview-content">
+              <span className="edit-label">{t('contextMenu.editing')}</span>
+              <span className="edit-text">{editingMessage.content?.slice(0, 50)}</span>
+            </div>
+            <button className="cancel-reply" onClick={handleEditCancel} aria-label="Cancel edit">
+              ×
+            </button>
+          </div>
+        )}
+
         {replyTo && (
           <div className="reply-preview">
             <QuotedMessage
@@ -726,15 +945,54 @@ const ChatView: React.FC = () => {
             disabled={isSending}
           />
 
-          <textarea
-            ref={inputRef}
-            className="message-input"
-            placeholder={t('chat.typeMessage')}
-            value={messageText}
-            onChange={handleInputChange}
-            onKeyDown={handleKeyDown}
-            rows={1}
-          />
+          <button
+            className="extra-btn"
+            onClick={() => setShowGifPicker(!showGifPicker)}
+            disabled={isSending}
+            aria-label="GIF"
+          >
+            GIF
+          </button>
+
+          <button
+            className="extra-btn"
+            onClick={() => setShowStickerPicker(!showStickerPicker)}
+            disabled={isSending}
+            aria-label="Sticker"
+          >
+            😀
+          </button>
+
+          {chat?.is_group && (
+            <button
+              className="extra-btn"
+              onClick={() => setShowPollCreator(true)}
+              disabled={isSending}
+              aria-label="Poll"
+            >
+              <IonIcon icon={barChartOutline} />
+            </button>
+          )}
+
+          <div className="textarea-wrapper">
+            {showMentions && chat && (
+              <MentionAutocomplete
+                query={mentionQuery}
+                members={chat.members}
+                onSelect={handleMentionSelect}
+                visible={showMentions}
+              />
+            )}
+            <textarea
+              ref={inputRef}
+              className="message-input"
+              placeholder={editingMessage ? t('contextMenu.editPlaceholder') : t('chat.typeMessage')}
+              value={messageText}
+              onChange={handleInputChange}
+              onKeyDown={handleKeyDown}
+              rows={1}
+            />
+          </div>
 
           {messageText.trim() ? (
             <IonButton
@@ -825,10 +1083,75 @@ const ChatView: React.FC = () => {
           .send-button:disabled {
             --color: hsl(var(--muted));
           }
+
+          .edit-preview {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: hsl(var(--primary) / 0.1);
+            border-top: 1px solid hsl(var(--primary) / 0.3);
+            border-left: 3px solid hsl(var(--primary));
+          }
+
+          .edit-preview-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 0.15rem;
+          }
+
+          .edit-label {
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: hsl(var(--primary));
+            text-transform: uppercase;
+          }
+
+          .edit-text {
+            font-size: 0.8rem;
+            color: hsl(var(--muted-foreground));
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+          }
+
+          .extra-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 2rem;
+            height: 2rem;
+            border-radius: 50%;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            color: hsl(var(--muted-foreground));
+            font-size: 0.75rem;
+            font-weight: 700;
+            transition: color 0.15s;
+          }
+
+          .extra-btn:hover:not(:disabled) {
+            color: hsl(var(--primary));
+          }
+
+          .extra-btn:disabled {
+            opacity: 0.5;
+          }
+
+          .extra-btn ion-icon {
+            font-size: 1.1rem;
+          }
+
+          .textarea-wrapper {
+            flex: 1;
+            position: relative;
+          }
         `}</style>
       </IonFooter>
 
-      {/* Inline reaction bar (replaces fullscreen EmojiPicker) */}
+      {/* Inline reaction bar with "+" for full picker */}
       {reactionBarTarget && (
         <InlineReactionBar
           targetRect={{
@@ -839,7 +1162,19 @@ const ChatView: React.FC = () => {
           }}
           isOwn={reactionBarTarget.isOwn}
           onSelect={handleSelectReaction}
+          onOpenFullPicker={handleOpenFullEmojiPicker}
           onClose={() => setReactionBarTarget(null)}
+        />
+      )}
+
+      {/* Full emoji picker (from "+" button) */}
+      {showFullEmojiPicker && (
+        <EmojiPicker
+          onSelect={handleFullPickerSelect}
+          onClose={() => {
+            setShowFullEmojiPicker(false);
+            setFullPickerMessageId(null);
+          }}
         />
       )}
 
@@ -847,6 +1182,49 @@ const ChatView: React.FC = () => {
         isOpen={showSearch}
         onClose={() => setShowSearch(false)}
         chatId={chatId}
+      />
+
+      <MessageContextMenu
+        isOpen={!!contextMenuTarget}
+        message={contextMenuTarget}
+        isOwn={contextMenuTarget?.sender_id === profile?.id}
+        userId={profile?.id || ''}
+        onClose={handleContextMenuClose}
+        onReply={() => {
+          if (contextMenuTarget) handleReply(contextMenuTarget);
+          setContextMenuTarget(null);
+        }}
+        onEdit={handleEditStart}
+        onCopy={handleCopy}
+        onForward={handleForwardStart}
+        onDeleteForAll={handleDeleteForAll}
+      />
+
+      <ForwardPicker
+        isOpen={showForwardPicker}
+        onClose={() => {
+          setShowForwardPicker(false);
+          setForwardMessage_(null);
+        }}
+        onSelectChat={handleForwardToChat}
+      />
+
+      <GifPicker
+        isOpen={showGifPicker}
+        onClose={() => setShowGifPicker(false)}
+        onSelect={handleGifSelect}
+      />
+
+      <StickerPicker
+        isOpen={showStickerPicker}
+        onClose={() => setShowStickerPicker(false)}
+        onSelect={handleStickerSelect}
+      />
+
+      <PollCreator
+        isOpen={showPollCreator}
+        onClose={() => setShowPollCreator(false)}
+        onCreate={handlePollCreate}
       />
     </IonPage>
   );

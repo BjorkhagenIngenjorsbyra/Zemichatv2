@@ -36,21 +36,25 @@ import {
   chevronDown,
   chevronUp,
   searchOutline,
+  mailUnread,
+  mail,
 } from 'ionicons/icons';
 import { hapticMedium } from '../utils/haptics';
 import { getChatMessages, type MessageWithSender } from '../services/message';
 import { useAuthContext } from '../contexts/AuthContext';
 import {
   getMyChats,
-  pinChat,
+  pinChatWithLimit,
   unpinChat,
   archiveChat,
   unarchiveChat,
   muteChat,
   unmuteChat,
+  markChatUnread,
+  clearMarkedUnread,
   type ChatWithDetails,
 } from '../services/chat';
-import { ChatSearchModal } from '../components/chat';
+import { ChatSearchModal, MuteOptions } from '../components/chat';
 import { SkeletonLoader, EmptyStateIllustration } from '../components/common';
 
 const ChatList: React.FC = () => {
@@ -62,6 +66,9 @@ const ChatList: React.FC = () => {
   const [showArchived, setShowArchived] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
   const contentRef = useRef<HTMLIonContentElement>(null);
+
+  // Mute options state
+  const [muteTarget, setMuteTarget] = useState<ChatWithDetails | null>(null);
 
   // Long-press preview state
   const [previewChat, setPreviewChat] = useState<ChatWithDetails | null>(null);
@@ -216,7 +223,12 @@ const ChatList: React.FC = () => {
     if (chat.isPinned) {
       await unpinChat(chat.id);
     } else {
-      await pinChat(chat.id);
+      const { error } = await pinChatWithLimit(chat.id);
+      if (error) {
+        // Max 3 pinned - could show toast
+        console.warn(error.message);
+        return;
+      }
     }
     loadChats();
   };
@@ -233,8 +245,24 @@ const ChatList: React.FC = () => {
   const handleMute = async (chat: ChatWithDetails) => {
     if (chat.isMuted) {
       await unmuteChat(chat.id);
+      loadChats();
     } else {
-      await muteChat(chat.id);
+      setMuteTarget(chat);
+    }
+  };
+
+  const handleMuteDuration = async (duration: 'hour' | '8hours' | 'week' | 'always') => {
+    if (!muteTarget) return;
+    await muteChat(muteTarget.id, duration);
+    setMuteTarget(null);
+    loadChats();
+  };
+
+  const handleMarkUnread = async (chat: ChatWithDetails) => {
+    if (chat.unreadCount > 0) {
+      await clearMarkedUnread(chat.id);
+    } else {
+      await markChatUnread(chat.id);
     }
     loadChats();
   };
@@ -314,6 +342,15 @@ const ChatList: React.FC = () => {
             <IonIcon
               slot="icon-only"
               icon={chat.isMuted ? volumeHigh : volumeMute}
+            />
+          </IonItemOption>
+          <IonItemOption
+            color="tertiary"
+            onClick={() => handleMarkUnread(chat)}
+          >
+            <IonIcon
+              slot="icon-only"
+              icon={chat.unreadCount > 0 ? mail : mailUnread}
             />
           </IonItemOption>
           <IonItemOption
@@ -680,6 +717,12 @@ const ChatList: React.FC = () => {
           </div>
         )}
       </IonPopover>
+
+      <MuteOptions
+        isOpen={!!muteTarget}
+        onClose={() => setMuteTarget(null)}
+        onSelect={handleMuteDuration}
+      />
 
       <style>{`
         .chat-preview-popover {

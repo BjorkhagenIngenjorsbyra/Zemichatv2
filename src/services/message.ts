@@ -37,7 +37,7 @@ export async function getChatMessages(
         sender:users!messages_sender_id_fkey (*)
       `)
       .eq('chat_id', chatId)
-      .is('deleted_at', null)
+      .or('deleted_at.is.null,deleted_for_all.eq.true')
       .order('created_at', { ascending: false })
       .limit(limit);
 
@@ -137,12 +137,13 @@ export async function sendMessage({
 }
 
 /**
- * Subscribe to new messages in a chat.
+ * Subscribe to new and updated messages in a chat.
  * Returns an unsubscribe function.
  */
 export function subscribeToMessages(
   chatId: string,
-  onMessage: (message: MessageWithSender) => void
+  onMessage: (message: MessageWithSender) => void,
+  onUpdate?: (message: MessageWithSender) => void
 ): () => void {
   const channel: RealtimeChannel = supabase
     .channel(`messages:${chatId}`)
@@ -155,7 +156,6 @@ export function subscribeToMessages(
         filter: `chat_id=eq.${chatId}`,
       },
       async (payload) => {
-        // Fetch the message with sender info
         const { data } = await supabase
           .from('messages')
           .select(`
@@ -167,6 +167,30 @@ export function subscribeToMessages(
 
         if (data) {
           onMessage(data as unknown as MessageWithSender);
+        }
+      }
+    )
+    .on(
+      'postgres_changes',
+      {
+        event: 'UPDATE',
+        schema: 'public',
+        table: 'messages',
+        filter: `chat_id=eq.${chatId}`,
+      },
+      async (payload) => {
+        if (!onUpdate) return;
+        const { data } = await supabase
+          .from('messages')
+          .select(`
+            *,
+            sender:users!messages_sender_id_fkey (*)
+          `)
+          .eq('id', payload.new.id)
+          .single();
+
+        if (data) {
+          onUpdate(data as unknown as MessageWithSender);
         }
       }
     )
@@ -208,7 +232,7 @@ export async function deleteMessage(
 }
 
 /**
- * Edit a message.
+ * Edit a message (within 15 min window).
  */
 export async function editMessage(
   messageId: string,
@@ -237,4 +261,92 @@ export async function editMessage(
   }
 
   return { error: null };
+}
+
+/**
+ * Delete a message for all participants.
+ * Sets deleted_at and clears content to show placeholder.
+ */
+export async function deleteMessageForAll(
+  messageId: string
+): Promise<{ error: Error | null }> {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { error: new Error('Not authenticated') };
+  }
+
+  const { error } = await supabase
+    .from('messages')
+    .update({
+      deleted_at: new Date().toISOString(),
+      deleted_by: user.id,
+      deleted_for_all: true,
+    } as never)
+    .eq('id', messageId)
+    .eq('sender_id', user.id);
+
+  if (error) {
+    return { error: new Error(error.message) };
+  }
+
+  return { error: null };
+}
+
+/**
+ * Forward a message to another chat.
+ */
+export async function forwardMessage(
+  originalMessage: { content: string | null; type: MessageType; media_url: string | null; media_metadata: Record<string, unknown> | null; id: string },
+  targetChatId: string
+): Promise<SendMessageResult> {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { message: null, error: new Error('Not authenticated') };
+  }
+
+  const { data, error } = await supabase
+    .from('messages')
+    .insert({
+      chat_id: targetChatId,
+      sender_id: user.id,
+      type: originalMessage.type,
+      content: originalMessage.content || null,
+      media_url: originalMessage.media_url || null,
+      media_metadata: originalMessage.media_metadata || null,
+      forwarded_from_id: originalMessage.id,
+    } as never)
+    .select()
+    .single();
+
+  if (error) {
+    return { message: null, error: new Error(error.message) };
+  }
+
+  return { message: data as unknown as Message, error: null };
+}
+
+/**
+ * Check if a message can be edited (within 15 min window).
+ */
+export function canEditMessage(message: { sender_id: string; created_at: string; deleted_at: string | null }, userId: string): boolean {
+  if (message.sender_id !== userId) return false;
+  if (message.deleted_at) return false;
+  const elapsed = Date.now() - new Date(message.created_at).getTime();
+  return elapsed < 15 * 60 * 1000; // 15 minutes
+}
+
+/**
+ * Check if a message can be deleted for all (within 1 hour window).
+ */
+export function canDeleteForAll(message: { sender_id: string; created_at: string; deleted_at: string | null }, userId: string): boolean {
+  if (message.sender_id !== userId) return false;
+  if (message.deleted_at) return false;
+  const elapsed = Date.now() - new Date(message.created_at).getTime();
+  return elapsed < 60 * 60 * 1000; // 1 hour
 }

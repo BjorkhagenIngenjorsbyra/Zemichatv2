@@ -327,6 +327,71 @@
     "offline": "Ei internetyhteyttä",
     "backOnline": "Yhteys palautunut"
   },
+  "message": {
+    "image": "Kuva",
+    "voice": "Ääniviesti",
+    "video": "Video",
+    "document": "Asiakirja",
+    "location": "Sijainti",
+    "reply": "Vastaa",
+    "react": "Reagoi",
+    "edited": "muokattu",
+    "gif": "GIF",
+    "sticker": "Tarra",
+    "poll": "Äänestys"
+  },
+  "contextMenu": {
+    "reply": "Vastaa",
+    "copy": "Kopioi teksti",
+    "edit": "Muokkaa viestiä",
+    "forward": "Lähetä edelleen",
+    "forwardTo": "Lähetä edelleen",
+    "deleteForAll": "Poista kaikilta",
+    "messageDeleted": "Viesti on poistettu",
+    "forwarded": "Lähetetty edelleen",
+    "editing": "Muokataan",
+    "editPlaceholder": "Muokkaa viestiä...",
+    "deletedVisibleToOwner": "Lähettäjä poistanut — näkyvissä sinulle Ownerina"
+  },
+  "gif": {
+    "searchPlaceholder": "Etsi GIF...",
+    "noResults": "GIF-kuvia ei löytynyt"
+  },
+  "sticker": {
+    "title": "Tarrat"
+  },
+  "poll": {
+    "createTitle": "Luo äänestys",
+    "create": "Luo",
+    "question": "Kysymys",
+    "questionPlaceholder": "Esitä kysymys...",
+    "options": "Vaihtoehdot",
+    "option": "Vaihtoehto",
+    "addOption": "Lisää vaihtoehto",
+    "allowMultiple": "Salli useita valintoja",
+    "vote": "ääni",
+    "votes": "ääntä",
+    "multipleAllowed": "Useita valintoja sallittu"
+  },
+  "muteOptions": {
+    "title": "Mykistä ilmoitukset",
+    "oneHour": "1 tunti",
+    "eightHours": "8 tuntia",
+    "oneWeek": "1 viikko",
+    "always": "Aina"
+  },
+  "image": {
+    "save": "Tallenna kuva",
+    "share": "Jaa"
+  },
+  "actions": {
+    "pin": "Kiinnitä",
+    "unpin": "Poista kiinnitys",
+    "archive": "Arkistoi",
+    "unarchive": "Palauta arkistosta",
+    "mute": "Mykistä",
+    "unmute": "Poista mykistys"
+  },
   "refresh": {
     "pulling": "Vedä päivittääksesi",
     "refreshing": "Päivitetään..."

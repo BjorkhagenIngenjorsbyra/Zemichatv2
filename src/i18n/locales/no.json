@@ -117,6 +117,63 @@
     "typingMultiple": "{{count}} personer skriver...",
     "camera": "Kamera"
   },
+  "message": {
+    "image": "Bilde",
+    "voice": "Talemelding",
+    "video": "Video",
+    "document": "Dokument",
+    "location": "Posisjon",
+    "reply": "Svar",
+    "react": "Reager",
+    "edited": "redigert",
+    "gif": "GIF",
+    "sticker": "Sticker",
+    "poll": "Avstemning"
+  },
+  "contextMenu": {
+    "reply": "Svar",
+    "copy": "Kopier tekst",
+    "edit": "Rediger melding",
+    "forward": "Videresend",
+    "forwardTo": "Videresend til",
+    "deleteForAll": "Slett for alle",
+    "messageDeleted": "Denne meldingen ble slettet",
+    "forwarded": "Videresendt",
+    "editing": "Redigerer",
+    "editPlaceholder": "Rediger melding...",
+    "deletedVisibleToOwner": "Slettet av avsender — synlig for deg som Owner"
+  },
+  "gif": {
+    "searchPlaceholder": "Søk GIF-er...",
+    "noResults": "Ingen GIF-er funnet"
+  },
+  "sticker": {
+    "title": "Stickers"
+  },
+  "poll": {
+    "createTitle": "Opprett avstemning",
+    "create": "Opprett",
+    "question": "Spørsmål",
+    "questionPlaceholder": "Still et spørsmål...",
+    "options": "Alternativer",
+    "option": "Alternativ",
+    "addOption": "Legg til alternativ",
+    "allowMultiple": "Tillat flere valg",
+    "vote": "stemme",
+    "votes": "stemmer",
+    "multipleAllowed": "Flere valg tillatt"
+  },
+  "muteOptions": {
+    "title": "Demp varsler",
+    "oneHour": "1 time",
+    "eightHours": "8 timer",
+    "oneWeek": "1 uke",
+    "always": "Alltid"
+  },
+  "image": {
+    "save": "Lagre bilde",
+    "share": "Del"
+  },
   "call": {
     "call": "Samtale",
     "voiceCall": "Talesamtale",

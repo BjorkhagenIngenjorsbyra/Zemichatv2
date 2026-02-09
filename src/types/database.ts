@@ -33,6 +33,9 @@ export enum MessageType {
   LOCATION = 'location',
   CONTACT = 'contact',
   SYSTEM = 'system',
+  POLL = 'poll',
+  GIF = 'gif',
+  STICKER = 'sticker',
 }
 
 export enum ReportStatus {
@@ -150,6 +153,8 @@ export interface ChatMember {
   is_archived: boolean;
   unread_count: number;
   last_read_at: string | null;
+  marked_unread: boolean;
+  muted_until: string | null;
 }
 
 export interface Message {
@@ -168,6 +173,7 @@ export interface Message {
   edited_at: string | null;
   deleted_at: string | null;
   deleted_by: string | null;
+  deleted_for_all: boolean;
   created_at: string;
 }
 
@@ -300,6 +306,43 @@ export interface TeamInvitation {
   claimed_at: string | null;
   claimed_by: string | null;
   created_at: string;
+}
+
+// ============================================================
+// POLL INTERFACES
+// ============================================================
+
+export interface Poll {
+  id: string;
+  chat_id: string;
+  message_id: string | null;
+  creator_id: string;
+  question: string;
+  allows_multiple: boolean;
+  is_anonymous: boolean;
+  closes_at: string | null;
+  created_at: string;
+}
+
+export interface PollOption {
+  id: string;
+  poll_id: string;
+  text: string;
+  sort_order: number;
+  created_at: string;
+}
+
+export interface PollVote {
+  id: string;
+  poll_id: string;
+  option_id: string;
+  user_id: string;
+  created_at: string;
+}
+
+export interface PollWithOptions extends Poll {
+  options: (PollOption & { votes: PollVote[] })[];
+  totalVotes: number;
 }
 
 // ============================================================
