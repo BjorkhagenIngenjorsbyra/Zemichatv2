@@ -188,14 +188,9 @@ const TexterLogin: React.FC = () => {
           }
 
           .auth-input {
-            --background: hsl(var(--card));
-            --color: hsl(var(--foreground));
-            --placeholder-color: hsl(var(--muted-foreground));
-            --border-color: hsl(var(--border));
+            --background: transparent;
+            --border-color: hsl(var(--border) / 0.3);
             --border-radius: 1rem;
-            --padding-start: 1rem;
-            --padding-end: 1rem;
-            --highlight-color-focused: hsl(var(--primary));
           }
 
           .zemi-input {
@@ -208,8 +203,6 @@ const TexterLogin: React.FC = () => {
           .auth-button {
             --background: hsl(var(--primary));
             --color: hsl(var(--primary-foreground));
-            --border-radius: 9999px;
-            font-weight: 700;
             height: 3rem;
             margin-top: 0.5rem;
           }
@@ -237,7 +230,6 @@ const TexterLogin: React.FC = () => {
           .auth-secondary-button {
             --border-color: hsl(var(--border));
             --color: hsl(var(--foreground));
-            --border-radius: 9999px;
             font-weight: 600;
             height: 3rem;
           }

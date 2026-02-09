@@ -98,11 +98,11 @@ html, body {
 
 /* Button glow effect */
 .glow-primary {
-  box-shadow: 0 4px 12px rgba(167, 139, 250, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  box-shadow: 0 4px 12px rgba(167, 139, 250, 0.3);
 }
 
 .glow-primary:hover {
-  box-shadow: 0 6px 16px rgba(167, 139, 250, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  box-shadow: 0 6px 16px rgba(167, 139, 250, 0.4);
 }
 
 /* Ionic overrides for dark theme */
@@ -125,17 +125,37 @@ ion-toolbar {
 }
 
 ion-input {
-  --background: hsl(var(--card));
-  --color: hsl(var(--foreground));
-  --placeholder-color: hsl(var(--muted-foreground));
-  --border-radius: 1rem;
-  --padding-start: 1rem;
-  --padding-end: 1rem;
+  --background: transparent !important;
+  --color: hsl(var(--foreground)) !important;
+  --placeholder-color: hsl(var(--muted-foreground)) !important;
+  --border-color: hsl(var(--border) / 0.3) !important;
+  --border-radius: 1rem !important;
+  --border-width: 1px !important;
+  --padding-start: 1rem !important;
+  --padding-end: 1rem !important;
+  --highlight-color-focused: hsl(var(--primary)) !important;
+  background: transparent;
 }
 
 ion-button {
   --border-radius: 9999px;
   font-weight: 700;
+  /* Match host element shape to inner native button to prevent white corner artifacts */
+  border-radius: 9999px;
+  overflow: hidden;
+}
+
+/* Ensure outline buttons also get proper host styling */
+ion-button[fill="outline"] {
+  --border-color: hsl(var(--border));
+  --color: hsl(var(--foreground));
+}
+
+ion-checkbox {
+  --background: transparent;
+  --border-color: hsl(var(--border));
+  --checkbox-background-checked: hsl(var(--primary));
+  --border-color-checked: hsl(var(--primary));
 }
 
 /* Animations */
