@@ -40,6 +40,9 @@ import SuperTour from './pages/SuperTour';
 import TexterTour from './pages/TexterTour';
 import InviteSuper from './pages/InviteSuper';
 
+/* Legal */
+import LegalPage from './pages/LegalPage';
+
 /* Core CSS required for Ionic components to work properly */
 import '@ionic/react/css/core.css';
 
@@ -153,6 +156,14 @@ const App: React.FC = () => (
             <PrivateRoute exact path="/invite-super">
               <InviteSuper />
             </PrivateRoute>
+
+            {/* Legal pages - accessible regardless of auth state */}
+            <Route exact path="/privacy">
+              <LegalPage type="privacy" />
+            </Route>
+            <Route exact path="/terms">
+              <LegalPage type="terms" />
+            </Route>
 
             {/* Default redirect */}
             <Route exact path="/">
