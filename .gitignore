@@ -40,6 +40,7 @@ android/keystore.properties
 
 # Screenshots
 *.png
+!assets/store/*.png
 
 # Tool configs
 .claude/
