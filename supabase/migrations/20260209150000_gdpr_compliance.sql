@@ -131,19 +131,35 @@ BEGIN
     created_at,
     updated_at,
     aud,
-    role
+    role,
+    confirmation_token,
+    recovery_token,
+    email_change_token_new,
+    email_change_token_current,
+    email_change,
+    phone_change,
+    phone_change_token,
+    reauthentication_token
   ) VALUES (
     v_texter_id,
     '00000000-0000-0000-0000-000000000000',
     v_fake_email,
-    crypt(texter_password, gen_salt('bf')),
+    extensions.crypt(texter_password, extensions.gen_salt('bf')),
     now(),
     '{"provider":"email","providers":["email"]}'::jsonb,
     json_build_object('display_name', texter_display_name)::jsonb,
     now(),
     now(),
     'authenticated',
-    'authenticated'
+    'authenticated',
+    '', -- confirmation_token
+    '', -- recovery_token
+    '', -- email_change_token_new
+    '', -- email_change_token_current
+    '', -- email_change
+    '', -- phone_change
+    '', -- phone_change_token
+    ''  -- reauthentication_token
   );
 
   INSERT INTO auth.identities (
