@@ -40,6 +40,11 @@ interface ChatMemberWithUser extends ChatMember {
  */
 export async function getMyChats(): Promise<{ chats: ChatWithDetails[]; error: Error | null }> {
   try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      return { chats: [], error: new Error('Not authenticated') };
+    }
+
     // Get chat IDs where current user is a member
     const { data: memberData, error: memberError } = await supabase
       .from('chat_members')
@@ -60,6 +65,7 @@ export async function getMyChats(): Promise<{ chats: ChatWithDetails[]; error: E
           updated_at
         )
       `)
+      .eq('user_id', user.id)
       .is('left_at', null)
       .order('is_pinned', { ascending: false });
 
