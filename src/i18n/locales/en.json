@@ -19,6 +19,7 @@
     "no": "No",
     "copy": "Copy",
     "copied": "Copied!",
+    "open": "Open",
     "yesterday": "Yesterday",
     "today": "Today",
     "you": "You",
@@ -128,7 +129,12 @@
     "pinnedChats": "Pinned",
     "archivedChats": "Archived",
     "welcomeTitle": "Say hello!",
-    "welcomeMessage": "Send your first message to start the conversation"
+    "welcomeMessage": "Send your first message to start the conversation",
+    "newMessages": "new",
+    "typing": "typing...",
+    "typingOne": "{{name}} is typing...",
+    "typingMultiple": "{{count}} people typing...",
+    "camera": "Camera"
   },
   "message": {
     "image": "Image",
@@ -492,6 +498,10 @@
     "submitButton": "Send",
     "submitting": "Sending...",
     "successMessage": "Thank you! We'll get back to you within 24 hours."
+  },
+  "network": {
+    "offline": "No internet connection",
+    "backOnline": "Back online"
   },
   "refresh": {
     "pulling": "Pull to refresh",

@@ -11,6 +11,9 @@ import { PrivateRoute, PublicRoute } from './components/PrivateRoute';
 /* Call */
 import { IncomingCallModal, CallView, CallPiP } from './components/call';
 
+/* Network */
+import { OfflineBanner } from './components/common';
+
 /* Subscription */
 import { Paywall } from './components/subscription';
 
@@ -188,6 +191,9 @@ const App: React.FC = () => (
 
           {/* Subscription paywall */}
           <Paywall />
+
+          {/* Network status */}
+          <OfflineBanner />
         </IonReactRouter>
       </CallProvider>
     </SubscriptionProvider>

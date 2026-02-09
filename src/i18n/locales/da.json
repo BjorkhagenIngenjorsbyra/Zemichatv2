@@ -18,7 +18,8 @@
     "yes": "Ja",
     "no": "Nej",
     "copy": "Kopier",
-    "copied": "Kopieret!"
+    "copied": "Kopieret!",
+    "open": "Åbn"
   },
   "auth": {
     "login": "Log ind",
@@ -109,7 +110,12 @@
     "noChats": "Ingen chats endnu",
     "startChatting": "Begynd at chatte med dine venner",
     "welcomeTitle": "Sig hej!",
-    "welcomeMessage": "Send din første besked for at starte samtalen"
+    "welcomeMessage": "Send din første besked for at starte samtalen",
+    "newMessages": "nye",
+    "typing": "skriver...",
+    "typingOne": "{{name}} skriver...",
+    "typingMultiple": "{{count}} personer skriver...",
+    "camera": "Kamera"
   },
   "call": {
     "call": "Opkald",
@@ -316,6 +322,10 @@
     "submitButton": "Send",
     "submitting": "Sender...",
     "successMessage": "Tak! Vi vender tilbage inden for 24 timer."
+  },
+  "network": {
+    "offline": "Ingen internetforbindelse",
+    "backOnline": "Online igen"
   },
   "refresh": {
     "pulling": "Træk for at opdatere",

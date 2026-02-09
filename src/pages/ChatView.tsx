@@ -13,7 +13,9 @@ import {
   IonIcon,
   IonButton,
 } from '@ionic/react';
-import { send, searchOutline } from 'ionicons/icons';
+import { send, searchOutline, arrowDown } from 'ionicons/icons';
+import { Keyboard } from '@capacitor/keyboard';
+import { Capacitor } from '@capacitor/core';
 import { useAuthContext } from '../contexts/AuthContext';
 import { getChat, markChatAsRead, type ChatWithDetails } from '../services/chat';
 import {
@@ -27,19 +29,38 @@ import {
   getReactionsForMessages,
   type GroupedReaction,
 } from '../services/reaction';
+import {
+  getReadReceiptsForMessages,
+  insertReadReceipts,
+  subscribeToReadReceipts,
+} from '../services/readReceipt';
+import {
+  sendTyping,
+  subscribeToTyping,
+  cleanupTypingChannel,
+} from '../services/typingIndicator';
 import { uploadImage, uploadVoice, uploadDocument } from '../services/storage';
 import { hapticLight } from '../utils/haptics';
 import { SkeletonLoader } from '../components/common';
 import { MessageType, type Message, type User } from '../types/database';
+
+// Memoized: collect all image URLs for gallery navigation
+const getGalleryUrls = (messages: MessageWithSender[]): string[] => {
+  return messages
+    .filter((m) => m.type === 'image' && m.media_url)
+    .map((m) => m.media_url as string);
+};
 import {
   MessageBubble,
   QuotedMessage,
-  EmojiPicker,
   MediaPicker,
   VoiceRecorder,
   QuickMessageBar,
   ChatSearchModal,
+  InlineReactionBar,
+  TypingIndicator,
 } from '../components/chat';
+import type { ReadStatus } from '../components/chat/MessageBubble';
 import { SOSButton } from '../components/sos';
 import { CallButton } from '../components/call';
 import { UserRole, type TexterSettings } from '../types/database';
@@ -63,14 +84,79 @@ const ChatView: React.FC = () => {
 
   // Reactions state
   const [reactions, setReactions] = useState<Map<string, GroupedReaction[]>>(new Map());
-  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
-  const [emojiPickerTarget, setEmojiPickerTarget] = useState<MessageWithSender | null>(null);
+  const [reactionBarTarget, setReactionBarTarget] = useState<{
+    message: MessageWithSender;
+    rect: DOMRect;
+    isOwn: boolean;
+  } | null>(null);
 
   // Search state
   const [showSearch, setShowSearch] = useState(false);
 
   // Texter call permissions
   const [texterSettings, setTexterSettings] = useState<TexterSettings | null>(null);
+
+  // Keyboard height (native only)
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
+
+  // Auto-scroll + "new messages" button
+  const [isNearBottom, setIsNearBottom] = useState(true);
+  const [newMessageCount, setNewMessageCount] = useState(0);
+
+  // Send animation
+  const [lastSentId, setLastSentId] = useState<string | null>(null);
+
+  // Read receipts
+  const [readReceipts, setReadReceipts] = useState<Map<string, string[]>>(new Map());
+  const [chatMemberCount, setChatMemberCount] = useState(0);
+
+  // Typing indicator
+  const [typers, setTypers] = useState<{ userId: string; displayName: string }[]>([]);
+
+  // --- Keyboard handling (native) ---
+  useEffect(() => {
+    if (!Capacitor.isNativePlatform()) return;
+
+    const showListener = Keyboard.addListener('keyboardWillShow', (info) => {
+      setKeyboardHeight(info.keyboardHeight);
+      setTimeout(() => contentRef.current?.scrollToBottom(200), 100);
+    });
+
+    const hideListener = Keyboard.addListener('keyboardWillHide', () => {
+      setKeyboardHeight(0);
+    });
+
+    return () => {
+      showListener.then((l) => l.remove());
+      hideListener.then((l) => l.remove());
+    };
+  }, []);
+
+  // --- Scroll detection ---
+  const handleScroll = useCallback(async () => {
+    const el = contentRef.current;
+    if (!el) return;
+
+    const scrollEl = await el.getScrollElement();
+    const { scrollTop, scrollHeight, clientHeight } = scrollEl;
+    const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
+    const nearBottom = distanceFromBottom < 200;
+    setIsNearBottom(nearBottom);
+
+    if (nearBottom) {
+      setNewMessageCount(0);
+    }
+  }, []);
+
+  useEffect(() => {
+    const el = contentRef.current;
+    if (!el) return;
+
+    el.addEventListener('ionScroll', handleScroll);
+    return () => {
+      el.removeEventListener('ionScroll', handleScroll);
+    };
+  }, [handleScroll]);
 
   const scrollToBottom = useCallback(() => {
     setTimeout(() => {
@@ -85,6 +171,19 @@ const ChatView: React.FC = () => {
     setReactions(reactionsByMessage);
   }, []);
 
+  const loadReadReceipts = useCallback(async (messageIds: string[]) => {
+    if (messageIds.length === 0) return;
+
+    const { receipts } = await getReadReceiptsForMessages(messageIds);
+    setReadReceipts((prev) => {
+      const merged = new Map(prev);
+      for (const [msgId, users] of receipts) {
+        merged.set(msgId, users);
+      }
+      return merged;
+    });
+  }, []);
+
   const loadChat = useCallback(async () => {
     if (!chatId) return;
 
@@ -95,20 +194,30 @@ const ChatView: React.FC = () => {
     }
 
     setChat(chatData);
+    setChatMemberCount(chatData.members.length);
 
     const { messages: chatMessages } = await getChatMessages(chatId);
     setMessages(chatMessages);
     setIsLoading(false);
 
-    // Load reactions for all messages
+    // Load reactions + read receipts for all messages
     const messageIds = chatMessages.map((m) => m.id);
     loadReactions(messageIds);
+    loadReadReceipts(messageIds);
 
     // Mark as read
     await markChatAsRead(chatId);
 
+    // Mark visible messages as read
+    const otherMessages = chatMessages
+      .filter((m) => m.sender_id !== profile?.id)
+      .map((m) => m.id);
+    if (otherMessages.length > 0) {
+      insertReadReceipts(otherMessages);
+    }
+
     scrollToBottom();
-  }, [chatId, history, scrollToBottom, loadReactions]);
+  }, [chatId, history, scrollToBottom, loadReactions, loadReadReceipts, profile?.id]);
 
   useEffect(() => {
     loadChat();
@@ -135,25 +244,62 @@ const ChatView: React.FC = () => {
         }
         return [...prev, newMessage];
       });
-      scrollToBottom();
+
+      if (isNearBottom) {
+        scrollToBottom();
+      } else {
+        setNewMessageCount((n) => n + 1);
+      }
 
       // Load reactions for new message
       loadReactions([newMessage.id]);
 
-      // Mark as read if not from self
+      // Mark as read if not from self and near bottom
       if (newMessage.sender_id !== profile?.id) {
+        if (isNearBottom) {
+          insertReadReceipts([newMessage.id]);
+        }
         markChatAsRead(chatId);
       }
     });
 
     return unsubscribe;
-  }, [chatId, profile?.id, scrollToBottom, loadReactions]);
+  }, [chatId, profile?.id, scrollToBottom, loadReactions, isNearBottom]);
+
+  // Subscribe to read receipts
+  useEffect(() => {
+    if (!chatId) return;
+
+    const unsubscribe = subscribeToReadReceipts(chatId, (receipt) => {
+      setReadReceipts((prev) => {
+        const merged = new Map(prev);
+        const existing = merged.get(receipt.messageId) || [];
+        if (!existing.includes(receipt.userId)) {
+          merged.set(receipt.messageId, [...existing, receipt.userId]);
+        }
+        return merged;
+      });
+    });
+
+    return unsubscribe;
+  }, [chatId]);
+
+  // Subscribe to typing indicators
+  useEffect(() => {
+    if (!chatId || !profile?.id) return;
+
+    const unsubscribe = subscribeToTyping(chatId, profile.id, setTypers);
+
+    return () => {
+      unsubscribe();
+      cleanupTypingChannel(chatId);
+    };
+  }, [chatId, profile?.id]);
 
   const getChatDisplayName = (): string => {
     if (!chat) return '';
     if (chat.name) return chat.name;
 
-    // For 1-on-1 chats, show the other person's name
     if (!chat.is_group && chat.members.length > 0) {
       const otherMember = chat.members.find((m) => m.user_id !== profile?.id);
       return otherMember?.user?.display_name || t('dashboard.unnamed');
@@ -169,7 +315,7 @@ const ChatView: React.FC = () => {
     const text = messageText.trim();
     setMessageText('');
 
-    const { error } = await sendMessage({
+    const { message, error } = await sendMessage({
       chatId,
       content: text,
       replyToId: replyTo?.id,
@@ -177,10 +323,15 @@ const ChatView: React.FC = () => {
 
     if (error) {
       console.error('Failed to send message:', error);
-      setMessageText(text); // Restore text on error
+      setMessageText(text);
     } else {
       setReplyTo(null);
       hapticLight();
+      // Trigger send animation
+      if (message) {
+        setLastSentId(message.id);
+        setTimeout(() => setLastSentId(null), 400);
+      }
     }
 
     setIsSending(false);
@@ -191,6 +342,15 @@ const ChatView: React.FC = () => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSend();
+    }
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setMessageText(e.target.value);
+
+    // Send typing indicator
+    if (chatId && profile?.id && profile?.display_name) {
+      sendTyping(chatId, profile.id, profile.display_name);
     }
   };
 
@@ -277,24 +437,37 @@ const ChatView: React.FC = () => {
     setIsSending(false);
   };
 
-  const handleOpenEmojiPicker = (message: MessageWithSender) => {
-    setEmojiPickerTarget(message);
-    setShowEmojiPicker(true);
+  const handleOpenReactionBar = (message: MessageWithSender, rect: DOMRect) => {
+    const isOwn = message.sender_id === profile?.id;
+    setReactionBarTarget({ message, rect, isOwn });
   };
 
   const handleSelectReaction = async (emoji: string) => {
-    if (!emojiPickerTarget) return;
+    if (!reactionBarTarget) return;
     hapticLight();
 
-    await toggleReaction(emojiPickerTarget.id, emoji);
-
-    // Refresh reactions
-    loadReactions([emojiPickerTarget.id]);
+    await toggleReaction(reactionBarTarget.message.id, emoji);
+    loadReactions([reactionBarTarget.message.id]);
   };
 
   const handleToggleReaction = async (messageId: string, emoji: string) => {
     await toggleReaction(messageId, emoji);
     loadReactions([messageId]);
+  };
+
+  const getReadStatus = (message: MessageWithSender): ReadStatus | undefined => {
+    if (message.sender_id !== profile?.id) return undefined;
+
+    const receipts = readReceipts.get(message.id) || [];
+    const otherMembers = chatMemberCount - 1; // Exclude self
+
+    if (otherMembers <= 0) return 'sent';
+
+    const readByOthers = receipts.filter((uid) => uid !== profile?.id).length;
+
+    if (readByOthers >= otherMembers) return 'read';
+    if (readByOthers > 0) return 'delivered';
+    return 'sent';
   };
 
   const formatDateDivider = (dateStr: string): string => {
@@ -320,6 +493,15 @@ const ChatView: React.FC = () => {
     return prevDate !== currDate;
   };
 
+  const handleScrollToBottom = () => {
+    scrollToBottom();
+    setNewMessageCount(0);
+  };
+
+  const handleHeaderClick = () => {
+    contentRef.current?.scrollToTop(300);
+  };
+
   return (
     <IonPage>
       <IonHeader>
@@ -327,7 +509,12 @@ const ChatView: React.FC = () => {
           <IonButtons slot="start">
             <IonBackButton defaultHref="/chats" />
           </IonButtons>
-          <IonTitle>{getChatDisplayName()}</IonTitle>
+          <IonTitle
+            onClick={handleHeaderClick}
+            style={{ cursor: 'pointer' }}
+          >
+            {getChatDisplayName()}
+          </IonTitle>
           <IonButtons slot="end">
             <CallButton chatId={chatId} type="voice" hidden={texterSettings?.can_voice_call === false} />
             <CallButton chatId={chatId} type="video" hidden={texterSettings?.can_video_call === false} />
@@ -339,7 +526,14 @@ const ChatView: React.FC = () => {
         </IonToolbar>
       </IonHeader>
 
-      <IonContent ref={contentRef} className="chat-content" fullscreen>
+      <IonContent
+        ref={contentRef}
+        className="chat-content"
+        fullscreen
+        scrollEvents
+        onIonScroll={handleScroll}
+        style={keyboardHeight > 0 ? { '--keyboard-offset': `${keyboardHeight}px` } as React.CSSProperties : undefined}
+      >
         {isLoading ? (
           <SkeletonLoader variant="messages" />
         ) : messages.length === 0 ? (
@@ -349,8 +543,13 @@ const ChatView: React.FC = () => {
             <p>{t('chat.welcomeMessage')}</p>
           </div>
         ) : (
-          <div className="messages-container">
-            {messages.map((message, index) => {
+          <div
+            className="messages-container"
+            style={keyboardHeight > 0 ? { paddingBottom: `${keyboardHeight}px` } : undefined}
+          >
+            {(() => {
+              const galleryUrls = getGalleryUrls(messages);
+              return messages.map((message, index) => {
               const isOwn = message.sender_id === profile?.id;
               const showDivider = shouldShowDateDivider(message, index);
               const messageReactions = reactions.get(message.id) || [];
@@ -368,14 +567,31 @@ const ChatView: React.FC = () => {
                       isOwn={isOwn}
                       reactions={messageReactions}
                       showSenderName={chat?.is_group && !isOwn}
+                      readStatus={getReadStatus(message)}
+                      isJustSent={message.id === lastSentId}
+                      galleryUrls={galleryUrls}
                       onReply={() => handleReply(message)}
-                      onReact={() => handleOpenEmojiPicker(message)}
+                      onReact={(msg, rect) => handleOpenReactionBar(msg, rect)}
                       onToggleReaction={handleToggleReaction}
                     />
                   </div>
                 </div>
               );
-            })}
+            });
+            })()}
+
+            {/* Typing indicator */}
+            <TypingIndicator typers={typers} isGroup={chat?.is_group} />
+          </div>
+        )}
+
+        {/* "New messages" floating button */}
+        {newMessageCount > 0 && (
+          <div className="new-messages-button" onClick={handleScrollToBottom}>
+            <IonIcon icon={arrowDown} />
+            <span>
+              {newMessageCount} {t('chat.newMessages')}
+            </span>
           </div>
         )}
 
@@ -424,14 +640,21 @@ const ChatView: React.FC = () => {
             display: flex;
             justify-content: center;
             margin: 1rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 10;
           }
 
           .date-divider span {
-            background: hsl(var(--muted) / 0.3);
-            color: hsl(var(--muted-foreground));
+            background: hsl(var(--muted) / 0.6);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            color: hsl(var(--foreground));
             font-size: 0.75rem;
+            font-weight: 500;
             padding: 0.25rem 0.75rem;
             border-radius: 9999px;
+            box-shadow: 0 1px 4px hsl(0 0% 0% / 0.15);
           }
 
           .message-wrapper {
@@ -445,6 +668,30 @@ const ChatView: React.FC = () => {
 
           .message-wrapper.other {
             justify-content: flex-start;
+          }
+
+          .new-messages-button {
+            position: fixed;
+            bottom: 120px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.5rem 1rem;
+            background: hsl(var(--primary));
+            color: hsl(var(--primary-foreground));
+            border-radius: 9999px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 4px 16px hsl(var(--primary) / 0.4);
+            z-index: 100;
+            animation: fade-slide-in 0.2s ease-out;
+          }
+
+          .new-messages-button ion-icon {
+            font-size: 0.9rem;
           }
         `}</style>
       </IonContent>
@@ -484,7 +731,7 @@ const ChatView: React.FC = () => {
             className="message-input"
             placeholder={t('chat.typeMessage')}
             value={messageText}
-            onChange={(e) => setMessageText(e.target.value)}
+            onChange={handleInputChange}
             onKeyDown={handleKeyDown}
             rows={1}
           />
@@ -581,13 +828,18 @@ const ChatView: React.FC = () => {
         `}</style>
       </IonFooter>
 
-      {showEmojiPicker && (
-        <EmojiPicker
-          onSelect={handleSelectReaction}
-          onClose={() => {
-            setShowEmojiPicker(false);
-            setEmojiPickerTarget(null);
+      {/* Inline reaction bar (replaces fullscreen EmojiPicker) */}
+      {reactionBarTarget && (
+        <InlineReactionBar
+          targetRect={{
+            top: reactionBarTarget.rect.top,
+            left: reactionBarTarget.rect.left,
+            width: reactionBarTarget.rect.width,
+            bottom: reactionBarTarget.rect.bottom,
           }}
+          isOwn={reactionBarTarget.isOwn}
+          onSelect={handleSelectReaction}
+          onClose={() => setReactionBarTarget(null)}
         />
       )}
 

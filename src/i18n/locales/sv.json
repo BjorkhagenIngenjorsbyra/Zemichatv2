@@ -19,6 +19,7 @@
     "no": "Nej",
     "copy": "Kopiera",
     "copied": "Kopierat!",
+    "open": "Öppna",
     "yesterday": "Igår",
     "today": "Idag",
     "you": "Du",
@@ -128,7 +129,12 @@
     "pinnedChats": "Fästa",
     "archivedChats": "Arkiverade",
     "welcomeTitle": "Säg hej!",
-    "welcomeMessage": "Skicka ditt första meddelande för att starta konversationen"
+    "welcomeMessage": "Skicka ditt första meddelande för att starta konversationen",
+    "newMessages": "nya",
+    "typing": "skriver...",
+    "typingOne": "{{name}} skriver...",
+    "typingMultiple": "{{count}} personer skriver...",
+    "camera": "Kamera"
   },
   "message": {
     "image": "Bild",
@@ -492,6 +498,10 @@
     "submitButton": "Skicka",
     "submitting": "Skickar...",
     "successMessage": "Tack! Vi återkommer inom 24 timmar."
+  },
+  "network": {
+    "offline": "Ingen internetanslutning",
+    "backOnline": "Ansluten igen"
   },
   "refresh": {
     "pulling": "Dra för att uppdatera",

@@ -1,7 +1,9 @@
 import { useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { IonIcon, IonButton, IonSpinner } from '@ionic/react';
-import { image, document, close, send } from 'ionicons/icons';
+import { image, document as documentIcon, close, send, camera } from 'ionicons/icons';
+import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
+import { Capacitor } from '@capacitor/core';
 
 interface MediaPickerProps {
   onImageSelect: (file: File, caption?: string) => Promise<void>;
@@ -24,12 +26,64 @@ const MediaPicker: React.FC<MediaPickerProps> = ({
   const [caption, setCaption] = useState('');
   const [isSending, setIsSending] = useState(false);
 
+  // Pinch-to-zoom state for preview
+  const [previewScale, setPreviewScale] = useState(1);
+  const [previewTranslate, setPreviewTranslate] = useState({ x: 0, y: 0 });
+  const lastDistRef = useRef(0);
+  const isPinchingRef = useRef(false);
+  const isPanningRef = useRef(false);
+  const lastPanRef = useRef({ x: 0, y: 0 });
+
   const handleImageClick = () => {
     imageInputRef.current?.click();
   };
 
   const handleDocumentClick = () => {
     documentInputRef.current?.click();
+  };
+
+  const handleCameraClick = async () => {
+    setIsOpen(false);
+
+    try {
+      if (Capacitor.isNativePlatform()) {
+        const photo = await Camera.getPhoto({
+          quality: 85,
+          resultType: CameraResultType.Uri,
+          source: CameraSource.Camera,
+          allowEditing: false,
+        });
+
+        if (photo.webPath) {
+          const response = await fetch(photo.webPath);
+          const blob = await response.blob();
+          const ext = photo.format || 'jpeg';
+          const file = new File([blob], `camera_${Date.now()}.${ext}`, {
+            type: `image/${ext}`,
+          });
+
+          setPreviewFile(file);
+          setPreviewUrl(URL.createObjectURL(file));
+        }
+      } else {
+        // Web fallback: open file picker with camera preference
+        const input = window.document.createElement('input');
+        input.type = 'file';
+        input.accept = 'image/*';
+        input.capture = 'environment';
+        input.onchange = (e: Event) => {
+          const file = (e.target as HTMLInputElement).files?.[0];
+          if (file) {
+            setPreviewFile(file);
+            setPreviewUrl(URL.createObjectURL(file));
+          }
+        };
+        input.click();
+      }
+    } catch (err) {
+      // User cancelled or permission denied
+      console.log('Camera cancelled:', err);
+    }
   };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -75,6 +129,72 @@ const MediaPicker: React.FC<MediaPickerProps> = ({
     setPreviewFile(null);
     setPreviewUrl(null);
     setCaption('');
+    resetPreviewZoom();
+  };
+
+  const resetPreviewZoom = () => {
+    setPreviewScale(1);
+    setPreviewTranslate({ x: 0, y: 0 });
+  };
+
+  // --- Touch handlers for preview pinch-zoom ---
+  const handlePreviewTouchStart = (e: React.TouchEvent) => {
+    if (e.touches.length === 2) {
+      isPinchingRef.current = true;
+      const dx = e.touches[0].clientX - e.touches[1].clientX;
+      const dy = e.touches[0].clientY - e.touches[1].clientY;
+      lastDistRef.current = Math.sqrt(dx * dx + dy * dy);
+    } else if (e.touches.length === 1 && previewScale > 1) {
+      isPanningRef.current = true;
+      lastPanRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+    }
+  };
+
+  const handlePreviewTouchMove = (e: React.TouchEvent) => {
+    if (e.touches.length === 2 && isPinchingRef.current) {
+      e.preventDefault();
+      const dx = e.touches[0].clientX - e.touches[1].clientX;
+      const dy = e.touches[0].clientY - e.touches[1].clientY;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+
+      if (lastDistRef.current > 0) {
+        const newScale = Math.max(1, Math.min(4, previewScale * (dist / lastDistRef.current)));
+        setPreviewScale(newScale);
+        if (newScale <= 1) setPreviewTranslate({ x: 0, y: 0 });
+      }
+      lastDistRef.current = dist;
+    } else if (e.touches.length === 1 && isPanningRef.current && previewScale > 1) {
+      e.preventDefault();
+      const dx = e.touches[0].clientX - lastPanRef.current.x;
+      const dy = e.touches[0].clientY - lastPanRef.current.y;
+      setPreviewTranslate((prev) => ({ x: prev.x + dx, y: prev.y + dy }));
+      lastPanRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+    }
+  };
+
+  const handlePreviewTouchEnd = () => {
+    isPinchingRef.current = false;
+    isPanningRef.current = false;
+    lastDistRef.current = 0;
+
+    if (previewScale < 1.1) {
+      resetPreviewZoom();
+    }
+  };
+
+  // Double-tap to zoom on preview
+  const lastTapRef = useRef(0);
+  const handlePreviewDoubleTap = (e: React.TouchEvent) => {
+    const now = Date.now();
+    if (now - lastTapRef.current < 300) {
+      e.preventDefault();
+      if (previewScale > 1) {
+        resetPreviewZoom();
+      } else {
+        setPreviewScale(2.5);
+      }
+    }
+    lastTapRef.current = now;
   };
 
   // Image preview modal
@@ -87,8 +207,25 @@ const MediaPicker: React.FC<MediaPickerProps> = ({
           </IonButton>
         </div>
 
-        <div className="preview-body">
-          <img src={previewUrl} alt="Preview" className="preview-image" />
+        <div
+          className="preview-body"
+          onTouchStart={(e) => {
+            handlePreviewDoubleTap(e);
+            handlePreviewTouchStart(e);
+          }}
+          onTouchMove={handlePreviewTouchMove}
+          onTouchEnd={handlePreviewTouchEnd}
+        >
+          <img
+            src={previewUrl}
+            alt="Preview"
+            className="preview-image"
+            style={{
+              transform: `translate(${previewTranslate.x}px, ${previewTranslate.y}px) scale(${previewScale})`,
+              transition: isPinchingRef.current || isPanningRef.current ? 'none' : 'transform 0.2s ease-out',
+            }}
+            draggable={false}
+          />
         </div>
 
         <div className="preview-footer">
@@ -140,6 +277,9 @@ const MediaPicker: React.FC<MediaPickerProps> = ({
             align-items: center;
             padding: 1rem;
             overflow: hidden;
+            touch-action: none;
+            user-select: none;
+            -webkit-user-select: none;
           }
 
           .preview-image {
@@ -147,6 +287,8 @@ const MediaPicker: React.FC<MediaPickerProps> = ({
             max-height: 100%;
             object-fit: contain;
             border-radius: 0.5rem;
+            will-change: transform;
+            pointer-events: none;
           }
 
           .preview-footer {
@@ -209,6 +351,14 @@ const MediaPicker: React.FC<MediaPickerProps> = ({
         <div className="picker-menu">
           <button
             className="picker-option"
+            onClick={handleCameraClick}
+            disabled={disabled || isSending}
+          >
+            <IonIcon icon={camera} />
+            <span>{t('chat.camera')}</span>
+          </button>
+          <button
+            className="picker-option"
             onClick={handleImageClick}
             disabled={disabled || isSending}
           >
@@ -220,7 +370,7 @@ const MediaPicker: React.FC<MediaPickerProps> = ({
             onClick={handleDocumentClick}
             disabled={disabled || isSending}
           >
-            <IonIcon icon={document} />
+            <IonIcon icon={documentIcon} />
             <span>{t('message.document')}</span>
           </button>
         </div>

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useHistory } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
@@ -23,6 +23,7 @@ import {
   IonItemSliding,
   IonItemOptions,
   IonItemOption,
+  IonPopover,
   RefresherEventDetail,
 } from '@ionic/react';
 import {
@@ -36,6 +37,8 @@ import {
   chevronUp,
   searchOutline,
 } from 'ionicons/icons';
+import { hapticMedium } from '../utils/haptics';
+import { getChatMessages, type MessageWithSender } from '../services/message';
 import { useAuthContext } from '../contexts/AuthContext';
 import {
   getMyChats,
@@ -58,6 +61,51 @@ const ChatList: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [showArchived, setShowArchived] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
+  const contentRef = useRef<HTMLIonContentElement>(null);
+
+  // Long-press preview state
+  const [previewChat, setPreviewChat] = useState<ChatWithDetails | null>(null);
+  const [previewMessages, setPreviewMessages] = useState<MessageWithSender[]>([]);
+  const [previewEvent, setPreviewEvent] = useState<MouseEvent | null>(null);
+  const longPressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const handleHeaderClick = () => {
+    contentRef.current?.scrollToTop(300);
+  };
+
+  const handleChatLongPress = useCallback(async (chat: ChatWithDetails, event: React.MouseEvent | React.TouchEvent) => {
+    hapticMedium();
+    const nativeEvent = 'nativeEvent' in event ? event.nativeEvent as MouseEvent : null;
+    setPreviewChat(chat);
+    setPreviewEvent(nativeEvent);
+
+    // Load recent messages for preview
+    const { messages: recentMsgs } = await getChatMessages(chat.id, 5);
+    setPreviewMessages(recentMsgs);
+  }, []);
+
+  const handleLongPressStart = useCallback((chat: ChatWithDetails) => {
+    longPressTimerRef.current = setTimeout(() => {
+      // Create a synthetic event at center-screen for popover
+      const syntheticEvent = new MouseEvent('click', {
+        clientX: window.innerWidth / 2,
+        clientY: window.innerHeight / 3,
+      });
+      hapticMedium();
+      setPreviewChat(chat);
+      setPreviewEvent(syntheticEvent);
+      getChatMessages(chat.id, 5).then(({ messages: recentMsgs }) => {
+        setPreviewMessages(recentMsgs);
+      });
+    }, 500);
+  }, []);
+
+  const handleLongPressEnd = useCallback(() => {
+    if (longPressTimerRef.current) {
+      clearTimeout(longPressTimerRef.current);
+      longPressTimerRef.current = null;
+    }
+  }, []);
 
   const loadChats = useCallback(async () => {
     const { chats: chatList } = await getMyChats();
@@ -208,6 +256,13 @@ const ChatList: React.FC = () => {
           detail={false}
           className="chat-item"
           onClick={() => openChat(chat.id)}
+          onContextMenu={(e) => {
+            e.preventDefault();
+            handleChatLongPress(chat, e);
+          }}
+          onTouchStart={() => handleLongPressStart(chat)}
+          onTouchEnd={handleLongPressEnd}
+          onTouchMove={handleLongPressEnd}
         >
           <IonAvatar slot="start" className="chat-avatar">
             {avatar ? (
@@ -282,7 +337,9 @@ const ChatList: React.FC = () => {
           <IonButtons slot="start">
             <IonBackButton defaultHref="/dashboard" />
           </IonButtons>
-          <IonTitle>{t('dashboard.chats')}</IonTitle>
+          <IonTitle onClick={handleHeaderClick} style={{ cursor: 'pointer' }}>
+            {t('dashboard.chats')}
+          </IonTitle>
           <IonButtons slot="end">
             <IonButton onClick={() => setShowSearch(true)}>
               <IonIcon icon={searchOutline} />
@@ -291,7 +348,7 @@ const ChatList: React.FC = () => {
         </IonToolbar>
       </IonHeader>
 
-      <IonContent className="ion-padding" fullscreen>
+      <IonContent ref={contentRef} className="ion-padding" fullscreen>
         <IonRefresher slot="fixed" onIonRefresh={handleRefresh}>
           <IonRefresherContent
             pullingText={t('refresh.pulling')}
@@ -558,6 +615,170 @@ const ChatList: React.FC = () => {
         isOpen={showSearch}
         onClose={() => setShowSearch(false)}
       />
+
+      {/* Long-press chat preview popover */}
+      <IonPopover
+        isOpen={!!previewChat}
+        event={previewEvent ?? undefined}
+        onDidDismiss={() => {
+          setPreviewChat(null);
+          setPreviewMessages([]);
+          setPreviewEvent(null);
+        }}
+        className="chat-preview-popover"
+      >
+        {previewChat && (
+          <div className="chat-preview-content">
+            <div className="preview-header-row">
+              <div className="preview-avatar">
+                {getChatAvatar(previewChat) ? (
+                  <img src={getChatAvatar(previewChat)!} alt="" />
+                ) : (
+                  <div className="avatar-placeholder-small">
+                    {getAvatarInitial(previewChat)}
+                  </div>
+                )}
+              </div>
+              <strong className="preview-name">{getChatDisplayName(previewChat)}</strong>
+            </div>
+            <div className="preview-messages-list">
+              {previewMessages.length === 0 ? (
+                <p className="preview-empty">{t('chat.noChats')}</p>
+              ) : (
+                previewMessages.map((msg) => {
+                  const isMine = msg.sender_id === profile?.id;
+                  const senderName = isMine ? t('common.you') : (msg.sender?.display_name || '');
+                  return (
+                    <div key={msg.id} className="preview-msg">
+                      <span className="preview-msg-sender">{senderName}:</span>
+                      <span className="preview-msg-text">
+                        {msg.type === 'text'
+                          ? (msg.content || '').slice(0, 60)
+                          : msg.type === 'image' ? '📷'
+                          : msg.type === 'voice' ? '🎤'
+                          : msg.type === 'document' ? '📄'
+                          : (msg.content || '').slice(0, 60)
+                        }
+                      </span>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+            <button
+              className="preview-open-button"
+              onClick={() => {
+                const chatId = previewChat.id;
+                setPreviewChat(null);
+                setPreviewMessages([]);
+                setPreviewEvent(null);
+                openChat(chatId);
+              }}
+            >
+              {t('common.open') || 'Open'}
+            </button>
+          </div>
+        )}
+      </IonPopover>
+
+      <style>{`
+        .chat-preview-popover {
+          --width: 280px;
+          --max-height: 350px;
+        }
+
+        .chat-preview-content {
+          padding: 0.75rem;
+        }
+
+        .preview-header-row {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          margin-bottom: 0.75rem;
+          padding-bottom: 0.5rem;
+          border-bottom: 1px solid hsl(var(--border));
+        }
+
+        .preview-avatar {
+          width: 32px;
+          height: 32px;
+          border-radius: 50%;
+          overflow: hidden;
+          flex-shrink: 0;
+        }
+
+        .preview-avatar img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+        }
+
+        .avatar-placeholder-small {
+          width: 100%;
+          height: 100%;
+          background: hsl(var(--primary));
+          color: hsl(var(--primary-foreground));
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 0.8rem;
+          font-weight: 700;
+          border-radius: 50%;
+        }
+
+        .preview-name {
+          font-size: 0.95rem;
+          color: hsl(var(--foreground));
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+
+        .preview-messages-list {
+          max-height: 180px;
+          overflow-y: auto;
+          margin-bottom: 0.5rem;
+        }
+
+        .preview-msg {
+          padding: 0.25rem 0;
+          font-size: 0.8rem;
+          line-height: 1.3;
+          color: hsl(var(--foreground));
+        }
+
+        .preview-msg-sender {
+          font-weight: 600;
+          margin-right: 0.25rem;
+          color: hsl(var(--primary));
+          font-size: 0.75rem;
+        }
+
+        .preview-msg-text {
+          color: hsl(var(--muted-foreground));
+        }
+
+        .preview-empty {
+          font-size: 0.8rem;
+          color: hsl(var(--muted-foreground));
+          text-align: center;
+          padding: 1rem 0;
+          margin: 0;
+        }
+
+        .preview-open-button {
+          width: 100%;
+          padding: 0.5rem;
+          background: hsl(var(--primary));
+          color: hsl(var(--primary-foreground));
+          border: none;
+          border-radius: 0.5rem;
+          font-size: 0.85rem;
+          font-weight: 600;
+          cursor: pointer;
+        }
+      `}</style>
     </IonPage>
   );
 };

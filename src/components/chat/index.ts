@@ -8,3 +8,7 @@ export { default as MediaPicker } from './MediaPicker';
 export { default as VoiceRecorder } from './VoiceRecorder';
 export { default as QuickMessageBar } from './QuickMessageBar';
 export { ChatSearchModal } from './ChatSearchModal';
+export { default as InlineReactionBar } from './InlineReactionBar';
+export { default as TypingIndicator } from './TypingIndicator';
+export { default as LinkPreview } from './LinkPreview';
+export { extractUrl } from './LinkPreview';

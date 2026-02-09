@@ -18,7 +18,8 @@
     "yes": "Kyllä",
     "no": "Ei",
     "copy": "Kopioi",
-    "copied": "Kopioitu!"
+    "copied": "Kopioitu!",
+    "open": "Avaa"
   },
   "auth": {
     "login": "Kirjaudu sisään",
@@ -109,7 +110,12 @@
     "noChats": "Ei keskusteluja vielä",
     "startChatting": "Aloita keskustelu ystäviesi kanssa",
     "welcomeTitle": "Sano hei!",
-    "welcomeMessage": "Lähetä ensimmäinen viestisi aloittaaksesi keskustelun"
+    "welcomeMessage": "Lähetä ensimmäinen viestisi aloittaaksesi keskustelun",
+    "newMessages": "uutta",
+    "typing": "kirjoittaa...",
+    "typingOne": "{{name}} kirjoittaa...",
+    "typingMultiple": "{{count}} henkilöä kirjoittaa...",
+    "camera": "Kamera"
   },
   "call": {
     "call": "Puhelu",
@@ -316,6 +322,10 @@
     "submitButton": "Lähetä",
     "submitting": "Lähetetään...",
     "successMessage": "Kiitos! Palaamme asiaan 24 tunnin kuluessa."
+  },
+  "network": {
+    "offline": "Ei internetyhteyttä",
+    "backOnline": "Yhteys palautunut"
   },
   "refresh": {
     "pulling": "Vedä päivittääksesi",
