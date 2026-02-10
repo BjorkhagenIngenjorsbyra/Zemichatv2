@@ -45,19 +45,16 @@ i18n
     },
 
     detection: {
-      order: ['localStorage', 'querystring', 'navigator', 'htmlTag'],
+      // navigator is intentionally excluded – Capacitor Android WebViews
+      // often return 'en-US' regardless of device locale, which causes
+      // English to be detected and cached even on Swedish devices.
+      // Instead we rely on: localStorage (user choice) → htmlTag (<html lang="sv">).
+      order: ['localStorage', 'querystring', 'htmlTag'],
       caches: ['localStorage'],
       lookupLocalStorage: 'zemichat-language',
       lookupQuerystring: 'lang',
     },
   });
-
-// Normalize Norwegian variants (nb/nn) to our canonical 'no' code.
-// navigator.language returns 'nb' or 'nn' for Norwegian, not 'no'.
-const detectedLang = i18n.language;
-if (detectedLang === 'nb' || detectedLang === 'nn') {
-  i18n.changeLanguage('no');
-}
 
 export default i18n;
 

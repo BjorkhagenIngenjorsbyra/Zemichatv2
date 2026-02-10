@@ -84,7 +84,7 @@ const CreateTeam: React.FC = () => {
         <div className="create-team-container">
           <div className="create-team-header">
             <div className="step-indicator">
-              <span className="step-badge">{t('team.stepOf', { current: 2, total: 3 })}</span>
+              <span className="step-badge">{t('team.stepOf', { current: 1, total: 2 })}</span>
             </div>
             <h1 className="create-team-title">{t('team.createTitle')}</h1>
             <p className="create-team-subtitle">{t('team.createSubtitle')}</p>
