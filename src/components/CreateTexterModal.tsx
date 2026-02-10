@@ -232,11 +232,11 @@ ${t('texter.password')}: ${createdTexter.password}`;
 
           .success-container h2 {
             margin: 0 0 0.5rem 0;
-            color: hsl(var(--foreground));
+            color: #1f2937;
           }
 
           .success-subtitle {
-            color: hsl(var(--muted-foreground));
+            color: #374151;
             margin: 0 0 1.5rem 0;
           }
 
@@ -277,8 +277,10 @@ ${t('texter.password')}: ${createdTexter.password}`;
           }
 
           .done-button {
-            --border-color: hsl(var(--border));
-            --color: hsl(var(--foreground));
+            --border-color: #9ca3af;
+            --color: #1f2937;
+            --border-width: 1.5px;
+            font-weight: 600;
           }
 
           .create-form {
