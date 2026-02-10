@@ -65,7 +65,7 @@ const TexterLogin: React.FC = () => {
       return;
     }
 
-    history.replace('/dashboard');
+    history.replace('/chats');
   };
 
   return (
@@ -188,8 +188,10 @@ const TexterLogin: React.FC = () => {
           }
 
           .auth-input {
-            --background: transparent;
-            --border-color: hsl(var(--border) / 0.3);
+            --background: hsl(var(--card));
+            --color: hsl(var(--foreground));
+            --placeholder-color: hsl(var(--muted-foreground));
+            --border-color: hsl(var(--border));
             --border-radius: 1rem;
           }
 

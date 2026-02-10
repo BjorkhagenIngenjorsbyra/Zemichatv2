@@ -26,7 +26,7 @@ const CreateTeam: React.FC = () => {
 
   useEffect(() => {
     if (hasProfile && !showConfetti) {
-      history.replace('/dashboard');
+      history.replace('/chats');
     }
   }, [hasProfile, history, showConfetti]);
 
@@ -75,7 +75,7 @@ const CreateTeam: React.FC = () => {
     await refreshProfile();
     setShowConfetti(true);
     hapticSuccess();
-    redirectTimer.current = setTimeout(() => history.replace('/dashboard'), 2000);
+    redirectTimer.current = setTimeout(() => history.replace('/choose-plan'), 2000);
   };
 
   return (
@@ -84,7 +84,7 @@ const CreateTeam: React.FC = () => {
         <div className="create-team-container">
           <div className="create-team-header">
             <div className="step-indicator">
-              <span className="step-badge">{t('team.stepOf', { current: 2, total: 2 })}</span>
+              <span className="step-badge">{t('team.stepOf', { current: 2, total: 3 })}</span>
             </div>
             <h1 className="create-team-title">{t('team.createTitle')}</h1>
             <p className="create-team-subtitle">{t('team.createSubtitle')}</p>
@@ -205,8 +205,10 @@ const CreateTeam: React.FC = () => {
           }
 
           .create-team-input {
-            --background: transparent;
-            --border-color: hsl(var(--border) / 0.3);
+            --background: hsl(var(--card));
+            --color: hsl(var(--foreground));
+            --placeholder-color: hsl(var(--muted-foreground));
+            --border-color: hsl(var(--border));
             --border-radius: 1rem;
           }
 

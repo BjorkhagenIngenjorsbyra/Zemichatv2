@@ -313,8 +313,10 @@ const SuperInvite: React.FC = () => {
             margin-bottom: 0.25rem;
           }
           .auth-input {
-            --background: transparent;
-            --border-color: hsl(var(--border) / 0.3);
+            --background: hsl(var(--card));
+            --color: hsl(var(--foreground));
+            --placeholder-color: hsl(var(--muted-foreground));
+            --border-color: hsl(var(--border));
             --border-radius: 1rem;
           }
           .auth-button {

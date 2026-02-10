@@ -125,16 +125,28 @@ ion-toolbar {
 }
 
 ion-input {
-  --background: transparent !important;
+  --background: hsl(var(--card)) !important;
   --color: hsl(var(--foreground)) !important;
   --placeholder-color: hsl(var(--muted-foreground)) !important;
-  --border-color: hsl(var(--border) / 0.3) !important;
+  --border-color: hsl(var(--border)) !important;
   --border-radius: 1rem !important;
   --border-width: 1px !important;
   --padding-start: 1rem !important;
   --padding-end: 1rem !important;
   --highlight-color-focused: hsl(var(--primary)) !important;
-  background: transparent;
+  background: hsl(var(--card));
+}
+
+ion-input .native-input,
+ion-input input {
+  background: transparent !important;
+  color: hsl(var(--foreground)) !important;
+}
+
+ion-input .native-input::placeholder,
+ion-input input::placeholder {
+  color: hsl(var(--muted-foreground)) !important;
+  opacity: 1 !important;
 }
 
 ion-button {
