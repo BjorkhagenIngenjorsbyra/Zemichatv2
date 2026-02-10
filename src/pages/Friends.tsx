@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useHistory } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
   IonPage,
@@ -6,12 +7,13 @@ import {
   IonHeader,
   IonToolbar,
   IonTitle,
-  IonButtons,
-  IonBackButton,
   IonSegment,
   IonSegmentButton,
   IonLabel,
   IonList,
+  IonItem,
+  IonAvatar,
+  IonBadge,
   IonIcon,
   IonFab,
   IonFabButton,
@@ -20,7 +22,7 @@ import {
   IonAlert,
   RefresherEventDetail,
 } from '@ionic/react';
-import { personAddOutline, peopleOutline, timeOutline } from 'ionicons/icons';
+import { personAddOutline, peopleOutline, timeOutline, ellipse, ellipseOutline } from 'ionicons/icons';
 import { useAuthContext } from '../contexts/AuthContext';
 import {
   getMyFriends,
@@ -31,36 +33,54 @@ import {
   type FriendWithUser,
   type PendingRequestWithUser,
 } from '../services/friend';
+import { getTeamMembers } from '../services/members';
 import { FriendCard, FriendRequestCard } from '../components/friends';
-import { UserRole } from '../types/database';
+import { type User, UserRole } from '../types/database';
 import { SkeletonLoader, EmptyStateIllustration } from '../components/common';
 
 type TabValue = 'friends' | 'requests';
 
 const Friends: React.FC = () => {
   const { t } = useTranslation();
+  const history = useHistory();
   const { profile } = useAuthContext();
   const [activeTab, setActiveTab] = useState<TabValue>('friends');
   const [friends, setFriends] = useState<FriendWithUser[]>([]);
   const [incomingRequests, setIncomingRequests] = useState<PendingRequestWithUser[]>([]);
   const [outgoingRequests, setOutgoingRequests] = useState<PendingRequestWithUser[]>([]);
+  const [teamMembers, setTeamMembers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [unfriendTarget, setUnfriendTarget] = useState<{
     id: string;
     name: string;
   } | null>(null);
 
+  const isOwner = profile?.role === UserRole.OWNER;
+
   const loadData = useCallback(async () => {
-    const [friendsResult, requestsResult] = await Promise.all([
+    const promises: Promise<unknown>[] = [
       getMyFriends(),
       getPendingRequests(),
-    ]);
+    ];
+    if (isOwner) {
+      promises.push(getTeamMembers());
+    }
+
+    const results = await Promise.all(promises);
+    const friendsResult = results[0] as Awaited<ReturnType<typeof getMyFriends>>;
+    const requestsResult = results[1] as Awaited<ReturnType<typeof getPendingRequests>>;
 
     setFriends(friendsResult.friends);
     setIncomingRequests(requestsResult.incoming);
     setOutgoingRequests(requestsResult.outgoing);
+
+    if (isOwner && results[2]) {
+      const membersResult = results[2] as Awaited<ReturnType<typeof getTeamMembers>>;
+      setTeamMembers(membersResult.members.filter((m) => m.id !== profile?.id));
+    }
+
     setIsLoading(false);
-  }, []);
+  }, [isOwner, profile?.id]);
 
   useEffect(() => {
     loadData();
@@ -102,9 +122,6 @@ const Friends: React.FC = () => {
     <IonPage>
       <IonHeader>
         <IonToolbar>
-          <IonButtons slot="start">
-            <IonBackButton defaultHref="/dashboard" />
-          </IonButtons>
           <IonTitle>{t('friends.title')}</IonTitle>
         </IonToolbar>
         <IonToolbar>
@@ -135,6 +152,54 @@ const Friends: React.FC = () => {
             refreshingText={t('refresh.refreshing')}
           />
         </IonRefresher>
+
+        {/* My Team section - Owner only */}
+        {isOwner && teamMembers.length > 0 && (
+          <div className="team-section">
+            <h3 className="section-title">{t('friends.myTeam')}</h3>
+            <IonList className="team-list">
+              {teamMembers.map((member) => {
+                const isTexter = member.role === 'texter';
+                return (
+                  <IonItem
+                    key={member.id}
+                    button={isTexter}
+                    detail={isTexter}
+                    onClick={isTexter ? () => history.push(`/texter/${member.id}`) : undefined}
+                    className="team-member-item"
+                  >
+                    <IonAvatar slot="start" className="team-member-avatar">
+                      {member.avatar_url ? (
+                        <img src={member.avatar_url} alt={member.display_name || ''} />
+                      ) : (
+                        <div className="team-avatar-placeholder">
+                          {member.display_name?.charAt(0)?.toUpperCase() || '?'}
+                        </div>
+                      )}
+                    </IonAvatar>
+                    <IonLabel>
+                      <h3 className="team-member-name">
+                        {member.display_name || t('dashboard.unnamed')}
+                        <IonIcon
+                          icon={member.is_active ? ellipse : ellipseOutline}
+                          className={`status-dot ${member.is_active ? 'active' : 'inactive'}`}
+                        />
+                      </h3>
+                      <p className="team-member-zemi">{member.zemi_number}</p>
+                    </IonLabel>
+                    <IonBadge
+                      slot="end"
+                      color={member.role === 'super' ? 'secondary' : 'medium'}
+                      className="team-role-badge"
+                    >
+                      {member.role === 'super' ? t('roles.super') : t('roles.texter')}
+                    </IonBadge>
+                  </IonItem>
+                );
+              })}
+            </IonList>
+          </div>
+        )}
 
         {isLoading ? (
           <div style={{ padding: '1rem' }}>
@@ -220,7 +285,12 @@ const Friends: React.FC = () => {
           </div>
         )}
 
-        <IonFab vertical="bottom" horizontal="end" slot="fixed">
+        <IonFab
+          vertical="bottom"
+          horizontal="end"
+          slot="fixed"
+          className="safe-fab"
+        >
           <IonFabButton routerLink="/add-friend">
             <IonIcon icon={personAddOutline} />
           </IonFabButton>
@@ -315,6 +385,79 @@ const Friends: React.FC = () => {
             color: hsl(var(--muted-foreground));
             margin: 0.75rem 0 0 0;
             padding: 0 1rem;
+          }
+
+          .team-section {
+            padding: 1rem 1rem 0 1rem;
+            margin-bottom: 0.5rem;
+          }
+
+          .team-list {
+            background: hsl(var(--card));
+            border-radius: 1rem;
+            overflow: hidden;
+            padding: 0;
+          }
+
+          .team-member-item {
+            --background: transparent;
+            --border-color: hsl(var(--border));
+            --padding-start: 1rem;
+            --padding-end: 1rem;
+            --inner-padding-end: 0;
+          }
+
+          .team-member-avatar {
+            width: 36px;
+            height: 36px;
+          }
+
+          .team-avatar-placeholder {
+            width: 100%;
+            height: 100%;
+            background: hsl(var(--primary));
+            color: hsl(var(--primary-foreground));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            font-weight: 700;
+            border-radius: 50%;
+          }
+
+          .team-member-name {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 600;
+            color: hsl(var(--foreground));
+          }
+
+          .team-member-zemi {
+            font-family: monospace;
+            font-size: 0.8rem !important;
+            color: hsl(var(--muted-foreground));
+          }
+
+          .team-role-badge {
+            font-size: 0.7rem;
+            padding: 0.25rem 0.5rem;
+          }
+
+          .status-dot {
+            font-size: 0.5rem;
+          }
+
+          .status-dot.active {
+            color: hsl(var(--secondary));
+          }
+
+          .status-dot.inactive {
+            color: hsl(var(--muted));
+          }
+
+          .safe-fab {
+            bottom: calc(16px + env(safe-area-inset-bottom, 0px));
           }
         `}</style>
       </IonContent>

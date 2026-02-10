@@ -18,7 +18,6 @@ import {
   IonRefresher,
   IonRefresherContent,
   IonButtons,
-  IonBackButton,
   IonButton,
   IonItemSliding,
   IonItemOptions,
@@ -38,10 +37,12 @@ import {
   searchOutline,
   mailUnread,
   mail,
+  gridOutline,
 } from 'ionicons/icons';
 import { hapticMedium } from '../utils/haptics';
 import { getChatMessages, type MessageWithSender } from '../services/message';
 import { useAuthContext } from '../contexts/AuthContext';
+import { UserRole } from '../types/database';
 import {
   getMyChats,
   pinChatWithLimit,
@@ -371,13 +372,15 @@ const ChatList: React.FC = () => {
     <IonPage>
       <IonHeader>
         <IonToolbar>
-          <IonButtons slot="start">
-            <IonBackButton defaultHref="/dashboard" />
-          </IonButtons>
           <IonTitle onClick={handleHeaderClick} style={{ cursor: 'pointer' }}>
             {t('dashboard.chats')}
           </IonTitle>
           <IonButtons slot="end">
+            {profile?.role === UserRole.OWNER && (
+              <IonButton routerLink="/dashboard">
+                <IonIcon icon={gridOutline} />
+              </IonButton>
+            )}
             <IonButton onClick={() => setShowSearch(true)}>
               <IonIcon icon={searchOutline} />
             </IonButton>
@@ -450,7 +453,12 @@ const ChatList: React.FC = () => {
           </>
         )}
 
-        <IonFab vertical="bottom" horizontal="end" slot="fixed">
+        <IonFab
+          vertical="bottom"
+          horizontal="end"
+          slot="fixed"
+          className="safe-fab"
+        >
           <IonFabButton onClick={openNewChat} className="new-chat-fab">
             <IonIcon icon={add} />
           </IonFabButton>
@@ -639,6 +647,10 @@ const ChatList: React.FC = () => {
             --background: hsl(var(--primary));
             --color: hsl(var(--primary-foreground));
             --box-shadow: 0 4px 16px hsl(var(--primary) / 0.4);
+          }
+
+          .safe-fab {
+            bottom: calc(16px + env(safe-area-inset-bottom, 0px));
           }
 
           ion-item-option {
