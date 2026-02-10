@@ -284,7 +284,7 @@ export const QuickMessageManager: React.FC<QuickMessageManagerProps> = ({
         .section-title {
           font-size: 0.875rem;
           font-weight: 600;
-          color: hsl(var(--muted-foreground));
+          color: #e5e7eb;
           text-transform: uppercase;
           letter-spacing: 0.05em;
           margin: 0;
@@ -330,7 +330,7 @@ export const QuickMessageManager: React.FC<QuickMessageManagerProps> = ({
 
         .empty-state p {
           margin: 0;
-          color: hsl(var(--muted-foreground));
+          color: #9ca3af;
         }
 
         .empty-state .hint {
@@ -349,6 +349,7 @@ export const QuickMessageManager: React.FC<QuickMessageManagerProps> = ({
           --background: transparent;
           --border-color: hsl(var(--border));
           --padding-start: 0.5rem;
+          --color: #d1d5db;
         }
 
         .edit-form {

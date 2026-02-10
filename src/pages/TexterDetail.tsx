@@ -64,7 +64,7 @@ const TexterDetail: React.FC = () => {
       .single();
 
     if (userError || !userData) {
-      history.replace('/dashboard');
+      history.replace('/chats');
       return;
     }
 
@@ -471,7 +471,7 @@ const TexterDetail: React.FC = () => {
           .section-title {
             font-size: 0.875rem;
             font-weight: 600;
-            color: hsl(var(--muted-foreground));
+            color: #e5e7eb;
             text-transform: uppercase;
             letter-spacing: 0.05em;
             margin: 0 0 1rem 0;
@@ -489,6 +489,7 @@ const TexterDetail: React.FC = () => {
             --border-color: hsl(var(--border));
             --padding-start: 1rem;
             --padding-end: 1rem;
+            --color: #d1d5db;
           }
 
           .action-icon, .toggle-icon {
@@ -502,7 +503,7 @@ const TexterDetail: React.FC = () => {
           }
 
           .action-item p {
-            color: hsl(var(--muted-foreground));
+            color: #9ca3af;
             font-size: 0.875rem;
           }
 
@@ -515,6 +516,7 @@ const TexterDetail: React.FC = () => {
           .action-hint p {
             margin: 0;
             font-size: 0.75rem;
+            color: #9ca3af;
           }
         `}</style>
       </IonContent>
