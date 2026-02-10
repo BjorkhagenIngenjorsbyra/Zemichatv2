@@ -286,7 +286,7 @@ ${t('texter.password')}: ${createdTexter.password}`;
           }
 
           .done-button {
-            --border-color: hsl(var(--border));
+            --border-color: hsl(var(--muted-foreground));
             --color: hsl(var(--foreground));
             --border-width: 1.5px;
             font-weight: 600;

@@ -42,6 +42,10 @@ function normalizeLanguage(code: string): string | undefined {
   return undefined;
 }
 
+const LANG_KEY = 'zemichat-language';
+const LANG_VERSION_KEY = 'zemichat-lang-v';
+const CURRENT_LANG_VERSION = '2';
+
 // Pre-detected device language, populated by detectDeviceLanguage()
 let detectedDeviceLanguage: string | undefined;
 
@@ -68,6 +72,14 @@ const capacitorDeviceDetector = {
  * during i18n initialization.
  */
 export async function detectDeviceLanguage(): Promise<void> {
+  // One-time migration: clear stale auto-cached language from before
+  // Capacitor Device detection was added. Without this, an incorrect
+  // 'en' cached by the old navigator-based detection stays forever.
+  if (localStorage.getItem(LANG_VERSION_KEY) !== CURRENT_LANG_VERSION) {
+    localStorage.removeItem(LANG_KEY);
+    localStorage.setItem(LANG_VERSION_KEY, CURRENT_LANG_VERSION);
+  }
+
   if (Capacitor.isNativePlatform()) {
     try {
       const { Device } = await import('@capacitor/device');
@@ -113,8 +125,10 @@ export async function initI18n(): Promise<void> {
 
       detection: {
         order: ['localStorage', 'querystring', 'capacitorDevice', 'htmlTag'],
-        caches: ['localStorage'],
-        lookupLocalStorage: 'zemichat-language',
+        // Don't auto-cache detected language — only explicit user
+        // choice (via changeLanguage) writes to localStorage.
+        caches: [],
+        lookupLocalStorage: LANG_KEY,
         lookupQuerystring: 'lang',
       },
     });
@@ -123,9 +137,11 @@ export async function initI18n(): Promise<void> {
 export default i18n;
 
 /**
- * Change the current language.
+ * Change the current language (explicit user choice).
+ * Saves to localStorage so it persists across sessions.
  */
 export async function changeLanguage(lang: SupportedLanguage): Promise<void> {
+  localStorage.setItem(LANG_KEY, lang);
   await i18n.changeLanguage(lang);
 }
 
