@@ -25,6 +25,7 @@ import {
   deleteInvitation,
   type Invitation,
 } from '../services/invitations';
+import { getCurrentLanguage } from '../i18n';
 
 const InviteSuper: React.FC = () => {
   const { t } = useTranslation();
@@ -68,7 +69,7 @@ const InviteSuper: React.FC = () => {
     }
 
     if (invitation) {
-      const link = `${window.location.origin}/invite/${invitation.token}`;
+      const link = `${window.location.origin}/invite/${invitation.token}?lang=${getCurrentLanguage()}`;
       setCreatedLink(link);
       setEmail('');
       setDisplayName('');

@@ -18,10 +18,14 @@ export const supportedLanguages = [
 
 export type SupportedLanguage = (typeof supportedLanguages)[number]['code'];
 
+const supportedCodes: string[] = supportedLanguages.map((l) => l.code);
+
 const resources = {
   sv: { translation: sv },
   en: { translation: en },
   no: { translation: no },
+  nb: { translation: no },
+  nn: { translation: no },
   da: { translation: da },
   fi: { translation: fi },
 };
@@ -32,19 +36,28 @@ i18n
   .init({
     resources,
     fallbackLng: 'sv',
-    supportedLngs: ['sv', 'en', 'no', 'da', 'fi'],
+    supportedLngs: ['sv', 'en', 'no', 'nb', 'nn', 'da', 'fi'],
+    load: 'languageOnly',
     debug: import.meta.env.DEV,
 
     interpolation: {
-      escapeValue: false, // React already escapes values
+      escapeValue: false,
     },
 
     detection: {
-      order: ['localStorage', 'navigator', 'htmlTag'],
+      order: ['localStorage', 'querystring', 'navigator', 'htmlTag'],
       caches: ['localStorage'],
       lookupLocalStorage: 'zemichat-language',
+      lookupQuerystring: 'lang',
     },
   });
+
+// Normalize Norwegian variants (nb/nn) to our canonical 'no' code.
+// navigator.language returns 'nb' or 'nn' for Norwegian, not 'no'.
+const detectedLang = i18n.language;
+if (detectedLang === 'nb' || detectedLang === 'nn') {
+  i18n.changeLanguage('no');
+}
 
 export default i18n;
 
@@ -56,8 +69,11 @@ export async function changeLanguage(lang: SupportedLanguage): Promise<void> {
 }
 
 /**
- * Get the current language.
+ * Get the current language (normalized).
  */
 export function getCurrentLanguage(): SupportedLanguage {
-  return i18n.language as SupportedLanguage;
+  const lang = i18n.language;
+  if (lang === 'nb' || lang === 'nn') return 'no';
+  if (supportedCodes.includes(lang)) return lang as SupportedLanguage;
+  return 'sv';
 }
