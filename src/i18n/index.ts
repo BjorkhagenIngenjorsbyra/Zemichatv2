@@ -1,6 +1,7 @@
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import LanguageDetector from 'i18next-browser-languagedetector';
+import { Capacitor } from '@capacitor/core';
 
 import sv from './locales/sv.json';
 import en from './locales/en.json';
@@ -30,31 +31,94 @@ const resources = {
   fi: { translation: fi },
 };
 
-i18n
-  .use(LanguageDetector)
-  .use(initReactI18next)
-  .init({
-    resources,
-    fallbackLng: 'sv',
-    supportedLngs: ['sv', 'en', 'no', 'nb', 'nn', 'da', 'fi'],
-    load: 'languageOnly',
-    debug: import.meta.env.DEV,
+/**
+ * Normalize a language code (e.g. 'sv-SE' → 'sv', 'nb' → 'no')
+ * to a supported language, or undefined if not supported.
+ */
+function normalizeLanguage(code: string): string | undefined {
+  const base = code.split('-')[0].toLowerCase();
+  if (supportedCodes.includes(base)) return base;
+  if (base === 'nb' || base === 'nn') return 'no';
+  return undefined;
+}
 
-    interpolation: {
-      escapeValue: false,
-    },
+// Pre-detected device language, populated by detectDeviceLanguage()
+let detectedDeviceLanguage: string | undefined;
 
-    detection: {
-      // navigator is intentionally excluded – Capacitor Android WebViews
-      // often return 'en-US' regardless of device locale, which causes
-      // English to be detected and cached even on Swedish devices.
-      // Instead we rely on: localStorage (user choice) → htmlTag (<html lang="sv">).
-      order: ['localStorage', 'querystring', 'htmlTag'],
-      caches: ['localStorage'],
-      lookupLocalStorage: 'zemichat-language',
-      lookupQuerystring: 'lang',
-    },
-  });
+/**
+ * Custom i18next detector that returns the pre-fetched device language.
+ * This enables async detection (Capacitor Device plugin) to integrate
+ * with i18next's synchronous detector lookup.
+ */
+const capacitorDeviceDetector = {
+  name: 'capacitorDevice',
+  lookup(): string | undefined {
+    return detectedDeviceLanguage;
+  },
+};
+
+/**
+ * Detect the device's language. Must be called before initI18n().
+ *
+ * Detection order:
+ * 1. On native platforms: Capacitor Device.getLanguageCode() (reliable)
+ * 2. On web: navigator.language (fallback)
+ *
+ * The result is stored internally and used by the capacitorDevice detector
+ * during i18n initialization.
+ */
+export async function detectDeviceLanguage(): Promise<void> {
+  if (Capacitor.isNativePlatform()) {
+    try {
+      const { Device } = await import('@capacitor/device');
+      const { value } = await Device.getLanguageCode();
+      detectedDeviceLanguage = normalizeLanguage(value);
+    } catch {
+      // Plugin not available, fall through to navigator
+    }
+  }
+
+  if (!detectedDeviceLanguage && typeof navigator !== 'undefined' && navigator.language) {
+    detectedDeviceLanguage = normalizeLanguage(navigator.language);
+  }
+}
+
+/**
+ * Initialize i18n. Call after detectDeviceLanguage().
+ *
+ * Detection priority:
+ * 1. localStorage – user's explicit choice
+ * 2. querystring – ?lang=xx (used in invite links)
+ * 3. capacitorDevice – device language (native or navigator)
+ * 4. htmlTag – <html lang="xx">
+ * 5. 'sv' – final fallback
+ */
+export async function initI18n(): Promise<void> {
+  const detector = new LanguageDetector();
+  detector.addDetector(capacitorDeviceDetector);
+
+  await i18n
+    .use(detector)
+    .use(initReactI18next)
+    .init({
+      resources,
+      fallbackLng: 'sv',
+      supportedLngs: ['sv', 'en', 'no', 'nb', 'nn', 'da', 'fi'],
+      load: 'languageOnly',
+      debug: import.meta.env.DEV,
+
+      interpolation: {
+        escapeValue: false,
+      },
+
+      detection: {
+        order: ['localStorage', 'querystring', 'capacitorDevice', 'htmlTag'],
+        caches: ['localStorage'],
+        lookupLocalStorage: 'zemichat-language',
+        lookupQuerystring: 'lang',
+      },
+    });
+}
 
 export default i18n;
 
