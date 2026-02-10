@@ -241,11 +241,11 @@ ${t('texter.password')}: ${createdTexter.password}`;
 
           .success-container h2 {
             margin: 0 0 0.5rem 0;
-            color: #1f2937;
+            color: hsl(var(--foreground));
           }
 
           .success-subtitle {
-            color: #374151;
+            color: hsl(var(--muted-foreground));
             margin: 0 0 1.5rem 0;
           }
 
@@ -286,8 +286,8 @@ ${t('texter.password')}: ${createdTexter.password}`;
           }
 
           .done-button {
-            --border-color: #9ca3af;
-            --color: #1f2937;
+            --border-color: hsl(var(--border));
+            --color: hsl(var(--foreground));
             --border-width: 1.5px;
             font-weight: 600;
           }
@@ -322,15 +322,15 @@ ${t('texter.password')}: ${createdTexter.password}`;
           .input-label {
             font-size: 0.875rem;
             font-weight: 600;
-            color: #374151;
+            color: hsl(var(--foreground));
             margin-left: 0.25rem;
           }
 
           .form-input {
             --background: transparent;
-            --border-color: #9ca3af;
+            --border-color: hsl(var(--border));
             --border-radius: 1rem;
-            --placeholder-color: #6b7280;
+            --placeholder-color: hsl(var(--muted-foreground));
             --placeholder-opacity: 1;
           }
 
