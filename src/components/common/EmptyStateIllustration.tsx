@@ -6,17 +6,15 @@ interface EmptyStateIllustrationProps {
 
 const NoChats: React.FC = () => (
   <svg width="120" height="120" viewBox="0 0 120 120" fill="none">
-    {/* Back bubble */}
-    <rect x="28" y="24" width="56" height="40" rx="12" fill="hsl(var(--border))" opacity="0.5" />
-    <circle cx="46" cy="44" r="3" fill="hsl(var(--muted))" />
-    <circle cx="56" cy="44" r="3" fill="hsl(var(--muted))" />
-    <circle cx="66" cy="44" r="3" fill="hsl(var(--muted))" />
-    {/* Front bubble */}
-    <rect x="36" y="48" width="56" height="40" rx="12" fill="hsl(var(--primary))" opacity="0.2" />
-    <rect x="36" y="48" width="56" height="40" rx="12" stroke="hsl(var(--primary))" strokeWidth="2" fill="none" />
-    {/* Plus */}
-    <line x1="64" y1="60" x2="64" y2="76" stroke="hsl(var(--primary))" strokeWidth="2.5" strokeLinecap="round" />
-    <line x1="56" y1="68" x2="72" y2="68" stroke="hsl(var(--primary))" strokeWidth="2.5" strokeLinecap="round" />
+    {/* Single chat bubble */}
+    <rect x="24" y="24" width="72" height="52" rx="16" fill="hsl(var(--primary))" opacity="0.1" />
+    <rect x="24" y="24" width="72" height="52" rx="16" stroke="hsl(var(--primary))" strokeWidth="2" fill="none" />
+    {/* Tail */}
+    <path d="M36 76 L30 88 L48 76" fill="hsl(var(--primary))" opacity="0.1" />
+    <path d="M36 76 L30 88 L48 76" stroke="hsl(var(--primary))" strokeWidth="2" fill="none" strokeLinejoin="round" />
+    {/* Plus inside bubble */}
+    <line x1="60" y1="40" x2="60" y2="60" stroke="hsl(var(--primary))" strokeWidth="2.5" strokeLinecap="round" />
+    <line x1="50" y1="50" x2="70" y2="50" stroke="hsl(var(--primary))" strokeWidth="2.5" strokeLinecap="round" />
   </svg>
 );
 
@@ -38,19 +36,19 @@ const NoFriends: React.FC = () => (
 const NoMembers: React.FC = () => (
   <svg width="120" height="120" viewBox="0 0 120 120" fill="none">
     {/* Center person */}
-    <circle cx="60" cy="36" r="10" fill="hsl(var(--muted))" opacity="0.4" />
-    <path d="M42 62 C42 50 78 50 78 62" fill="hsl(var(--border))" opacity="0.5" />
+    <circle cx="60" cy="34" r="10" fill="hsl(var(--muted))" opacity="0.4" />
+    <path d="M42 60 C42 48 78 48 78 60" fill="hsl(var(--border))" opacity="0.5" />
     {/* Left person (smaller) */}
-    <circle cx="32" cy="48" r="7" fill="hsl(var(--muted))" opacity="0.3" />
-    <path d="M22 68 C22 60 42 60 42 68" fill="hsl(var(--border))" opacity="0.3" />
+    <circle cx="32" cy="44" r="7" fill="hsl(var(--muted))" opacity="0.3" />
+    <path d="M22 64 C22 56 42 56 42 64" fill="hsl(var(--border))" opacity="0.3" />
     {/* Right person (smaller) */}
-    <circle cx="88" cy="48" r="7" fill="hsl(var(--muted))" opacity="0.3" />
-    <path d="M78 68 C78 60 98 60 98 68" fill="hsl(var(--border))" opacity="0.3" />
-    {/* Plus badge */}
-    <circle cx="88" cy="34" r="10" fill="hsl(var(--primary))" opacity="0.2" />
-    <circle cx="88" cy="34" r="10" stroke="hsl(var(--primary))" strokeWidth="1.5" fill="none" />
-    <line x1="88" y1="29" x2="88" y2="39" stroke="hsl(var(--primary))" strokeWidth="2" strokeLinecap="round" />
-    <line x1="83" y1="34" x2="93" y2="34" stroke="hsl(var(--primary))" strokeWidth="2" strokeLinecap="round" />
+    <circle cx="88" cy="44" r="7" fill="hsl(var(--muted))" opacity="0.3" />
+    <path d="M78 64 C78 56 98 56 98 64" fill="hsl(var(--border))" opacity="0.3" />
+    {/* Plus badge – positioned below group, no overlap */}
+    <circle cx="60" cy="80" r="12" fill="hsl(var(--primary))" opacity="0.15" />
+    <circle cx="60" cy="80" r="12" stroke="hsl(var(--primary))" strokeWidth="1.5" fill="none" />
+    <line x1="60" y1="74" x2="60" y2="86" stroke="hsl(var(--primary))" strokeWidth="2" strokeLinecap="round" />
+    <line x1="54" y1="80" x2="66" y2="80" stroke="hsl(var(--primary))" strokeWidth="2" strokeLinecap="round" />
   </svg>
 );
 
