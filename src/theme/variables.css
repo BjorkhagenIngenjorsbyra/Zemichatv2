@@ -149,6 +149,15 @@ ion-input input::placeholder {
   opacity: 1 !important;
 }
 
+ion-modal {
+  --background: hsl(var(--background));
+}
+
+ion-modal ion-toolbar {
+  --background: hsl(var(--card));
+  --color: hsl(var(--foreground));
+}
+
 ion-button {
   --border-radius: 9999px;
   font-weight: 700;
