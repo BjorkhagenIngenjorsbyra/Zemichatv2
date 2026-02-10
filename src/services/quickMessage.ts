@@ -194,20 +194,13 @@ export async function reorderQuickMessages(
 }
 
 /**
- * Default quick message suggestions for new users.
- */
-export const DEFAULT_QUICK_MESSAGES = [
-  "I'm here!",
-  'Pick me up',
-  'All good',
-  "I'm late",
-];
-
-/**
- * Create default quick messages for a new Texter.
+ * Create default quick messages for a Texter.
+ * @param texterId - The Texter's user ID
+ * @param suggestions - Translated default messages from i18n (quickMessages.suggestions)
  */
 export async function createDefaultQuickMessages(
-  texterId: string
+  texterId: string,
+  suggestions: string[]
 ): Promise<{ error: Error | null }> {
   try {
     const {
@@ -218,7 +211,7 @@ export async function createDefaultQuickMessages(
       return { error: new Error('Not authenticated') };
     }
 
-    const inserts = DEFAULT_QUICK_MESSAGES.map((content, index) => ({
+    const inserts = suggestions.map((content, index) => ({
       user_id: texterId,
       created_by: user.id,
       content,

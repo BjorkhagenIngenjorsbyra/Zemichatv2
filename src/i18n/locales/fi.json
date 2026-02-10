@@ -311,6 +311,18 @@
     "friday": "Perjantai",
     "saturday": "Lauantai"
   },
+  "quickMessages": {
+    "title": "Pikaviestit",
+    "noMessages": "Ei pikaviestejä",
+    "noMessagesDescription": "Pikaviestit mahdollistavat vastaamisen yhdellä napautuksella",
+    "add": "Lisää viesti",
+    "placeholder": "Viestin teksti...",
+    "edit": "Muokkaa",
+    "delete": "Poista",
+    "deleteConfirm": "Poista tämä pikaviesti?",
+    "suggestions": ["Olen perillä!", "Hae minut", "Kaikki hyvin", "Olen myöhässä"],
+    "addDefaults": "Lisää oletusviestit"
+  },
   "support": {
     "title": "Palaute & Tuki",
     "settingsButton": "Palaute & Tuki",

@@ -311,6 +311,18 @@
     "friday": "Fredag",
     "saturday": "Lørdag"
   },
+  "quickMessages": {
+    "title": "Hurtigbeskeder",
+    "noMessages": "Ingen hurtigbeskeder",
+    "noMessagesDescription": "Hurtigbeskeder giver svar med ét tryk",
+    "add": "Tilføj besked",
+    "placeholder": "Beskedtekst...",
+    "edit": "Rediger",
+    "delete": "Slet",
+    "deleteConfirm": "Slet denne hurtigbesked?",
+    "suggestions": ["Jeg er fremme!", "Hent mig", "Alt godt", "Jeg er forsinket"],
+    "addDefaults": "Tilføj standardbeskeder"
+  },
   "support": {
     "title": "Feedback & Support",
     "settingsButton": "Feedback & Support",

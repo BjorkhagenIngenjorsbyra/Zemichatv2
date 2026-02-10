@@ -265,7 +265,8 @@
     "unfriend": "Unfriend",
     "unfriendTitle": "Unfriend?",
     "unfriendMessage": "Are you sure you want to unfriend {{name}}?",
-    "texterApprovalNote": "Friend requests must be approved by your Team Owner"
+    "texterApprovalNote": "Friend requests must be approved by your Team Owner",
+    "myTeam": "My Team"
   },
   "ownerApprovals": {
     "title": "Friend Approvals",
@@ -302,7 +303,8 @@
     "edit": "Edit",
     "delete": "Delete",
     "deleteConfirm": "Delete this quick message?",
-    "suggestions": ["I'm here!", "Pick me up", "All good", "I'm late"]
+    "suggestions": ["I'm here!", "Pick me up", "All good", "I'm late"],
+    "addDefaults": "Add default messages"
   },
   "notifications": {
     "permissionTitle": "Enable Notifications",
@@ -403,7 +405,10 @@
     "legal": "Legal",
     "privacyPolicy": "Privacy Policy",
     "termsOfService": "Terms of Service",
-    "profileSaved": "Profile updated"
+    "profileSaved": "Profile updated",
+    "teamDashboard": "Team Dashboard",
+    "teamDashboardDescription": "Manage Texters, approvals and oversight",
+    "language": "Language"
   },
   "call": {
     "call": "Call",
@@ -552,6 +557,18 @@
     "resend": "Didn't get an email? Send again",
     "resent": "New email sent!",
     "backToLogin": "Back to login"
+  },
+  "choosePlan": {
+    "title": "Choose your plan",
+    "subtitle": "All plans start with a free trial",
+    "trialBanner": "Try all features free for 10 days!",
+    "startTrial": "Start free trial",
+    "perMonth": "/mo",
+    "oneTime": "one-time"
+  },
+  "trial": {
+    "banner": "Trial: {{days}} days left",
+    "bannerLastDay": "Trial ends today"
   },
   "network": {
     "offline": "No internet connection",

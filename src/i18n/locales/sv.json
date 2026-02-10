@@ -266,7 +266,8 @@
     "unfriend": "Ta bort vän",
     "unfriendTitle": "Ta bort vän?",
     "unfriendMessage": "Är du säker på att du vill ta bort {{name}} som vän?",
-    "texterApprovalNote": "Vänförfrågningar måste godkännas av din Team Owner"
+    "texterApprovalNote": "Vänförfrågningar måste godkännas av din Team Owner",
+    "myTeam": "Mitt team"
   },
   "ownerApprovals": {
     "title": "Vän-godkännanden",
@@ -303,7 +304,8 @@
     "edit": "Redigera",
     "delete": "Radera",
     "deleteConfirm": "Radera detta snabbmeddelande?",
-    "suggestions": ["Jag är här!", "Hämta mig", "Allt är bra", "Jag är sen"]
+    "suggestions": ["Jag är framme!", "Hämta mig", "Allt bra", "Jag är sen"],
+    "addDefaults": "Lägg till standardmeddelanden"
   },
   "notifications": {
     "permissionTitle": "Aktivera notiser",
@@ -404,7 +406,10 @@
     "legal": "Juridiskt",
     "privacyPolicy": "Integritetspolicy",
     "termsOfService": "Användarvillkor",
-    "profileSaved": "Profilen har uppdaterats"
+    "profileSaved": "Profilen har uppdaterats",
+    "teamDashboard": "Team Dashboard",
+    "teamDashboardDescription": "Hantera Texters, godkännanden och insyn",
+    "language": "Språk"
   },
   "call": {
     "call": "Samtal",
@@ -553,6 +558,18 @@
     "resend": "Fick du inget mail? Skicka igen",
     "resent": "Nytt mail skickat!",
     "backToLogin": "Tillbaka till inloggning"
+  },
+  "choosePlan": {
+    "title": "Välj din plan",
+    "subtitle": "Alla planer börjar med en gratis provperiod",
+    "trialBanner": "Prova alla funktioner gratis i 10 dagar!",
+    "startTrial": "Starta gratis provperiod",
+    "perMonth": "/mån",
+    "oneTime": "engångsköp"
+  },
+  "trial": {
+    "banner": "Provperiod: {{days}} dagar kvar",
+    "bannerLastDay": "Provperioden slutar idag"
   },
   "network": {
     "offline": "Ingen internetanslutning",

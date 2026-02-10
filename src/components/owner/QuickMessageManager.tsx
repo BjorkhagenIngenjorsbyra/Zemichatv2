@@ -20,6 +20,7 @@ import {
   updateQuickMessage,
   deleteQuickMessage,
   reorderQuickMessages,
+  createDefaultQuickMessages,
 } from '../../services/quickMessage';
 import { type QuickMessage } from '../../types/database';
 
@@ -52,6 +53,19 @@ export const QuickMessageManager: React.FC<QuickMessageManagerProps> = ({
   useEffect(() => {
     loadMessages();
   }, [loadMessages]);
+
+  const handleAddDefaults = async () => {
+    if (isSaving) return;
+    setIsSaving(true);
+
+    const suggestions = t('quickMessages.suggestions', { returnObjects: true }) as string[];
+    if (Array.isArray(suggestions)) {
+      await createDefaultQuickMessages(userId, suggestions);
+      await loadMessages();
+    }
+
+    setIsSaving(false);
+  };
 
   const handleAdd = async () => {
     if (!newMessage.trim() || isSaving) return;
@@ -183,6 +197,15 @@ export const QuickMessageManager: React.FC<QuickMessageManagerProps> = ({
         <div className="empty-state">
           <p>{t('quickMessages.noMessages')}</p>
           <p className="hint">{t('quickMessages.noMessagesDescription')}</p>
+          <IonButton
+            fill="outline"
+            size="small"
+            onClick={handleAddDefaults}
+            disabled={isSaving}
+            className="add-defaults-button"
+          >
+            {isSaving ? <IonSpinner name="crescent" /> : t('quickMessages.addDefaults')}
+          </IonButton>
         </div>
       ) : (
         <IonList className="message-list">
@@ -336,6 +359,11 @@ export const QuickMessageManager: React.FC<QuickMessageManagerProps> = ({
         .empty-state .hint {
           font-size: 0.85rem;
           margin-top: 0.25rem;
+        }
+
+        .add-defaults-button {
+          margin-top: 0.75rem;
+          --border-radius: 9999px;
         }
 
         .message-list {

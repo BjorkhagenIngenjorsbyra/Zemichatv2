@@ -15,6 +15,7 @@ import {
 } from '@ionic/react';
 import { close, checkmarkCircle, copyOutline } from 'ionicons/icons';
 import { createTexter } from '../services/members';
+import { createDefaultQuickMessages } from '../services/quickMessage';
 
 interface CreateTexterModalProps {
   isOpen: boolean;
@@ -79,7 +80,7 @@ export const CreateTexterModal: React.FC<CreateTexterModalProps> = ({
 
     setIsLoading(true);
 
-    const { zemiNumber, error: createError } = await createTexter({
+    const { user: newTexter, zemiNumber, error: createError } = await createTexter({
       displayName: displayName.trim(),
       password,
       teamId,
@@ -90,6 +91,14 @@ export const CreateTexterModal: React.FC<CreateTexterModalProps> = ({
     if (createError) {
       setError(createError.message);
       return;
+    }
+
+    // Create default quick messages for the new Texter
+    if (newTexter?.id) {
+      const suggestions = t('quickMessages.suggestions', { returnObjects: true }) as string[];
+      if (Array.isArray(suggestions)) {
+        await createDefaultQuickMessages(newTexter.id, suggestions);
+      }
     }
 
     // Show success with credentials

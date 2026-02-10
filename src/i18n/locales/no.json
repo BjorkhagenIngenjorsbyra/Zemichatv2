@@ -368,6 +368,18 @@
     "friday": "Fredag",
     "saturday": "Lørdag"
   },
+  "quickMessages": {
+    "title": "Hurtigmeldinger",
+    "noMessages": "Ingen hurtigmeldinger",
+    "noMessagesDescription": "Hurtigmeldinger gir svar med ett trykk",
+    "add": "Legg til melding",
+    "placeholder": "Meldingstekst...",
+    "edit": "Rediger",
+    "delete": "Slett",
+    "deleteConfirm": "Slette denne hurtigmeldingen?",
+    "suggestions": ["Jeg er fremme!", "Hent meg", "Alt bra", "Jeg er sen"],
+    "addDefaults": "Legg til standardmeldinger"
+  },
   "support": {
     "title": "Tilbakemelding & Support",
     "settingsButton": "Tilbakemelding & Support",
