@@ -3,29 +3,24 @@
 Senast uppdaterad: 2026-02-10
 
 ## 🔴 Kritiska (blockerande för beta)
-| # | Problem | Status | Ansvarig |
-|---|---------|--------|----------|
+| # | Problem | Status |
+|---|---------|--------|
 
-## 🟠 Höga (bör fixas inom 1 vecka)
-| # | Problem | Status | Ansvarig |
-|---|---------|--------|----------|
-| 1 | RevenueCat Android credentials varning | Öppen | Erik |
-| 2 | Input-styling på login (vita hörn syns) | Öppen | Claude |
+## 🟠 Höga (bör fixas snart)
+| # | Problem | Status |
+|---|---------|--------|
 
-## 🟡 Medium (bör fixas innan publik lansering)
-| # | Problem | Status | Ansvarig |
-|---|---------|--------|----------|
-| 3 | App Store screenshots behöver förbättras | Öppen | Erik |
-| 4 | iOS-bygge via GitHub Actions | Väntar | Erik |
+## 🟡 Medium (innan publik lansering)
+| # | Problem | Status |
+|---|---------|--------|
 
-## 🟢 Låga (polish/nice-to-have)
-| # | Problem | Status | Ansvarig |
-|---|---------|--------|----------|
+## 🟢 Låga (polish)
+| # | Problem | Status |
+|---|---------|--------|
 
 ## ✅ Lösta
-| # | Problem | Lösning | Datum |
-|---|---------|---------|-------|
-| - | E-postmallar Supabase | Uppdaterade med Zemichat-branding | 2026-02-10 |
-| - | SMTP @zemichat.com | Konfigurerat via Resend | 2026-02-10 |
-| - | RevenueCat produkter | Skapade i dashboard | 2026-02-10 |
-| - | Android beta-release | Uppladdad till Google Play intern testning | 2026-02-10 |
+| # | Problem | Datum |
+|---|---------|-------|
+| 1 | App-ikon saknades | 2026-02-10 |
+| 2 | E-postmallar från Supabase | 2026-02-10 |
+| 3 | Confirmation-länk pekade på localhost | 2026-02-10 |
