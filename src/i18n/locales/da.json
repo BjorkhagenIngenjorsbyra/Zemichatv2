@@ -323,6 +323,14 @@
     "submitting": "Sender...",
     "successMessage": "Tak! Vi vender tilbage inden for 24 timer."
   },
+  "verifyEmail": {
+    "title": "Tjek din e-mail!",
+    "description": "Vi har sendt et bekræftelseslink til {{email}}. Klik på linket for at aktivere din konto.",
+    "openMail": "Åbn e-mail",
+    "resend": "Fik du ingen e-mail? Send igen",
+    "resent": "Ny e-mail sendt!",
+    "backToLogin": "Tilbage til login"
+  },
   "network": {
     "offline": "Ingen internetforbindelse",
     "backOnline": "Online igen"

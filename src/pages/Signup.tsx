@@ -64,7 +64,7 @@ const Signup: React.FC = () => {
       return;
     }
 
-    history.replace('/create-team');
+    history.replace('/verify-email', { email });
   };
 
   return (

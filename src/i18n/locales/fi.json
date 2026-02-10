@@ -323,6 +323,14 @@
     "submitting": "Lähetetään...",
     "successMessage": "Kiitos! Palaamme asiaan 24 tunnin kuluessa."
   },
+  "verifyEmail": {
+    "title": "Tarkista sähköpostisi!",
+    "description": "Lähetimme vahvistuslinkin osoitteeseen {{email}}. Klikkaa linkkiä aktivoidaksesi tilisi.",
+    "openMail": "Avaa sähköposti",
+    "resend": "Etkö saanut sähköpostia? Lähetä uudelleen",
+    "resent": "Uusi sähköposti lähetetty!",
+    "backToLogin": "Takaisin kirjautumiseen"
+  },
   "network": {
     "offline": "Ei internetyhteyttä",
     "backOnline": "Yhteys palautunut"

@@ -21,6 +21,7 @@ import { Paywall } from './components/subscription';
 import Login from './pages/Login';
 import TexterLogin from './pages/TexterLogin';
 import Signup from './pages/Signup';
+import VerifyEmail from './pages/VerifyEmail';
 import CreateTeam from './pages/CreateTeam';
 import Dashboard from './pages/Dashboard';
 import TexterDetail from './pages/TexterDetail';
@@ -102,6 +103,9 @@ const App: React.FC = () => (
             </PublicRoute>
             <PublicRoute exact path="/signup">
               <Signup />
+            </PublicRoute>
+            <PublicRoute exact path="/verify-email">
+              <VerifyEmail />
             </PublicRoute>
 
             {/* Semi-protected routes - needs auth but not profile */}

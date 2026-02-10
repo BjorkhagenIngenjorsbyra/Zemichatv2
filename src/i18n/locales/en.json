@@ -545,6 +545,14 @@
     "submitting": "Sending...",
     "successMessage": "Thank you! We'll get back to you within 24 hours."
   },
+  "verifyEmail": {
+    "title": "Check your email!",
+    "description": "We've sent a confirmation link to {{email}}. Click the link to activate your account.",
+    "openMail": "Open email",
+    "resend": "Didn't get an email? Send again",
+    "resent": "New email sent!",
+    "backToLogin": "Back to login"
+  },
   "network": {
     "offline": "No internet connection",
     "backOnline": "Back online"
