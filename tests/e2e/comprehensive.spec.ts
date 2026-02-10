@@ -6,6 +6,9 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
+const OWNER_AUTH = resolve(__dirname, '.auth/owner.json');
+const NEW_OWNER_AUTH = resolve(__dirname, '.auth/new-owner.json');
+
 // ─────────────────────────────────────────────────────────────
 // Helpers
 // ─────────────────────────────────────────────────────────────
@@ -37,6 +40,14 @@ async function assertNoRawKeys(page: Page) {
   const rawKeyPattern =
     /\b(auth|common|friends|dashboard|texter|settings|quickMessages|chat|welcome|verifyEmail|choosePlan|trial|invite|sos|quietHours|roles|texterLogin)\.[a-zA-Z]{2,}\b/;
   expect(body).not.toMatch(rawKeyPattern);
+}
+
+/** Get the i18n store from window – available because main.tsx exposes __i18n in DEV */
+async function getI18nStore(page: Page) {
+  return page.evaluate(() => {
+    const i18n = (window as any).__i18n || (window as any).i18next || (window as any).i18n;
+    return i18n?.store ?? null;
+  });
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -297,10 +308,7 @@ test.describe('B. Språk & i18n', () => {
       return { available: true, issues };
     });
 
-    if (!result.available) {
-      test.skip();
-      return;
-    }
+    expect(result.available, 'i18n store not available on window.__i18n').toBeTruthy();
     expect(result.issues).toEqual([]);
   });
 
@@ -312,30 +320,14 @@ test.describe('B. Språk & i18n', () => {
 
 test.describe('C. Team Owner flöde', () => {
 
+  // ── Tests that work without auth ──────────────────────────
+
   test('C01 – Create Team-sida renderas', async ({ page }) => {
     await page.goto('/create-team');
     await waitForApp(page);
-    // Will redirect to login if not auth, but page itself should exist
     await expect(
       page.locator('.create-team-container').or(page.locator('form.auth-form'))
     ).toBeVisible({ timeout: 10_000 });
-  });
-
-  test('C02 – Create Team har steg-indikator', async ({ page }) => {
-    await page.goto('/create-team');
-    await waitForApp(page);
-    // If redirected to login, skip
-    const isLogin = await page.locator('form.auth-form').isVisible().catch(() => false);
-    if (isLogin) { test.skip(); return; }
-    await expect(page.locator('.step-badge, .step-indicator')).toBeVisible();
-  });
-
-  test('C03 – Create Team har namn-input', async ({ page }) => {
-    await page.goto('/create-team');
-    await waitForApp(page);
-    const isLogin = await page.locator('form.auth-form').isVisible().catch(() => false);
-    if (isLogin) { test.skip(); return; }
-    await expect(page.locator('ion-input')).toBeVisible();
   });
 
   test('C04 – Choose Plan-sida renderas', async ({ page }) => {
@@ -346,23 +338,6 @@ test.describe('C. Team Owner flöde', () => {
     ).toBeVisible({ timeout: 10_000 });
   });
 
-  test('C05 – Choose Plan visar plan-kort', async ({ page }) => {
-    await page.goto('/choose-plan');
-    await waitForApp(page);
-    const isLogin = await page.locator('form.auth-form').isVisible().catch(() => false);
-    if (isLogin) { test.skip(); return; }
-    const cards = page.locator('.choose-plan-card');
-    expect(await cards.count()).toBeGreaterThanOrEqual(1);
-  });
-
-  test('C06 – Choose Plan har rekommenderad plan', async ({ page }) => {
-    await page.goto('/choose-plan');
-    await waitForApp(page);
-    const isLogin = await page.locator('form.auth-form').isVisible().catch(() => false);
-    if (isLogin) { test.skip(); return; }
-    await expect(page.locator('.choose-plan-card.recommended, .recommended-badge')).toBeVisible();
-  });
-
   test('C07 – Dashboard-sida renderas (eller redirectar)', async ({ page }) => {
     await page.goto('/dashboard');
     await waitForApp(page);
@@ -371,68 +346,12 @@ test.describe('C. Team Owner flöde', () => {
     ).toBeVisible({ timeout: 10_000 });
   });
 
-  test('C08 – Dashboard har Quick Actions-sektion', async ({ page }) => {
-    await page.goto('/dashboard');
-    await waitForApp(page);
-    const isLogin = await page.locator('form.auth-form').isVisible().catch(() => false);
-    if (isLogin) { test.skip(); return; }
-    await expect(page.locator('.action-list, .action-item').first()).toBeVisible();
-  });
-
-  test('C09 – Dashboard har Create Texter-action', async ({ page }) => {
-    await page.goto('/dashboard');
-    await waitForApp(page);
-    const isLogin = await page.locator('form.auth-form').isVisible().catch(() => false);
-    if (isLogin) { test.skip(); return; }
-    const body = await page.locator('body').textContent() ?? '';
-    expect(body.toLowerCase()).toContain('texter');
-  });
-
-  test('C10 – Dashboard har Oversight-action', async ({ page }) => {
-    await page.goto('/dashboard');
-    await waitForApp(page);
-    const isLogin = await page.locator('form.auth-form').isVisible().catch(() => false);
-    if (isLogin) { test.skip(); return; }
-    const links = page.locator('ion-item[routerlink="/oversight"], [href="/oversight"], a[routerlink="/oversight"]');
-    const bodyText = await page.locator('.action-item').allTextContents();
-    expect(bodyText.join(' ').length).toBeGreaterThan(0);
-  });
-
-  test('C11 – Dashboard har Invite Super-action', async ({ page }) => {
-    await page.goto('/dashboard');
-    await waitForApp(page);
-    const isLogin = await page.locator('form.auth-form').isVisible().catch(() => false);
-    if (isLogin) { test.skip(); return; }
-    const items = await page.locator('.action-item').allTextContents();
-    const hasInvite = items.some(t => t.toLowerCase().includes('super') || t.toLowerCase().includes('bjud'));
-    expect(hasInvite).toBeTruthy();
-  });
-
-  test('C12 – Dashboard har Team Members-sektion', async ({ page }) => {
-    await page.goto('/dashboard');
-    await waitForApp(page);
-    const isLogin = await page.locator('form.auth-form').isVisible().catch(() => false);
-    if (isLogin) { test.skip(); return; }
-    await expect(
-      page.locator('.member-list, .empty-state').first()
-    ).toBeVisible();
-  });
-
   test('C13 – Invite Super-sida renderas', async ({ page }) => {
     await page.goto('/invite-super');
     await waitForApp(page);
     await expect(
       page.locator('.invite-super-container').or(page.locator('form.auth-form'))
     ).toBeVisible({ timeout: 10_000 });
-  });
-
-  test('C14 – Invite Super har e-post och namn-fält', async ({ page }) => {
-    await page.goto('/invite-super');
-    await waitForApp(page);
-    const isLogin = await page.locator('form.auth-form').isVisible().catch(() => false);
-    if (isLogin) { test.skip(); return; }
-    const inputs = page.locator('ion-input');
-    expect(await inputs.count()).toBeGreaterThanOrEqual(1);
   });
 
   test('C15 – Owner Approvals-sida renderas', async ({ page }) => {
@@ -454,40 +373,112 @@ test.describe('C. Team Owner flöde', () => {
   test('C17 – Texter Detail-sida renderas', async ({ page }) => {
     await page.goto('/texter/00000000-0000-0000-0000-000000000000');
     await waitForApp(page);
-    // Will redirect or show error since fake UUID
     await expect(
       page.locator('ion-content, form.auth-form').first()
     ).toBeVisible({ timeout: 10_000 });
   });
 
-  test('C18 – Create Texter modal-komponent finns i DOM', async ({ page }) => {
-    await page.goto('/dashboard');
-    await waitForApp(page);
-    const isLogin = await page.locator('form.auth-form').isVisible().catch(() => false);
-    if (isLogin) { test.skip(); return; }
-    // Modal should be in the DOM (hidden)
-    await expect(page.locator('ion-modal')).toHaveCount(1, { timeout: 5_000 }).catch(() => {
-      // Some Ionic versions only render modal on open
+  // ── New owner tests (auth but no team) ────────────────────
+
+  test.describe('new owner', () => {
+    test.use({ storageState: NEW_OWNER_AUTH });
+
+    test('C02 – Create Team har steg-indikator', async ({ page }) => {
+      await page.goto('/create-team');
+      await waitForApp(page);
+      await expect(page.locator('.step-badge, .step-indicator').first()).toBeVisible();
+    });
+
+    test('C03 – Create Team har namn-input', async ({ page }) => {
+      await page.goto('/create-team');
+      await waitForApp(page);
+      await expect(page.locator('ion-input')).toBeVisible();
     });
   });
 
-  test('C19 – Dashboard har back-knapp till Settings', async ({ page }) => {
-    await page.goto('/dashboard');
-    await waitForApp(page);
-    const isLogin = await page.locator('form.auth-form').isVisible().catch(() => false);
-    if (isLogin) { test.skip(); return; }
-    await expect(page.locator('ion-back-button, ion-button[routerlink="/settings"]').first()).toBeVisible();
-  });
+  // ── Authenticated owner tests (has team) ──────────────────
 
-  test('C20 – Dashboard visar Approvals med badge', async ({ page }) => {
-    await page.goto('/dashboard');
-    await waitForApp(page);
-    const isLogin = await page.locator('form.auth-form').isVisible().catch(() => false);
-    if (isLogin) { test.skip(); return; }
-    // At minimum the approvals action item exists
-    const items = await page.locator('.action-item').allTextContents();
-    const hasApprovals = items.some(t => t.toLowerCase().includes('godkänn') || t.toLowerCase().includes('approval'));
-    expect(hasApprovals).toBeTruthy();
+  test.describe('authenticated owner', () => {
+    test.use({ storageState: OWNER_AUTH });
+
+    test('C05 – Choose Plan visar plan-kort', async ({ page }) => {
+      await page.goto('/choose-plan');
+      await waitForApp(page);
+      const cards = page.locator('.choose-plan-card');
+      expect(await cards.count()).toBeGreaterThanOrEqual(1);
+    });
+
+    test('C06 – Choose Plan har rekommenderad plan', async ({ page }) => {
+      await page.goto('/choose-plan');
+      await waitForApp(page);
+      await expect(page.locator('.choose-plan-card.recommended, .recommended-badge').first()).toBeVisible();
+    });
+
+    test('C08 – Dashboard har Quick Actions-sektion', async ({ page }) => {
+      await page.goto('/dashboard');
+      await waitForApp(page);
+      await expect(page.locator('.action-list, .action-item').first()).toBeVisible();
+    });
+
+    test('C09 – Dashboard har Create Texter-action', async ({ page }) => {
+      await page.goto('/dashboard');
+      await waitForApp(page);
+      const body = await page.locator('body').textContent() ?? '';
+      expect(body.toLowerCase()).toContain('texter');
+    });
+
+    test('C10 – Dashboard har Oversight-action', async ({ page }) => {
+      await page.goto('/dashboard');
+      await waitForApp(page);
+      const bodyText = await page.locator('.action-item').allTextContents();
+      expect(bodyText.join(' ').length).toBeGreaterThan(0);
+    });
+
+    test('C11 – Dashboard har Invite Super-action', async ({ page }) => {
+      await page.goto('/dashboard');
+      await waitForApp(page);
+      const items = await page.locator('.action-item').allTextContents();
+      const hasInvite = items.some(t => t.toLowerCase().includes('super') || t.toLowerCase().includes('bjud'));
+      expect(hasInvite).toBeTruthy();
+    });
+
+    test('C12 – Dashboard har Team Members-sektion', async ({ page }) => {
+      await page.goto('/dashboard');
+      await waitForApp(page);
+      await expect(
+        page.locator('.member-list, .empty-state').first()
+      ).toBeVisible();
+    });
+
+    test('C14 – Invite Super har e-post och namn-fält', async ({ page }) => {
+      await page.goto('/invite-super');
+      await waitForApp(page);
+      const inputs = page.locator('ion-input');
+      expect(await inputs.count()).toBeGreaterThanOrEqual(1);
+    });
+
+    test('C18 – Create Texter modal-komponent finns i DOM', async ({ page }) => {
+      await page.goto('/dashboard');
+      await waitForApp(page);
+      // Modal should be in the DOM (hidden)
+      await expect(page.locator('ion-modal')).toHaveCount(1, { timeout: 5_000 }).catch(() => {
+        // Some Ionic versions only render modal on open
+      });
+    });
+
+    test('C19 – Dashboard har back-knapp till Settings', async ({ page }) => {
+      await page.goto('/dashboard');
+      await waitForApp(page);
+      await expect(page.locator('ion-back-button, ion-button[routerlink="/settings"]').first()).toBeVisible();
+    });
+
+    test('C20 – Dashboard visar Approvals med badge', async ({ page }) => {
+      await page.goto('/dashboard');
+      await waitForApp(page);
+      const items = await page.locator('.action-item').allTextContents();
+      const hasApprovals = items.some(t => t.toLowerCase().includes('godkänn') || t.toLowerCase().includes('approval'));
+      expect(hasApprovals).toBeTruthy();
+    });
   });
 
 });
@@ -507,7 +498,6 @@ test.describe('D. Super flöde', () => {
   test('D02 – Super invite visar team-info eller error', async ({ page }) => {
     await page.goto('/invite/invalid-token');
     await waitForApp(page);
-    // With invalid token should show error or loading
     const body = await page.locator('body').textContent() ?? '';
     expect(body.length).toBeGreaterThan(0);
   });
@@ -520,60 +510,59 @@ test.describe('D. Super flöde', () => {
     ).toBeVisible({ timeout: 10_000 });
   });
 
-  test('D04 – Chattar-sida renderas (skyddad)', async ({ page }) => {
-    await page.goto('/chats');
-    await waitForApp(page);
-    await expect(
-      page.locator('.chat-list, .empty-state, form.auth-form, .welcome-container').first()
-    ).toBeVisible({ timeout: 10_000 });
-  });
+  // Protected pages (with owner auth so we see actual content)
+  test.describe('authenticated', () => {
+    test.use({ storageState: OWNER_AUTH });
 
-  test('D05 – Vänner-sida renderas (skyddad)', async ({ page }) => {
-    await page.goto('/friends');
-    await waitForApp(page);
-    await expect(
-      page.locator('.friends-container, ion-segment, form.auth-form, .welcome-container').first()
-    ).toBeVisible({ timeout: 10_000 });
-  });
+    test('D04 – Chattar-sida renderas', async ({ page }) => {
+      await page.goto('/chats');
+      await waitForApp(page);
+      await expect(
+        page.locator('.chat-list, .empty-state, ion-content').first()
+      ).toBeVisible({ timeout: 10_000 });
+    });
 
-  test('D06 – Inställningar-sida renderas (skyddad)', async ({ page }) => {
-    await page.goto('/settings');
-    await waitForApp(page);
-    await expect(
-      page.locator('.settings-container, form.auth-form, .welcome-container').first()
-    ).toBeVisible({ timeout: 10_000 });
-  });
+    test('D05 – Vänner-sida renderas', async ({ page }) => {
+      await page.goto('/friends');
+      await waitForApp(page);
+      await expect(
+        page.locator('.friends-container, ion-segment, ion-content').first()
+      ).toBeVisible({ timeout: 10_000 });
+    });
 
-  test('D07 – New Chat-sida renderas (skyddad)', async ({ page }) => {
-    await page.goto('/new-chat');
-    await waitForApp(page);
-    await expect(
-      page.locator('ion-content, form.auth-form').first()
-    ).toBeVisible({ timeout: 10_000 });
-  });
+    test('D06 – Inställningar-sida renderas', async ({ page }) => {
+      await page.goto('/settings');
+      await waitForApp(page);
+      await expect(
+        page.locator('.settings-container, ion-content').first()
+      ).toBeVisible({ timeout: 10_000 });
+    });
 
-  test('D08 – Add Friend-sida renderas (skyddad)', async ({ page }) => {
-    await page.goto('/add-friend');
-    await waitForApp(page);
-    await expect(
-      page.locator('.add-friend-container, form.auth-form, .welcome-container').first()
-    ).toBeVisible({ timeout: 10_000 });
-  });
+    test('D07 – New Chat-sida renderas', async ({ page }) => {
+      await page.goto('/new-chat');
+      await waitForApp(page);
+      await expect(page.locator('ion-content')).toBeVisible({ timeout: 10_000 });
+    });
 
-  test('D09 – Chat View-sida renderas (skyddad)', async ({ page }) => {
-    await page.goto('/chat/00000000-0000-0000-0000-000000000000');
-    await waitForApp(page);
-    await expect(
-      page.locator('ion-content, form.auth-form').first()
-    ).toBeVisible({ timeout: 10_000 });
-  });
+    test('D08 – Add Friend-sida renderas', async ({ page }) => {
+      await page.goto('/add-friend');
+      await waitForApp(page);
+      await expect(
+        page.locator('.add-friend-container, ion-content').first()
+      ).toBeVisible({ timeout: 10_000 });
+    });
 
-  test('D10 – Support-sida renderas (skyddad)', async ({ page }) => {
-    await page.goto('/support');
-    await waitForApp(page);
-    await expect(
-      page.locator('ion-content, form.auth-form').first()
-    ).toBeVisible({ timeout: 10_000 });
+    test('D09 – Chat View-sida renderas', async ({ page }) => {
+      await page.goto('/chat/00000000-0000-0000-0000-000000000000');
+      await waitForApp(page);
+      await expect(page.locator('ion-content')).toBeVisible({ timeout: 10_000 });
+    });
+
+    test('D10 – Support-sida renderas', async ({ page }) => {
+      await page.goto('/support');
+      await waitForApp(page);
+      await expect(page.locator('ion-content')).toBeVisible({ timeout: 10_000 });
+    });
   });
 
 });
@@ -587,7 +576,6 @@ test.describe('E. Texter flöde', () => {
   test('E01 – Texter login-sida har Zemi-input', async ({ page }) => {
     await page.goto('/texter-login');
     await waitForApp(page);
-    // Zemi input has class zemi-input on the ion-input element
     await expect(
       page.locator('ion-input.zemi-input, ion-input.auth-input').first()
     ).toBeVisible({ timeout: 10_000 });
@@ -597,7 +585,6 @@ test.describe('E. Texter flöde', () => {
     await page.goto('/texter-login');
     await waitForApp(page);
     await page.locator('ion-button[type="submit"]').click();
-    // Should show error or stay on same page (no navigation)
     await page.waitForTimeout(2_000);
     const hasError = await page.locator('.auth-error').isVisible().catch(() => false);
     const url = page.url();
@@ -690,7 +677,6 @@ test.describe('E. Texter flöde', () => {
     await page.locator('ion-button[type="submit"]').click();
     await expect(page.locator('.auth-error')).toBeVisible({ timeout: 10_000 });
     const bg = await page.locator('.auth-error').evaluate(el => getComputedStyle(el).backgroundColor);
-    // Should have a red-ish background
     const m = bg.match(/rgba?\((\d+)/);
     if (m) expect(parseInt(m[1])).toBeGreaterThan(50);
   });
@@ -702,10 +688,8 @@ test.describe('E. Texter flöde', () => {
     await inputs.nth(0).locator('input').fill('ZEMI-999-999');
     await inputs.nth(1).locator('input').fill('testpass');
     await page.locator('ion-button[type="submit"]').click();
-    // Spinner might flash briefly
     const spinner = page.locator('ion-spinner');
     await spinner.waitFor({ state: 'visible', timeout: 3_000 }).catch(() => {});
-    // Either spinner appeared or error showed
     await expect(page.locator('ion-spinner, .auth-error').first()).toBeVisible({ timeout: 10_000 });
   });
 
@@ -723,32 +707,31 @@ test.describe('E. Texter flöde', () => {
 
 test.describe('F. Chatt funktioner (UI)', () => {
 
-  test('F01 – ChatList-sida renderas', async ({ page }) => {
-    await page.goto('/chats');
-    await waitForApp(page);
-    await expect(
-      page.locator('ion-content, form.auth-form').first()
-    ).toBeVisible({ timeout: 10_000 });
+  // Protected page tests
+  test.describe('authenticated', () => {
+    test.use({ storageState: OWNER_AUTH });
+
+    test('F01 – ChatList-sida renderas', async ({ page }) => {
+      await page.goto('/chats');
+      await waitForApp(page);
+      await expect(page.locator('ion-content')).toBeVisible({ timeout: 10_000 });
+    });
+
+    test('F02 – New Chat-sida renderas', async ({ page }) => {
+      await page.goto('/new-chat');
+      await waitForApp(page);
+      await expect(page.locator('ion-content')).toBeVisible({ timeout: 10_000 });
+    });
+
+    test('F03 – Chat View-sida renderas', async ({ page }) => {
+      await page.goto('/chat/test-id');
+      await waitForApp(page);
+      await expect(page.locator('ion-content')).toBeVisible({ timeout: 10_000 });
+    });
   });
 
-  test('F02 – New Chat-sida renderas', async ({ page }) => {
-    await page.goto('/new-chat');
-    await waitForApp(page);
-    await expect(
-      page.locator('ion-content, form.auth-form').first()
-    ).toBeVisible({ timeout: 10_000 });
-  });
-
-  test('F03 – Chat View-sida renderas', async ({ page }) => {
-    await page.goto('/chat/test-id');
-    await waitForApp(page);
-    await expect(
-      page.locator('ion-content, form.auth-form').first()
-    ).toBeVisible({ timeout: 10_000 });
-  });
-
+  // Non-auth tests
   test('F04 – EmptyStateIllustration no-chats SVG renderas', async ({ page }) => {
-    // Navigate to a page that uses no-chats empty state
     await page.goto('/login');
     await waitForApp(page);
 
@@ -765,13 +748,10 @@ test.describe('F. Chatt funktioner (UI)', () => {
   });
 
   test('F05 – ChatList empty state SVG har en bubbla med plus', async () => {
-    // Verify the no-chats SVG only has one bubble (not overlapping back+front)
     const filePath = resolve(__dirname, '../../src/components/common/EmptyStateIllustration.tsx');
     const source = readFileSync(filePath, 'utf-8');
-    // Old pattern had "Back bubble" and "Front bubble" comments
     expect(source).not.toContain('Back bubble');
     expect(source).not.toContain('Front bubble');
-    // New pattern has a single chat bubble with plus inside
     expect(source).toContain('Single chat bubble');
     expect(source).toContain('Plus inside bubble');
   });
@@ -783,6 +763,7 @@ test.describe('F. Chatt funktioner (UI)', () => {
     await assertNoRawKeys(page);
   });
 
+  // i18n store tests – access on a public page (login)
   test('F07 – quickMessages.suggestions är array i alla locales', async ({ page }) => {
     await page.goto('/login');
     await waitForApp(page);
@@ -800,7 +781,7 @@ test.describe('F. Chatt funktioner (UI)', () => {
       return { available: true, issues };
     });
 
-    if (!result.available) { test.skip(); return; }
+    expect(result.available, 'i18n store not available').toBeTruthy();
     expect(result.issues).toEqual([]);
   });
 
@@ -814,7 +795,7 @@ test.describe('F. Chatt funktioner (UI)', () => {
       return i18n.store.data.sv?.translation?.quickMessages?.suggestions;
     });
 
-    if (!result) { test.skip(); return; }
+    expect(result, 'i18n store not available').toBeTruthy();
     expect(result).toContain('Jag är framme!');
     expect(result).toContain('Hämta mig');
   });
@@ -829,7 +810,7 @@ test.describe('F. Chatt funktioner (UI)', () => {
       return i18n.store.data.en?.translation?.quickMessages?.suggestions;
     });
 
-    if (!result) { test.skip(); return; }
+    expect(result, 'i18n store not available').toBeTruthy();
     expect(result).toContain("I'm here!");
     expect(result).toContain('Pick me up');
   });
@@ -845,10 +826,10 @@ test.describe('F. Chatt funktioner (UI)', () => {
       return { image: msg?.image, voice: msg?.voice, video: msg?.video, document: msg?.document };
     });
 
-    if (!result) { test.skip(); return; }
-    expect(result.image).toBeTruthy();
-    expect(result.voice).toBeTruthy();
-    expect(result.video).toBeTruthy();
+    expect(result, 'i18n store not available').toBeTruthy();
+    expect(result!.image).toBeTruthy();
+    expect(result!.voice).toBeTruthy();
+    expect(result!.video).toBeTruthy();
   });
 
   test('F11 – Chat i18n har typing-indikatorer', async ({ page }) => {
@@ -862,9 +843,9 @@ test.describe('F. Chatt funktioner (UI)', () => {
       return { typing: chat?.typing, typingOne: chat?.typingOne };
     });
 
-    if (!result) { test.skip(); return; }
-    expect(result.typing).toBeTruthy();
-    expect(result.typingOne).toBeTruthy();
+    expect(result, 'i18n store not available').toBeTruthy();
+    expect(result!.typing).toBeTruthy();
+    expect(result!.typingOne).toBeTruthy();
   });
 
   test('F12 – Context menu i18n finns', async ({ page }) => {
@@ -877,10 +858,10 @@ test.describe('F. Chatt funktioner (UI)', () => {
       return i18n.store.data.sv?.translation?.contextMenu;
     });
 
-    if (!result) { test.skip(); return; }
-    expect(result.reply).toBeTruthy();
-    expect(result.delete).toBeTruthy();
-    expect(result.edit).toBeTruthy();
+    expect(result, 'i18n store not available').toBeTruthy();
+    expect(result!.reply).toBeTruthy();
+    expect(result!.deleteForAll).toBeTruthy();
+    expect(result!.edit).toBeTruthy();
   });
 
   test('F13 – GIF i18n finns', async ({ page }) => {
@@ -893,8 +874,8 @@ test.describe('F. Chatt funktioner (UI)', () => {
       return i18n.store.data.sv?.translation?.gif;
     });
 
-    if (!result) { test.skip(); return; }
-    expect(result.search).toBeTruthy();
+    expect(result, 'i18n store not available').toBeTruthy();
+    expect(result!.searchPlaceholder).toBeTruthy();
   });
 
   test('F14 – Poll i18n finns', async ({ page }) => {
@@ -907,8 +888,8 @@ test.describe('F. Chatt funktioner (UI)', () => {
       return i18n.store.data.sv?.translation?.poll;
     });
 
-    if (!result) { test.skip(); return; }
-    expect(result.create).toBeTruthy();
+    expect(result, 'i18n store not available').toBeTruthy();
+    expect(result!.create).toBeTruthy();
   });
 
   test('F15 – Call i18n finns', async ({ page }) => {
@@ -921,9 +902,9 @@ test.describe('F. Chatt funktioner (UI)', () => {
       return i18n.store.data.sv?.translation?.call;
     });
 
-    if (!result) { test.skip(); return; }
-    expect(result.voice).toBeTruthy();
-    expect(result.video).toBeTruthy();
+    expect(result, 'i18n store not available').toBeTruthy();
+    expect(result!.voiceCall).toBeTruthy();
+    expect(result!.videoCall).toBeTruthy();
   });
 
 });
@@ -941,10 +922,10 @@ test.describe('G. Samtal (i18n & UI)', () => {
       const i18n = (window as any).__i18n || (window as any).i18next || (window as any).i18n;
       if (!i18n?.store) return null;
       const call = i18n.store.data.sv?.translation?.call;
-      return { voice: call?.voice, incoming: call?.incomingCall };
+      return { voiceCall: call?.voiceCall, incomingCall: call?.incomingCall };
     });
-    if (!result) { test.skip(); return; }
-    expect(result.voice).toBeTruthy();
+    expect(result, 'i18n store not available').toBeTruthy();
+    expect(result!.voiceCall).toBeTruthy();
   });
 
   test('G02 – Call i18n har videosamtal-översättning', async ({ page }) => {
@@ -953,10 +934,9 @@ test.describe('G. Samtal (i18n & UI)', () => {
     const result = await page.evaluate(() => {
       const i18n = (window as any).__i18n || (window as any).i18next || (window as any).i18n;
       if (!i18n?.store) return null;
-      return i18n.store.data.sv?.translation?.call?.video;
+      return i18n.store.data.sv?.translation?.call?.videoCall;
     });
-    if (!result) { test.skip(); return; }
-    expect(result).toBeTruthy();
+    expect(result, 'i18n store not available').toBeTruthy();
   });
 
   test('G03 – Call i18n finns i alla 5 locales', async ({ page }) => {
@@ -971,7 +951,7 @@ test.describe('G. Samtal (i18n & UI)', () => {
       }
       return issues;
     });
-    if (!result) { test.skip(); return; }
+    expect(result, 'i18n store not available').not.toBeNull();
     expect(result).toEqual([]);
   });
 
@@ -984,9 +964,9 @@ test.describe('G. Samtal (i18n & UI)', () => {
       const call = i18n.store.data.sv?.translation?.call;
       return { mute: call?.mute, unmute: call?.unmute };
     });
-    if (!result) { test.skip(); return; }
-    expect(result.mute).toBeTruthy();
-    expect(result.unmute).toBeTruthy();
+    expect(result, 'i18n store not available').toBeTruthy();
+    expect(result!.mute).toBeTruthy();
+    expect(result!.unmute).toBeTruthy();
   });
 
   test('G05 – Call i18n har end call', async ({ page }) => {
@@ -997,8 +977,7 @@ test.describe('G. Samtal (i18n & UI)', () => {
       if (!i18n?.store) return null;
       return i18n.store.data.sv?.translation?.call?.endCall;
     });
-    if (!result) { test.skip(); return; }
-    expect(result).toBeTruthy();
+    expect(result, 'i18n store not available').toBeTruthy();
   });
 
   test('G06 – Call i18n har accept/decline', async ({ page }) => {
@@ -1008,27 +987,28 @@ test.describe('G. Samtal (i18n & UI)', () => {
       const i18n = (window as any).__i18n || (window as any).i18next || (window as any).i18n;
       if (!i18n?.store) return null;
       const call = i18n.store.data.sv?.translation?.call;
-      return { accept: call?.accept, decline: call?.decline };
+      return { answer: call?.answer, decline: call?.decline };
     });
-    if (!result) { test.skip(); return; }
-    expect(result.accept).toBeTruthy();
-    expect(result.decline).toBeTruthy();
+    expect(result, 'i18n store not available').toBeTruthy();
+    expect(result!.answer).toBeTruthy();
+    expect(result!.decline).toBeTruthy();
   });
 
-  test('G07 – MFA Setup-sida renderas', async ({ page }) => {
-    await page.goto('/mfa-setup');
-    await waitForApp(page);
-    await expect(
-      page.locator('ion-content, form.auth-form').first()
-    ).toBeVisible({ timeout: 10_000 });
-  });
+  // Protected pages
+  test.describe('authenticated', () => {
+    test.use({ storageState: OWNER_AUTH });
 
-  test('G08 – MFA Verify-sida renderas', async ({ page }) => {
-    await page.goto('/mfa-verify');
-    await waitForApp(page);
-    await expect(
-      page.locator('ion-content, form.auth-form').first()
-    ).toBeVisible({ timeout: 10_000 });
+    test('G07 – MFA Setup-sida renderas', async ({ page }) => {
+      await page.goto('/mfa-setup');
+      await waitForApp(page);
+      await expect(page.locator('ion-content')).toBeVisible({ timeout: 10_000 });
+    });
+
+    test('G08 – MFA Verify-sida renderas', async ({ page }) => {
+      await page.goto('/mfa-verify');
+      await waitForApp(page);
+      await expect(page.locator('ion-content')).toBeVisible({ timeout: 10_000 });
+    });
   });
 
   test('G09 – Texter detail behörighetskontroller i i18n', async ({ page }) => {
@@ -1039,8 +1019,8 @@ test.describe('G. Samtal (i18n & UI)', () => {
       if (!i18n?.store) return null;
       return i18n.store.data.sv?.translation?.texterDetail;
     });
-    if (!result) { test.skip(); return; }
-    expect(result.permissions).toBeTruthy();
+    expect(result, 'i18n store not available').toBeTruthy();
+    expect(result!.capabilities).toBeTruthy();
   });
 
   test('G10 – SOS i18n finns', async ({ page }) => {
@@ -1051,8 +1031,8 @@ test.describe('G. Samtal (i18n & UI)', () => {
       if (!i18n?.store) return null;
       return i18n.store.data.sv?.translation?.sos;
     });
-    if (!result) { test.skip(); return; }
-    expect(result.unacknowledged).toBeTruthy();
+    expect(result, 'i18n store not available').toBeTruthy();
+    expect(result!.unacknowledged).toBeTruthy();
   });
 
 });
@@ -1063,22 +1043,36 @@ test.describe('G. Samtal (i18n & UI)', () => {
 
 test.describe('H. Vänner & kontakter', () => {
 
-  test('H01 – Friends-sida renderas', async ({ page }) => {
-    await page.goto('/friends');
-    await waitForApp(page);
-    await expect(
-      page.locator('ion-content, form.auth-form').first()
-    ).toBeVisible({ timeout: 10_000 });
+  // Protected page tests
+  test.describe('authenticated', () => {
+    test.use({ storageState: OWNER_AUTH });
+
+    test('H01 – Friends-sida renderas', async ({ page }) => {
+      await page.goto('/friends');
+      await waitForApp(page);
+      await expect(page.locator('ion-content')).toBeVisible({ timeout: 10_000 });
+    });
+
+    test('H02 – Add Friend-sida renderas', async ({ page }) => {
+      await page.goto('/add-friend');
+      await waitForApp(page);
+      await expect(page.locator('ion-content')).toBeVisible({ timeout: 10_000 });
+    });
+
+    test('H05 – Add Friend har Zemi-nummer input', async ({ page }) => {
+      await page.goto('/add-friend');
+      await waitForApp(page);
+      await expect(page.locator('ion-input').first()).toBeVisible();
+    });
+
+    test('H06 – Add Friend har sök-knapp', async ({ page }) => {
+      await page.goto('/add-friend');
+      await waitForApp(page);
+      await expect(page.locator('.search-button, ion-button').first()).toBeVisible();
+    });
   });
 
-  test('H02 – Add Friend-sida renderas', async ({ page }) => {
-    await page.goto('/add-friend');
-    await waitForApp(page);
-    await expect(
-      page.locator('ion-content, form.auth-form').first()
-    ).toBeVisible({ timeout: 10_000 });
-  });
-
+  // i18n store tests (public page access)
   test('H03 – Friends i18n har alla nycklar', async ({ page }) => {
     await page.goto('/login');
     await waitForApp(page);
@@ -1092,8 +1086,8 @@ test.describe('H. Vänner & kontakter', () => {
         unfriend: f?.unfriend, myTeam: f?.myTeam, noRequests: f?.noRequests,
       };
     });
-    if (!result) { test.skip(); return; }
-    for (const [key, val] of Object.entries(result)) {
+    expect(result, 'i18n store not available').toBeTruthy();
+    for (const [key, val] of Object.entries(result!)) {
       expect(val, `friends.${key} missing`).toBeTruthy();
     }
   });
@@ -1114,24 +1108,8 @@ test.describe('H. Vänner & kontakter', () => {
       }
       return issues;
     });
-    if (!result) { test.skip(); return; }
+    expect(result, 'i18n store not available').not.toBeNull();
     expect(result).toEqual([]);
-  });
-
-  test('H05 – Add Friend har Zemi-nummer input', async ({ page }) => {
-    await page.goto('/add-friend');
-    await waitForApp(page);
-    const isLogin = await page.locator('form.auth-form').isVisible().catch(() => false);
-    if (isLogin) { test.skip(); return; }
-    await expect(page.locator('ion-input').first()).toBeVisible();
-  });
-
-  test('H06 – Add Friend har sök-knapp', async ({ page }) => {
-    await page.goto('/add-friend');
-    await waitForApp(page);
-    const isLogin = await page.locator('form.auth-form').isVisible().catch(() => false);
-    if (isLogin) { test.skip(); return; }
-    await expect(page.locator('.search-button, ion-button').first()).toBeVisible();
   });
 
   test('H07 – Friends i18n har unfriend-bekräftelse', async ({ page }) => {
@@ -1143,9 +1121,9 @@ test.describe('H. Vänner & kontakter', () => {
       const f = i18n.store.data.sv?.translation?.friends;
       return { unfriendTitle: f?.unfriendTitle, unfriendMessage: f?.unfriendMessage };
     });
-    if (!result) { test.skip(); return; }
-    expect(result.unfriendTitle).toBeTruthy();
-    expect(result.unfriendMessage).toBeTruthy();
+    expect(result, 'i18n store not available').toBeTruthy();
+    expect(result!.unfriendTitle).toBeTruthy();
+    expect(result!.unfriendMessage).toBeTruthy();
   });
 
   test('H08 – Friends i18n har texter-godkännande-not', async ({ page }) => {
@@ -1156,8 +1134,7 @@ test.describe('H. Vänner & kontakter', () => {
       if (!i18n?.store) return null;
       return i18n.store.data.sv?.translation?.friends?.texterApprovalNote;
     });
-    if (!result) { test.skip(); return; }
-    expect(result).toBeTruthy();
+    expect(result, 'i18n store not available').toBeTruthy();
   });
 
   test('H09 – Owner Approvals i18n finns', async ({ page }) => {
@@ -1168,8 +1145,8 @@ test.describe('H. Vänner & kontakter', () => {
       if (!i18n?.store) return null;
       return i18n.store.data.sv?.translation?.ownerApprovals;
     });
-    if (!result) { test.skip(); return; }
-    expect(result.title).toBeTruthy();
+    expect(result, 'i18n store not available').toBeTruthy();
+    expect(result!.title).toBeTruthy();
   });
 
   test('H10 – Search i18n finns', async ({ page }) => {
@@ -1180,8 +1157,7 @@ test.describe('H. Vänner & kontakter', () => {
       if (!i18n?.store) return null;
       return i18n.store.data.sv?.translation?.search;
     });
-    if (!result) { test.skip(); return; }
-    expect(result).toBeTruthy();
+    expect(result, 'i18n store not available').toBeTruthy();
   });
 
 });
@@ -1232,7 +1208,7 @@ test.describe('I. UI/UX & Styling', () => {
     await waitForApp(page);
     const bg = await page.evaluate(() => getComputedStyle(document.body).backgroundColor);
     const lightness = rgbLightness(bg);
-    expect(lightness).toBeLessThan(50); // Dark background
+    expect(lightness).toBeLessThan(50);
   });
 
   test('I04 – Titel har hög kontrast', async ({ page }) => {
@@ -1274,7 +1250,6 @@ test.describe('I. UI/UX & Styling', () => {
     const radius = await page.locator('ion-button').first().evaluate(
       el => getComputedStyle(el).borderRadius
     );
-    // Should be 9999px or very large
     expect(parseInt(radius)).toBeGreaterThan(10);
   });
 
@@ -1339,7 +1314,6 @@ test.describe('I. UI/UX & Styling', () => {
       el.remove();
       return pb;
     });
-    // Should resolve to at least some padding
     expect(result).toBeTruthy();
   });
 
