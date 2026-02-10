@@ -19,10 +19,6 @@ const VerifyEmail: React.FC = () => {
   const [resent, setResent] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const handleOpenMail = () => {
-    window.open('mailto:', '_system');
-  };
-
   const handleResend = async () => {
     if (!email) return;
     setResending(true);
@@ -74,14 +70,6 @@ const VerifyEmail: React.FC = () => {
             {t('verifyEmail.description', { email })}
           </p>
 
-          <IonButton
-            expand="block"
-            className="verify-button glow-primary"
-            onClick={handleOpenMail}
-          >
-            {t('verifyEmail.openMail')}
-          </IonButton>
-
           <div className="resend-section">
             {resending ? (
               <IonSpinner name="crescent" className="resend-spinner" />
@@ -106,12 +94,13 @@ const VerifyEmail: React.FC = () => {
             </div>
           )}
 
-          <button
-            className="back-to-login"
+          <IonButton
+            expand="block"
+            className="verify-button glow-primary"
             onClick={() => history.replace('/login')}
           >
-            {t('verifyEmail.backToLogin')}
-          </button>
+            {t('verifyEmail.goToLogin')}
+          </IonButton>
         </div>
 
         <style>{`
@@ -196,15 +185,6 @@ const VerifyEmail: React.FC = () => {
             width: 100%;
           }
 
-          .back-to-login {
-            background: none;
-            border: none;
-            color: hsl(var(--muted-foreground));
-            font-size: 0.85rem;
-            cursor: pointer;
-            padding: 0.5rem;
-            margin-top: 1rem;
-          }
         `}</style>
       </IonContent>
     </IonPage>

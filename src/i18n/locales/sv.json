@@ -554,10 +554,9 @@
   "verifyEmail": {
     "title": "Kolla din e-post!",
     "description": "Vi har skickat en bekräftelselänk till {{email}}. Klicka på länken för att aktivera ditt konto.",
-    "openMail": "Öppna e-post",
     "resend": "Fick du inget mail? Skicka igen",
     "resent": "Nytt mail skickat!",
-    "backToLogin": "Tillbaka till inloggning"
+    "goToLogin": "Gå till inloggning"
   },
   "choosePlan": {
     "title": "Välj din plan",

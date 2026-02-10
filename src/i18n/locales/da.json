@@ -554,10 +554,9 @@
   "verifyEmail": {
     "title": "Tjek din e-mail!",
     "description": "Vi har sendt et bekræftelseslink til {{email}}. Klik på linket for at aktivere din konto.",
-    "openMail": "Åbn e-mail",
     "resend": "Fik du ingen e-mail? Send igen",
     "resent": "Ny e-mail sendt!",
-    "backToLogin": "Tilbage til login"
+    "goToLogin": "Gå til login"
   },
   "choosePlan": {
     "title": "Vælg din plan",
