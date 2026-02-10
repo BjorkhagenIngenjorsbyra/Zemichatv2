@@ -26,29 +26,46 @@ export interface PendingRequestWithUser extends Friendship {
 
 /**
  * Search for a user by their Zemi number.
+ * Uses a SECURITY DEFINER function to allow cross-team lookups
+ * (RLS on users only allows seeing same-team, friends, or pending).
  */
 export async function searchUserByZemiNumber(
   zemiNumber: string
 ): Promise<{ user: User | null; error: Error | null }> {
   try {
-    // Normalize the zemi number (uppercase, no extra spaces)
-    const normalizedZemi = zemiNumber.trim().toUpperCase();
-
-    const { data, error } = await supabase
-      .from('users')
-      .select('*')
-      .eq('zemi_number', normalizedZemi)
-      .single();
+    const { data, error } = await supabase.rpc('search_user_by_zemi' as never, {
+      p_zemi_number: zemiNumber.trim(),
+    } as never);
 
     if (error) {
-      if (error.code === 'PGRST116') {
-        // No rows returned
-        return { user: null, error: null };
-      }
       return { user: null, error: new Error(error.message) };
     }
 
-    return { user: data as unknown as User, error: null };
+    // RPC returns an array of rows; we expect 0 or 1
+    const rows = data as unknown as Array<{
+      id: string;
+      display_name: string | null;
+      zemi_number: string;
+      avatar_url: string | null;
+      role: string;
+    }>;
+
+    if (!rows || rows.length === 0) {
+      return { user: null, error: null };
+    }
+
+    // Map the minimal fields to a User-compatible object
+    const row = rows[0];
+    return {
+      user: {
+        id: row.id,
+        display_name: row.display_name,
+        zemi_number: row.zemi_number,
+        avatar_url: row.avatar_url,
+        role: row.role,
+      } as unknown as User,
+      error: null,
+    };
   } catch (err) {
     return {
       user: null,

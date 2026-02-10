@@ -292,6 +292,36 @@
       "calls": "Tale- og videosamtaler"
     }
   },
+  "friends": {
+    "title": "Venner",
+    "myFriends": "Mine venner",
+    "requests": "Forespørsler",
+    "noFriends": "Ingen venner ennå",
+    "addFriendsHint": "Søk etter brukere med deres Zemi-nummer for å legge dem til",
+    "addFriend": "Legg til venn",
+    "noRequests": "Ingen ventende forespørsler",
+    "incomingRequests": "Innkommende forespørsler",
+    "outgoingRequests": "Utgående forespørsler",
+    "search": "Søk",
+    "enterZemiNumber": "Skriv inn Zemi-nummer",
+    "searchDescription": "Søk etter en bruker med deres Zemi-nummer for å sende en venneforespørsel",
+    "invalidZemiNumber": "Skriv inn et gyldig Zemi-nummer (ZEMI-XXX-XXX)",
+    "cannotAddSelf": "Du kan ikke legge til deg selv som venn",
+    "userNotFound": "Brukeren ble ikke funnet",
+    "sendRequest": "Send forespørsel",
+    "requestSent": "Forespørsel sendt",
+    "requestSentSuccess": "Venneforespørsel sendt",
+    "pending": "Venter",
+    "waitingOwnerApproval": "Venter på owner-godkjenning",
+    "alreadyFriends": "Allerede venner",
+    "requestReceived": "Forespørsel mottatt",
+    "requestDenied": "Forespørsel avvist",
+    "unfriend": "Fjern venn",
+    "unfriendTitle": "Fjerne venn?",
+    "unfriendMessage": "Er du sikker på at du vil fjerne {{name}} som venn?",
+    "texterApprovalNote": "Venneforespørsler må godkjennes av din Team Owner",
+    "myTeam": "Mitt team"
+  },
   "settings": {
     "title": "Innstillinger",
     "profile": "Profil",
@@ -314,7 +344,10 @@
     "legal": "Juridisk",
     "privacyPolicy": "Personvernerklæring",
     "termsOfService": "Brukervilkår",
-    "profileSaved": "Profilen er oppdatert"
+    "profileSaved": "Profilen er oppdatert",
+    "teamDashboard": "Team Dashboard",
+    "teamDashboardDescription": "Administrer Texters, godkjenninger og innsyn",
+    "language": "Språk"
   },
   "quietHours": {
     "title": "Stille timer",
@@ -387,6 +420,18 @@
     "resend": "Fikk du ikke e-post? Send på nytt",
     "resent": "Ny e-post sendt!",
     "backToLogin": "Tilbake til innlogging"
+  },
+  "choosePlan": {
+    "title": "Velg din plan",
+    "subtitle": "Alle planer starter med en gratis prøveperiode",
+    "trialBanner": "Prøv alle funksjoner gratis i 10 dager!",
+    "startTrial": "Start gratis prøveperiode",
+    "perMonth": "/mnd",
+    "oneTime": "engangskjøp"
+  },
+  "trial": {
+    "banner": "Prøveperiode: {{days}} dager igjen",
+    "bannerLastDay": "Prøveperioden slutter i dag"
   },
   "network": {
     "offline": "Ingen internettilkobling",

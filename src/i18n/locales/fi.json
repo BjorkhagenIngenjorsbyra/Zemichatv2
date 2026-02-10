@@ -235,6 +235,36 @@
       "calls": "Ääni- ja videopuhelut"
     }
   },
+  "friends": {
+    "title": "Ystävät",
+    "myFriends": "Omat ystävät",
+    "requests": "Pyynnöt",
+    "noFriends": "Ei ystäviä vielä",
+    "addFriendsHint": "Etsi käyttäjiä heidän Zemi-numerollaan lisätäksesi heidät",
+    "addFriend": "Lisää ystävä",
+    "noRequests": "Ei odottavia pyyntöjä",
+    "incomingRequests": "Saapuvat pyynnöt",
+    "outgoingRequests": "Lähtevät pyynnöt",
+    "search": "Hae",
+    "enterZemiNumber": "Syötä Zemi-numero",
+    "searchDescription": "Etsi käyttäjää Zemi-numerolla lähettääksesi ystäväpyynnön",
+    "invalidZemiNumber": "Syötä kelvollinen Zemi-numero (ZEMI-XXX-XXX)",
+    "cannotAddSelf": "Et voi lisätä itseäsi ystäväksi",
+    "userNotFound": "Käyttäjää ei löytynyt",
+    "sendRequest": "Lähetä pyyntö",
+    "requestSent": "Pyyntö lähetetty",
+    "requestSentSuccess": "Ystäväpyyntö lähetetty",
+    "pending": "Odottaa",
+    "waitingOwnerApproval": "Odottaa owner-hyväksyntää",
+    "alreadyFriends": "Jo ystäviä",
+    "requestReceived": "Pyyntö vastaanotettu",
+    "requestDenied": "Pyyntö hylätty",
+    "unfriend": "Poista ystävä",
+    "unfriendTitle": "Poista ystävä?",
+    "unfriendMessage": "Haluatko varmasti poistaa käyttäjän {{name}} ystävistäsi?",
+    "texterApprovalNote": "Ystäväpyynnöt on hyväksytettävä Team Ownerillasi",
+    "myTeam": "Tiimini"
+  },
   "settings": {
     "title": "Asetukset",
     "profile": "Profiili",
@@ -257,7 +287,10 @@
     "legal": "Oikeudellinen",
     "privacyPolicy": "Tietosuojakäytäntö",
     "termsOfService": "Käyttöehdot",
-    "profileSaved": "Profiili päivitetty"
+    "profileSaved": "Profiili päivitetty",
+    "teamDashboard": "Team Dashboard",
+    "teamDashboardDescription": "Hallitse Textereita, hyväksyntöjä ja valvontaa",
+    "language": "Kieli"
   },
   "quietHours": {
     "title": "Hiljaiset tunnit",
@@ -330,6 +363,18 @@
     "resend": "Etkö saanut sähköpostia? Lähetä uudelleen",
     "resent": "Uusi sähköposti lähetetty!",
     "backToLogin": "Takaisin kirjautumiseen"
+  },
+  "choosePlan": {
+    "title": "Valitse suunnitelmasi",
+    "subtitle": "Kaikki suunnitelmat alkavat ilmaisella kokeilujaksolla",
+    "trialBanner": "Kokeile kaikkia ominaisuuksia ilmaiseksi 10 päivää!",
+    "startTrial": "Aloita ilmainen kokeilujakso",
+    "perMonth": "/kk",
+    "oneTime": "kertaostos"
+  },
+  "trial": {
+    "banner": "Kokeilujakso: {{days}} päivää jäljellä",
+    "bannerLastDay": "Kokeilujakso päättyy tänään"
   },
   "network": {
     "offline": "Ei internetyhteyttä",
