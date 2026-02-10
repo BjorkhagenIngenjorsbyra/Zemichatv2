@@ -285,6 +285,7 @@ ${t('texter.password')}: ${createdTexter.password}`;
             display: flex;
             flex-direction: column;
             gap: 1rem;
+            padding-bottom: 16rem;
           }
 
           .form-description {
@@ -310,14 +311,16 @@ ${t('texter.password')}: ${createdTexter.password}`;
           .input-label {
             font-size: 0.875rem;
             font-weight: 600;
-            color: hsl(var(--foreground));
+            color: #374151;
             margin-left: 0.25rem;
           }
 
           .form-input {
             --background: transparent;
-            --border-color: hsl(var(--border) / 0.3);
+            --border-color: #9ca3af;
             --border-radius: 1rem;
+            --placeholder-color: #6b7280;
+            --placeholder-opacity: 1;
           }
 
           .submit-button {
