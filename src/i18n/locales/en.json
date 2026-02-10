@@ -578,5 +578,10 @@
   "refresh": {
     "pulling": "Pull to refresh",
     "refreshing": "Refreshing..."
+  },
+  "welcome": {
+    "description": "Safe communication for your family",
+    "createAccount": "Create account",
+    "haveAccount": "Already have an account? Log in"
   }
 }

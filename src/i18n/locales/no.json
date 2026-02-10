@@ -578,5 +578,10 @@
   "refresh": {
     "pulling": "Dra for å oppdatere",
     "refreshing": "Oppdaterer..."
+  },
+  "welcome": {
+    "description": "Trygg kommunikasjon for familien din",
+    "createAccount": "Opprett konto",
+    "haveAccount": "Har du allerede en konto? Logg inn"
   }
 }

@@ -578,5 +578,10 @@
   "refresh": {
     "pulling": "Vedä päivittääksesi",
     "refreshing": "Päivitetään..."
+  },
+  "welcome": {
+    "description": "Turvallista viestintää perheellesi",
+    "createAccount": "Luo tili",
+    "haveAccount": "Onko sinulla jo tili? Kirjaudu sisään"
   }
 }

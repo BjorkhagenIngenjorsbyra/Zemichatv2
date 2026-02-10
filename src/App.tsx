@@ -12,10 +12,13 @@ import { PrivateRoute, PublicRoute } from './components/PrivateRoute';
 import { IncomingCallModal, CallView, CallPiP } from './components/call';
 
 /* Network */
-import { OfflineBanner } from './components/common';
+import { OfflineBanner, TrialBanner } from './components/common';
 
 /* Subscription */
 import { Paywall } from './components/subscription';
+
+/* Tab layout */
+import TabLayout from './components/TabLayout';
 
 /* Pages */
 import Login from './pages/Login';
@@ -23,23 +26,21 @@ import TexterLogin from './pages/TexterLogin';
 import Signup from './pages/Signup';
 import VerifyEmail from './pages/VerifyEmail';
 import CreateTeam from './pages/CreateTeam';
+import ChoosePlan from './pages/ChoosePlan';
 import Dashboard from './pages/Dashboard';
 import TexterDetail from './pages/TexterDetail';
 import OwnerOversight from './pages/OwnerOversight';
 import OwnerChatView from './pages/OwnerChatView';
-import ChatList from './pages/ChatList';
 import NewChat from './pages/NewChat';
 import ChatView from './pages/ChatView';
-import Friends from './pages/Friends';
 import AddFriend from './pages/AddFriend';
 import OwnerApprovals from './pages/OwnerApprovals';
 import MFASetup from './pages/MFASetup';
 import MFAVerify from './pages/MFAVerify';
-import Settings from './pages/Settings';
 import Support from './pages/Support';
 
-/* Onboarding */
-import OwnerOnboarding from './pages/OwnerOnboarding';
+/* Welcome & Onboarding */
+import Welcome from './pages/Welcome';
 import SuperInvite from './pages/SuperInvite';
 import SuperTour from './pages/SuperTour';
 import TexterTour from './pages/TexterTour';
@@ -88,9 +89,9 @@ const App: React.FC = () => (
           <IonReactRouter>
           <IonRouterOutlet>
             <Switch>
-            {/* Public routes - redirect to dashboard if authenticated */}
+            {/* Public routes - redirect to chats if authenticated */}
             <PublicRoute exact path="/welcome">
-              <OwnerOnboarding />
+              <Welcome />
             </PublicRoute>
             <PublicRoute exact path="/invite/:token">
               <SuperInvite />
@@ -112,6 +113,9 @@ const App: React.FC = () => (
             <PrivateRoute exact path="/create-team" requireProfile={false}>
               <CreateTeam />
             </PrivateRoute>
+            <PrivateRoute exact path="/choose-plan">
+              <ChoosePlan />
+            </PrivateRoute>
             <PrivateRoute exact path="/mfa-verify" requireProfile={false}>
               <MFAVerify />
             </PrivateRoute>
@@ -122,6 +126,17 @@ const App: React.FC = () => (
             </PrivateRoute>
             <PrivateRoute exact path="/texter-tour">
               <TexterTour />
+            </PrivateRoute>
+
+            {/* Tab pages - main navigation with bottom tab bar */}
+            <PrivateRoute path="/chats">
+              <TabLayout />
+            </PrivateRoute>
+            <PrivateRoute path="/friends">
+              <TabLayout />
+            </PrivateRoute>
+            <PrivateRoute path="/settings">
+              <TabLayout />
             </PrivateRoute>
 
             {/* Protected routes - need auth and profile */}
@@ -137,17 +152,11 @@ const App: React.FC = () => (
             <PrivateRoute exact path="/oversight/chat/:chatId">
               <OwnerChatView />
             </PrivateRoute>
-            <PrivateRoute exact path="/chats">
-              <ChatList />
-            </PrivateRoute>
             <PrivateRoute exact path="/new-chat">
               <NewChat />
             </PrivateRoute>
             <PrivateRoute exact path="/chat/:chatId">
               <ChatView />
-            </PrivateRoute>
-            <PrivateRoute exact path="/friends">
-              <Friends />
             </PrivateRoute>
             <PrivateRoute exact path="/add-friend">
               <AddFriend />
@@ -157,9 +166,6 @@ const App: React.FC = () => (
             </PrivateRoute>
             <PrivateRoute exact path="/mfa-setup">
               <MFASetup />
-            </PrivateRoute>
-            <PrivateRoute exact path="/settings">
-              <Settings />
             </PrivateRoute>
             <PrivateRoute exact path="/invite-super">
               <InviteSuper />
@@ -198,6 +204,9 @@ const App: React.FC = () => (
 
           {/* Network status */}
           <OfflineBanner />
+
+          {/* Trial countdown */}
+          <TrialBanner />
         </IonReactRouter>
       </CallProvider>
     </SubscriptionProvider>
