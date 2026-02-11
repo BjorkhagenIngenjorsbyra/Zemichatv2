@@ -315,7 +315,7 @@ export function CallProvider({ children }: CallProviderProps) {
       videoTrackRef.current = videoTrack;
 
       // Join channel
-      const { error: joinError } = await joinChannel(client, token.token, token.channel, token.uid);
+      const { error: joinError } = await joinChannel(client, token.appId, token.token, token.channel, token.uid);
       if (joinError) {
         setCallError('call.error');
         setActiveCall((prev) => prev ? { ...prev, state: CallState.ENDED } : prev);
@@ -439,7 +439,7 @@ export function CallProvider({ children }: CallProviderProps) {
       audioTrackRef.current = audioTrack;
       videoTrackRef.current = videoTrack;
 
-      const { error: joinError } = await joinChannel(client, token.token, token.channel, token.uid);
+      const { error: joinError } = await joinChannel(client, token.appId, token.token, token.channel, token.uid);
       if (joinError) {
         setCallError('call.error');
         await cleanupCall();

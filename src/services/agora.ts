@@ -145,17 +145,13 @@ export async function createScreenShareTrack(): Promise<{
  */
 export async function joinChannel(
   client: IAgoraRTCClient,
+  appId: string,
   token: string,
   channelName: string,
   uid: UID
 ): Promise<{ error: Error | null }> {
   try {
-    await client.join(
-      import.meta.env.VITE_AGORA_APP_ID || '',
-      channelName,
-      token,
-      uid
-    );
+    await client.join(appId, channelName, token, uid);
     return { error: null };
   } catch (err) {
     return {
