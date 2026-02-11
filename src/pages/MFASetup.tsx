@@ -103,7 +103,7 @@ const MFASetup: React.FC = () => {
   };
 
   const handleFinish = () => {
-    history.replace('/dashboard');
+    history.replace('/chats');
   };
 
   return (
@@ -111,7 +111,7 @@ const MFASetup: React.FC = () => {
       <IonHeader>
         <IonToolbar>
           <IonButtons slot="start">
-            <IonBackButton defaultHref="/dashboard" />
+            <IonBackButton defaultHref="/settings" />
           </IonButtons>
           <IonTitle>{t('mfa.setupTitle')}</IonTitle>
         </IonToolbar>

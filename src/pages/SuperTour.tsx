@@ -47,7 +47,7 @@ const SuperTour: React.FC = () => {
 
   const handleComplete = () => {
     localStorage.setItem(TOUR_KEY, 'true');
-    history.replace('/dashboard');
+    history.replace('/chats');
   };
 
   return (

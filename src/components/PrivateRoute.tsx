@@ -65,9 +65,9 @@ export const PublicRoute: React.FC<PublicRouteProps> = ({ children, ...rest }) =
     return <LoadingSpinner />;
   }
 
-  // Authenticated with profile - redirect to dashboard
+  // Authenticated with profile - redirect to chats
   if (isAuthenticated && hasProfile) {
-    return <Redirect to="/dashboard" />;
+    return <Redirect to="/chats" />;
   }
 
   // Authenticated without profile - redirect to create team

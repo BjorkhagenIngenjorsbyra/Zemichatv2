@@ -15,19 +15,17 @@ import {
   IonAvatar,
   IonText,
   IonBadge,
+  IonButtons,
+  IonBackButton,
   IonRefresher,
   IonRefresherContent,
   type RefresherEventDetail,
 } from '@ionic/react';
 import {
-  logOutOutline,
   personAddOutline,
-  chatbubblesOutline,
-  settingsOutline,
   ellipseOutline,
   ellipse,
   eyeOutline,
-  peopleOutline,
   checkmarkCircleOutline,
   mailOutline,
 } from 'ionicons/icons';
@@ -43,7 +41,7 @@ import { SkeletonLoader, EmptyStateIllustration } from '../components/common';
 const Dashboard: React.FC = () => {
   const { t } = useTranslation();
   const history = useHistory();
-  const { profile, signOut, refreshProfile } = useAuthContext();
+  const { profile, refreshProfile } = useAuthContext();
   const [members, setMembers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showCreateTexter, setShowCreateTexter] = useState(false);
@@ -103,10 +101,6 @@ const Dashboard: React.FC = () => {
     event.detail.complete();
   };
 
-  const handleSignOut = async () => {
-    await signOut();
-  };
-
   const handleTexterCreated = () => {
     loadMembers();
   };
@@ -130,10 +124,10 @@ const Dashboard: React.FC = () => {
     <IonPage>
       <IonHeader>
         <IonToolbar>
-          <IonTitle>{t('common.appName')}</IonTitle>
-          <IonButton slot="end" fill="clear" onClick={handleSignOut}>
-            <IonIcon icon={logOutOutline} />
-          </IonButton>
+          <IonButtons slot="start">
+            <IonBackButton defaultHref="/settings" />
+          </IonButtons>
+          <IonTitle>{t('settings.teamDashboard')}</IonTitle>
         </IonToolbar>
       </IonHeader>
 
@@ -147,30 +141,6 @@ const Dashboard: React.FC = () => {
         </IonRefresher>
 
         <div className="dashboard-container">
-          {/* Profile Card */}
-          <div className="profile-card">
-            <IonAvatar className="profile-avatar">
-              {profile?.avatar_url ? (
-                <img src={profile.avatar_url} alt={profile.display_name || 'Avatar'} />
-              ) : (
-                <div className="avatar-placeholder">
-                  {profile?.display_name?.charAt(0)?.toUpperCase() || 'U'}
-                </div>
-              )}
-            </IonAvatar>
-            <div className="profile-info">
-              <h2 className="profile-name">{profile?.display_name || t('dashboard.user')}</h2>
-              <p className="profile-zemi">{profile?.zemi_number}</p>
-              <span className={`role-badge ${profile?.role}`}>
-                {profile?.role === 'owner'
-                  ? t('roles.teamOwner')
-                  : profile?.role === 'super'
-                    ? t('roles.super')
-                    : t('roles.texter')}
-              </span>
-            </div>
-          </div>
-
           {/* SOS Alerts (high priority, shown first for Owners) */}
           {isOwner && sosAlerts.length > 0 && (
             <div className="section sos-section">
@@ -186,70 +156,41 @@ const Dashboard: React.FC = () => {
             </div>
           )}
 
-          {/* Quick Actions */}
+          {/* Owner Management Actions */}
           <div className="section">
             <h3 className="section-title">{t('dashboard.quickActions')}</h3>
-            <IonList className="action-list">
-              <IonItem button detail routerLink="/chats" className="action-item">
-                <IonIcon icon={chatbubblesOutline} slot="start" className="action-icon" />
+            <IonList className="action-list" data-testid="dashboard-actions">
+              <IonItem button detail routerLink="/owner-approvals" className="action-item">
+                <IonIcon icon={checkmarkCircleOutline} slot="start" className="action-icon" />
                 <IonLabel>
-                  <h3>{t('dashboard.chats')}</h3>
-                  <p>{t('dashboard.chatsDescription')}</p>
+                  <h3>{t('dashboard.approvals')}</h3>
+                  <p>{t('dashboard.approvalsDescription')}</p>
+                </IonLabel>
+                {pendingApprovalsCount > 0 && (
+                  <IonBadge slot="end" color="danger">
+                    {pendingApprovalsCount}
+                  </IonBadge>
+                )}
+              </IonItem>
+              <IonItem button detail className="action-item" onClick={() => setShowCreateTexter(true)}>
+                <IonIcon icon={personAddOutline} slot="start" className="action-icon" />
+                <IonLabel>
+                  <h3>{t('dashboard.createTexter')}</h3>
+                  <p>{t('dashboard.createTexterDescription')}</p>
                 </IonLabel>
               </IonItem>
-              <IonItem button detail routerLink="/friends" className="action-item">
-                <IonIcon icon={peopleOutline} slot="start" className="action-icon" />
+              <IonItem button detail routerLink="/oversight" className="action-item">
+                <IonIcon icon={eyeOutline} slot="start" className="action-icon" />
                 <IonLabel>
-                  <h3>{t('dashboard.friends')}</h3>
-                  <p>{t('dashboard.friendsDescription')}</p>
+                  <h3>{t('dashboard.oversight')}</h3>
+                  <p>{t('dashboard.oversightDescription')}</p>
                 </IonLabel>
               </IonItem>
-              {isOwner && (
-                <IonItem button detail routerLink="/owner-approvals" className="action-item">
-                  <IonIcon icon={checkmarkCircleOutline} slot="start" className="action-icon" />
-                  <IonLabel>
-                    <h3>{t('dashboard.approvals')}</h3>
-                    <p>{t('dashboard.approvalsDescription')}</p>
-                  </IonLabel>
-                  {pendingApprovalsCount > 0 && (
-                    <IonBadge slot="end" color="danger">
-                      {pendingApprovalsCount}
-                    </IonBadge>
-                  )}
-                </IonItem>
-              )}
-              {isOwner && (
-                <IonItem button detail className="action-item" onClick={() => setShowCreateTexter(true)}>
-                  <IonIcon icon={personAddOutline} slot="start" className="action-icon" />
-                  <IonLabel>
-                    <h3>{t('dashboard.createTexter')}</h3>
-                    <p>{t('dashboard.createTexterDescription')}</p>
-                  </IonLabel>
-                </IonItem>
-              )}
-              {isOwner && (
-                <IonItem button detail routerLink="/oversight" className="action-item">
-                  <IonIcon icon={eyeOutline} slot="start" className="action-icon" />
-                  <IonLabel>
-                    <h3>{t('dashboard.oversight')}</h3>
-                    <p>{t('dashboard.oversightDescription')}</p>
-                  </IonLabel>
-                </IonItem>
-              )}
-              {isOwner && (
-                <IonItem button detail routerLink="/invite-super" className="action-item">
-                  <IonIcon icon={mailOutline} slot="start" className="action-icon" />
-                  <IonLabel>
-                    <h3>{t('invite.title')}</h3>
-                    <p>{t('dashboard.inviteSuperDescription')}</p>
-                  </IonLabel>
-                </IonItem>
-              )}
-              <IonItem button detail routerLink="/settings" className="action-item">
-                <IonIcon icon={settingsOutline} slot="start" className="action-icon" />
+              <IonItem button detail routerLink="/invite-super" className="action-item">
+                <IonIcon icon={mailOutline} slot="start" className="action-icon" />
                 <IonLabel>
-                  <h3>{t('dashboard.settings')}</h3>
-                  <p>{t('dashboard.settingsDescription')}</p>
+                  <h3>{t('invite.title')}</h3>
+                  <p>{t('dashboard.inviteSuperDescription')}</p>
                 </IonLabel>
               </IonItem>
             </IonList>
@@ -278,7 +219,7 @@ const Dashboard: React.FC = () => {
                 </IonButton>
               </div>
             ) : (
-              <IonList className="member-list">
+              <IonList className="member-list" data-testid="member-list">
                 {otherMembers.map((member, index) => {
                   const badge = getRoleBadge(member.role);
                   const detailLink =
@@ -336,29 +277,12 @@ const Dashboard: React.FC = () => {
             margin: 0 auto;
           }
 
-          .profile-card {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            background: hsl(var(--card));
-            border: 1px solid hsl(var(--border));
-            border-radius: 1.5rem;
-            padding: 1.5rem;
-            margin-bottom: 2rem;
-          }
-
           .sos-section {
             margin-bottom: 1.5rem;
           }
 
           .sos-title {
             color: hsl(var(--destructive)) !important;
-          }
-
-          .profile-avatar {
-            width: 64px;
-            height: 64px;
-            flex-shrink: 0;
           }
 
           .avatar-placeholder {
@@ -369,54 +293,13 @@ const Dashboard: React.FC = () => {
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.5rem;
+            font-size: 1rem;
             font-weight: 700;
             border-radius: 50%;
           }
 
           .avatar-placeholder.small {
             font-size: 1rem;
-          }
-
-          .profile-info {
-            flex: 1;
-          }
-
-          .profile-name {
-            margin: 0 0 0.25rem 0;
-            font-size: 1.25rem;
-            font-weight: 700;
-            color: hsl(var(--foreground));
-          }
-
-          .profile-zemi {
-            margin: 0 0 0.5rem 0;
-            font-size: 0.875rem;
-            color: hsl(var(--muted-foreground));
-            font-family: monospace;
-          }
-
-          .role-badge {
-            display: inline-block;
-            padding: 0.25rem 0.75rem;
-            border-radius: 9999px;
-            font-size: 0.75rem;
-            font-weight: 600;
-          }
-
-          .role-badge.owner {
-            background: hsl(var(--primary) / 0.15);
-            color: hsl(var(--primary));
-          }
-
-          .role-badge.super {
-            background: hsl(var(--secondary) / 0.15);
-            color: hsl(var(--secondary));
-          }
-
-          .role-badge.texter {
-            background: hsl(var(--muted) / 0.3);
-            color: hsl(var(--muted-foreground));
           }
 
           .section {

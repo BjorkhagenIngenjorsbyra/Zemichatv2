@@ -39,8 +39,8 @@ const MFAVerify: React.FC = () => {
       const { factor: verifiedFactor, error: factorError } = await getVerifiedFactor();
 
       if (factorError || !verifiedFactor) {
-        // No MFA factor, proceed to dashboard
-        history.replace('/dashboard');
+        // No MFA factor, proceed to chats
+        history.replace('/chats');
         return;
       }
 
@@ -91,7 +91,7 @@ const MFAVerify: React.FC = () => {
 
     // Refresh profile and proceed
     await refreshProfile();
-    history.replace('/dashboard');
+    history.replace('/chats');
   };
 
   const handleCancel = async () => {

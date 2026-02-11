@@ -1,19 +1,29 @@
+import { Capacitor } from '@capacitor/core';
+import { PushNotifications } from '@capacitor/push-notifications';
 import { supabase } from './supabase';
-import { type PushToken, PlatformType } from '../types/database';
+import { PlatformType } from '../types/database';
 
 // ============================================================
 // Types
 // ============================================================
 
-export type PermissionStatus = 'granted' | 'denied' | 'default';
+export type PermissionStatus = 'granted' | 'denied' | 'prompt';
 
-export interface PushNotificationOptions {
-  title: string;
-  body: string;
-  icon?: string;
-  badge?: string;
-  tag?: string;
-  data?: Record<string, unknown>;
+type NavigationHandler = (chatId: string) => void;
+
+let navigationHandler: NavigationHandler | null = null;
+let listenersRegistered = false;
+
+// ============================================================
+// Navigation
+// ============================================================
+
+/**
+ * Set the handler called when a user taps a push notification.
+ * The handler receives the chatId from the notification payload.
+ */
+export function setNavigationHandler(handler: NavigationHandler): void {
+  navigationHandler = handler;
 }
 
 // ============================================================
@@ -21,33 +31,40 @@ export interface PushNotificationOptions {
 // ============================================================
 
 /**
- * Check if push notifications are supported in the current environment.
+ * Check if push notifications are available (native platform only).
  */
-export function isPushSupported(): boolean {
-  return 'Notification' in window && 'serviceWorker' in navigator;
+function isNative(): boolean {
+  return Capacitor.isNativePlatform();
 }
 
 /**
  * Get the current notification permission status.
  */
-export function getPermissionStatus(): PermissionStatus {
-  if (!isPushSupported()) return 'denied';
-  return Notification.permission as PermissionStatus;
+export async function getPermissionStatus(): Promise<PermissionStatus> {
+  if (!isNative()) return 'denied';
+
+  try {
+    const result = await PushNotifications.checkPermissions();
+    if (result.receive === 'granted') return 'granted';
+    if (result.receive === 'denied') return 'denied';
+    return 'prompt';
+  } catch {
+    return 'denied';
+  }
 }
 
 /**
  * Request permission to show notifications.
  */
 export async function requestPermission(): Promise<PermissionStatus> {
-  if (!isPushSupported()) {
-    return 'denied';
-  }
+  if (!isNative()) return 'denied';
 
   try {
-    const result = await Notification.requestPermission();
-    return result as PermissionStatus;
-  } catch (err) {
-    console.error('Failed to request notification permission:', err);
+    const result = await PushNotifications.requestPermissions();
+    if (result.receive === 'granted') return 'granted';
+    if (result.receive === 'denied') return 'denied';
+    return 'prompt';
+  } catch {
     return 'denied';
   }
 }
@@ -60,209 +77,93 @@ export async function requestPermission(): Promise<PermissionStatus> {
  * Detect the current platform.
  */
 function detectPlatform(): PlatformType {
-  const userAgent = navigator.userAgent.toLowerCase();
-
-  if (/iphone|ipad|ipod/.test(userAgent)) {
-    return PlatformType.IOS;
-  }
-
-  return PlatformType.ANDROID; // Default to Android for web/Android
+  const platform = Capacitor.getPlatform();
+  return platform === 'ios' ? PlatformType.IOS : PlatformType.ANDROID;
 }
 
 /**
- * Generate a pseudo-token for web push (in production, use FCM).
- * This is a placeholder - real implementation would use Firebase Cloud Messaging.
+ * Save an FCM token to the push_tokens table (upsert).
  */
-async function generateWebPushToken(): Promise<string | null> {
-  try {
-    // For web, we'll use a combination of user agent and timestamp as a pseudo-token
-    // In production, this should be replaced with proper FCM token generation
-    const registration = await navigator.serviceWorker.ready;
+async function saveToken(token: string): Promise<void> {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-    // Try to get existing subscription or create new one
-    let subscription = await registration.pushManager.getSubscription();
+  if (!user) return;
 
-    if (!subscription) {
-      // Note: In production, you'd need a VAPID public key here
-      // For now, we'll generate a unique identifier
-      const uniqueId = `web-${Date.now()}-${Math.random().toString(36).substring(7)}`;
-      return uniqueId;
-    }
+  const platform = detectPlatform();
 
-    // Return the endpoint as the token identifier
-    return subscription.endpoint;
-  } catch (err) {
-    console.error('Failed to generate push token:', err);
-    // Fallback to a unique identifier
-    return `web-fallback-${Date.now()}-${Math.random().toString(36).substring(7)}`;
+  const { error } = await supabase
+    .from('push_tokens')
+    .upsert(
+      {
+        user_id: user.id,
+        token,
+        platform,
+        updated_at: new Date().toISOString(),
+      } as never,
+      { onConflict: 'user_id,token' }
+    );
+
+  if (error) {
+    console.error('Failed to save push token:', error.message);
   }
 }
 
 /**
- * Register the push token with the server.
+ * Delete all push tokens for the current user.
  */
-export async function registerPushToken(): Promise<{ error: Error | null }> {
-  try {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+async function deleteTokens(): Promise<void> {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-    if (!user) {
-      return { error: new Error('Not authenticated') };
-    }
+  if (!user) return;
 
-    // Check permission
-    const permission = getPermissionStatus();
-    if (permission !== 'granted') {
-      return { error: new Error('Notification permission not granted') };
-    }
+  const { error } = await supabase
+    .from('push_tokens')
+    .delete()
+    .eq('user_id', user.id);
 
-    // Generate token
-    const token = await generateWebPushToken();
-    if (!token) {
-      return { error: new Error('Failed to generate push token') };
-    }
-
-    const platform = detectPlatform();
-
-    // Upsert the token (update if exists, insert if not)
-    const { error } = await supabase
-      .from('push_tokens')
-      .upsert(
-        {
-          user_id: user.id,
-          token,
-          platform,
-          updated_at: new Date().toISOString(),
-        } as never,
-        {
-          onConflict: 'user_id,token',
-        }
-      );
-
-    if (error) {
-      return { error: new Error(error.message) };
-    }
-
-    return { error: null };
-  } catch (err) {
-    return {
-      error: err instanceof Error ? err : new Error('Unknown error'),
-    };
-  }
-}
-
-/**
- * Unregister the push token from the server.
- */
-export async function unregisterPushToken(): Promise<{ error: Error | null }> {
-  try {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user) {
-      return { error: new Error('Not authenticated') };
-    }
-
-    // Delete all tokens for this user
-    const { error } = await supabase
-      .from('push_tokens')
-      .delete()
-      .eq('user_id', user.id);
-
-    if (error) {
-      return { error: new Error(error.message) };
-    }
-
-    return { error: null };
-  } catch (err) {
-    return {
-      error: err instanceof Error ? err : new Error('Unknown error'),
-    };
-  }
-}
-
-/**
- * Get all push tokens for the current user.
- */
-export async function getMyPushTokens(): Promise<{
-  tokens: PushToken[];
-  error: Error | null;
-}> {
-  try {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user) {
-      return { tokens: [], error: new Error('Not authenticated') };
-    }
-
-    const { data, error } = await supabase
-      .from('push_tokens')
-      .select('*')
-      .eq('user_id', user.id);
-
-    if (error) {
-      return { tokens: [], error: new Error(error.message) };
-    }
-
-    return { tokens: (data || []) as unknown as PushToken[], error: null };
-  } catch (err) {
-    return {
-      tokens: [],
-      error: err instanceof Error ? err : new Error('Unknown error'),
-    };
+  if (error) {
+    console.error('Failed to delete push tokens:', error.message);
   }
 }
 
 // ============================================================
-// Local Notifications (for immediate display)
+// Listener Registration
 // ============================================================
 
 /**
- * Show a local notification immediately.
+ * Register native push notification listeners.
+ * Safe to call multiple times — listeners are only added once.
  */
-export async function showLocalNotification(
-  options: PushNotificationOptions
-): Promise<{ error: Error | null }> {
-  try {
-    if (!isPushSupported()) {
-      return { error: new Error('Notifications not supported') };
-    }
+function registerListeners(): void {
+  if (listenersRegistered || !isNative()) return;
+  listenersRegistered = true;
 
-    const permission = getPermissionStatus();
-    if (permission !== 'granted') {
-      return { error: new Error('Notification permission not granted') };
-    }
+  // FCM token received (initial registration + refreshes)
+  PushNotifications.addListener('registration', (token) => {
+    saveToken(token.value);
+  });
 
-    // Try to use service worker notification first (more reliable)
-    if ('serviceWorker' in navigator) {
-      const registration = await navigator.serviceWorker.ready;
-      await registration.showNotification(options.title, {
-        body: options.body,
-        icon: options.icon || '/icon-192.png',
-        badge: options.badge || '/icon-72.png',
-        tag: options.tag,
-        data: options.data,
-      });
-    } else {
-      // Fallback to basic Notification API
-      new Notification(options.title, {
-        body: options.body,
-        icon: options.icon || '/icon-192.png',
-        tag: options.tag,
-        data: options.data,
-      });
-    }
+  // Registration failed
+  PushNotifications.addListener('registrationError', (error) => {
+    console.error('Push registration failed:', error);
+  });
 
-    return { error: null };
-  } catch (err) {
-    return {
-      error: err instanceof Error ? err : new Error('Unknown error'),
-    };
-  }
+  // Notification received while app is in foreground
+  PushNotifications.addListener('pushNotificationReceived', (notification) => {
+    console.log('Push received in foreground:', notification.title);
+  });
+
+  // User tapped on a notification
+  PushNotifications.addListener('pushNotificationActionPerformed', (action) => {
+    const chatId = action.notification.data?.chatId;
+    if (chatId && navigationHandler) {
+      navigationHandler(chatId);
+    }
+  });
 }
 
 // ============================================================
@@ -271,57 +172,40 @@ export async function showLocalNotification(
 
 /**
  * Initialize push notifications for the app.
- * - Checks/requests permission
- * - Registers service worker if needed
- * - Registers push token with server
+ * - Requests permission if needed
+ * - Registers with FCM to get a token
+ * - Sets up listeners for token refresh and notification taps
+ *
+ * Returns the resulting permission status.
  */
 export async function initializePushNotifications(): Promise<{
   permissionStatus: PermissionStatus;
   error: Error | null;
 }> {
+  if (!isNative()) {
+    return { permissionStatus: 'denied', error: null };
+  }
+
   try {
-    if (!isPushSupported()) {
-      return {
-        permissionStatus: 'denied',
-        error: new Error('Push notifications not supported in this browser'),
-      };
-    }
-
     // Check current permission
-    let permission = getPermissionStatus();
+    let permission = await getPermissionStatus();
 
-    // If not determined, request permission
-    if (permission === 'default') {
+    // If not determined yet, request permission
+    if (permission === 'prompt') {
       permission = await requestPermission();
     }
 
     if (permission !== 'granted') {
-      return {
-        permissionStatus: permission,
-        error: null, // Not an error, user just denied
-      };
+      return { permissionStatus: permission, error: null };
     }
 
-    // Register the service worker if not already registered
-    if ('serviceWorker' in navigator) {
-      try {
-        await navigator.serviceWorker.register('/sw.js');
-      } catch {
-        // Service worker registration failed, but we can continue
-        console.warn('Service worker registration failed');
-      }
-    }
+    // Set up listeners before registering (so we catch the token event)
+    registerListeners();
 
-    // Register push token
-    const { error: tokenError } = await registerPushToken();
-    if (tokenError) {
-      console.warn('Failed to register push token:', tokenError);
-    }
+    // Register with FCM — triggers 'registration' listener with token
+    await PushNotifications.register();
 
-    return {
-      permissionStatus: permission,
-      error: null,
-    };
+    return { permissionStatus: 'granted', error: null };
   } catch (err) {
     return {
       permissionStatus: 'denied',
@@ -332,7 +216,12 @@ export async function initializePushNotifications(): Promise<{
 
 /**
  * Cleanup push notifications on logout.
+ * Removes listeners and deletes tokens from the server.
  */
 export async function cleanupPushNotifications(): Promise<void> {
-  await unregisterPushToken();
+  if (isNative()) {
+    await PushNotifications.removeAllListeners();
+    listenersRegistered = false;
+  }
+  await deleteTokens();
 }

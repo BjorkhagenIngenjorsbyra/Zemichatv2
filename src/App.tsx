@@ -1,12 +1,17 @@
-import { Redirect, Route, Switch } from 'react-router-dom';
+import { useEffect } from 'react';
+import { Redirect, Route, Switch, useHistory } from 'react-router-dom';
 import { IonApp, IonRouterOutlet, setupIonicReact } from '@ionic/react';
 import { IonReactRouter } from '@ionic/react-router';
 
 /* Auth */
 import { AuthProvider } from './contexts/AuthContext';
+import { useAuthContext } from './contexts/AuthContext';
 import { CallProvider } from './contexts/CallContext';
 import { SubscriptionProvider } from './contexts/SubscriptionContext';
 import { PrivateRoute, PublicRoute } from './components/PrivateRoute';
+
+/* Push */
+import { setNavigationHandler } from './services/push';
 
 /* Call */
 import { IncomingCallModal, CallView, CallPiP } from './components/call';
@@ -81,12 +86,36 @@ import './theme/variables.css';
 
 setupIonicReact();
 
+/**
+ * Registers push notification navigation handler and initializes
+ * push once the user is authenticated with a profile.
+ */
+const PushInit: React.FC = () => {
+  const history = useHistory();
+  const { isAuthenticated, hasProfile, initializePush } = useAuthContext();
+
+  useEffect(() => {
+    setNavigationHandler((chatId) => {
+      history.push(`/chat/${chatId}`);
+    });
+  }, [history]);
+
+  useEffect(() => {
+    if (isAuthenticated && hasProfile) {
+      initializePush();
+    }
+  }, [isAuthenticated, hasProfile, initializePush]);
+
+  return null;
+};
+
 const App: React.FC = () => (
   <IonApp>
     <AuthProvider>
       <SubscriptionProvider>
         <CallProvider>
           <IonReactRouter>
+          <PushInit />
           <IonRouterOutlet>
             <Switch>
             {/* Public routes - redirect to chats if authenticated */}

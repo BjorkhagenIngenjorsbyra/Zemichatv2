@@ -9,8 +9,6 @@ import {
   IonTitle,
   IonButton,
   IonIcon,
-  IonButtons,
-  IonBackButton,
   IonSpinner,
   IonInput,
   IonText,
@@ -25,11 +23,16 @@ import {
   shieldCheckmarkOutline,
   informationCircleOutline,
   helpCircleOutline,
+  gridOutline,
+  chevronForwardOutline,
+  logOutOutline,
 } from 'ionicons/icons';
 import { useAuthContext } from '../contexts/AuthContext';
 import { getTeamMembers } from '../services/members';
 import { exportUserData, deleteOwnerAccount, deleteSuperAccount, updateUserProfile, downloadJSON } from '../services/gdpr';
 import { UserRole } from '../types/database';
+import { SOSButton } from '../components/sos';
+import { supportedLanguages, changeLanguage, getCurrentLanguage } from '../i18n';
 
 const Settings: React.FC = () => {
   const { t } = useTranslation();
@@ -54,6 +57,9 @@ const Settings: React.FC = () => {
   const [isSavingProfile, setIsSavingProfile] = useState(false);
   const [profileSaved, setProfileSaved] = useState(false);
   const [profileError, setProfileError] = useState<string | null>(null);
+
+  // Language
+  const [currentLang, setCurrentLang] = useState(getCurrentLanguage());
 
   const confirmWord = t('settings.deleteAccountConfirmWord');
   const canDelete = confirmText === confirmWord;
@@ -130,23 +136,57 @@ const Settings: React.FC = () => {
     history.replace('/login');
   };
 
+  const handleSignOut = async () => {
+    await signOut();
+  };
+
+  const handleLanguageChange = async (langCode: string) => {
+    await changeLanguage(langCode as Parameters<typeof changeLanguage>[0]);
+    setCurrentLang(getCurrentLanguage());
+  };
+
   return (
     <IonPage>
       <IonHeader>
         <IonToolbar>
-          <IonButtons slot="start">
-            <IonBackButton defaultHref="/dashboard" />
-          </IonButtons>
           <IonTitle>{t('settings.title')}</IonTitle>
         </IonToolbar>
       </IonHeader>
 
       <IonContent className="ion-padding" fullscreen>
         <div className="settings-container">
+          {/* Team Dashboard - Owner only */}
+          {isOwner && (
+            <div className="section">
+              <div className="card legal-card">
+                <IonButton
+                  fill="clear"
+                  expand="block"
+                  className="legal-link-btn dashboard-link-btn"
+                  routerLink="/dashboard"
+                >
+                  <IonIcon icon={gridOutline} slot="start" />
+                  <div className="dashboard-link-text">
+                    <strong>{t('settings.teamDashboard')}</strong>
+                    <span>{t('settings.teamDashboardDescription')}</span>
+                  </div>
+                  <IonIcon icon={chevronForwardOutline} slot="end" />
+                </IonButton>
+              </div>
+            </div>
+          )}
+
+          {/* SOS - Texter only */}
+          {isTexter && (
+            <div className="section">
+              <SOSButton />
+            </div>
+          )}
+
           {/* Profile Section */}
           <div className="section">
             <h3 className="section-title">{t('settings.profile')}</h3>
-            <div className="profile-card">
+            <div className="profile-card" data-testid="profile-card">
               <div className="profile-row">
                 <span className="profile-label">{t('texter.name')}</span>
                 {isEditingProfile ? (
@@ -203,6 +243,25 @@ const Settings: React.FC = () => {
                       ? t('roles.super')
                       : t('roles.texter')}
                 </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Language Section */}
+          <div className="section">
+            <h3 className="section-title">{t('settings.language')}</h3>
+            <div className="card language-card">
+              <div className="language-grid" data-testid="language-grid">
+                {supportedLanguages.map((lang) => (
+                  <button
+                    key={lang.code}
+                    className={`language-option ${currentLang === lang.code ? 'active' : ''}`}
+                    onClick={() => handleLanguageChange(lang.code)}
+                  >
+                    <span className="language-flag">{lang.flag}</span>
+                    <span className="language-name">{lang.name}</span>
+                  </button>
+                ))}
               </div>
             </div>
           </div>
@@ -277,6 +336,19 @@ const Settings: React.FC = () => {
                 {t('support.settingsButton')}
               </IonButton>
             </div>
+          </div>
+
+          {/* Logout Section */}
+          <div className="section">
+            <IonButton
+              expand="block"
+              fill="outline"
+              color="medium"
+              onClick={handleSignOut}
+            >
+              <IonIcon icon={logOutOutline} slot="start" />
+              {t('auth.logout')}
+            </IonButton>
           </div>
 
           {/* Delete Account Section - Owner */}
@@ -509,6 +581,66 @@ const Settings: React.FC = () => {
           .role-badge.texter {
             background: hsl(var(--muted) / 0.3);
             color: hsl(var(--muted-foreground));
+          }
+
+          .dashboard-link-btn {
+            --padding-top: 0.75rem;
+            --padding-bottom: 0.75rem;
+          }
+
+          .dashboard-link-text {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            flex: 1;
+            text-align: left;
+          }
+
+          .dashboard-link-text strong {
+            font-size: 0.95rem;
+            color: hsl(var(--foreground));
+          }
+
+          .dashboard-link-text span {
+            font-size: 0.8rem;
+            color: hsl(var(--muted-foreground));
+          }
+
+          .language-card {
+            padding: 0.75rem;
+          }
+
+          .language-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 0.5rem;
+          }
+
+          .language-option {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.625rem 0.75rem;
+            background: transparent;
+            border: 1px solid hsl(var(--border));
+            border-radius: 0.75rem;
+            cursor: pointer;
+            transition: all 0.15s ease;
+          }
+
+          .language-option.active {
+            background: hsl(var(--primary) / 0.1);
+            border-color: hsl(var(--primary));
+          }
+
+          .language-flag {
+            font-size: 1.25rem;
+          }
+
+          .language-name {
+            font-size: 0.85rem;
+            color: hsl(var(--foreground));
+            font-weight: 500;
           }
 
           .card-description {

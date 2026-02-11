@@ -5,7 +5,6 @@ import { getMyProfile, hasTeamProfile } from '../services/team';
 import {
   initializePushNotifications,
   cleanupPushNotifications,
-  getPermissionStatus,
   type PermissionStatus,
 } from '../services/push';
 import type { User } from '../types/database';
@@ -33,7 +32,7 @@ export function useAuth(): AuthState {
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<User | null>(null);
   const [hasProfile, setHasProfile] = useState(false);
-  const [pushPermission, setPushPermission] = useState<PermissionStatus>(getPermissionStatus());
+  const [pushPermission, setPushPermission] = useState<PermissionStatus>('prompt');
   const initProfileLoaded = useRef(false);
 
   const refreshProfile = useCallback(async () => {
