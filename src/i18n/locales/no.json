@@ -447,7 +447,11 @@
     "expand": "Utvid",
     "timeWarning": "Samtalen avsluttes om {{minutes}} minutter",
     "callEnding": "Samtalen avsluttes...",
-    "maxDurationReached": "Maksimal samtaletid nådd"
+    "maxDurationReached": "Maksimal samtaletid nådd",
+    "noAnswer": "Ingen svar",
+    "unavailable": "Ikke tilgjengelig",
+    "error": "Samtalen kunne ikke kobles",
+    "permissionDenied": "Du har ikke tillatelse til å ringe"
   },
   "onboarding": {
     "skip": "Hopp over",

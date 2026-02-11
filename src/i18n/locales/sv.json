@@ -447,7 +447,11 @@
     "expand": "Expandera",
     "timeWarning": "Samtalet avslutas om {{minutes}} minuter",
     "callEnding": "Samtalet avslutas...",
-    "maxDurationReached": "Maximal samtalstid uppnådd"
+    "maxDurationReached": "Maximal samtalstid uppnådd",
+    "noAnswer": "Inget svar",
+    "unavailable": "Inte tillgänglig",
+    "error": "Samtalet kunde inte kopplas",
+    "permissionDenied": "Du har inte behörighet att ringa"
   },
   "onboarding": {
     "skip": "Hoppa över",

@@ -447,7 +447,11 @@
     "expand": "Expand",
     "timeWarning": "Call will end in {{minutes}} minutes",
     "callEnding": "Call ending...",
-    "maxDurationReached": "Maximum call duration reached"
+    "maxDurationReached": "Maximum call duration reached",
+    "noAnswer": "No answer",
+    "unavailable": "Unavailable",
+    "error": "Call could not be connected",
+    "permissionDenied": "You don't have permission to make calls"
   },
   "onboarding": {
     "skip": "Skip",

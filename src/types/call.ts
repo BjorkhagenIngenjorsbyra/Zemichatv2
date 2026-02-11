@@ -117,6 +117,9 @@ export interface CallContextActions {
   toggleVideo: () => void;
   toggleScreenShare: () => Promise<void>;
   toggleMinimize: () => void;
+  clearCallError: () => void;
 }
 
-export interface CallContextValue extends CallContextState, CallContextActions {}
+export interface CallContextValue extends CallContextState, CallContextActions {
+  callError: string | null;
+}

@@ -447,7 +447,11 @@
     "expand": "Suurenna",
     "timeWarning": "Puhelu päättyy {{minutes}} minuutin kuluttua",
     "callEnding": "Puhelu päättyy...",
-    "maxDurationReached": "Puhelun enimmäiskesto saavutettu"
+    "maxDurationReached": "Puhelun enimmäiskesto saavutettu",
+    "noAnswer": "Ei vastausta",
+    "unavailable": "Ei tavoitettavissa",
+    "error": "Puhelua ei voitu yhdistää",
+    "permissionDenied": "Sinulla ei ole lupaa soittaa"
   },
   "onboarding": {
     "skip": "Ohita",

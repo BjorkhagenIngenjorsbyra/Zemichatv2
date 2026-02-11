@@ -447,7 +447,11 @@
     "expand": "Udvid",
     "timeWarning": "Opkaldet afsluttes om {{minutes}} minutter",
     "callEnding": "Opkaldet afsluttes...",
-    "maxDurationReached": "Maksimal opkaldstid nået"
+    "maxDurationReached": "Maksimal opkaldstid nået",
+    "noAnswer": "Intet svar",
+    "unavailable": "Ikke tilgængelig",
+    "error": "Opkaldet kunne ikke forbindes",
+    "permissionDenied": "Du har ikke tilladelse til at ringe"
   },
   "onboarding": {
     "skip": "Spring over",

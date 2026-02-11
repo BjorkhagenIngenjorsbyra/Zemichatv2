@@ -1,21 +1,17 @@
-import { useEffect, useRef, useState } from 'react';
 import { useCallContext } from '../../contexts/CallContext';
+import { useTranslation } from 'react-i18next';
 import { CallType, CallState } from '../../types/call';
 import type { ICameraVideoTrack, ILocalVideoTrack, IRemoteVideoTrack } from '../../services/agora';
+import { useState } from 'react';
 import CallHeader from './CallHeader';
 import CallControls from './CallControls';
 import VideoGrid from './VideoGrid';
-import VideoTile from './VideoTile';
 
-interface CallViewProps {
-  chatName?: string;
-}
+const CallView: React.FC = () => {
+  const { t } = useTranslation();
+  const { activeCall, callError, isAgoraReady } = useCallContext();
 
-const CallView: React.FC<CallViewProps> = ({ chatName }) => {
-  const { activeCall, isAgoraReady } = useCallContext();
-
-  // For now, we'll use placeholder state for tracks
-  // In a real implementation, these would come from CallContext
+  // Placeholder tracks – in a real implementation, these come from CallContext
   const [localVideoTrack] = useState<ICameraVideoTrack | null>(null);
   const [screenShareTrack] = useState<ILocalVideoTrack | null>(null);
   const [remoteVideoTracks] = useState<Map<string, IRemoteVideoTrack>>(new Map());
@@ -24,48 +20,69 @@ const CallView: React.FC<CallViewProps> = ({ chatName }) => {
 
   const isVideoCall = activeCall.callType === CallType.VIDEO;
   const isConnected = activeCall.state === CallState.CONNECTED;
-  const localParticipant = activeCall.participants.find((p) => p.id === activeCall.initiatorId);
+  const isEnded = activeCall.state === CallState.ENDED;
+
+  // Find the OTHER participant (not self)
+  const otherParticipant = activeCall.participants.find(
+    (p) => p.id !== activeCall.initiatorId
+  );
+
+  const displayName = otherParticipant?.displayName || t('call.call');
+  const avatarUrl = otherParticipant?.avatarUrl;
+  const initial = displayName.charAt(0).toUpperCase();
+
+  const getStatusText = (): string => {
+    if (callError) return t(callError);
+    switch (activeCall.state) {
+      case CallState.RINGING:
+        return t('call.ringing');
+      case CallState.CONNECTING:
+        return t('call.connecting');
+      case CallState.ENDED:
+        return t('call.ended');
+      default:
+        return '';
+    }
+  };
 
   return (
     <div className="call-view">
-      <CallHeader chatName={chatName} />
+      <CallHeader chatName={displayName} />
 
       <div className="call-content">
-        {isVideoCall ? (
+        {isVideoCall && isConnected ? (
           <VideoGrid
             participants={activeCall.participants}
             localVideoTrack={localVideoTrack}
             remoteVideoTracks={remoteVideoTracks}
-            localUserId={localParticipant?.id || ''}
+            localUserId={activeCall.initiatorId}
             screenShareTrack={activeCall.isScreenSharing ? screenShareTrack : null}
           />
         ) : (
           <div className="voice-call-view">
-            {/* Show participant avatars for voice calls */}
-            <div className="voice-participants">
-              {activeCall.participants.map((participant) => (
-                <div key={participant.id} className="voice-participant">
-                  {participant.avatarUrl ? (
-                    <img
-                      src={participant.avatarUrl}
-                      alt={participant.displayName}
-                      className="participant-avatar"
-                    />
-                  ) : (
-                    <div className="participant-avatar-placeholder">
-                      {participant.displayName.charAt(0).toUpperCase()}
-                    </div>
-                  )}
-                  <span className="participant-name">{participant.displayName}</span>
-                  {!participant.hasAudio && (
-                    <span className="muted-badge">🔇</span>
-                  )}
+            {/* Main callee display */}
+            <div className="callee-display">
+              {avatarUrl ? (
+                <img
+                  src={avatarUrl}
+                  alt={displayName}
+                  className="callee-avatar"
+                />
+              ) : (
+                <div className="callee-avatar-placeholder">
+                  {initial}
                 </div>
-              ))}
+              )}
+              <span className="callee-name">{displayName}</span>
+              {!isConnected && (
+                <span className={`callee-status ${isEnded || callError ? 'error' : ''}`}>
+                  {getStatusText()}
+                </span>
+              )}
             </div>
 
             {/* Connecting animation */}
-            {!isConnected && (
+            {!isConnected && !isEnded && !callError && (
               <div className="connecting-animation">
                 <div className="pulse-ring" />
                 <div className="pulse-ring delay-1" />
@@ -76,10 +93,12 @@ const CallView: React.FC<CallViewProps> = ({ chatName }) => {
         )}
       </div>
 
-      <CallControls
-        showVideoToggle={isVideoCall}
-        showScreenShare={isVideoCall}
-      />
+      {!isEnded && (
+        <CallControls
+          showVideoToggle={isVideoCall}
+          showScreenShare={isVideoCall}
+        />
+      )}
 
       <style>{`
         .call-view {
@@ -107,51 +126,56 @@ const CallView: React.FC<CallViewProps> = ({ chatName }) => {
           position: relative;
         }
 
-        .voice-participants {
-          display: flex;
-          flex-wrap: wrap;
-          justify-content: center;
-          gap: 2rem;
-          z-index: 1;
-        }
-
-        .voice-participant {
+        .callee-display {
           display: flex;
           flex-direction: column;
           align-items: center;
-          gap: 0.5rem;
+          gap: 0.75rem;
+          z-index: 1;
         }
 
-        .participant-avatar {
-          width: 100px;
-          height: 100px;
+        .callee-avatar {
+          width: 120px;
+          height: 120px;
           border-radius: 50%;
           object-fit: cover;
-          border: 3px solid hsl(var(--primary) / 0.3);
+          border: 3px solid hsl(var(--primary) / 0.4);
         }
 
-        .participant-avatar-placeholder {
-          width: 100px;
-          height: 100px;
+        .callee-avatar-placeholder {
+          width: 120px;
+          height: 120px;
           border-radius: 50%;
           background: hsl(var(--primary));
           color: hsl(var(--primary-foreground));
           display: flex;
           align-items: center;
           justify-content: center;
-          font-size: 2.5rem;
+          font-size: 3rem;
           font-weight: 600;
-          border: 3px solid hsl(var(--primary) / 0.3);
+          border: 3px solid hsl(var(--primary) / 0.4);
         }
 
-        .participant-name {
-          font-size: 0.875rem;
-          font-weight: 500;
+        .callee-name {
+          font-size: 1.5rem;
+          font-weight: 600;
           color: hsl(var(--foreground));
         }
 
-        .muted-badge {
-          font-size: 0.75rem;
+        .callee-status {
+          font-size: 1rem;
+          color: hsl(var(--muted-foreground));
+          animation: statusPulse 1.5s ease-in-out infinite;
+        }
+
+        .callee-status.error {
+          color: hsl(var(--destructive));
+          animation: none;
+        }
+
+        @keyframes statusPulse {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.5; }
         }
 
         .connecting-animation {

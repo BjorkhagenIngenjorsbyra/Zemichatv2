@@ -49,6 +49,8 @@ import {
 import { supabase } from '../services/supabase';
 import { type CallLog } from '../types/database';
 
+const RING_TIMEOUT_MS = 30_000;
+
 // ============================================================
 // CONTEXT
 // ============================================================
@@ -71,6 +73,7 @@ export function CallProvider({ children }: CallProviderProps) {
   const [incomingCall, setIncomingCall] = useState<IncomingCall | null>(null);
   const [isAgoraReady, setIsAgoraReady] = useState(false);
   const [callDuration, setCallDuration] = useState(0);
+  const [callError, setCallError] = useState<string | null>(null);
 
   // Agora references
   const clientRef = useRef<IAgoraRTCClient | null>(null);
@@ -84,44 +87,83 @@ export function CallProvider({ children }: CallProviderProps) {
     video?: IRemoteVideoTrack;
   }>>(new Map());
 
-  // Timer ref for call duration
-  const durationTimerRef = useRef<NodeJS.Timeout | null>(null);
+  // Timer refs
+  const durationTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const ringTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const clearCallError = useCallback(() => setCallError(null), []);
 
   // ============================================================
   // CLEANUP HELPER
   // ============================================================
 
   const cleanupCall = useCallback(async () => {
-    // Stop duration timer
     if (durationTimerRef.current) {
       clearInterval(durationTimerRef.current);
       durationTimerRef.current = null;
     }
+    if (ringTimeoutRef.current) {
+      clearTimeout(ringTimeoutRef.current);
+      ringTimeoutRef.current = null;
+    }
 
-    // Close local tracks
     closeLocalTracks(audioTrackRef.current, videoTrackRef.current);
     if (screenTrackRef.current) {
       screenTrackRef.current.stop();
       screenTrackRef.current.close();
     }
 
-    // Leave channel
     if (clientRef.current) {
       await leaveChannel(clientRef.current);
       clientRef.current = null;
     }
 
-    // Clear refs
     audioTrackRef.current = null;
     videoTrackRef.current = null;
     screenTrackRef.current = null;
 
-    // Reset state
     setRemoteUsers(new Map());
     setCallDuration(0);
     setActiveCall(null);
     setIsAgoraReady(false);
   }, []);
+
+  // ============================================================
+  // FETCH OTHER PARTICIPANT
+  // ============================================================
+
+  async function fetchOtherMember(chatId: string, myId: string): Promise<{
+    id: string;
+    displayName: string;
+    avatarUrl?: string;
+  } | null> {
+    // Get all member IDs in this chat
+    const { data: members } = await supabase
+      .from('chat_members')
+      .select('user_id')
+      .eq('chat_id', chatId)
+      .is('left_at', null) as { data: Array<{ user_id: string }> | null };
+
+    if (!members) return null;
+
+    const otherId = members.find((m) => m.user_id !== myId)?.user_id;
+    if (!otherId) return null;
+
+    // Fetch the other user's profile
+    const { data: user } = await supabase
+      .from('users')
+      .select('id, display_name, avatar_url')
+      .eq('id', otherId)
+      .single() as { data: { id: string; display_name: string; avatar_url: string | null } | null };
+
+    if (!user) return null;
+
+    return {
+      id: user.id,
+      displayName: user.display_name || 'Unknown',
+      avatarUrl: user.avatar_url || undefined,
+    };
+  }
 
   // ============================================================
   // CALL ACTIONS
@@ -130,35 +172,56 @@ export function CallProvider({ children }: CallProviderProps) {
   const initiateCall = useCallback(async (chatId: string, callType: CallType) => {
     if (!profile) return;
 
-    // Check if user can make this type of call
+    setCallError(null);
+
+    // 1. Check permissions
     const { canCall } = await canMakeCall(profile.id, callType);
     if (!canCall) {
-      console.error('User not permitted to make this type of call');
+      setCallError('call.permissionDenied');
       return;
     }
 
-    // Create call log
+    // 2. Fetch other participant info
+    const otherMember = await fetchOtherMember(chatId, profile.id);
+
+    // 3. Create call log
     const { callLog, error: logError } = await createCallLog(chatId, callType);
     if (logError || !callLog) {
-      console.error('Failed to create call log:', logError);
+      setCallError('call.error');
       return;
     }
 
-    // Set initial call state
-    const newCall: ActiveCall = {
-      callLogId: callLog.id,
-      chatId,
-      callType,
-      state: CallState.INITIATING,
-      initiatorId: profile.id,
-      participants: [{
+    // 4. Build participants list
+    const participants: CallParticipant[] = [
+      {
         id: profile.id,
         displayName: profile.display_name || 'You',
         avatarUrl: profile.avatar_url || undefined,
         hasVideo: callType === CallType.VIDEO,
         hasAudio: true,
         isScreenSharing: false,
-      }],
+      },
+    ];
+
+    if (otherMember) {
+      participants.push({
+        id: otherMember.id,
+        displayName: otherMember.displayName,
+        avatarUrl: otherMember.avatarUrl,
+        hasVideo: false,
+        hasAudio: false,
+        isScreenSharing: false,
+      });
+    }
+
+    // 5. Show call screen immediately with RINGING state
+    const newCall: ActiveCall = {
+      callLogId: callLog.id,
+      chatId,
+      callType,
+      state: CallState.RINGING,
+      initiatorId: profile.id,
+      participants,
       startedAt: new Date(),
       isMuted: false,
       isVideoEnabled: callType === CallType.VIDEO,
@@ -167,134 +230,119 @@ export function CallProvider({ children }: CallProviderProps) {
     };
     setActiveCall(newCall);
 
-    // Get Agora token
-    const { token, error: tokenError } = await getAgoraToken(chatId, callType);
-    if (tokenError || !token) {
-      console.error('Failed to get Agora token:', tokenError);
-      await cleanupCall();
-      return;
-    }
-
-    // Create Agora client
-    const client = createAgoraClient();
-    clientRef.current = client;
-
-    // Set up event listeners
-    client.on('user-published', async (user: IAgoraRTCRemoteUser, mediaType: 'audio' | 'video') => {
-      await client.subscribe(user, mediaType);
-
-      setRemoteUsers((prev) => {
-        const newMap = new Map(prev);
-        const existing = newMap.get(String(user.uid)) || {};
-        if (mediaType === 'audio') {
-          existing.audio = user.audioTrack;
-          user.audioTrack?.play();
-        } else {
-          existing.video = user.videoTrack;
-        }
-        newMap.set(String(user.uid), existing);
-        return newMap;
-      });
-
-      // Update participants
+    // 6. Start 30-second ring timeout
+    ringTimeoutRef.current = setTimeout(async () => {
       setActiveCall((prev) => {
-        if (!prev) return prev;
-        const exists = prev.participants.some((p) => p.id === String(user.uid));
-        if (!exists) {
-          return {
-            ...prev,
-            participants: [
-              ...prev.participants,
-              {
-                id: String(user.uid),
-                displayName: 'Participant',
-                hasVideo: mediaType === 'video',
-                hasAudio: mediaType === 'audio',
-                isScreenSharing: false,
-              },
-            ],
-          };
+        if (prev && prev.state === CallState.RINGING) {
+          return { ...prev, state: CallState.ENDED };
         }
         return prev;
       });
-    });
+      setCallError('call.noAnswer');
+      // Auto-cleanup after showing "no answer" for 2s
+      setTimeout(() => cleanupCall(), 2500);
+    }, RING_TIMEOUT_MS);
 
-    client.on('user-unpublished', (user: IAgoraRTCRemoteUser, mediaType: 'audio' | 'video') => {
-      setRemoteUsers((prev) => {
-        const newMap = new Map(prev);
-        const existing = newMap.get(String(user.uid));
-        if (existing) {
+    // 7. Agora setup (async — if it fails, show error)
+    try {
+      // Get Agora token
+      const { token, error: tokenError } = await getAgoraToken(chatId, callType);
+      if (tokenError || !token) {
+        setCallError('call.error');
+        setActiveCall((prev) => prev ? { ...prev, state: CallState.ENDED } : prev);
+        setTimeout(() => cleanupCall(), 2500);
+        return;
+      }
+
+      // Create Agora client
+      const client = createAgoraClient();
+      clientRef.current = client;
+
+      // Set up event listeners
+      client.on('user-published', async (user: IAgoraRTCRemoteUser, mediaType: 'audio' | 'video') => {
+        await client.subscribe(user, mediaType);
+        setRemoteUsers((prev) => {
+          const newMap = new Map(prev);
+          const existing = newMap.get(String(user.uid)) || {};
           if (mediaType === 'audio') {
-            delete existing.audio;
+            existing.audio = user.audioTrack;
+            user.audioTrack?.play();
           } else {
-            delete existing.video;
+            existing.video = user.videoTrack;
           }
           newMap.set(String(user.uid), existing);
-        }
-        return newMap;
-      });
-    });
-
-    client.on('user-left', (user: IAgoraRTCRemoteUser) => {
-      setRemoteUsers((prev) => {
-        const newMap = new Map(prev);
-        newMap.delete(String(user.uid));
-        return newMap;
+          return newMap;
+        });
       });
 
-      // Update participants
-      setActiveCall((prev) => {
-        if (!prev) return prev;
-        return {
-          ...prev,
-          participants: prev.participants.filter((p) => p.id !== String(user.uid)),
-        };
+      client.on('user-unpublished', (user: IAgoraRTCRemoteUser, mediaType: 'audio' | 'video') => {
+        setRemoteUsers((prev) => {
+          const newMap = new Map(prev);
+          const existing = newMap.get(String(user.uid));
+          if (existing) {
+            if (mediaType === 'audio') delete existing.audio;
+            else delete existing.video;
+            newMap.set(String(user.uid), existing);
+          }
+          return newMap;
+        });
       });
-    });
 
-    // Create local tracks
-    const { audioTrack, videoTrack, error: trackError } = await createLocalTracks(
-      callType === CallType.VIDEO
-    );
-    if (trackError) {
-      console.error('Failed to create local tracks:', trackError);
-      await cleanupCall();
-      return;
+      client.on('user-left', (user: IAgoraRTCRemoteUser) => {
+        setRemoteUsers((prev) => {
+          const newMap = new Map(prev);
+          newMap.delete(String(user.uid));
+          return newMap;
+        });
+        setActiveCall((prev) => {
+          if (!prev) return prev;
+          return { ...prev, participants: prev.participants.filter((p) => p.id !== String(user.uid)) };
+        });
+      });
+
+      // Create local tracks
+      const { audioTrack, videoTrack, error: trackError } = await createLocalTracks(
+        callType === CallType.VIDEO
+      );
+      if (trackError) {
+        setCallError('call.error');
+        setActiveCall((prev) => prev ? { ...prev, state: CallState.ENDED } : prev);
+        setTimeout(() => cleanupCall(), 2500);
+        return;
+      }
+
+      audioTrackRef.current = audioTrack;
+      videoTrackRef.current = videoTrack;
+
+      // Join channel
+      const { error: joinError } = await joinChannel(client, token.token, token.channel, token.uid);
+      if (joinError) {
+        setCallError('call.error');
+        setActiveCall((prev) => prev ? { ...prev, state: CallState.ENDED } : prev);
+        setTimeout(() => cleanupCall(), 2500);
+        return;
+      }
+
+      // Publish tracks
+      await publishTracks(client, audioTrack, videoTrack);
+
+      setIsAgoraReady(true);
+
+      // Send ring signal to other participant
+      await sendCallSignal(chatId, callLog.id, SignalType.RING);
+    } catch (err) {
+      console.error('Call setup failed:', err);
+      setCallError('call.error');
+      setActiveCall((prev) => prev ? { ...prev, state: CallState.ENDED } : prev);
+      setTimeout(() => cleanupCall(), 2500);
     }
-
-    audioTrackRef.current = audioTrack;
-    videoTrackRef.current = videoTrack;
-
-    // Join channel
-    const { error: joinError } = await joinChannel(client, token.token, token.channel, token.uid);
-    if (joinError) {
-      console.error('Failed to join channel:', joinError);
-      await cleanupCall();
-      return;
-    }
-
-    // Publish tracks
-    const { error: publishError } = await publishTracks(client, audioTrack, videoTrack);
-    if (publishError) {
-      console.error('Failed to publish tracks:', publishError);
-    }
-
-    setIsAgoraReady(true);
-
-    // Send ring signal
-    const { error: signalError } = await sendCallSignal(chatId, callLog.id, SignalType.RING);
-    if (signalError) {
-      console.error('Failed to send call signal:', signalError);
-    }
-
-    // Update state to ringing
-    setActiveCall((prev) => prev ? { ...prev, state: CallState.RINGING } : prev);
   }, [profile, cleanupCall]);
 
   const answerCall = useCallback(async () => {
     if (!incomingCall || !profile) return;
 
-    // Set initial call state
+    setCallError(null);
+
     const newCall: ActiveCall = {
       callLogId: incomingCall.callLogId,
       chatId: incomingCall.chatId,
@@ -328,128 +376,116 @@ export function CallProvider({ children }: CallProviderProps) {
     setActiveCall(newCall);
     setIncomingCall(null);
 
-    // Get Agora token
-    const { token, error: tokenError } = await getAgoraToken(
-      incomingCall.chatId,
-      incomingCall.callType
-    );
-    if (tokenError || !token) {
-      console.error('Failed to get Agora token:', tokenError);
-      await cleanupCall();
-      return;
-    }
+    try {
+      const { token, error: tokenError } = await getAgoraToken(
+        incomingCall.chatId,
+        incomingCall.callType
+      );
+      if (tokenError || !token) {
+        setCallError('call.error');
+        await cleanupCall();
+        return;
+      }
 
-    // Create Agora client with same event setup as initiateCall
-    const client = createAgoraClient();
-    clientRef.current = client;
+      const client = createAgoraClient();
+      clientRef.current = client;
 
-    client.on('user-published', async (user: IAgoraRTCRemoteUser, mediaType: 'audio' | 'video') => {
-      await client.subscribe(user, mediaType);
-
-      setRemoteUsers((prev) => {
-        const newMap = new Map(prev);
-        const existing = newMap.get(String(user.uid)) || {};
-        if (mediaType === 'audio') {
-          existing.audio = user.audioTrack;
-          user.audioTrack?.play();
-        } else {
-          existing.video = user.videoTrack;
-        }
-        newMap.set(String(user.uid), existing);
-        return newMap;
-      });
-    });
-
-    client.on('user-unpublished', (user: IAgoraRTCRemoteUser, mediaType: 'audio' | 'video') => {
-      setRemoteUsers((prev) => {
-        const newMap = new Map(prev);
-        const existing = newMap.get(String(user.uid));
-        if (existing) {
+      client.on('user-published', async (user: IAgoraRTCRemoteUser, mediaType: 'audio' | 'video') => {
+        await client.subscribe(user, mediaType);
+        setRemoteUsers((prev) => {
+          const newMap = new Map(prev);
+          const existing = newMap.get(String(user.uid)) || {};
           if (mediaType === 'audio') {
-            delete existing.audio;
+            existing.audio = user.audioTrack;
+            user.audioTrack?.play();
           } else {
-            delete existing.video;
+            existing.video = user.videoTrack;
           }
           newMap.set(String(user.uid), existing);
-        }
-        return newMap;
+          return newMap;
+        });
       });
-    });
 
-    client.on('user-left', (user: IAgoraRTCRemoteUser) => {
-      setRemoteUsers((prev) => {
-        const newMap = new Map(prev);
-        newMap.delete(String(user.uid));
-        return newMap;
+      client.on('user-unpublished', (user: IAgoraRTCRemoteUser, mediaType: 'audio' | 'video') => {
+        setRemoteUsers((prev) => {
+          const newMap = new Map(prev);
+          const existing = newMap.get(String(user.uid));
+          if (existing) {
+            if (mediaType === 'audio') delete existing.audio;
+            else delete existing.video;
+            newMap.set(String(user.uid), existing);
+          }
+          return newMap;
+        });
       });
-    });
 
-    // Create local tracks
-    const { audioTrack, videoTrack, error: trackError } = await createLocalTracks(
-      incomingCall.callType === CallType.VIDEO
-    );
-    if (trackError) {
-      console.error('Failed to create local tracks:', trackError);
+      client.on('user-left', (user: IAgoraRTCRemoteUser) => {
+        setRemoteUsers((prev) => {
+          const newMap = new Map(prev);
+          newMap.delete(String(user.uid));
+          return newMap;
+        });
+      });
+
+      const { audioTrack, videoTrack, error: trackError } = await createLocalTracks(
+        incomingCall.callType === CallType.VIDEO
+      );
+      if (trackError) {
+        setCallError('call.error');
+        await cleanupCall();
+        return;
+      }
+
+      audioTrackRef.current = audioTrack;
+      videoTrackRef.current = videoTrack;
+
+      const { error: joinError } = await joinChannel(client, token.token, token.channel, token.uid);
+      if (joinError) {
+        setCallError('call.error');
+        await cleanupCall();
+        return;
+      }
+
+      await publishTracks(client, audioTrack, videoTrack);
+      await updateCallStatus(incomingCall.callLogId, CallStatus.ANSWERED);
+      await deleteCallSignals(incomingCall.callLogId);
+
+      setIsAgoraReady(true);
+      setActiveCall((prev) => prev ? {
+        ...prev,
+        state: CallState.CONNECTED,
+        connectedAt: new Date(),
+      } : prev);
+
+      durationTimerRef.current = setInterval(() => {
+        setCallDuration((prev) => prev + 1);
+      }, 1000);
+    } catch (err) {
+      console.error('Answer call failed:', err);
+      setCallError('call.error');
       await cleanupCall();
-      return;
     }
-
-    audioTrackRef.current = audioTrack;
-    videoTrackRef.current = videoTrack;
-
-    // Join channel
-    const { error: joinError } = await joinChannel(client, token.token, token.channel, token.uid);
-    if (joinError) {
-      console.error('Failed to join channel:', joinError);
-      await cleanupCall();
-      return;
-    }
-
-    // Publish tracks
-    await publishTracks(client, audioTrack, videoTrack);
-
-    // Update call log status to answered
-    await updateCallStatus(incomingCall.callLogId, CallStatus.ANSWERED);
-
-    // Delete the ring signal
-    await deleteCallSignals(incomingCall.callLogId);
-
-    setIsAgoraReady(true);
-
-    // Start call connected
-    setActiveCall((prev) => prev ? {
-      ...prev,
-      state: CallState.CONNECTED,
-      connectedAt: new Date(),
-    } : prev);
-
-    // Start duration timer
-    durationTimerRef.current = setInterval(() => {
-      setCallDuration((prev) => prev + 1);
-    }, 1000);
   }, [incomingCall, profile, cleanupCall]);
 
   const declineCall = useCallback(async () => {
     if (!incomingCall) return;
-
-    // Update call log to declined
     await updateCallStatus(incomingCall.callLogId, CallStatus.DECLINED);
-
-    // Delete signals
     await deleteCallSignals(incomingCall.callLogId);
-
     setIncomingCall(null);
   }, [incomingCall]);
 
   const endCall = useCallback(async () => {
     if (!activeCall) return;
 
-    // End call log
+    if (ringTimeoutRef.current) {
+      clearTimeout(ringTimeoutRef.current);
+      ringTimeoutRef.current = null;
+    }
+
     if (activeCall.connectedAt) {
       await endCallLog(activeCall.callLogId, activeCall.connectedAt);
     }
 
-    // Create call message in chat
     const { data } = await supabase
       .from('call_logs')
       .select('*')
@@ -460,29 +496,22 @@ export function CallProvider({ children }: CallProviderProps) {
       await createCallMessage(activeCall.chatId, data as unknown as CallLog);
     }
 
-    // Delete any remaining signals
     await deleteCallSignals(activeCall.callLogId);
-
-    // Cleanup Agora
     await cleanupCall();
   }, [activeCall, cleanupCall]);
 
   const toggleMute = useCallback(() => {
     if (!audioTrackRef.current) return;
-
     const newMuted = !activeCall?.isMuted;
     audioTrackRef.current.setMuted(newMuted);
-
     setActiveCall((prev) => prev ? { ...prev, isMuted: newMuted } : prev);
   }, [activeCall?.isMuted]);
 
   const toggleVideo = useCallback(async () => {
     if (!clientRef.current) return;
-
     const newEnabled = !activeCall?.isVideoEnabled;
 
     if (newEnabled && !videoTrackRef.current) {
-      // Create video track if doesn't exist
       const { videoTrack } = await createLocalTracks(true);
       if (videoTrack) {
         videoTrackRef.current = videoTrack;
@@ -498,24 +527,15 @@ export function CallProvider({ children }: CallProviderProps) {
   const toggleScreenShare = useCallback(async () => {
     if (!clientRef.current || !profile) return;
 
-    // Check permission
     const { canShare } = await canScreenShare(profile.id);
-    if (!canShare) {
-      console.error('User not permitted to screen share');
-      return;
-    }
+    if (!canShare) return;
 
     const newSharing = !activeCall?.isScreenSharing;
 
     if (newSharing) {
-      // Start screen share
       const { screenTrack, error } = await createScreenShareTrack();
-      if (error || !screenTrack) {
-        console.error('Failed to create screen share:', error);
-        return;
-      }
+      if (error || !screenTrack) return;
 
-      // Unpublish camera if active
       if (videoTrackRef.current) {
         await unpublishTracks(clientRef.current, [videoTrackRef.current]);
       }
@@ -523,14 +543,12 @@ export function CallProvider({ children }: CallProviderProps) {
       screenTrackRef.current = screenTrack;
       await publishTracks(clientRef.current, null, screenTrack);
 
-      // Listen for screen share stop
       screenTrack.on('track-ended', async () => {
         if (screenTrackRef.current) {
           await unpublishTracks(clientRef.current!, [screenTrackRef.current]);
           screenTrackRef.current.close();
           screenTrackRef.current = null;
 
-          // Re-publish camera if video was enabled
           if (videoTrackRef.current && activeCall?.isVideoEnabled) {
             await publishTracks(clientRef.current!, null, videoTrackRef.current);
           }
@@ -539,13 +557,11 @@ export function CallProvider({ children }: CallProviderProps) {
         }
       });
     } else {
-      // Stop screen share
       if (screenTrackRef.current) {
         await unpublishTracks(clientRef.current, [screenTrackRef.current]);
         screenTrackRef.current.close();
         screenTrackRef.current = null;
 
-        // Re-publish camera if video was enabled
         if (videoTrackRef.current && activeCall?.isVideoEnabled) {
           await publishTracks(clientRef.current, null, videoTrackRef.current);
         }
@@ -567,7 +583,6 @@ export function CallProvider({ children }: CallProviderProps) {
     if (!profile) return;
 
     const unsubscribe = subscribeToCallSignals((signal, caller) => {
-      // Don't show incoming call if already in a call
       if (activeCall) return;
 
       setIncomingCall({
@@ -577,7 +592,7 @@ export function CallProvider({ children }: CallProviderProps) {
         callerName: caller.display_name || 'Unknown',
         callerAvatar: caller.avatar_url || undefined,
         callType: signal.signal_type === 'ring'
-          ? CallType.VOICE // Will be updated when we have call log info
+          ? CallType.VOICE
           : CallType.VOICE,
         signalId: signal.id,
       });
@@ -593,18 +608,21 @@ export function CallProvider({ children }: CallProviderProps) {
   useEffect(() => {
     if (!activeCall || activeCall.state !== CallState.RINGING) return;
 
-    // When a remote user joins, the call is connected
     if (remoteUsers.size > 0) {
+      // Clear ring timeout
+      if (ringTimeoutRef.current) {
+        clearTimeout(ringTimeoutRef.current);
+        ringTimeoutRef.current = null;
+      }
+
       setActiveCall((prev) => prev ? {
         ...prev,
         state: CallState.CONNECTED,
         connectedAt: new Date(),
       } : prev);
 
-      // Update call log status
       updateCallStatus(activeCall.callLogId, CallStatus.ANSWERED);
 
-      // Start duration timer
       durationTimerRef.current = setInterval(() => {
         setCallDuration((prev) => prev + 1);
       }, 1000);
@@ -618,7 +636,6 @@ export function CallProvider({ children }: CallProviderProps) {
   useEffect(() => {
     if (!activeCall || activeCall.state !== CallState.CONNECTED) return;
 
-    // If all remote users left and call was connected, end the call
     if (remoteUsers.size === 0 && activeCall.connectedAt) {
       endCall();
     }
@@ -630,9 +647,8 @@ export function CallProvider({ children }: CallProviderProps) {
 
   useEffect(() => {
     return () => {
-      if (durationTimerRef.current) {
-        clearInterval(durationTimerRef.current);
-      }
+      if (durationTimerRef.current) clearInterval(durationTimerRef.current);
+      if (ringTimeoutRef.current) clearTimeout(ringTimeoutRef.current);
       cleanupCall();
     };
   }, [cleanupCall]);
@@ -646,6 +662,7 @@ export function CallProvider({ children }: CallProviderProps) {
     incomingCall,
     isAgoraReady,
     callDuration,
+    callError,
     initiateCall,
     answerCall,
     declineCall,
@@ -654,6 +671,7 @@ export function CallProvider({ children }: CallProviderProps) {
     toggleVideo,
     toggleScreenShare,
     toggleMinimize,
+    clearCallError,
   };
 
   return (
@@ -675,9 +693,6 @@ export function useCallContext(): CallContextValue {
   return context;
 }
 
-// Export remote users hook for video components
 export function useRemoteUsers() {
-  // This would need to be in context for real use
-  // For now components can use the passed props
   return new Map();
 }
