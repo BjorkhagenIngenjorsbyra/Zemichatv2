@@ -60,7 +60,7 @@ export async function signIn({ email, password }: SignInData): Promise<AuthResul
       .from('users')
       .select('is_active')
       .eq('id', data.user.id)
-      .single();
+      .single<{ is_active: boolean }>();
 
     if (profile && profile.is_active === false) {
       await supabase.auth.signOut();
@@ -99,7 +99,7 @@ export async function signInAsTexter({ zemiNumber, password }: TexterSignInData)
       .from('users')
       .select('is_active')
       .eq('id', data.user.id)
-      .single();
+      .single<{ is_active: boolean }>();
 
     if (profile && profile.is_active === false) {
       await supabase.auth.signOut();
