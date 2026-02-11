@@ -1056,7 +1056,7 @@ const ChatView: React.FC = () => {
             display: flex;
             align-items: flex-end;
             gap: 0.5rem;
-            padding: 0.75rem 1rem;
+            padding: 0.75rem 1rem calc(0.75rem + env(safe-area-inset-bottom, 0px));
             background: hsl(var(--background));
             border-top: 1px solid hsl(var(--border));
           }

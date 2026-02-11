@@ -39,7 +39,8 @@ interface GiphyItem {
 
 function mapGiphyItem(item: GiphyItem): GifResult {
   const original = item.images.original;
-  const preview = item.images.fixed_width_small || item.images.fixed_width || item.images.preview_gif;
+  // Use fixed_width (200px) for sharper previews instead of fixed_width_small (100px)
+  const preview = item.images.fixed_width || item.images.fixed_width_small || item.images.preview_gif;
 
   return {
     id: item.id,

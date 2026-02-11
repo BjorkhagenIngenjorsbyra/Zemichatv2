@@ -385,13 +385,12 @@ const ImageMessage: React.FC<ImageMessageProps> = ({
           min-height: 100px;
           max-height: 300px;
           background: hsl(var(--muted) / 0.3);
-          border-radius: 0.5rem;
         }
 
         .message-image {
-          max-width: 100%;
+          width: 100%;
           max-height: 300px;
-          border-radius: 0.5rem;
+          object-fit: cover;
           display: block;
         }
 
@@ -400,7 +399,8 @@ const ImageMessage: React.FC<ImageMessageProps> = ({
         }
 
         .image-caption {
-          margin: 0.5rem 0 0 0;
+          margin: 0.25rem 0 0 0;
+          padding: 0 0.75rem;
           font-size: 0.9rem;
           line-height: 1.4;
         }

@@ -328,31 +328,30 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
         }
 
         .message-bubble {
-          max-width: 75%;
-          padding: 0.75rem 1rem;
-          border-radius: 1rem;
+          max-width: 80%;
+          padding: 0.5rem 0.75rem;
+          border-radius: 1.25rem;
           position: relative;
         }
 
         .message-bubble.own {
-          background: hsl(var(--primary));
-          color: hsl(var(--primary-foreground));
+          background: #7c3aed;
+          color: #fff;
           border-bottom-right-radius: 0.25rem;
         }
 
         .message-bubble.other {
-          background: hsl(var(--card));
+          background: #2d2a4a;
           color: hsl(var(--foreground));
-          border: 1px solid hsl(var(--border));
           border-bottom-left-radius: 0.25rem;
         }
 
         .sender-name {
           display: block;
-          font-size: 0.75rem;
+          font-size: 0.7rem;
           font-weight: 600;
-          color: hsl(var(--primary));
-          margin-bottom: 0.25rem;
+          color: hsl(var(--accent));
+          margin-bottom: 0.15rem;
         }
 
         .message-content {
@@ -362,17 +361,49 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
           line-height: 1.4;
         }
 
+        /* Links inside messages */
+        .message-content a,
+        .message-bubble.own .message-content a {
+          color: #c4b5fd;
+          text-decoration: underline;
+        }
+
+        .message-bubble.other .message-content a {
+          color: hsl(var(--primary));
+          text-decoration: underline;
+        }
+
         .message-footer {
           display: flex;
           justify-content: flex-end;
           align-items: center;
           gap: 0.25rem;
-          margin-top: 0.25rem;
+          margin-top: 0.15rem;
         }
 
         .message-time {
-          font-size: 0.65rem;
-          opacity: 0.7;
+          font-size: 0.6rem;
+          opacity: 0.6;
+        }
+
+        /* Edge-to-edge media in bubbles */
+        .message-bubble:has(.image-message),
+        .message-bubble:has(.gif-message),
+        .message-bubble:has(.video-message) {
+          padding: 0;
+          overflow: hidden;
+        }
+
+        .message-bubble:has(.image-message) .sender-name,
+        .message-bubble:has(.gif-message) .sender-name,
+        .message-bubble:has(.video-message) .sender-name {
+          padding: 0.5rem 0.75rem 0.15rem;
+        }
+
+        .message-bubble:has(.image-message) .message-footer,
+        .message-bubble:has(.gif-message) .message-footer,
+        .message-bubble:has(.video-message) .message-footer {
+          padding: 0.15rem 0.75rem 0.4rem;
         }
 
         .edited-tag {
@@ -399,13 +430,14 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
         }
 
         .video-message video {
-          max-width: 100%;
+          width: 100%;
           max-height: 300px;
-          border-radius: 0.5rem;
+          display: block;
         }
 
         .message-caption {
-          margin: 0.5rem 0 0 0;
+          margin: 0.25rem 0 0 0;
+          padding: 0 0.75rem;
           font-size: 0.9rem;
         }
 
@@ -477,14 +509,18 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
         }
 
         .message-gif {
-          max-width: 100%;
+          width: 100%;
           max-height: 250px;
-          border-radius: 0.5rem;
+          object-fit: cover;
           display: block;
         }
 
         .gif-message {
           min-width: 150px;
+        }
+
+        .gif-message .message-caption {
+          padding: 0.25rem 0.75rem;
         }
 
         .sticker-message {
@@ -500,7 +536,12 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
           padding: 0;
         }
 
-        .mention-highlight {
+        .message-bubble.own .mention-highlight {
+          font-weight: 600;
+          color: #c4b5fd;
+        }
+
+        .message-bubble.other .mention-highlight {
           font-weight: 600;
           color: hsl(var(--primary));
         }

@@ -176,12 +176,19 @@ test.describe('R. New Chat Flow', () => {
     }
   });
 
-  test('R04 – Klick på kontakt öppnar chatt', async ({ page }) => {
+  test('R04 – Klick på kontakt markerar och CTA skapar chatt', async ({ page }) => {
     await page.goto('/new-chat');
     await waitForApp(page);
     const firstContact = page.locator('.contact-item').first();
     if (await firstContact.count() > 0) {
       await firstContact.click();
+      // Contact should be selected (checkbox/chip visible)
+      const selectedChip = page.locator('.selected-chip');
+      await expect(selectedChip.first()).toBeVisible({ timeout: 3_000 });
+      // Click the "Skapa chatt" CTA button
+      const createBtn = page.locator('.create-chat-button');
+      await expect(createBtn).toBeVisible({ timeout: 3_000 });
+      await createBtn.click();
       await page.waitForURL('**/chat/**', { timeout: 10_000 });
       expect(page.url()).toContain('/chat/');
     }
@@ -569,14 +576,20 @@ test.describe('T. Chat Message Features', () => {
     await page.locator('ion-back-button').click();
     await page.waitForURL('**/chats**', { timeout: 5_000 });
     await waitForApp(page);
-    await page.waitForTimeout(1_000);
+    await page.waitForTimeout(1_500);
 
-    // Check preview
-    const preview = page.locator('.last-message').first();
-    if (await preview.count() > 0) {
-      const text = await preview.textContent();
-      expect(text).toContain(uniqueMsg);
+    // Check that any preview on the page contains our message
+    const allPreviews = page.locator('.last-message');
+    const count = await allPreviews.count();
+    let found = false;
+    for (let i = 0; i < count; i++) {
+      const text = await allPreviews.nth(i).textContent();
+      if (text && text.includes(uniqueMsg)) {
+        found = true;
+        break;
+      }
     }
+    expect(found).toBe(true);
   });
 
   test('T13 – Chat list sorteras efter senaste meddelande', async ({ page }) => {

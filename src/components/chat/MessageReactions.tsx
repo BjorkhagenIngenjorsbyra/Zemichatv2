@@ -31,30 +31,30 @@ const MessageReactions: React.FC<MessageReactionsProps> = ({
         .message-reactions {
           display: flex;
           flex-wrap: wrap;
-          gap: 0.25rem;
-          margin-top: 0.5rem;
+          gap: 0.2rem;
+          margin-top: 0.35rem;
         }
 
         .reaction-chip {
           display: inline-flex;
           align-items: center;
-          gap: 0.25rem;
-          padding: 0.125rem 0.5rem;
+          gap: 0.2rem;
+          padding: 0.1rem 0.4rem;
           border-radius: 9999px;
-          background: hsl(var(--muted) / 0.3);
+          background: rgba(255, 255, 255, 0.1);
           border: 1px solid transparent;
           cursor: pointer;
           transition: all 0.15s;
-          font-size: 0.8rem;
+          font-size: 0.75rem;
         }
 
         .reaction-chip:hover {
-          background: hsl(var(--muted) / 0.5);
+          background: rgba(255, 255, 255, 0.2);
         }
 
         .reaction-chip.active {
           border-color: hsl(var(--primary));
-          background: hsl(var(--primary) / 0.1);
+          background: hsl(var(--primary) / 0.2);
         }
 
         .reaction-emoji {
