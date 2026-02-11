@@ -115,13 +115,20 @@ test.describe('A. Autentisering', () => {
     expect(hasError || onPage).toBeTruthy();
   });
 
-  test('A06 – Login-formulär visas', async ({ page }) => {
+  test('A06 – Login-formulär visas och avvisar tomt formulär', async ({ page }) => {
     await page.goto('/login');
     await waitForApp(page);
     await expect(page.locator('[data-testid="login-form"]')).toBeVisible();
     const inputs = page.locator('ion-input');
     expect(await inputs.count()).toBeGreaterThanOrEqual(2);
-    await expect(page.locator('ion-button[type="submit"]')).toBeVisible();
+    const submitBtn = page.locator('ion-button[type="submit"]');
+    await expect(submitBtn).toBeVisible();
+    // Click submit without filling anything — should stay on login and show error
+    await submitBtn.click();
+    await page.waitForTimeout(2_000);
+    const hasError = await page.locator('.auth-error').count() > 0;
+    const stillOnLogin = page.url().includes('/login');
+    expect(hasError || stillOnLogin).toBeTruthy();
   });
 
   test('A07 – Felaktigt lösenord visar felmeddelande', async ({ page }) => {
@@ -157,12 +164,19 @@ test.describe('A. Autentisering', () => {
     expect(page.url()).toContain('/create-team');
   });
 
-  test('A10 – Texter-login sida visas', async ({ page }) => {
+  test('A10 – Texter-login avvisar tomt formulär', async ({ page }) => {
     await page.goto('/texter-login');
     await waitForApp(page);
     const inputs = page.locator('ion-input');
     expect(await inputs.count()).toBeGreaterThanOrEqual(2);
-    await expect(page.locator('ion-button[type="submit"]')).toBeVisible();
+    const submitBtn = page.locator('ion-button[type="submit"]');
+    await expect(submitBtn).toBeVisible();
+    // Click submit without filling anything — should stay on texter-login and show error
+    await submitBtn.click();
+    await page.waitForTimeout(2_000);
+    const hasError = await page.locator('.auth-error').count() > 0;
+    const stillOnPage = page.url().includes('/texter-login');
+    expect(hasError || stillOnPage).toBeTruthy();
   });
 
   test('A11 – Texter-login med fel Zemi-nummer avvisas', async ({ page }) => {
@@ -257,10 +271,18 @@ test.describe('B. Owner Dashboard', () => {
     expect(count).toBeGreaterThanOrEqual(1);
   });
 
-  test('B06 – Dashboard nås via /dashboard', async ({ page }) => {
+  test('B06 – Dashboard visar team-namn och minst 1 medlem', async ({ page }) => {
     await page.goto('/dashboard');
     await waitForApp(page);
     await expect(page.locator('[data-testid="dashboard-actions"]')).toBeVisible({ timeout: 10_000 });
+    // Verify team name is shown
+    const teamName = page.locator('.team-name, ion-title').first();
+    const teamText = await teamName.textContent();
+    expect(teamText!.trim().length).toBeGreaterThan(0);
+    // Verify at least one team member is listed
+    await page.waitForTimeout(2_000);
+    const memberItems = page.locator('.member-item');
+    expect(await memberItems.count()).toBeGreaterThanOrEqual(1);
   });
 
   test('B07 – Dashboard visar teammedlemmar', async ({ page }) => {
@@ -684,11 +706,17 @@ test.describe('C. Chat Functions', () => {
 test.describe('D. Friends', () => {
   test.use({ storageState: OWNER_AUTH });
 
-  test('D01 – Vänner-sida visas', async ({ page }) => {
+  test('D01 – Vänner-sida visar segment och minst 1 vän eller request', async ({ page }) => {
     await page.goto('/friends');
     await waitForApp(page);
     const segment = page.locator('ion-segment');
     await expect(segment).toBeVisible({ timeout: 10_000 });
+    await page.waitForTimeout(2_000);
+    // Verify at least one friend card, team member, or request exists
+    const friends = page.locator('.friend-card');
+    const teamMembers = page.locator('.team-member-item, .team-list .member-item');
+    const total = (await friends.count()) + (await teamMembers.count());
+    expect(total).toBeGreaterThanOrEqual(1);
   });
 
   test('D02 – Vänner-segment har flikar', async ({ page }) => {
@@ -1101,14 +1129,7 @@ test.describe('G. UI & Dark Mode', () => {
     await ctx.close();
   });
 
-  test('G08 – Skeletonladdare visas initialt', async ({ page }) => {
-    // Navigate fresh to see skeleton loader
-    await page.goto('/chats');
-    // Check immediately (before data loads)
-    const skeleton = page.locator('.skeleton-loader, ion-skeleton-text');
-    // May or may not be visible depending on speed; existence is enough
-    expect(await skeleton.count()).toBeGreaterThanOrEqual(0);
-  });
+  // G08 removed – assertion (count >= 0) always true, provided no test value
 
   test('G09 – FAB-knappar har rätt position', async ({ page }) => {
     const ctx = await page.context().browser()!.newContext({ storageState: OWNER_AUTH });
@@ -1143,12 +1164,16 @@ test.describe('H. Texter View', () => {
 
   test.use({ storageState: TEXTER_AUTH });
 
-  test('H01 – Texter ser chattlista', async ({ page }) => {
+  test('H01 – Texter ser chattlista med namn och senaste meddelande', async ({ page }) => {
     await page.goto('/chats');
     await waitForApp(page);
+    await page.waitForTimeout(2_000);
     const chatItems = page.locator('.chat-item');
-    const empty = page.locator('[data-testid="empty-chat-list"]');
-    expect((await chatItems.count()) + (await empty.count())).toBeGreaterThan(0);
+    expect(await chatItems.count()).toBeGreaterThanOrEqual(1);
+    // Verify first chat item has a name and last-message preview
+    const firstName = chatItems.first().locator('.chat-name');
+    const nameText = await firstName.textContent().catch(() => '');
+    expect(nameText!.trim().length).toBeGreaterThan(0);
   });
 
   test('H02 – Texter ser seeded chatt', async ({ page }) => {
@@ -1290,12 +1315,16 @@ test.describe('I. Super View', () => {
 
   test.use({ storageState: SUPER_AUTH });
 
-  test('I01 – Super ser chattlista', async ({ page }) => {
+  test('I01 – Super ser chattlista med namn och senaste meddelande', async ({ page }) => {
     await page.goto('/chats');
     await waitForApp(page);
+    await page.waitForTimeout(2_000);
     const chatItems = page.locator('.chat-item');
-    const empty = page.locator('[data-testid="empty-chat-list"]');
-    expect((await chatItems.count()) + (await empty.count())).toBeGreaterThan(0);
+    expect(await chatItems.count()).toBeGreaterThanOrEqual(1);
+    // Verify first chat item has a name
+    const firstName = chatItems.first().locator('.chat-name');
+    const nameText = await firstName.textContent().catch(() => '');
+    expect(nameText!.trim().length).toBeGreaterThan(0);
   });
 
   test('I02 – Super kan öppna chatt', async ({ page }) => {

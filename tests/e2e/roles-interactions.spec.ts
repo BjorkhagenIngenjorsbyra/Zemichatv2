@@ -28,15 +28,18 @@ async function waitForApp(page: Page) {
 test.describe('K. Owner → Texter', () => {
   test.use({ storageState: OWNER_AUTH });
 
-  test('K01 – Owner oversight visar chattlista', async ({ page }) => {
+  test('K01 – Owner oversight visar chattlista med texter-badge', async ({ page }) => {
     await page.goto('/oversight');
     await waitForApp(page);
-    // Should see list or empty state
+    await page.waitForTimeout(2_000);
+    // Should see at least one chat item with a texter badge
     const chatItems = page.locator('.chat-item');
-    const emptyState = page.locator('.empty-state');
-    const hasItems = await chatItems.count() > 0;
-    const hasEmpty = await emptyState.count() > 0;
-    expect(hasItems || hasEmpty).toBeTruthy();
+    expect(await chatItems.count()).toBeGreaterThanOrEqual(1);
+    const texterBadge = page.locator('.texter-badge').first();
+    if (await texterBadge.count() > 0) {
+      const badgeText = await texterBadge.textContent();
+      expect(badgeText!.trim().length).toBeGreaterThan(0);
+    }
   });
 
   test('K02 – Oversight har sökfält', async ({ page }) => {
@@ -372,21 +375,7 @@ test.describe('M. Texter Restrictions', () => {
     await expect(faqSection).toBeVisible({ timeout: 10_000 });
   });
 
-  test('M09 – Texter ser quick-message-bar i chatt', async ({ page }) => {
-    await page.goto('/chats');
-    await waitForApp(page);
-    const firstChat = page.locator('.chat-item').first();
-    if (await firstChat.count() === 0) return;
-
-    await firstChat.click();
-    await page.waitForURL('**/chat/**', { timeout: 5_000 });
-    await waitForApp(page);
-    await page.waitForTimeout(2_000);
-
-    // Quick message bar should be visible for texters
-    const qmBar = page.locator('.quick-message-bar');
-    expect(await qmBar.count()).toBeGreaterThanOrEqual(0);
-  });
+  // M09 removed – assertion (count >= 0) always true, provided no test value
 
   test('M10 – Texter ser seeded vänner', async ({ page }) => {
     await page.goto('/friends');
@@ -625,16 +614,7 @@ test.describe('O. Cross-Role Chat', () => {
     await ctx.close();
   });
 
-  test('O07 – Alla roller har samma navigation footer', async ({ page }) => {
-    // Owner
-    const ownerCtx = await page.context().browser()!.newContext({ storageState: OWNER_AUTH });
-    const ownerPage = await ownerCtx.newPage();
-    await ownerPage.goto('/chats');
-    await waitForApp(ownerPage);
-    const ownerContent = await ownerPage.locator('ion-content').count();
-    expect(ownerContent).toBeGreaterThanOrEqual(1);
-    await ownerCtx.close();
-  });
+  // O07 removed – assertion (ion-content count >= 1) always true
 
   test('O08 – Owner ser Texter-chatt i oversight-filtret', async ({ page }) => {
     const ctx = await page.context().browser()!.newContext({ storageState: OWNER_AUTH });
@@ -730,10 +710,5 @@ test.describe('P. Team Management', () => {
     }
   });
 
-  test('P05 – Dashboard refresher finns', async ({ page }) => {
-    await page.goto('/dashboard');
-    await waitForApp(page);
-    const refresher = page.locator('ion-refresher');
-    expect(await refresher.count()).toBeGreaterThanOrEqual(0);
-  });
+  // P05 removed – assertion (count >= 0) always true, provided no test value
 });
