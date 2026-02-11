@@ -121,6 +121,8 @@
     "noChats": "Ei keskusteluja vielä",
     "startChatting": "Aloita keskustelu ystäviesi kanssa",
     "selectFriend": "Valitse ystävä keskustellaksesi",
+    "selectFriends": "Valitse ystäviä",
+    "createChat": "Luo keskustelu",
     "noFriends": "Ei ystäviä vielä",
     "addFriendsFirst": "Lisää ystäviä aloittaaksesi keskustelun",
     "holdToRecord": "Paina nauhoittaaksesi",
@@ -268,7 +270,9 @@
     "unfriendTitle": "Poista ystävä?",
     "unfriendMessage": "Haluatko varmasti poistaa käyttäjän {{name}} ystävistäsi?",
     "texterApprovalNote": "Ystäväpyynnöt on hyväksytettävä Team Ownerillasi",
-    "myTeam": "Tiimini"
+    "myTeam": "Tiimini",
+    "startNewChat": "Aloita uusi keskustelu",
+    "addToExistingChat": "Lisää keskusteluun"
   },
   "ownerApprovals": {
     "title": "Ystävähyväksynnät",

@@ -121,6 +121,8 @@
     "noChats": "No chats yet",
     "startChatting": "Start chatting with your friends",
     "selectFriend": "Select a friend to chat with",
+    "selectFriends": "Select friends",
+    "createChat": "Create chat",
     "noFriends": "No friends yet",
     "addFriendsFirst": "Add friends to start chatting",
     "holdToRecord": "Tap to record",
@@ -268,7 +270,9 @@
     "unfriendTitle": "Unfriend?",
     "unfriendMessage": "Are you sure you want to unfriend {{name}}?",
     "texterApprovalNote": "Friend requests must be approved by your Team Owner",
-    "myTeam": "My Team"
+    "myTeam": "My Team",
+    "startNewChat": "Start new chat",
+    "addToExistingChat": "Add to chat"
   },
   "ownerApprovals": {
     "title": "Friend Approvals",

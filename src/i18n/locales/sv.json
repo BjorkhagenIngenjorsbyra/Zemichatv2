@@ -121,6 +121,8 @@
     "noChats": "Inga chattar än",
     "startChatting": "Börja chatta med dina vänner",
     "selectFriend": "Välj en vän att chatta med",
+    "selectFriends": "Välj vänner",
+    "createChat": "Skapa chatt",
     "noFriends": "Inga vänner än",
     "addFriendsFirst": "Lägg till vänner för att börja chatta",
     "holdToRecord": "Tryck för att spela in",
@@ -268,7 +270,9 @@
     "unfriendTitle": "Ta bort vän?",
     "unfriendMessage": "Är du säker på att du vill ta bort {{name}} som vän?",
     "texterApprovalNote": "Vänförfrågningar måste godkännas av din Team Owner",
-    "myTeam": "Mitt team"
+    "myTeam": "Mitt team",
+    "startNewChat": "Starta ny chatt",
+    "addToExistingChat": "Lägg till i chatt"
   },
   "ownerApprovals": {
     "title": "Vän-godkännanden",

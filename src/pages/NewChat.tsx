@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useHistory } from 'react-router-dom';
+import { useHistory, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
   IonPage,
@@ -17,9 +17,10 @@ import {
   IonBackButton,
   IonSearchbar,
   IonButton,
+  IonCheckbox,
+  IonFooter,
 } from '@ionic/react';
-import { personOutline, personAddOutline } from 'ionicons/icons';
-import { useAuthContext } from '../contexts/AuthContext';
+import { personOutline, personAddOutline, checkmarkCircle } from 'ionicons/icons';
 import { getMyFriends, type FriendWithUser } from '../services/friend';
 import { createChat } from '../services/chat';
 import type { User } from '../types/database';
@@ -27,23 +28,28 @@ import type { User } from '../types/database';
 const NewChat: React.FC = () => {
   const { t } = useTranslation();
   const history = useHistory();
-  const { profile } = useAuthContext();
+  const location = useLocation();
   const [contacts, setContacts] = useState<User[]>([]);
   const [filteredContacts, setFilteredContacts] = useState<User[]>([]);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [searchText, setSearchText] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [isCreating, setIsCreating] = useState(false);
 
-  const loadContacts = useCallback(async () => {
-    // Get accepted friends only
-    const { friends } = await getMyFriends();
+  // Pre-select a user if navigated from Friends with ?add=userId
+  const preselectedId = new URLSearchParams(location.search).get('add');
 
-    // Extract user from each friendship
+  const loadContacts = useCallback(async () => {
+    const { friends } = await getMyFriends();
     const friendUsers = friends.map((f: FriendWithUser) => f.user);
     setContacts(friendUsers);
     setFilteredContacts(friendUsers);
     setIsLoading(false);
-  }, []);
+
+    if (preselectedId) {
+      setSelectedIds(new Set([preselectedId]));
+    }
+  }, [preselectedId]);
 
   useEffect(() => {
     loadContacts();
@@ -64,14 +70,29 @@ const NewChat: React.FC = () => {
     setFilteredContacts(filtered);
   }, [searchText, contacts]);
 
-  const handleSelectContact = async (contact: User) => {
-    if (isCreating) return;
+  const toggleContact = (contactId: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(contactId)) {
+        next.delete(contactId);
+      } else {
+        next.add(contactId);
+      }
+      return next;
+    });
+  };
+
+  const handleCreateChat = async () => {
+    if (isCreating || selectedIds.size === 0) return;
 
     setIsCreating(true);
 
+    const memberIds = Array.from(selectedIds);
+    const isGroup = memberIds.length > 1;
+
     const { chat, error } = await createChat({
-      memberIds: [contact.id],
-      isGroup: false,
+      memberIds,
+      isGroup,
     });
 
     if (error) {
@@ -109,7 +130,7 @@ const NewChat: React.FC = () => {
           <div className="loading-state">
             <IonSpinner name="crescent" />
           </div>
-        ) : filteredContacts.length === 0 ? (
+        ) : filteredContacts.length === 0 && contacts.length === 0 ? (
           <div className="empty-state">
             <IonIcon icon={personOutline} className="empty-icon" />
             <h2>{t('chat.noFriends')}</h2>
@@ -121,34 +142,59 @@ const NewChat: React.FC = () => {
           </div>
         ) : (
           <>
-            <p className="section-label">{t('chat.selectFriend')}</p>
+            {selectedIds.size > 0 && (
+              <div className="selected-chips">
+                {contacts
+                  .filter((c) => selectedIds.has(c.id))
+                  .map((c) => (
+                    <button
+                      key={c.id}
+                      className="selected-chip"
+                      onClick={() => toggleContact(c.id)}
+                    >
+                      <span className="chip-name">{c.display_name}</span>
+                      <span className="chip-remove">&times;</span>
+                    </button>
+                  ))}
+              </div>
+            )}
+
+            <p className="section-label">{t('chat.selectFriends')}</p>
             <IonList className="contact-list">
-              {filteredContacts.map((contact) => (
-                <IonItem
-                  key={contact.id}
-                  button
-                  detail={false}
-                  className="contact-item"
-                  onClick={() => handleSelectContact(contact)}
-                  disabled={isCreating}
-                >
-                  <IonAvatar slot="start" className="contact-avatar">
-                    {contact.avatar_url ? (
-                      <img src={contact.avatar_url} alt={contact.display_name || ''} />
-                    ) : (
-                      <div className="avatar-placeholder">
-                        {contact.display_name?.charAt(0)?.toUpperCase() || '?'}
-                      </div>
-                    )}
-                  </IonAvatar>
-                  <IonLabel>
-                    <h2 className="contact-name">
-                      {contact.display_name || t('dashboard.unnamed')}
-                    </h2>
-                    <p className="contact-zemi">{contact.zemi_number}</p>
-                  </IonLabel>
-                </IonItem>
-              ))}
+              {filteredContacts.map((contact) => {
+                const isSelected = selectedIds.has(contact.id);
+                return (
+                  <IonItem
+                    key={contact.id}
+                    button
+                    detail={false}
+                    className={`contact-item ${isSelected ? 'selected' : ''}`}
+                    onClick={() => toggleContact(contact.id)}
+                    disabled={isCreating}
+                  >
+                    <IonAvatar slot="start" className="contact-avatar">
+                      {contact.avatar_url ? (
+                        <img src={contact.avatar_url} alt={contact.display_name || ''} />
+                      ) : (
+                        <div className="avatar-placeholder">
+                          {contact.display_name?.charAt(0)?.toUpperCase() || '?'}
+                        </div>
+                      )}
+                    </IonAvatar>
+                    <IonLabel>
+                      <h2 className="contact-name">
+                        {contact.display_name || t('dashboard.unnamed')}
+                      </h2>
+                      <p className="contact-zemi">{contact.zemi_number}</p>
+                    </IonLabel>
+                    <IonCheckbox
+                      slot="end"
+                      checked={isSelected}
+                      className="contact-checkbox"
+                    />
+                  </IonItem>
+                );
+              })}
             </IonList>
           </>
         )}
@@ -193,6 +239,33 @@ const NewChat: React.FC = () => {
             font-weight: 600;
           }
 
+          .selected-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+          }
+
+          .selected-chip {
+            display: flex;
+            align-items: center;
+            gap: 0.375rem;
+            background: hsl(var(--primary));
+            color: hsl(var(--primary-foreground));
+            border: none;
+            border-radius: 9999px;
+            padding: 0.375rem 0.75rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+          }
+
+          .chip-remove {
+            font-size: 1.1rem;
+            line-height: 1;
+            opacity: 0.8;
+          }
+
           .section-label {
             font-size: 0.875rem;
             font-weight: 600;
@@ -211,6 +284,7 @@ const NewChat: React.FC = () => {
           .contact-list {
             background: transparent;
             padding: 0;
+            padding-bottom: 5rem;
           }
 
           .contact-item {
@@ -222,6 +296,11 @@ const NewChat: React.FC = () => {
             margin-bottom: 0.5rem;
             border-radius: 1rem;
             overflow: hidden;
+          }
+
+          .contact-item.selected {
+            --background: hsla(var(--primary), 0.08);
+            outline: 2px solid hsl(var(--primary));
           }
 
           .contact-item::part(native) {
@@ -260,8 +339,45 @@ const NewChat: React.FC = () => {
             color: hsl(var(--muted-foreground));
             margin: 0;
           }
+
+          .contact-checkbox {
+            --size: 24px;
+            margin-right: 0.5rem;
+          }
+
+          .create-chat-footer {
+            padding: 0.75rem 1rem;
+            padding-bottom: calc(0.75rem + env(safe-area-inset-bottom, 0px));
+            background: hsl(var(--card));
+            border-top: 1px solid hsl(var(--border));
+          }
+
+          .create-chat-button {
+            --border-radius: 1rem;
+            font-weight: 700;
+            font-size: 1rem;
+            margin: 0;
+            height: 48px;
+          }
         `}</style>
       </IonContent>
+
+      {selectedIds.size > 0 && (
+        <IonFooter className="create-chat-footer">
+          <IonButton
+            expand="block"
+            className="create-chat-button glow-primary"
+            onClick={handleCreateChat}
+            disabled={isCreating}
+          >
+            {isCreating ? (
+              <IonSpinner name="crescent" />
+            ) : (
+              `${t('chat.createChat')} (${selectedIds.size})`
+            )}
+          </IonButton>
+        </IonFooter>
+      )}
     </IonPage>
   );
 };

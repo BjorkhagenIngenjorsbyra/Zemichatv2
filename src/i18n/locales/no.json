@@ -121,6 +121,8 @@
     "noChats": "Ingen chatter ennå",
     "startChatting": "Begynn å chatte med vennene dine",
     "selectFriend": "Velg en venn å chatte med",
+    "selectFriends": "Velg venner",
+    "createChat": "Opprett chat",
     "noFriends": "Ingen venner ennå",
     "addFriendsFirst": "Legg til venner for å begynne å chatte",
     "holdToRecord": "Trykk for å ta opp",
@@ -268,7 +270,9 @@
     "unfriendTitle": "Fjerne venn?",
     "unfriendMessage": "Er du sikker på at du vil fjerne {{name}} som venn?",
     "texterApprovalNote": "Venneforespørsler må godkjennes av din Team Owner",
-    "myTeam": "Mitt team"
+    "myTeam": "Mitt team",
+    "startNewChat": "Start ny chat",
+    "addToExistingChat": "Legg til i chat"
   },
   "ownerApprovals": {
     "title": "Venne-godkjenninger",
