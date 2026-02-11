@@ -749,6 +749,7 @@ const ChatView: React.FC = () => {
         ) : (
           <div
             className="messages-container"
+            data-testid="messages-container"
             style={keyboardHeight > 0 ? { paddingBottom: `${keyboardHeight}px` } : undefined}
           >
             {(() => {
@@ -765,7 +766,7 @@ const ChatView: React.FC = () => {
                       <span>{formatDateDivider(message.created_at)}</span>
                     </div>
                   )}
-                  <div className={`message-wrapper ${isOwn ? 'own' : 'other'}`}>
+                  <div className={`message-wrapper ${isOwn ? 'own' : 'other'}`} data-testid={`message-${message.id}`}>
                     <MessageBubble
                       message={message}
                       isOwn={isOwn}
@@ -986,6 +987,7 @@ const ChatView: React.FC = () => {
             <textarea
               ref={inputRef}
               className="message-input"
+              data-testid="message-input"
               placeholder={editingMessage ? t('contextMenu.editPlaceholder') : t('chat.typeMessage')}
               value={messageText}
               onChange={handleInputChange}
@@ -998,6 +1000,7 @@ const ChatView: React.FC = () => {
             <IonButton
               className="send-button"
               fill="clear"
+              data-testid="send-button"
               onClick={handleSend}
               disabled={!messageText.trim() || isSending}
             >

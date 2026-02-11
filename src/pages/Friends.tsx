@@ -214,7 +214,7 @@ const Friends: React.FC = () => {
                 <p>{t('friends.addFriendsHint')}</p>
               </div>
             ) : (
-              <IonList className="friends-list">
+              <IonList className="friends-list" data-testid="friends-list">
                 {friends.map((friend) => (
                   <FriendCard
                     key={friend.id}
@@ -291,7 +291,7 @@ const Friends: React.FC = () => {
           slot="fixed"
           className="safe-fab"
         >
-          <IonFabButton routerLink="/add-friend">
+          <IonFabButton routerLink="/add-friend" data-testid="add-friend-fab">
             <IonIcon icon={personAddOutline} />
           </IonFabButton>
         </IonFab>

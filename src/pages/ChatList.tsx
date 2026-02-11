@@ -284,6 +284,7 @@ const ChatList: React.FC = () => {
           button
           detail={false}
           className="chat-item"
+          data-testid={`chat-item-${chat.id}`}
           onClick={() => openChat(chat.id)}
           onContextMenu={(e) => {
             e.preventDefault();
@@ -400,7 +401,7 @@ const ChatList: React.FC = () => {
         {isLoading ? (
           <SkeletonLoader variant="chat-list" />
         ) : chats.length === 0 ? (
-          <div className="empty-state">
+          <div className="empty-state" data-testid="empty-chat-list">
             <EmptyStateIllustration type="no-chats" />
             <h2>{t('chat.noChats')}</h2>
             <p>{t('chat.startChatting')}</p>
@@ -459,7 +460,7 @@ const ChatList: React.FC = () => {
           slot="fixed"
           className="safe-fab"
         >
-          <IonFabButton onClick={openNewChat} className="new-chat-fab">
+          <IonFabButton onClick={openNewChat} className="new-chat-fab" data-testid="new-chat-fab">
             <IonIcon icon={add} />
           </IonFabButton>
         </IonFab>

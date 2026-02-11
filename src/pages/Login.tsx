@@ -44,7 +44,7 @@ const Login: React.FC = () => {
             <p className="auth-subtitle">{t('auth.loginTitle')}</p>
           </div>
 
-          <form onSubmit={handleSubmit} className="auth-form">
+          <form onSubmit={handleSubmit} className="auth-form" data-testid="login-form">
             {error && (
               <div className="auth-error">
                 <IonText color="danger">{error}</IonText>

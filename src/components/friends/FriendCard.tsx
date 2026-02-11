@@ -36,6 +36,7 @@ export const FriendCard: React.FC<FriendCardProps> = ({
         button={!!onClick}
         detail={false}
         className="friend-card"
+        data-testid={`friend-card-${user.id}`}
         onClick={onClick}
       >
         <IonAvatar slot="start" className="friend-avatar">

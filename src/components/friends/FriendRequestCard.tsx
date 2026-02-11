@@ -43,7 +43,7 @@ export const FriendRequestCard: React.FC<FriendRequestCardProps> = ({
   const needsOwnerApproval = addressee.role === UserRole.TEXTER;
 
   return (
-    <IonItem className="request-card">
+    <IonItem className="request-card" data-testid={`request-card-${friendshipId}`}>
       <IonAvatar slot="start" className="request-avatar">
         {displayUser.avatar_url ? (
           <img src={displayUser.avatar_url} alt={displayUser.display_name || ''} />

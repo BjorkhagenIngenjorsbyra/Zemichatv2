@@ -185,7 +185,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
         return (
           <>
             {message.content && (
-              <p className="message-content">
+              <p className="message-content" data-testid="message-content">
                 {renderTextWithMentions(message.content)}
               </p>
             )}
@@ -249,6 +249,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
       <div
         ref={bubbleRef}
         className={`message-bubble ${isOwn ? 'own' : 'other'} ${isJustSent ? 'message-just-sent' : ''} ${message.type === 'sticker' ? 'sticker-only' : ''}`}
+        data-testid={`message-bubble-${message.id}`}
         onClick={handleTap}
         onContextMenu={(e) => {
           e.preventDefault();
