@@ -60,7 +60,11 @@ const TexterLogin: React.FC = () => {
     });
 
     if (signInError) {
-      setError(signInError.message);
+      if (signInError.message === 'Account is deactivated') {
+        setError(t('texterLogin.accountDeactivated'));
+      } else {
+        setError(signInError.message);
+      }
       setIsLoading(false);
       return;
     }

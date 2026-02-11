@@ -77,12 +77,13 @@ export async function sendSosAlert(): Promise<{
     const location = await getCurrentLocation();
 
     // Create the SOS alert
+    // PostGIS geography columns require EWKT format via PostgREST
     const { data, error } = await supabase
       .from('sos_alerts')
       .insert({
         texter_id: user.id,
         location: location
-          ? { type: 'Point', coordinates: [location.lng, location.lat] }
+          ? `SRID=4326;POINT(${location.lng} ${location.lat})`
           : null,
       } as never)
       .select()
@@ -308,21 +309,47 @@ export async function acknowledgeSosAlert(
 }
 
 /**
+ * Parse a little-endian IEEE 754 double from a hex string at the given byte offset.
+ */
+function parseHexDouble(hex: string, byteOffset: number): number {
+  const hexOffset = byteOffset * 2;
+  const bytes = new Uint8Array(8);
+  for (let i = 0; i < 8; i++) {
+    bytes[i] = parseInt(hex.substring(hexOffset + i * 2, hexOffset + i * 2 + 2), 16);
+  }
+  return new DataView(bytes.buffer).getFloat64(0, true); // little-endian
+}
+
+/**
  * Parse location from SOS alert.
+ * Handles both GeoJSON objects and hex-encoded EWKB strings from PostgREST.
  */
 export function parseAlertLocation(
   alert: SosAlert
 ): Location | null {
   if (!alert.location) return null;
 
-  // Handle PostGIS point format
+  // Handle GeoJSON object format
   const loc = alert.location as { type?: string; coordinates?: number[] };
-
   if (loc.type === 'Point' && Array.isArray(loc.coordinates) && loc.coordinates.length >= 2) {
     return {
       lng: loc.coordinates[0],
       lat: loc.coordinates[1],
     };
+  }
+
+  // Handle hex EWKB string from PostgREST (e.g., "0101000020E6100000...")
+  if (typeof alert.location === 'string' && /^[0-9a-fA-F]+$/.test(alert.location)) {
+    const hex = alert.location.toLowerCase();
+    // EWKB Point with SRID: 01 01000020 E6100000 [16 hex X] [16 hex Y]
+    // Total: 2 + 8 + 8 + 16 + 16 = 50 hex chars
+    if (hex.length >= 50 && hex.startsWith('0101000020')) {
+      const lng = parseHexDouble(hex, 13); // byte 13 = after 01+01000020+E6100000
+      const lat = parseHexDouble(hex, 21); // byte 21 = after X
+      if (isFinite(lng) && isFinite(lat)) {
+        return { lng, lat };
+      }
+    }
   }
 
   return null;

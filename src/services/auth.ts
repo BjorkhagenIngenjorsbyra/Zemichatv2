@@ -47,12 +47,30 @@ export async function signUp({ email, password, displayName }: SignUpData): Prom
 
 /**
  * Sign in with email and password.
+ * After successful auth, checks if the user account is active.
  */
 export async function signIn({ email, password }: SignInData): Promise<AuthResult> {
   const { data, error } = await supabase.auth.signInWithPassword({
     email,
     password,
   });
+
+  if (data.user && !error) {
+    const { data: profile } = await supabase
+      .from('users')
+      .select('is_active')
+      .eq('id', data.user.id)
+      .single();
+
+    if (profile && profile.is_active === false) {
+      await supabase.auth.signOut();
+      return {
+        user: null,
+        session: null,
+        error: { message: 'Account is deactivated', name: 'AuthApiError', status: 403 } as AuthError,
+      };
+    }
+  }
 
   return {
     user: data.user,
@@ -64,6 +82,7 @@ export async function signIn({ email, password }: SignInData): Promise<AuthResul
 /**
  * Sign in as a Texter using Zemi-number and password.
  * Texters don't have email - they use a fake email based on their Zemi-number.
+ * After successful auth, checks if the user account is active.
  */
 export async function signInAsTexter({ zemiNumber, password }: TexterSignInData): Promise<AuthResult> {
   // Convert Zemi-number to fake email used during account creation
@@ -74,6 +93,23 @@ export async function signInAsTexter({ zemiNumber, password }: TexterSignInData)
     email: fakeEmail,
     password,
   });
+
+  if (data.user && !error) {
+    const { data: profile } = await supabase
+      .from('users')
+      .select('is_active')
+      .eq('id', data.user.id)
+      .single();
+
+    if (profile && profile.is_active === false) {
+      await supabase.auth.signOut();
+      return {
+        user: null,
+        session: null,
+        error: { message: 'Account is deactivated', name: 'AuthApiError', status: 403 } as AuthError,
+      };
+    }
+  }
 
   return {
     user: data.user,

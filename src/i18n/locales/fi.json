@@ -111,7 +111,8 @@
     "zemiPlaceholder": "ZEMI-XXX-XXX",
     "password": "Salasana",
     "loginButton": "Kirjaudu sisään",
-    "ownerLogin": "Kirjaudu Ownerina/Superina"
+    "ownerLogin": "Kirjaudu Ownerina/Superina",
+    "accountDeactivated": "Tili on poistettu käytöstä. Ota yhteyttä Team Owneriin."
   },
   "chat": {
     "newChat": "Uusi keskustelu",

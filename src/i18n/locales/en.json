@@ -111,7 +111,8 @@
     "zemiPlaceholder": "ZEMI-XXX-XXX",
     "password": "Password",
     "loginButton": "Log in",
-    "ownerLogin": "Log in as Owner/Super"
+    "ownerLogin": "Log in as Owner/Super",
+    "accountDeactivated": "Account is deactivated. Contact your Team Owner."
   },
   "chat": {
     "newChat": "New chat",

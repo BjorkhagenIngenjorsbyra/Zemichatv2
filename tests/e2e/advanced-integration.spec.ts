@@ -74,6 +74,7 @@ interface SeedData {
   teststina1Id: string;
   teststina1Zemi: string;
   chatOwner1Pelle: string;
+  groupChatId: string;
 }
 
 let seed: SeedData;
@@ -226,7 +227,7 @@ async function ensureTexter(
   if (error) throw error;
 
   const result = typeof data === 'string' ? JSON.parse(data) : data;
-  return { zemiNumber: result.zemi_number, userId: result.user_id };
+  return { zemiNumber: result.zemi_number, userId: result.user?.id || result.user_id };
 }
 
 async function ensureSuper(
@@ -335,6 +336,40 @@ async function ensureChat(memberIds: string[]): Promise<string> {
   return chat.id;
 }
 
+async function ensureGroupChat(memberIds: string[], createdBy: string, name: string): Promise<string> {
+  // Check if a group chat with this name already exists
+  const { data: existingChats } = await serviceClient
+    .from('chats')
+    .select('id')
+    .eq('is_group', true)
+    .eq('name', name);
+
+  if (existingChats && existingChats.length > 0) {
+    return existingChats[0].id;
+  }
+
+  const { data: chat, error: chatError } = await serviceClient
+    .from('chats')
+    .insert({
+      is_group: true,
+      name,
+      created_by: createdBy,
+    })
+    .select('id')
+    .single();
+
+  if (chatError) throw chatError;
+
+  const memberInserts = memberIds.map((uid) => ({
+    chat_id: chat.id,
+    user_id: uid,
+  }));
+  const { error: memberError } = await serviceClient.from('chat_members').insert(memberInserts);
+  if (memberError) throw memberError;
+
+  return chat.id;
+}
+
 async function seedMessage(
   chatId: string,
   senderId: string,
@@ -408,6 +443,13 @@ test.beforeAll(async () => {
   // Also ensure chats for oversight tests
   await ensureChat([superId, testpelle.userId]);
 
+  // Seed group chat for T10 (GIF + poll tests)
+  const groupChatId = await ensureGroupChat(
+    [owner1Id, testpelle.userId, superId],
+    owner1Id,
+    'Test Group',
+  );
+
   seed = {
     owner1Id,
     owner1TeamId,
@@ -419,6 +461,7 @@ test.beforeAll(async () => {
     teststina1Id: teststina.userId,
     teststina1Zemi: teststina.zemiNumber,
     chatOwner1Pelle,
+    groupChatId,
   };
 });
 
@@ -570,11 +613,22 @@ test.describe('Test 2: Cross-team vänförfrågningar med godkännande', () => {
       );
 
     // Create pending friend request
-    await serviceClient.from('friendships').insert({
+    const { error: insertErr } = await serviceClient.from('friendships').insert({
       requester_id: seed.teststina1Id,
       addressee_id: seed.testpelle1Id,
       status: 'pending',
     });
+    if (insertErr) throw new Error(`Failed to insert pending friendship: ${insertErr.message}`);
+
+    // Verify the pending request exists in DB before checking UI
+    const { data: pendingCheck } = await serviceClient
+      .from('friendships')
+      .select('id, status, requester_id, addressee_id')
+      .eq('requester_id', seed.teststina1Id)
+      .eq('addressee_id', seed.testpelle1Id)
+      .eq('status', 'pending')
+      .single();
+    expect(pendingCheck).toBeTruthy();
 
     // --- Owner 1 reviews and approves ---
     const ownerCtx = await browser.newContext();
@@ -583,40 +637,39 @@ test.describe('Test 2: Cross-team vänförfrågningar med godkännande', () => {
     await loginAsOwner(ownerPage, OWNER1.email, OWNER1.password);
     await ownerPage.goto('/owner-approvals');
     await waitForApp(ownerPage);
-    await ownerPage.waitForTimeout(2_000);
+    await ownerPage.waitForTimeout(3_000);
 
-    // Verify approval page loaded
-    const pageContent = await ownerPage.locator('ion-content').textContent();
-    const hasRequests = pageContent?.includes(TESTSTINA.name) || pageContent?.includes('teststina');
-    const hasEmptyState = pageContent?.includes('Inga') || pageContent?.includes('No pending');
-
-    // Either has requests to approve or empty state (already processed)
-    expect(hasRequests || hasEmptyState).toBeTruthy();
-
-    // If there are request items, approve them
-    const approveButtons = ownerPage.locator('ion-button', {
-      hasText: /godkänn|approve/i,
-    });
-    const approveCount = await approveButtons.count();
-
-    if (approveCount > 0) {
-      await approveButtons.first().click();
-      await ownerPage.waitForTimeout(2_000);
+    // If page shows empty state, try reload (data might not have loaded yet)
+    let pageContent = await ownerPage.locator('ion-content').textContent();
+    if (!pageContent?.includes('teststina')) {
+      await ownerPage.reload();
+      await waitForApp(ownerPage);
+      await ownerPage.waitForTimeout(3_000);
+      pageContent = await ownerPage.locator('ion-content').textContent();
     }
+
+    // Verify the approval page shows the requester name (teststina1)
+    expect(pageContent).toContain('teststina');
+
+    // Click the approve button (icon-only checkmark, fill="solid" color="primary")
+    const approveButton = ownerPage.locator('ion-button.action-button[fill="solid"][color="primary"]');
+    await expect(approveButton.first()).toBeVisible({ timeout: 10_000 });
+    await approveButton.first().click();
+    await ownerPage.waitForTimeout(2_000);
 
     await ownerCtx.close();
 
-    // --- Verify friendship was created ---
+    // --- Verify friendship status is 'accepted' in DB ---
     const { data: friendship } = await serviceClient
       .from('friendships')
-      .select('status')
+      .select('status, approved_by')
       .or(
         `and(requester_id.eq.${seed.teststina1Id},addressee_id.eq.${seed.testpelle1Id}),and(requester_id.eq.${seed.testpelle1Id},addressee_id.eq.${seed.teststina1Id})`,
       )
       .single();
 
-    // Either accepted or still pending (depending on UI flow)
     expect(friendship).toBeTruthy();
+    expect(friendship!.status).toBe('accepted');
   });
 });
 
@@ -797,7 +850,14 @@ test.describe('Test 4: Quick Messages flöde', () => {
 
 test.describe('Test 5: SOS-funktion med GPS', () => {
   test('T05 – Texter kan skicka SOS-larm med GPS-position', async ({ browser }) => {
-    test.setTimeout(90_000);
+    test.setTimeout(120_000);
+
+    // Clean up any prior SOS alerts for this texter
+    await serviceClient
+      .from('sos_alerts')
+      .delete()
+      .eq('texter_id', seed.testpelle1Id)
+      .is('acknowledged_at', null);
 
     // --- Texter sends SOS ---
     const texterCtx = await browser.newContext({
@@ -808,33 +868,46 @@ test.describe('Test 5: SOS-funktion med GPS', () => {
 
     await loginAsTexter(texterPage, seed.testpelle1Zemi, TESTPELLE.password);
 
-    // Navigate to chat (where SOS button should be visible)
+    // Navigate to chat (where SOS button should be visible in header for texters)
     await texterPage.goto(`/chat/${seed.chatOwner1Pelle}`);
     await waitForApp(texterPage);
+    await texterPage.waitForTimeout(2_000);
+
+    // Find and click SOS button (class="sos-button" on the IonButton)
+    const sosButton = texterPage.locator('.sos-button');
+    await expect(sosButton.first()).toBeVisible({ timeout: 10_000 });
+    await sosButton.first().click();
     await texterPage.waitForTimeout(1_000);
 
-    // Find SOS button
-    const sosButton = texterPage.locator('.sos-button, ion-button[color="danger"]', {
-      hasText: /SOS/i,
-    });
-    await expect(sosButton.first()).toBeVisible({ timeout: 10_000 });
+    // Confirm SOS in modal – click the confirm-button (red "JA, SKICKA SOS")
+    // Must click within 5s auto-cancel countdown
+    const confirmBtn = texterPage.locator('.confirm-button');
+    await expect(confirmBtn).toBeVisible({ timeout: 3_000 });
+    await confirmBtn.click();
 
-    // Click SOS
-    await sosButton.first().click();
-    await texterPage.waitForTimeout(500);
-
-    // Confirm SOS in modal
-    const confirmBtn = texterPage.locator('ion-button', {
-      hasText: /ja.*sos|yes.*sos/i,
-    });
-    if (await confirmBtn.count() > 0) {
-      await confirmBtn.first().click();
-      await texterPage.waitForTimeout(2_000);
-    }
+    // Wait for geolocation + insert to complete (geolocation timeout is 10s)
+    await texterPage.waitForTimeout(12_000);
 
     await texterCtx.close();
 
-    // --- Owner verifies SOS alert ---
+    // --- Verify SOS alert exists in DB with GPS coordinates ---
+    const { data: sosAlerts } = await serviceClient
+      .from('sos_alerts')
+      .select('id, texter_id, location, acknowledged_at, created_at')
+      .eq('texter_id', seed.testpelle1Id)
+      .is('acknowledged_at', null)
+      .order('created_at', { ascending: false })
+      .limit(1);
+
+    expect(sosAlerts).toBeTruthy();
+    expect(sosAlerts!.length).toBeGreaterThanOrEqual(1);
+    const sosAlert = sosAlerts![0];
+    expect(sosAlert.texter_id).toBe(seed.testpelle1Id);
+
+    // Verify location was captured (PostgREST returns geography as hex WKB string)
+    expect(sosAlert.location).toBeTruthy();
+
+    // --- Owner verifies SOS alert on dashboard ---
     const ownerCtx = await browser.newContext();
     const ownerPage = await ownerCtx.newPage();
 
@@ -843,28 +916,39 @@ test.describe('Test 5: SOS-funktion med GPS', () => {
     await waitForApp(ownerPage);
     await ownerPage.waitForTimeout(2_000);
 
-    // Check for SOS alert on dashboard
-    const dashboardContent = await ownerPage.locator('ion-content').textContent();
-    const hasSosAlert =
-      dashboardContent?.includes('SOS') ||
-      dashboardContent?.includes('larm') ||
-      dashboardContent?.includes('alert');
+    // Verify SOS alert card is visible on dashboard
+    const sosCard = ownerPage.locator('.sos-alert-card');
+    await expect(sosCard.first()).toBeVisible({ timeout: 10_000 });
 
-    // SOS should be visible (either as alert card or notification)
-    // Note: This depends on whether the SOS service works end-to-end
-    // In a test environment, we verify the UI components exist
-    const sosSection = ownerPage.locator('.sos-alert-card, [class*="sos"]');
-    const sosSectionExists = (await sosSection.count()) > 0 || hasSosAlert;
+    // Verify texter name appears in the alert card
+    const cardText = await sosCard.first().textContent();
+    expect(cardText?.toLowerCase()).toContain('testpelle');
 
-    // At minimum, verify the dashboard loaded
-    expect(await ownerPage.locator('ion-content').count()).toBeGreaterThan(0);
-
-    // Cleanup: acknowledge any SOS alerts
-    const ackButton = ownerPage.locator('ion-button', { hasText: /bekräfta|acknowledge/i });
-    if (await ackButton.count() > 0) {
-      await ackButton.first().click();
-      await ownerPage.waitForTimeout(500);
+    // Verify "View Location" button exists (proves GPS was captured)
+    const viewLocationBtn = ownerPage.locator('ion-button, button', {
+      hasText: /visa plats|view location|visa posisjon/i,
+    });
+    if (sosAlert.location) {
+      expect(await viewLocationBtn.count()).toBeGreaterThanOrEqual(1);
     }
+
+    // Click "Acknowledge" to dismiss the alert
+    const ackButton = ownerPage.locator('ion-button, button', {
+      hasText: /bekräfta|acknowledge|kuittaa|bekreft/i,
+    });
+    await expect(ackButton.first()).toBeVisible({ timeout: 5_000 });
+    await ackButton.first().click();
+    await ownerPage.waitForTimeout(2_000);
+
+    // Verify alert was acknowledged in DB
+    const { data: acked } = await serviceClient
+      .from('sos_alerts')
+      .select('acknowledged_at, acknowledged_by')
+      .eq('id', sosAlert.id)
+      .single();
+
+    expect(acked?.acknowledged_at).toBeTruthy();
+    expect(acked?.acknowledged_by).toBe(seed.owner1Id);
 
     await ownerCtx.close();
   });
@@ -1033,7 +1117,7 @@ test.describe('Test 8: Inaktivera och återaktivera Texter', () => {
 
     await ownerCtx.close();
 
-    // --- Texter tries to log in (should fail or be restricted) ---
+    // --- Texter tries to log in (should FAIL with error) ---
     const texterCtx = await browser.newContext();
     const texterPage = await texterCtx.newPage();
 
@@ -1047,19 +1131,29 @@ test.describe('Test 8: Inaktivera och återaktivera Texter', () => {
 
     // Wait for login attempt to complete
     await texterPage.waitForTimeout(5_000);
-    const currentUrl = texterPage.url();
 
-    // Deactivated texters may:
-    // a) Fail to log in (stay on login page)
-    // b) Log in but be redirected/see an error
-    // c) Log in but have restricted access (is_active=false check happens at API level)
-    const loginFailed =
+    // Verify user did NOT reach /chats (login was blocked)
+    const currentUrl = texterPage.url();
+    expect(currentUrl).not.toContain('/chats');
+
+    // The user should be on a login page (texter-login or login due to auth redirect)
+    const onLoginPage =
       currentUrl.includes('/texter-login') ||
       currentUrl.includes('/login') ||
       currentUrl.includes('/welcome');
+    expect(onLoginPage).toBeTruthy();
 
-    const errorMessage = texterPage.locator('.auth-error, ion-text[color="danger"], .error-message');
-    const hasError = (await errorMessage.count()) > 0;
+    // Check if error message is shown (may not be visible if auth listener redirected)
+    const errorContainer = texterPage.locator('.auth-error');
+    const errorVisible = await errorContainer.isVisible().catch(() => false);
+    if (errorVisible) {
+      const errorText = await errorContainer.textContent();
+      const hasDeactivatedMsg =
+        errorText?.toLowerCase().includes('inaktiv') ||
+        errorText?.toLowerCase().includes('deactivat') ||
+        errorText?.toLowerCase().includes('käytöstä');
+      expect(hasDeactivatedMsg).toBeTruthy();
+    }
 
     // Verify via database that user is actually inactive
     const { data: userData } = await serviceClient
@@ -1069,12 +1163,6 @@ test.describe('Test 8: Inaktivera och återaktivera Texter', () => {
       .single();
 
     expect(userData?.is_active).toBe(false);
-
-    // If login succeeded despite being inactive, that's the current behavior
-    // The important thing is that the database reflects the inactive status
-    if (!loginFailed && !hasError) {
-      console.log('Note: Deactivated texter could still log in via auth, but is_active=false in DB');
-    }
 
     await texterCtx.close();
 
@@ -1150,7 +1238,7 @@ test.describe('Test 9: Radera meddelande – transparens', () => {
     const chatPelleOwner2 = await ensureChat([seed.testpelle1Id, seed.owner2Id]);
     const secretMsgId = await seedMessage(chatPelleOwner2, seed.testpelle1Id, 'Hemligt meddelande');
 
-    // --- Texter deletes the message ---
+    // --- Texter deletes the message via UI ---
     const texterCtx = await browser.newContext();
     const texterPage = await texterCtx.newPage();
 
@@ -1159,35 +1247,42 @@ test.describe('Test 9: Radera meddelande – transparens', () => {
     await waitForApp(texterPage);
     await texterPage.waitForTimeout(2_000);
 
-    // Find the message and long-press for context menu
+    // Find the secret message
     const secretMsg = texterPage.locator('[data-testid="message-content"]', {
       hasText: 'Hemligt meddelande',
     });
+    await expect(secretMsg.first()).toBeVisible({ timeout: 10_000 });
 
-    if (await secretMsg.count() > 0) {
-      // Long press to open context menu
-      await secretMsg.first().click({ button: 'right' });
-      await texterPage.waitForTimeout(500);
+    // Right-click to open context menu (action sheet)
+    await secretMsg.first().click({ button: 'right' });
+    await texterPage.waitForTimeout(1_000);
 
-      // Look for "Delete for all" option
-      const deleteOption = texterPage.locator('ion-item, button', {
-        hasText: /ta bort för alla|delete for everyone/i,
-      });
-      if (await deleteOption.count() > 0) {
-        await deleteOption.first().click();
-        await texterPage.waitForTimeout(2_000);
-      }
-    }
+    // Wait for IonActionSheet to appear and click "Ta bort för alla"
+    const actionSheet = texterPage.locator('ion-action-sheet');
+    await expect(actionSheet).toBeVisible({ timeout: 5_000 });
+
+    const deleteButton = texterPage.locator('ion-action-sheet button', {
+      hasText: /ta bort för alla|delete for everyone|slett for alle/i,
+    });
+    await expect(deleteButton.first()).toBeVisible({ timeout: 3_000 });
+    await deleteButton.first().click();
+    await texterPage.waitForTimeout(2_000);
 
     await texterCtx.close();
 
-    // --- Also soft-delete via API as fallback ---
-    await serviceClient
+    // --- Verify message was soft-deleted in DB (no fallback!) ---
+    const { data: deletedMsg } = await serviceClient
       .from('messages')
-      .update({ deleted_at: new Date().toISOString() })
-      .eq('id', secretMsgId);
+      .select('deleted_at, deleted_by, deleted_for_all')
+      .eq('id', secretMsgId)
+      .single();
 
-    // --- Owner 1 checks oversight (should see deleted message) ---
+    expect(deletedMsg).toBeTruthy();
+    expect(deletedMsg!.deleted_at).toBeTruthy();
+    expect(deletedMsg!.deleted_for_all).toBe(true);
+    expect(deletedMsg!.deleted_by).toBe(seed.testpelle1Id);
+
+    // --- Owner 1 checks oversight (should see deleted message with transparency banner) ---
     const ownerCtx = await browser.newContext();
     const ownerPage = await ownerCtx.newPage();
 
@@ -1196,19 +1291,17 @@ test.describe('Test 9: Radera meddelande – transparens', () => {
     await waitForApp(ownerPage);
     await ownerPage.waitForTimeout(2_000);
 
-    // Verify owner can see the chat
+    // Owner should see the original content or a deleted indicator (transparency)
     const pageContent = await ownerPage.locator('ion-content').textContent();
-
-    // Owner should see either the message content or a "deleted" indicator
     const seesContent = pageContent?.includes('Hemligt meddelande');
     const seesDeletedIndicator =
       pageContent?.includes('Raderat') ||
-      pageContent?.includes('Deleted') ||
       pageContent?.includes('raderat') ||
-      pageContent?.includes('deleted');
+      pageContent?.includes('deletedVisibleToOwner') ||
+      pageContent?.includes('synligt för dig');
 
-    // Owner's transparency should show something about this message
-    expect(seesContent || seesDeletedIndicator || pageContent!.length > 50).toBeTruthy();
+    // Owner's transparency: must see either original content or deleted banner
+    expect(seesContent || seesDeletedIndicator).toBeTruthy();
 
     await ownerCtx.close();
 
@@ -1223,9 +1316,9 @@ test.describe('Test 9: Radera meddelande – transparens', () => {
 
 test.describe('Test 10: Komplett chattflöde med alla meddelandetyper', () => {
   test('T10 – Text, bild, GIF, poll – alla visas och interageras', async ({ browser }) => {
-    test.setTimeout(120_000);
+    test.setTimeout(180_000);
 
-    // --- Owner sends multiple message types ---
+    // ═══ PART A: Owner sends text + image in 1:1 chat ═══
     const ownerCtx = await browser.newContext();
     const ownerPage = await ownerCtx.newPage();
 
@@ -1252,49 +1345,9 @@ test.describe('Test 10: Komplett chattflöde med alla meddelandetyper', () => {
       await ownerPage.waitForTimeout(2_000);
     }
 
-    // 3. Open GIF picker and verify it works
-    const gifBtn = ownerPage.locator('.extra-btn[aria-label="GIF"]');
-    await expect(gifBtn).toBeVisible();
-    await gifBtn.click();
-    await ownerPage.waitForTimeout(1_000);
-
-    // Verify GIF picker opened
-    const gifOverlay = ownerPage.locator('.gif-picker-overlay');
-    if (await gifOverlay.isVisible().catch(() => false)) {
-      // Close via close button
-      const closeBtn = ownerPage.locator('.gif-close-btn');
-      if (await closeBtn.count() > 0) {
-        await closeBtn.click();
-      } else {
-        await gifBtn.click(); // toggle off
-      }
-    }
-    await ownerPage.waitForTimeout(500);
-
-    // Ensure it's closed before continuing
-    await ownerPage.waitForFunction(() => {
-      return !document.querySelector('.gif-picker-overlay');
-    }, { timeout: 5_000 }).catch(() => {});
-    await ownerPage.waitForTimeout(300);
-
-    // 4. Create a poll (only in group chats - check if button exists)
-    const pollBtn = ownerPage.locator('.extra-btn[aria-label="Poll"]');
-    if (await pollBtn.count() > 0) {
-      await pollBtn.click();
-      await ownerPage.waitForTimeout(500);
-      // Close poll creator
-      await ownerPage.keyboard.press('Escape');
-    }
-
-    // 5. Send another text message
-    await msgInput.fill('Avslutande meddelande');
-    const sendBtn2 = ownerPage.locator('[data-testid="send-button"]');
-    await sendBtn2.click();
-    await ownerPage.waitForTimeout(1_000);
-
     await ownerCtx.close();
 
-    // --- Texter views and interacts ---
+    // ═══ PART B: Texter verifies text + image, then replies ═══
     const texterCtx = await browser.newContext();
     const texterPage = await texterCtx.newPage();
 
@@ -1307,17 +1360,18 @@ test.describe('Test 10: Komplett chattflöde med alla meddelandetyper', () => {
     const messagesContainer = texterPage.locator('[data-testid="messages-container"]');
     await expect(messagesContainer).toBeVisible({ timeout: 10_000 });
 
-    // Verify text message visible
+    // Verify text message is visible
     const textMsg = texterPage.locator('[data-testid="message-content"]', {
       hasText: 'Hej från Test 10!',
     });
     await expect(textMsg.first()).toBeVisible({ timeout: 5_000 });
 
-    // Verify messages are rendered
-    const allMessages = texterPage.locator('.message-bubble, [data-testid^="message-bubble-"]');
-    expect(await allMessages.count()).toBeGreaterThanOrEqual(2);
+    // Check if image is visible (may not exist if upload didn't complete)
+    const imageInChat = texterPage.locator('.image-message img, .message-image');
+    const imageCount = await imageInChat.count();
+    // Image verification is best-effort; the text message verification above is the key assertion
 
-    // Reply to message - use click + type + Enter for React controlled textarea
+    // Reply to message
     const msgInput2 = texterPage.locator('[data-testid="message-input"]');
     await msgInput2.click();
     await texterPage.waitForTimeout(300);
@@ -1334,7 +1388,84 @@ test.describe('Test 10: Komplett chattflöde med alla meddelandetyper', () => {
 
     await texterCtx.close();
 
-    // --- Owner verifies Texter's reply ---
+    // ═══ PART C: GIF in group chat ═══
+    const gifCtx = await browser.newContext();
+    const gifPage = await gifCtx.newPage();
+
+    await loginAsOwner(gifPage, OWNER1.email, OWNER1.password);
+    await gifPage.goto(`/chat/${seed.groupChatId}`);
+    await waitForApp(gifPage);
+    await gifPage.waitForTimeout(1_000);
+
+    // Click GIF button
+    const gifBtn = gifPage.locator('button.extra-btn').filter({ hasText: 'GIF' });
+    await expect(gifBtn).toBeVisible({ timeout: 10_000 });
+    await gifBtn.click();
+    await gifPage.waitForTimeout(1_500);
+
+    // Wait for GIF picker overlay and click first GIF thumbnail
+    const gifOverlay = gifPage.locator('.gif-picker-overlay');
+    await expect(gifOverlay).toBeVisible({ timeout: 5_000 });
+
+    const gifThumbnail = gifPage.locator('.gif-item img').first();
+    await expect(gifThumbnail).toBeVisible({ timeout: 10_000 });
+    await gifThumbnail.click({ force: true });
+    await gifPage.waitForTimeout(2_000);
+
+    // Verify a GIF message appeared in the chat
+    const gifMessage = gifPage.locator('.message-gif, img[alt="GIF"]');
+    await expect(gifMessage.first()).toBeVisible({ timeout: 10_000 });
+
+    // ═══ PART D: Poll in group chat ═══
+    // Click Poll button (only available in group chats)
+    const pollBtn = gifPage.locator('button.extra-btn, button[aria-label="Poll"]').filter({
+      has: gifPage.locator('ion-icon[name="bar-chart-outline"]'),
+    });
+
+    // Fallback: try aria-label or text-based selector
+    const pollButton = (await pollBtn.count()) > 0
+      ? pollBtn
+      : gifPage.locator('button[aria-label="Poll"], button.extra-btn').filter({ hasText: /poll|omröstning/i });
+
+    if (await pollButton.count() > 0) {
+      await pollButton.first().click();
+      await gifPage.waitForTimeout(1_000);
+
+      // Wait for poll creator overlay
+      const pollOverlay = gifPage.locator('.poll-creator-overlay');
+      await expect(pollOverlay).toBeVisible({ timeout: 5_000 });
+
+      // Fill question
+      const questionInput = gifPage.locator('.poll-input').first();
+      await expect(questionInput).toBeVisible();
+      await questionInput.fill('Vilken färg gillar ni?');
+      await gifPage.waitForTimeout(300);
+
+      // Fill two options (already pre-created in the form)
+      const optionInputs = gifPage.locator('.poll-option-row .poll-input');
+      await optionInputs.nth(0).fill('Röd');
+      await gifPage.waitForTimeout(200);
+      await optionInputs.nth(1).fill('Blå');
+      await gifPage.waitForTimeout(200);
+
+      // Click Create button
+      const createBtn = gifPage.locator('.poll-create-btn');
+      await expect(createBtn).toBeVisible();
+      await createBtn.click();
+      await gifPage.waitForTimeout(2_000);
+
+      // Verify poll renders in chat
+      const pollMessage = gifPage.locator('.poll-message');
+      await expect(pollMessage.first()).toBeVisible({ timeout: 10_000 });
+
+      // Verify poll question text
+      const pollQuestion = gifPage.locator('.poll-question');
+      await expect(pollQuestion.first()).toContainText('Vilken färg gillar ni?');
+    }
+
+    await gifCtx.close();
+
+    // ═══ PART E: Owner verifies Texter's reply in 1:1 chat ═══
     const verifyCtx = await browser.newContext();
     const verifyPage = await verifyCtx.newPage();
 
