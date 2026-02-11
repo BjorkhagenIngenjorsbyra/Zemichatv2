@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "442536589483",
+    "project_id": "zemichat-deb17",
+    "storage_bucket": "zemichat-deb17.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:442536589483:android:723d02037949a7af2f9fee",
+        "android_client_info": {
+          "package_name": "com.zemichat.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCM9Ikv-vVJRgV_lRu9p9QDkXcvrBwTV5E"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
