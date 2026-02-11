@@ -297,13 +297,14 @@ const TexterDetail: React.FC = () => {
               <h3 className="section-title">{t('texterDetail.capabilities')}</h3>
               <IonList className="toggle-list">
                 {toggleItems.map((item) => (
-                  <IonItem key={item.field} className="toggle-item">
+                  <IonItem key={item.field} className="toggle-item" data-testid={`toggle-${item.field}`}>
                     <IonIcon icon={item.icon} slot="start" className="toggle-icon" />
                     <IonLabel>{item.label}</IonLabel>
                     <IonToggle
                       checked={item.value}
                       onIonChange={(e) => handleToggle(item.field, e.detail.checked)}
                       disabled={isSaving}
+                      data-testid={`toggle-switch-${item.field}`}
                     />
                   </IonItem>
                 ))}
@@ -321,6 +322,7 @@ const TexterDetail: React.FC = () => {
                 fill="outline"
                 onClick={() => setShowDeactivateAlert(true)}
                 disabled={isSaving}
+                data-testid="deactivate-btn"
               >
                 <IonIcon icon={banOutline} slot="start" />
                 {t('texterDetail.deactivate')}
@@ -331,6 +333,7 @@ const TexterDetail: React.FC = () => {
                 color="success"
                 onClick={() => setShowReactivateAlert(true)}
                 disabled={isSaving}
+                data-testid="reactivate-btn"
               >
                 <IonIcon icon={checkmarkCircleOutline} slot="start" />
                 {t('texterDetail.reactivate')}

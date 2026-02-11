@@ -12,6 +12,7 @@ import {
   IonBackButton,
   IonIcon,
   IonButton,
+  IonToast,
 } from '@ionic/react';
 import { send, searchOutline, arrowDown, createOutline, barChartOutline } from 'ionicons/icons';
 import { Keyboard } from '@capacitor/keyboard';
@@ -143,6 +144,9 @@ const ChatView: React.FC = () => {
 
   // Poll creator
   const [showPollCreator, setShowPollCreator] = useState(false);
+
+  // Permission denied toast
+  const [permissionToast, setPermissionToast] = useState<string | null>(null);
 
   // Full emoji picker (opened from "+" in reaction bar)
   const [showFullEmojiPicker, setShowFullEmojiPicker] = useState(false);
@@ -944,6 +948,10 @@ const ChatView: React.FC = () => {
             onImageSelect={handleImageSelect}
             onDocumentSelect={handleDocumentSelect}
             disabled={isSending}
+            imageBlocked={profile?.role === UserRole.TEXTER && texterSettings?.can_send_images === false}
+            documentBlocked={profile?.role === UserRole.TEXTER && texterSettings?.can_send_documents === false}
+            onImageBlocked={() => setPermissionToast(t('permissions.imageNotAllowed'))}
+            onDocumentBlocked={() => setPermissionToast(t('permissions.documentNotAllowed'))}
           />
 
           <button
@@ -1228,6 +1236,15 @@ const ChatView: React.FC = () => {
         isOpen={showPollCreator}
         onClose={() => setShowPollCreator(false)}
         onCreate={handlePollCreate}
+      />
+
+      <IonToast
+        isOpen={!!permissionToast}
+        message={permissionToast || ''}
+        duration={3000}
+        onDidDismiss={() => setPermissionToast(null)}
+        color="warning"
+        data-testid="permission-toast"
       />
     </IonPage>
   );

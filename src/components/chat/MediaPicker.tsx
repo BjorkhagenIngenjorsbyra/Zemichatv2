@@ -9,12 +9,20 @@ interface MediaPickerProps {
   onImageSelect: (file: File, caption?: string) => Promise<void>;
   onDocumentSelect: (file: File) => Promise<void>;
   disabled?: boolean;
+  imageBlocked?: boolean;
+  documentBlocked?: boolean;
+  onImageBlocked?: () => void;
+  onDocumentBlocked?: () => void;
 }
 
 const MediaPicker: React.FC<MediaPickerProps> = ({
   onImageSelect,
   onDocumentSelect,
   disabled = false,
+  imageBlocked = false,
+  documentBlocked = false,
+  onImageBlocked,
+  onDocumentBlocked,
 }) => {
   const { t } = useTranslation();
   const imageInputRef = useRef<HTMLInputElement>(null);
@@ -35,14 +43,29 @@ const MediaPicker: React.FC<MediaPickerProps> = ({
   const lastPanRef = useRef({ x: 0, y: 0 });
 
   const handleImageClick = () => {
+    if (imageBlocked) {
+      onImageBlocked?.();
+      setIsOpen(false);
+      return;
+    }
     imageInputRef.current?.click();
   };
 
   const handleDocumentClick = () => {
+    if (documentBlocked) {
+      onDocumentBlocked?.();
+      setIsOpen(false);
+      return;
+    }
     documentInputRef.current?.click();
   };
 
   const handleCameraClick = async () => {
+    if (imageBlocked) {
+      onImageBlocked?.();
+      setIsOpen(false);
+      return;
+    }
     setIsOpen(false);
 
     try {

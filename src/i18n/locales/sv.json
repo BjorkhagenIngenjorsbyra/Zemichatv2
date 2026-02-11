@@ -582,5 +582,11 @@
     "description": "Trygg kommunikation för din familj",
     "createAccount": "Skapa konto",
     "haveAccount": "Har redan konto? Logga in"
+  },
+  "permissions": {
+    "imageNotAllowed": "Du kan inte skicka bilder just nu. Din Team Owner har begränsat denna funktion.",
+    "voiceNotAllowed": "Du kan inte skicka röstmeddelanden just nu. Din Team Owner har begränsat denna funktion.",
+    "documentNotAllowed": "Du kan inte skicka dokument just nu. Din Team Owner har begränsat denna funktion.",
+    "locationNotAllowed": "Du kan inte dela din plats just nu. Din Team Owner har begränsat denna funktion."
   }
 }

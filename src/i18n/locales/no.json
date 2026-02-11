@@ -582,5 +582,11 @@
     "description": "Trygg kommunikasjon for familien din",
     "createAccount": "Opprett konto",
     "haveAccount": "Har du allerede en konto? Logg inn"
+  },
+  "permissions": {
+    "imageNotAllowed": "Du kan ikke sende bilder nå. Din Team Owner har begrenset denne funksjonen.",
+    "voiceNotAllowed": "Du kan ikke sende talemeldinger nå. Din Team Owner har begrenset denne funksjonen.",
+    "documentNotAllowed": "Du kan ikke sende dokumenter nå. Din Team Owner har begrenset denne funksjonen.",
+    "locationNotAllowed": "Du kan ikke dele posisjonen din nå. Din Team Owner har begrenset denne funksjonen."
   }
 }

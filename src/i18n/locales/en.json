@@ -582,5 +582,11 @@
     "description": "Safe communication for your family",
     "createAccount": "Create account",
     "haveAccount": "Already have an account? Log in"
+  },
+  "permissions": {
+    "imageNotAllowed": "You can't send images right now. Your Team Owner has restricted this feature.",
+    "voiceNotAllowed": "You can't send voice messages right now. Your Team Owner has restricted this feature.",
+    "documentNotAllowed": "You can't send documents right now. Your Team Owner has restricted this feature.",
+    "locationNotAllowed": "You can't share your location right now. Your Team Owner has restricted this feature."
   }
 }

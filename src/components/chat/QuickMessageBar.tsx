@@ -46,7 +46,7 @@ export const QuickMessageBar: React.FC<QuickMessageBarProps> = ({
   }
 
   return (
-    <div className="quick-message-bar">
+    <div className="quick-message-bar" data-testid="quick-message-bar">
       {isLoading ? (
         <div className="loading-indicator">
           <IonSpinner name="dots" />
@@ -61,6 +61,7 @@ export const QuickMessageBar: React.FC<QuickMessageBarProps> = ({
               className={`quick-message-button ${sendingId === msg.id ? 'sending' : ''}`}
               onClick={() => handleSend(msg)}
               disabled={disabled || !!sendingId}
+              data-testid={`quick-msg-btn-${msg.id}`}
             >
               {msg.content}
             </IonButton>

@@ -154,7 +154,7 @@ export const QuietHoursManager: React.FC<QuietHoursManagerProps> = ({
   }
 
   return (
-    <div className="quiet-hours-manager">
+    <div className="quiet-hours-manager" data-testid="quiet-hours-manager">
       <div className="manager-header">
         <h3 className="section-title">{t('quietHours.title')}</h3>
       </div>
@@ -169,6 +169,7 @@ export const QuietHoursManager: React.FC<QuietHoursManagerProps> = ({
             checked={isEnabled}
             onIonChange={(e) => handleToggleEnabled(e.detail.checked)}
             disabled={isSaving}
+            data-testid="quiet-hours-toggle"
           />
         </IonItem>
 
@@ -201,6 +202,7 @@ export const QuietHoursManager: React.FC<QuietHoursManagerProps> = ({
                 className={`day-button ${selectedDays.includes(day.value) ? 'selected' : ''}`}
                 onClick={() => handleToggleDay(day.value)}
                 disabled={isSaving}
+                data-testid={`day-button-${day.value}`}
               >
                 {t(day.labelKey).charAt(0)}
               </button>

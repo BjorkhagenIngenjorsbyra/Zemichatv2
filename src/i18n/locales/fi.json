@@ -582,5 +582,11 @@
     "description": "Turvallista viestintää perheellesi",
     "createAccount": "Luo tili",
     "haveAccount": "Onko sinulla jo tili? Kirjaudu sisään"
+  },
+  "permissions": {
+    "imageNotAllowed": "Et voi lähettää kuvia juuri nyt. Team Ownerisi on rajoittanut tätä toimintoa.",
+    "voiceNotAllowed": "Et voi lähettää ääniviestejä juuri nyt. Team Ownerisi on rajoittanut tätä toimintoa.",
+    "documentNotAllowed": "Et voi lähettää asiakirjoja juuri nyt. Team Ownerisi on rajoittanut tätä toimintoa.",
+    "locationNotAllowed": "Et voi jakaa sijaintiasi juuri nyt. Team Ownerisi on rajoittanut tätä toimintoa."
   }
 }

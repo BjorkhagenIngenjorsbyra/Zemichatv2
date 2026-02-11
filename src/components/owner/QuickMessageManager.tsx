@@ -143,7 +143,7 @@ export const QuickMessageManager: React.FC<QuickMessageManagerProps> = ({
   };
 
   return (
-    <div className="quick-message-manager">
+    <div className="quick-message-manager" data-testid="quick-message-manager">
       <div className="manager-header">
         <h3 className="section-title">{t('quickMessages.title')}</h3>
         {!isAdding && (
@@ -151,6 +151,7 @@ export const QuickMessageManager: React.FC<QuickMessageManagerProps> = ({
             fill="clear"
             size="small"
             onClick={() => setIsAdding(true)}
+            data-testid="quick-msg-add-btn"
           >
             <IonIcon icon={addOutline} slot="start" />
             {t('quickMessages.add')}
@@ -165,6 +166,7 @@ export const QuickMessageManager: React.FC<QuickMessageManagerProps> = ({
             onIonInput={(e) => setNewMessage(e.detail.value || '')}
             placeholder={t('quickMessages.placeholder')}
             className="message-input"
+            data-testid="quick-msg-input"
           />
           <div className="form-actions">
             <IonButton
@@ -182,6 +184,7 @@ export const QuickMessageManager: React.FC<QuickMessageManagerProps> = ({
               size="small"
               onClick={handleAdd}
               disabled={!newMessage.trim() || isSaving}
+              data-testid="quick-msg-save-btn"
             >
               {isSaving ? <IonSpinner name="crescent" /> : t('common.save')}
             </IonButton>
@@ -214,7 +217,7 @@ export const QuickMessageManager: React.FC<QuickMessageManagerProps> = ({
             onIonItemReorder={handleReorder}
           >
             {messages.map((msg) => (
-              <IonItem key={msg.id} className="message-item">
+              <IonItem key={msg.id} className="message-item" data-testid={`quick-msg-item-${msg.id}`}>
                 <IonReorder slot="start">
                   <IonIcon icon={reorderThreeOutline} />
                 </IonReorder>
