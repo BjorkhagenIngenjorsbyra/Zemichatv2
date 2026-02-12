@@ -53,3 +53,15 @@ nul
 # Supabase local
 supabase/.branches/
 supabase/.temp/
+
+# Firebase config (contains API keys)
+google-services.json
+
+# Temp auth files
+**/tmp_auth.json
+
+# Release builds
+builds/
+
+# Test results
+test-results/
