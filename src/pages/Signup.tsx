@@ -13,6 +13,7 @@ import {
 } from '@ionic/react';
 import { arrowBack } from 'ionicons/icons';
 import { signUp } from '../services/auth';
+import '../theme/auth-forms.css';
 
 const Signup: React.FC = () => {
   const { t } = useTranslation();
@@ -70,10 +71,10 @@ const Signup: React.FC = () => {
   return (
     <IonPage>
       <IonContent className="ion-padding" fullscreen>
-        <div className="auth-container">
+        <div className="auth-container" style={{ justifyContent: 'flex-start', paddingTop: '1rem' }}>
           <IonButton
             fill="clear"
-            className="back-button"
+            className="auth-back-button"
             onClick={() => history.goBack()}
           >
             <IonIcon icon={arrowBack} slot="start" />
@@ -81,7 +82,12 @@ const Signup: React.FC = () => {
           </IonButton>
 
           <div className="auth-header">
-            <h1 className="auth-title">{t('auth.signupTitle')}</h1>
+            <img
+              src="/favicon-192.png"
+              alt="Zemichat"
+              className="auth-logo"
+            />
+            <h1 className="auth-title" style={{ fontSize: '2rem' }}>{t('auth.signupTitle')}</h1>
             <p className="auth-subtitle">{t('auth.signupSubtitle')}</p>
           </div>
 
@@ -155,115 +161,13 @@ const Signup: React.FC = () => {
             <IonButton
               type="submit"
               expand="block"
-              className="auth-button glow-primary"
+              className="auth-button"
               disabled={isLoading || !consentAccepted}
             >
               {isLoading ? <IonSpinner name="crescent" /> : t('auth.signup')}
             </IonButton>
           </form>
         </div>
-
-        <style>{`
-          .auth-container {
-            display: flex;
-            flex-direction: column;
-            min-height: 100%;
-            max-width: 400px;
-            margin: 0 auto;
-            padding: 1rem 2rem 2rem;
-          }
-
-          .back-button {
-            --color: hsl(var(--muted-foreground));
-            align-self: flex-start;
-            margin-left: -0.5rem;
-            margin-bottom: 1rem;
-          }
-
-          .auth-header {
-            text-align: center;
-            margin-bottom: 2rem;
-          }
-
-          .auth-title {
-            font-size: 2rem;
-            font-weight: 800;
-            color: hsl(var(--primary));
-            margin: 0 0 0.5rem 0;
-            letter-spacing: -0.02em;
-          }
-
-          .auth-subtitle {
-            font-size: 1rem;
-            color: hsl(var(--muted-foreground));
-            margin: 0;
-            line-height: 1.5;
-          }
-
-          .auth-form {
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-          }
-
-          .auth-error {
-            background: hsl(var(--destructive) / 0.1);
-            border: 1px solid hsl(var(--destructive) / 0.3);
-            border-radius: 0.75rem;
-            padding: 0.75rem 1rem;
-            margin-bottom: 0.5rem;
-          }
-
-          .input-group {
-            margin-bottom: 0.25rem;
-          }
-
-          .auth-input {
-            --background: hsl(var(--card));
-            --color: hsl(var(--foreground));
-            --placeholder-color: hsl(var(--muted-foreground));
-            --border-color: hsl(var(--border));
-            --border-radius: 1rem;
-          }
-
-          .auth-button {
-            --background: hsl(var(--primary));
-            --color: hsl(var(--primary-foreground));
-            height: 3rem;
-            margin-top: 0.5rem;
-          }
-
-          .consent-row {
-            display: flex;
-            align-items: flex-start;
-            gap: 0.75rem;
-            margin-top: 0.5rem;
-          }
-
-          .consent-checkbox {
-            --size: 20px;
-            --checkbox-background-checked: hsl(var(--primary));
-            --border-color: hsl(var(--border));
-            --border-color-checked: hsl(var(--primary));
-            margin-top: 2px;
-            flex-shrink: 0;
-          }
-
-          .consent-label {
-            font-size: 0.8rem;
-            color: hsl(var(--muted-foreground));
-            line-height: 1.5;
-          }
-
-          .consent-label a {
-            color: hsl(var(--primary));
-            text-decoration: none;
-          }
-
-          .consent-label a:hover {
-            text-decoration: underline;
-          }
-        `}</style>
       </IonContent>
     </IonPage>
   );

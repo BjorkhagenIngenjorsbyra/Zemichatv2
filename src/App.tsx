@@ -213,12 +213,12 @@ const App: React.FC = () => (
 
             {/* Default redirect */}
             <Route exact path="/">
-              <Redirect to="/welcome" />
+              <Redirect to="/login" />
             </Route>
 
             {/* Catch-all redirect */}
             <Route>
-              <Redirect to="/welcome" />
+              <Redirect to="/login" />
             </Route>
           </Switch>
         </IonRouterOutlet>

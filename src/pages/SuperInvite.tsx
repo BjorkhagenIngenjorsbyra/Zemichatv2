@@ -13,6 +13,7 @@ import {
 import { signUp } from '../services/auth';
 import { getInvitationByToken, claimInvitation, type InvitationPublicInfo } from '../services/invitations';
 import { PasswordStrength } from '../components/PasswordStrength';
+import '../theme/auth-forms.css';
 
 const SuperInvite: React.FC = () => {
   const { t } = useTranslation();
@@ -114,17 +115,9 @@ const SuperInvite: React.FC = () => {
     return (
       <IonPage>
         <IonContent className="ion-padding" fullscreen>
-          <div className="invite-loading">
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100%' }}>
             <IonSpinner name="crescent" />
           </div>
-          <style>{`
-            .invite-loading {
-              display: flex;
-              align-items: center;
-              justify-content: center;
-              min-height: 100%;
-            }
-          `}</style>
         </IonContent>
       </IonPage>
     );
@@ -134,40 +127,14 @@ const SuperInvite: React.FC = () => {
     return (
       <IonPage>
         <IonContent className="ion-padding" fullscreen>
-          <div className="invite-error-container">
-            <div className="invite-error-icon">😔</div>
-            <h2>{t('invite.invalidToken')}</h2>
-            <p>{loadError}</p>
-            <IonButton expand="block" onClick={() => history.push('/login')}>
+          <div className="auth-container" style={{ alignItems: 'center', textAlign: 'center' }}>
+            <div style={{ fontSize: '64px', marginBottom: '16px' }}>😔</div>
+            <h2 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '8px' }}>{t('invite.invalidToken')}</h2>
+            <p style={{ color: 'hsl(var(--muted-foreground))', marginBottom: '24px' }}>{loadError}</p>
+            <IonButton expand="block" className="auth-button" onClick={() => history.push('/login')}>
               {t('auth.login')}
             </IonButton>
           </div>
-          <style>{`
-            .invite-error-container {
-              display: flex;
-              flex-direction: column;
-              align-items: center;
-              justify-content: center;
-              min-height: 100%;
-              max-width: 400px;
-              margin: 0 auto;
-              padding: 2rem;
-              text-align: center;
-            }
-            .invite-error-icon {
-              font-size: 64px;
-              margin-bottom: 16px;
-            }
-            .invite-error-container h2 {
-              font-size: 1.5rem;
-              font-weight: 700;
-              margin-bottom: 8px;
-            }
-            .invite-error-container p {
-              color: hsl(0 0% 45%);
-              margin-bottom: 24px;
-            }
-          `}</style>
         </IonContent>
       </IonPage>
     );
@@ -176,11 +143,11 @@ const SuperInvite: React.FC = () => {
   return (
     <IonPage>
       <IonContent className="ion-padding" fullscreen>
-        <div className="auth-container">
-          <div className="invite-header">
-            <div className="invite-icon">🎉</div>
-            <h1 className="invite-title">{t('invite.claimTitle')}</h1>
-            <p className="invite-desc">
+        <div className="auth-container" style={{ justifyContent: 'flex-start', paddingTop: '1rem' }}>
+          <div className="auth-header" style={{ paddingTop: '2rem' }}>
+            <div style={{ fontSize: '56px', marginBottom: '12px' }}>🎉</div>
+            <h1 className="auth-title" style={{ fontSize: '1.75rem' }}>{t('invite.claimTitle')}</h1>
+            <p className="auth-subtitle">
               {t('invite.claimDesc', {
                 inviter: invitation?.inviter_name || '',
                 team: invitation?.team_name || '',
@@ -259,99 +226,13 @@ const SuperInvite: React.FC = () => {
             <IonButton
               type="submit"
               expand="block"
-              className="auth-button glow-primary"
+              className="auth-button"
               disabled={isLoading || !consentAccepted}
             >
               {isLoading ? <IonSpinner name="crescent" /> : t('invite.claimButton')}
             </IonButton>
           </form>
         </div>
-
-        <style>{`
-          .auth-container {
-            display: flex;
-            flex-direction: column;
-            min-height: 100%;
-            max-width: 400px;
-            margin: 0 auto;
-            padding: 1rem 2rem 2rem;
-          }
-          .invite-header {
-            text-align: center;
-            margin-bottom: 2rem;
-            padding-top: 2rem;
-          }
-          .invite-icon {
-            font-size: 56px;
-            margin-bottom: 12px;
-          }
-          .invite-title {
-            font-size: 1.75rem;
-            font-weight: 800;
-            color: hsl(var(--primary));
-            margin: 0 0 0.5rem 0;
-          }
-          .invite-desc {
-            font-size: 1rem;
-            color: hsl(var(--muted-foreground));
-            margin: 0;
-            line-height: 1.5;
-          }
-          .auth-form {
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-          }
-          .auth-error {
-            background: hsl(var(--destructive) / 0.1);
-            border: 1px solid hsl(var(--destructive) / 0.3);
-            border-radius: 0.75rem;
-            padding: 0.75rem 1rem;
-            margin-bottom: 0.5rem;
-          }
-          .input-group {
-            margin-bottom: 0.25rem;
-          }
-          .auth-input {
-            --background: hsl(var(--card));
-            --color: hsl(var(--foreground));
-            --placeholder-color: hsl(var(--muted-foreground));
-            --border-color: hsl(var(--border));
-            --border-radius: 1rem;
-          }
-          .auth-button {
-            --background: hsl(var(--primary));
-            --color: hsl(var(--primary-foreground));
-            height: 3rem;
-            margin-top: 0.5rem;
-          }
-          .consent-row {
-            display: flex;
-            align-items: flex-start;
-            gap: 0.75rem;
-            margin-top: 0.5rem;
-          }
-          .consent-checkbox {
-            --size: 20px;
-            --checkbox-background-checked: hsl(var(--primary));
-            --border-color: hsl(var(--border));
-            --border-color-checked: hsl(var(--primary));
-            margin-top: 2px;
-            flex-shrink: 0;
-          }
-          .consent-label {
-            font-size: 0.8rem;
-            color: hsl(var(--muted-foreground));
-            line-height: 1.5;
-          }
-          .consent-label a {
-            color: hsl(var(--primary));
-            text-decoration: none;
-          }
-          .consent-label a:hover {
-            text-decoration: underline;
-          }
-        `}</style>
       </IonContent>
     </IonPage>
   );

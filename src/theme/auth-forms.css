@@ -1,0 +1,268 @@
+/**
+ * Shared auth form styles for Login, Signup, TexterLogin, SuperInvite, etc.
+ * Import this in each auth page to avoid duplication.
+ */
+
+.auth-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 100%;
+  max-width: 400px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.auth-logo {
+  display: block;
+  width: 88px;
+  height: 88px;
+  margin: 0 auto 1rem;
+  border-radius: 1.25rem;
+}
+
+.auth-header {
+  text-align: center;
+  margin-bottom: 2.5rem;
+}
+
+.auth-title {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: hsl(var(--primary));
+  margin: 0 0 0.5rem 0;
+  letter-spacing: -0.02em;
+}
+
+.auth-subtitle {
+  font-size: 1rem;
+  color: hsl(var(--muted-foreground));
+  margin: 0;
+  line-height: 1.5;
+}
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.auth-error {
+  background: hsl(var(--destructive) / 0.1);
+  border: 1px solid hsl(var(--destructive) / 0.3);
+  border-radius: 0.75rem;
+  padding: 0.75rem 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.input-group {
+  margin-bottom: 0.25rem;
+}
+
+/* ── Input fields ── */
+.auth-input {
+  --background: transparent !important;
+  --color: hsl(var(--foreground)) !important;
+  --placeholder-color: hsl(var(--muted-foreground)) !important;
+  --border-color: rgba(124, 58, 237, 0.3) !important;
+  --border-radius: 1rem !important;
+  --border-width: 1px !important;
+  --highlight-color-focused: hsl(var(--primary)) !important;
+  --highlight-color-valid: hsl(var(--primary)) !important;
+  background: transparent !important;
+  border-radius: 1rem;
+  overflow: hidden;
+}
+
+/* Kill any inner white backgrounds from Ionic's native input wrapper */
+.auth-input .native-input,
+.auth-input input,
+.auth-input .input-wrapper,
+.auth-input .label-text-wrapper,
+.auth-input .native-wrapper {
+  background: transparent !important;
+  color: hsl(var(--foreground)) !important;
+}
+
+/* Outline fill mode: Ionic wraps the input in an extra container */
+.auth-input.input-fill-outline {
+  --background: transparent !important;
+  background: transparent !important;
+}
+
+.auth-input.input-fill-outline .input-outline {
+  border-color: rgba(124, 58, 237, 0.3) !important;
+  border-radius: 1rem !important;
+  background: transparent !important;
+}
+
+/* Focused state: brighter border */
+.auth-input.has-focus .input-outline,
+.auth-input.input-fill-outline.has-focus .input-outline {
+  border-color: hsl(var(--primary)) !important;
+}
+
+/* The three outline segments (start, notch, end) */
+.auth-input .input-outline-start,
+.auth-input .input-outline-notch,
+.auth-input .input-outline-end {
+  border-color: rgba(124, 58, 237, 0.3) !important;
+  background: transparent !important;
+}
+
+.auth-input.has-focus .input-outline-start,
+.auth-input.has-focus .input-outline-notch,
+.auth-input.has-focus .input-outline-end {
+  border-color: hsl(var(--primary)) !important;
+}
+
+/* ── Primary button (LOGGA IN / SIGNUP) ── */
+.auth-button {
+  --background: #7c3aed !important;
+  --background-hover: #6d28d9 !important;
+  --background-activated: #6d28d9 !important;
+  --background-focused: #6d28d9 !important;
+  --color: #ffffff !important;
+  --border-radius: 9999px !important;
+  --box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3) !important;
+  --padding-start: 1.5rem !important;
+  --padding-end: 1.5rem !important;
+  height: 3rem;
+  margin-top: 0.5rem;
+  border-radius: 9999px;
+  overflow: hidden;
+}
+
+.auth-button::part(native) {
+  background: #7c3aed !important;
+  color: #ffffff !important;
+  border-radius: 9999px !important;
+  box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3) !important;
+}
+
+/* ── Secondary / outline button (SKAPA KONTO) ── */
+.auth-secondary-button {
+  --background: transparent !important;
+  --background-hover: rgba(124, 58, 237, 0.1) !important;
+  --background-activated: rgba(124, 58, 237, 0.15) !important;
+  --border-color: rgba(124, 58, 237, 0.5) !important;
+  --border-width: 1.5px !important;
+  --color: hsl(var(--primary)) !important;
+  --border-radius: 9999px !important;
+  --box-shadow: none !important;
+  height: 3rem;
+  font-weight: 600;
+  border-radius: 9999px;
+  overflow: hidden;
+}
+
+.auth-secondary-button::part(native) {
+  background: transparent !important;
+  border: 1.5px solid rgba(124, 58, 237, 0.5) !important;
+  border-radius: 9999px !important;
+  color: hsl(var(--primary)) !important;
+}
+
+/* ── Links ── */
+.auth-links {
+  display: flex;
+  justify-content: center;
+  margin-top: 0.5rem;
+}
+
+.auth-link {
+  --color: hsl(var(--muted-foreground));
+  font-size: 0.875rem;
+}
+
+.auth-texter-link {
+  --color: hsl(var(--muted-foreground));
+  font-size: 0.875rem;
+  margin-top: 0.5rem;
+}
+
+/* ── Divider ── */
+.auth-divider {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin: 1rem 0;
+}
+
+.auth-divider::before,
+.auth-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: hsl(var(--border));
+}
+
+.auth-divider span {
+  color: hsl(var(--muted-foreground));
+  font-size: 0.875rem;
+}
+
+/* ── Legal links ── */
+.auth-legal-links {
+  text-align: center;
+  font-size: 0.75rem;
+  color: hsl(var(--muted-foreground));
+  margin-top: 1.5rem;
+}
+
+.auth-legal-links a {
+  color: hsl(var(--muted-foreground));
+  text-decoration: none;
+}
+
+.auth-legal-links a:hover {
+  text-decoration: underline;
+}
+
+/* ── Back button ── */
+.auth-back-button {
+  --color: hsl(var(--muted-foreground));
+  align-self: flex-start;
+  margin-left: -0.5rem;
+  margin-bottom: 1rem;
+}
+
+/* ── Consent row ── */
+.consent-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.consent-checkbox {
+  --size: 20px;
+  --checkbox-background-checked: hsl(var(--primary));
+  --border-color: hsl(var(--border));
+  --border-color-checked: hsl(var(--primary));
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+
+.consent-label {
+  font-size: 0.8rem;
+  color: hsl(var(--muted-foreground));
+  line-height: 1.5;
+}
+
+.consent-label a {
+  color: hsl(var(--primary));
+  text-decoration: none;
+}
+
+.consent-label a:hover {
+  text-decoration: underline;
+}
+
+/* ── Zemi number input (TexterLogin) ── */
+.zemi-input {
+  font-family: monospace;
+  font-size: 1.1rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}

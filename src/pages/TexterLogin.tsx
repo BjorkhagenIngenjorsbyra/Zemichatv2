@@ -10,6 +10,7 @@ import {
   IonSpinner,
 } from '@ionic/react';
 import { signInAsTexter } from '../services/auth';
+import '../theme/auth-forms.css';
 
 const TexterLogin: React.FC = () => {
   const { t } = useTranslation();
@@ -77,6 +78,11 @@ const TexterLogin: React.FC = () => {
       <IonContent className="ion-padding" fullscreen>
         <div className="auth-container">
           <div className="auth-header">
+            <img
+              src="/favicon-192.png"
+              alt="Zemichat"
+              className="auth-logo"
+            />
             <h1 className="auth-title">{t('common.appName')}</h1>
             <p className="auth-subtitle">{t('texterLogin.subtitle')}</p>
           </div>
@@ -116,7 +122,7 @@ const TexterLogin: React.FC = () => {
             <IonButton
               type="submit"
               expand="block"
-              className="auth-button glow-primary"
+              className="auth-button"
               disabled={isLoading}
             >
               {isLoading ? <IonSpinner name="crescent" /> : t('texterLogin.loginButton')}
@@ -142,120 +148,6 @@ const TexterLogin: React.FC = () => {
             </p>
           </form>
         </div>
-
-        <style>{`
-          .auth-container {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            min-height: 100%;
-            max-width: 400px;
-            margin: 0 auto;
-            padding: 2rem;
-          }
-
-          .auth-header {
-            text-align: center;
-            margin-bottom: 2.5rem;
-          }
-
-          .auth-title {
-            font-size: 2.5rem;
-            font-weight: 800;
-            color: hsl(var(--primary));
-            margin: 0 0 0.5rem 0;
-            letter-spacing: -0.02em;
-          }
-
-          .auth-subtitle {
-            font-size: 1rem;
-            color: hsl(var(--muted-foreground));
-            margin: 0;
-          }
-
-          .auth-form {
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-          }
-
-          .auth-error {
-            background: hsl(var(--destructive) / 0.1);
-            border: 1px solid hsl(var(--destructive) / 0.3);
-            border-radius: 0.75rem;
-            padding: 0.75rem 1rem;
-            margin-bottom: 0.5rem;
-          }
-
-          .input-group {
-            margin-bottom: 0.5rem;
-          }
-
-          .auth-input {
-            --background: hsl(var(--card));
-            --color: hsl(var(--foreground));
-            --placeholder-color: hsl(var(--muted-foreground));
-            --border-color: hsl(var(--border));
-            --border-radius: 1rem;
-          }
-
-          .zemi-input {
-            font-family: monospace;
-            font-size: 1.1rem;
-            letter-spacing: 0.05em;
-            text-transform: uppercase;
-          }
-
-          .auth-button {
-            --background: hsl(var(--primary));
-            --color: hsl(var(--primary-foreground));
-            height: 3rem;
-            margin-top: 0.5rem;
-          }
-
-          .auth-divider {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            margin: 1rem 0;
-          }
-
-          .auth-divider::before,
-          .auth-divider::after {
-            content: '';
-            flex: 1;
-            height: 1px;
-            background: hsl(var(--border));
-          }
-
-          .auth-divider span {
-            color: hsl(var(--muted-foreground));
-            font-size: 0.875rem;
-          }
-
-          .auth-secondary-button {
-            --border-color: hsl(var(--border));
-            --color: hsl(var(--foreground));
-            font-weight: 600;
-            height: 3rem;
-          }
-
-          .auth-legal-links {
-            text-align: center;
-            font-size: 0.75rem;
-            color: hsl(var(--muted-foreground));
-            margin-top: 1.5rem;
-          }
-
-          .auth-legal-links a {
-            color: hsl(var(--muted-foreground));
-            text-decoration: none;
-          }
-
-          .auth-legal-links a:hover {
-            text-decoration: underline;
-          }
-        `}</style>
       </IonContent>
     </IonPage>
   );
