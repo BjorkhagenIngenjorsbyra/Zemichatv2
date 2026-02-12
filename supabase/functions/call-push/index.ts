@@ -19,6 +19,7 @@ interface PushTokenRow {
   user_id: string;
   token: string;
   platform: string;
+  token_type: string;
 }
 
 // ============================================================
@@ -100,6 +101,110 @@ async function getAccessToken(
 
   const data = await response.json();
   return data.access_token;
+}
+
+// ============================================================
+// APNs JWT Authentication
+// ============================================================
+
+async function createApnsJwt(keyId: string, teamId: string, privateKey: string): Promise<string> {
+  const now = Math.floor(Date.now() / 1000);
+
+  const header = { alg: 'ES256', kid: keyId };
+  const payload = { iss: teamId, iat: now };
+
+  const encoder = new TextEncoder();
+  const headerB64 = base64url(encoder.encode(JSON.stringify(header)));
+  const payloadB64 = base64url(encoder.encode(JSON.stringify(payload)));
+  const signingInput = `${headerB64}.${payloadB64}`;
+
+  // Import the ES256 private key
+  const pemBody = privateKey
+    .replace(/-----BEGIN PRIVATE KEY-----/, '')
+    .replace(/-----END PRIVATE KEY-----/, '')
+    .replace(/\s/g, '');
+  const binaryDer = Uint8Array.from(atob(pemBody), (c) => c.charCodeAt(0));
+
+  const key = await crypto.subtle.importKey(
+    'pkcs8',
+    binaryDer,
+    { name: 'ECDSA', namedCurve: 'P-256' },
+    false,
+    ['sign']
+  );
+
+  const signature = await crypto.subtle.sign(
+    { name: 'ECDSA', hash: 'SHA-256' },
+    key,
+    encoder.encode(signingInput)
+  );
+
+  // Convert DER signature to raw r||s format for JWT
+  const rawSig = derToRaw(new Uint8Array(signature));
+  const signatureB64 = base64url(rawSig);
+  return `${signingInput}.${signatureB64}`;
+}
+
+/**
+ * Convert DER-encoded ECDSA signature to raw r||s (64 bytes).
+ * WebCrypto returns DER format but JWT ES256 expects raw.
+ */
+function derToRaw(der: Uint8Array): Uint8Array {
+  // DER: 0x30 <len> 0x02 <rLen> <r> 0x02 <sLen> <s>
+  const raw = new Uint8Array(64);
+  let offset = 2; // skip 0x30 <len>
+
+  // Read r
+  offset++; // skip 0x02
+  const rLen = der[offset++];
+  const rStart = rLen > 32 ? offset + (rLen - 32) : offset;
+  const rDest = rLen > 32 ? 0 : 32 - rLen;
+  raw.set(der.slice(rStart, offset + rLen), rDest);
+  offset += rLen;
+
+  // Read s
+  offset++; // skip 0x02
+  const sLen = der[offset++];
+  const sStart = sLen > 32 ? offset + (sLen - 32) : offset;
+  const sDest = sLen > 32 ? 32 : 64 - sLen;
+  raw.set(der.slice(sStart, offset + sLen), sDest);
+
+  return raw;
+}
+
+/**
+ * Send a VoIP push via APNs HTTP/2.
+ */
+async function sendApnsPush(
+  deviceToken: string,
+  apnsJwt: string,
+  callData: Record<string, string>,
+  bundleId: string
+): Promise<{ success: boolean; status?: number }> {
+  const url = `https://api.push.apple.com/3/device/${deviceToken}`;
+
+  try {
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'authorization': `bearer ${apnsJwt}`,
+        'apns-topic': `${bundleId}.voip`,
+        'apns-push-type': 'voip',
+        'apns-priority': '10',
+        'apns-expiration': '0',
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        aps: {},
+        ...callData,
+      }),
+    });
+
+    return { success: response.ok, status: response.status };
+  } catch (err) {
+    console.error('APNs push error:', err);
+    return { success: false };
+  }
 }
 
 // ============================================================
@@ -207,10 +312,10 @@ serve(async (req) => {
 
     const activeIds = activeUsers.map((u) => u.id);
 
-    // Get push tokens for recipients
+    // Get push tokens for recipients (include token_type for routing)
     const { data: tokens } = await supabase
       .from('push_tokens')
-      .select('id, user_id, token, platform')
+      .select('id, user_id, token, platform, token_type')
       .in('user_id', activeIds);
 
     if (!tokens || tokens.length === 0) {
@@ -220,25 +325,8 @@ serve(async (req) => {
       });
     }
 
-    // Get FCM credentials
-    const fcmServiceAccountJson = Deno.env.get('FCM_SERVICE_ACCOUNT_JSON');
-    if (!fcmServiceAccountJson) {
-      console.error('FCM_SERVICE_ACCOUNT_JSON not configured');
-      return new Response(JSON.stringify({ error: 'FCM not configured' }), {
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-
-    const serviceAccount = JSON.parse(fcmServiceAccountJson);
-    const projectId = serviceAccount.project_id;
-    const accessToken = await getAccessToken(
-      serviceAccount.client_email,
-      serviceAccount.private_key
-    );
-
-    // Build FCM data based on action
-    let fcmData: Record<string, string>;
+    // Build call data (shared between FCM and APNs)
+    let callData: Record<string, string>;
 
     if (action === 'ring') {
       // Get caller info for the ring screen
@@ -248,7 +336,7 @@ serve(async (req) => {
         .eq('id', user.id)
         .single();
 
-      fcmData = {
+      callData = {
         type: 'incoming_call',
         callLogId,
         chatId,
@@ -259,64 +347,137 @@ serve(async (req) => {
       };
     } else {
       // cancel
-      fcmData = {
+      callData = {
         type: 'call_cancelled',
         callLogId,
       };
     }
 
-    // Send FCM data-only messages (no 'notification' field — handled natively)
-    const fcmUrl = `https://fcm.googleapis.com/v1/projects/${projectId}/messages:send`;
+    // Split tokens by delivery method:
+    // - Android tokens (all types) → FCM data-only messages
+    // - iOS FCM tokens → FCM data-only messages (for cancel, not ring)
+    // - iOS VoIP tokens → APNs direct (for ring, PushKit/CallKit)
+    const androidTokens = tokens.filter((t: PushTokenRow) => t.platform === 'android');
+    const iosVoipTokens = tokens.filter((t: PushTokenRow) => t.platform === 'ios' && t.token_type === 'voip');
+    const iosFcmTokens = tokens.filter((t: PushTokenRow) => t.platform === 'ios' && t.token_type === 'fcm');
+
+    // Tokens to send via FCM:
+    // - All Android tokens always go via FCM
+    // - iOS FCM tokens used for cancel action (VoIP push is only for ring)
+    const fcmTokens = [
+      ...androidTokens,
+      ...(action === 'cancel' ? iosFcmTokens : []),
+    ];
+
     let sentCount = 0;
     const invalidTokenIds: string[] = [];
 
-    const sendPromises = tokens.map(async (tokenRow: PushTokenRow) => {
-      const message: Record<string, unknown> = {
-        message: {
-          token: tokenRow.token,
-          data: fcmData,
-          android: {
-            priority: 'high',
-          },
-        },
-      };
+    // ============================================================
+    // Send via FCM (Android + iOS cancel)
+    // ============================================================
 
-      try {
-        const response = await fetch(fcmUrl, {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(message),
+    if (fcmTokens.length > 0) {
+      const fcmServiceAccountJson = Deno.env.get('FCM_SERVICE_ACCOUNT_JSON');
+      if (!fcmServiceAccountJson) {
+        console.error('FCM_SERVICE_ACCOUNT_JSON not configured');
+      } else {
+        const serviceAccount = JSON.parse(fcmServiceAccountJson);
+        const projectId = serviceAccount.project_id;
+        const accessToken = await getAccessToken(
+          serviceAccount.client_email,
+          serviceAccount.private_key
+        );
+
+        const fcmUrl = `https://fcm.googleapis.com/v1/projects/${projectId}/messages:send`;
+
+        const fcmPromises = fcmTokens.map(async (tokenRow: PushTokenRow) => {
+          const message: Record<string, unknown> = {
+            message: {
+              token: tokenRow.token,
+              data: callData,
+              android: {
+                priority: 'high',
+              },
+            },
+          };
+
+          try {
+            const response = await fetch(fcmUrl, {
+              method: 'POST',
+              headers: {
+                Authorization: `Bearer ${accessToken}`,
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify(message),
+            });
+
+            if (response.ok) {
+              sentCount++;
+            } else {
+              const errorData = await response.json();
+              const errorCode = errorData?.error?.details?.[0]?.errorCode;
+
+              if (
+                response.status === 404 ||
+                errorCode === 'UNREGISTERED' ||
+                errorCode === 'INVALID_ARGUMENT'
+              ) {
+                invalidTokenIds.push(tokenRow.id);
+              } else {
+                console.error(
+                  `FCM send failed for token ${tokenRow.id}:`,
+                  response.status,
+                  JSON.stringify(errorData)
+                );
+              }
+            }
+          } catch (err) {
+            console.error(`FCM send error for token ${tokenRow.id}:`, err);
+          }
         });
 
-        if (response.ok) {
-          sentCount++;
-        } else {
-          const errorData = await response.json();
-          const errorCode = errorData?.error?.details?.[0]?.errorCode;
-
-          if (
-            response.status === 404 ||
-            errorCode === 'UNREGISTERED' ||
-            errorCode === 'INVALID_ARGUMENT'
-          ) {
-            invalidTokenIds.push(tokenRow.id);
-          } else {
-            console.error(
-              `FCM send failed for token ${tokenRow.id}:`,
-              response.status,
-              JSON.stringify(errorData)
-            );
-          }
-        }
-      } catch (err) {
-        console.error(`FCM send error for token ${tokenRow.id}:`, err);
+        await Promise.all(fcmPromises);
       }
-    });
+    }
 
-    await Promise.all(sendPromises);
+    // ============================================================
+    // Send via APNs (iOS VoIP tokens — ring action only)
+    // ============================================================
+
+    if (iosVoipTokens.length > 0 && action === 'ring') {
+      const apnsKeyJson = Deno.env.get('APNS_KEY_JSON');
+
+      if (!apnsKeyJson) {
+        console.warn('APNS_KEY_JSON not configured — skipping iOS VoIP push');
+      } else {
+        try {
+          const apnsConfig = JSON.parse(apnsKeyJson);
+          const { keyId, teamId, privateKey } = apnsConfig;
+          const bundleId = 'com.zemichat.app';
+
+          const apnsJwt = await createApnsJwt(keyId, teamId, privateKey);
+
+          const apnsPromises = iosVoipTokens.map(async (tokenRow: PushTokenRow) => {
+            const result = await sendApnsPush(tokenRow.token, apnsJwt, callData, bundleId);
+
+            if (result.success) {
+              sentCount++;
+            } else if (result.status === 410 || result.status === 400) {
+              // 410 = unregistered, 400 = bad device token
+              invalidTokenIds.push(tokenRow.id);
+            } else {
+              console.error(
+                `APNs send failed for token ${tokenRow.id}: status ${result.status}`
+              );
+            }
+          });
+
+          await Promise.all(apnsPromises);
+        } catch (err) {
+          console.error('APNs push setup error:', err);
+        }
+      }
+    }
 
     // Clean up invalid tokens
     if (invalidTokenIds.length > 0) {

@@ -50,6 +50,9 @@ import {
   sendCallPush,
   getPendingCallAction,
   dismissNativeCallNotification,
+  reportCallConnected,
+  reportCallEnded,
+  registerVoipPushIfNeeded,
 } from '../services/callPush';
 import { supabase } from '../services/supabase';
 import { type CallLog } from '../types/database';
@@ -468,12 +471,16 @@ export function CallProvider({ children }: CallProviderProps) {
         connectedAt: new Date(),
       } : prev);
 
+      // Tell CallKit (iOS) that the call is now connected
+      reportCallConnected(incomingCall.callLogId);
+
       durationTimerRef.current = setInterval(() => {
         setCallDuration((prev) => prev + 1);
       }, 1000);
     } catch (err) {
       console.error('Answer call failed:', err);
       setCallError('call.error');
+      reportCallEnded(incomingCall.callLogId, 'failed');
       await cleanupCall();
     }
   }, [incomingCall, profile, cleanupCall]);
@@ -481,6 +488,7 @@ export function CallProvider({ children }: CallProviderProps) {
   const declineCall = useCallback(async () => {
     if (!incomingCall) return;
     dismissNativeCallNotification();
+    reportCallEnded(incomingCall.callLogId, 'declinedElsewhere');
     await updateCallStatus(incomingCall.callLogId, CallStatus.DECLINED);
     await deleteCallSignals(incomingCall.callLogId);
     setIncomingCall(null);
@@ -493,6 +501,9 @@ export function CallProvider({ children }: CallProviderProps) {
       clearTimeout(ringTimeoutRef.current);
       ringTimeoutRef.current = null;
     }
+
+    // Tell CallKit (iOS) that the call has ended
+    reportCallEnded(activeCall.callLogId, 'remoteEnded');
 
     // Cancel push notification on receiver's device
     sendCallPush(activeCall.chatId, activeCall.callLogId, activeCall.callType, 'cancel');
@@ -593,6 +604,12 @@ export function CallProvider({ children }: CallProviderProps) {
   // ============================================================
   // INCOMING CALL SUBSCRIPTION
   // ============================================================
+
+  // Register for VoIP pushes on iOS (PushKit/CallKit)
+  useEffect(() => {
+    if (!profile) return;
+    registerVoipPushIfNeeded();
+  }, [profile]);
 
   useEffect(() => {
     if (!profile) return;

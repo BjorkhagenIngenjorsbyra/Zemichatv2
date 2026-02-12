@@ -39,6 +39,15 @@ interface FcmMessage {
     android?: {
       priority: string;
     };
+    apns?: {
+      headers: Record<string, string>;
+      payload: {
+        aps: {
+          sound?: string;
+          badge?: number;
+        };
+      };
+    };
   };
 }
 
@@ -401,6 +410,20 @@ serve(async (req) => {
           android: {
             priority: 'high',
           },
+          // APNs payload for iOS — FCM proxies this to Apple Push Notification service
+          ...(tokenRow.platform === 'ios' ? {
+            apns: {
+              headers: {
+                'apns-priority': '10',
+              },
+              payload: {
+                aps: {
+                  sound: 'default',
+                  badge: 1,
+                },
+              },
+            },
+          } : {}),
         },
       };
 

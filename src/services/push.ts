@@ -1,7 +1,7 @@
 import { Capacitor } from '@capacitor/core';
 import { PushNotifications } from '@capacitor/push-notifications';
 import { supabase } from './supabase';
-import { PlatformType } from '../types/database';
+import { PlatformType, PushTokenType } from '../types/database';
 
 // ============================================================
 // Types
@@ -100,13 +100,43 @@ async function saveToken(token: string): Promise<void> {
         user_id: user.id,
         token,
         platform,
+        token_type: PushTokenType.FCM,
         updated_at: new Date().toISOString(),
       } as never,
-      { onConflict: 'user_id,token' }
+      { onConflict: 'user_id,token,token_type' }
     );
 
   if (error) {
     console.error('Failed to save push token:', error.message);
+  }
+}
+
+/**
+ * Save a VoIP token to the push_tokens table (upsert).
+ * Used on iOS for PushKit/CallKit incoming call notifications.
+ */
+export async function saveVoipToken(token: string): Promise<void> {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) return;
+
+  const { error } = await supabase
+    .from('push_tokens')
+    .upsert(
+      {
+        user_id: user.id,
+        token,
+        platform: PlatformType.IOS,
+        token_type: PushTokenType.VOIP,
+        updated_at: new Date().toISOString(),
+      } as never,
+      { onConflict: 'user_id,token,token_type' }
+    );
+
+  if (error) {
+    console.error('Failed to save VoIP token:', error.message);
   }
 }
 

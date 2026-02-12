@@ -60,6 +60,11 @@ export enum PlatformType {
   ANDROID = 'android',
 }
 
+export enum PushTokenType {
+  FCM = 'fcm',
+  VOIP = 'voip',
+}
+
 export enum SupportRequestType {
   BUG = 'bug',
   SUGGESTION = 'suggestion',
@@ -269,6 +274,7 @@ export interface PushToken {
   user_id: string;
   token: string;
   platform: PlatformType;
+  token_type: PushTokenType;
   created_at: string;
   updated_at: string;
 }
@@ -452,6 +458,9 @@ export interface Database {
         Row: PushToken;
         Insert: Pick<PushToken, 'user_id' | 'token' | 'platform'> & Partial<Omit<PushToken, 'id' | 'user_id' | 'token' | 'platform'>>;
         Update: Partial<Omit<PushToken, 'id'>>;
+        Enums: {
+          push_token_type: PushTokenType;
+        };
       };
       user_sessions: {
         Row: UserSession;
@@ -479,6 +488,7 @@ export interface Database {
       call_status: CallStatus;
       signal_type: SignalType;
       platform_type: PlatformType;
+      push_token_type: PushTokenType;
       support_request_type: SupportRequestType;
     };
     Functions: {

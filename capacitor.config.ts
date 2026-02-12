@@ -3,7 +3,7 @@ import type { CapacitorConfig } from '@capacitor/cli';
 const config: CapacitorConfig = {
   appId: 'com.zemichat.app',
   appName: 'Zemichat',
-  version: '1.2.0',
+  version: '1.2.1',
   webDir: 'dist',
   android: {
     buildOptions: {
@@ -11,6 +11,9 @@ const config: CapacitorConfig = {
       keystoreAlias: 'zemichat',
     },
     allowMixedContent: false,
+    backgroundColor: '#FFFFFF',
+  },
+  ios: {
     backgroundColor: '#FFFFFF',
   },
   plugins: {
