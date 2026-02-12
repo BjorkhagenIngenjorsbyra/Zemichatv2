@@ -605,5 +605,12 @@
     "voiceNotAllowed": "Du kan ikke sende talebeskeder lige nu. Din Team Owner har begrænset denne funktion.",
     "documentNotAllowed": "Du kan ikke sende dokumenter lige nu. Din Team Owner har begrænset denne funktion.",
     "locationNotAllowed": "Du kan ikke dele din placering lige nu. Din Team Owner har begrænset denne funktion."
+  },
+  "share": {
+    "sendTo": "Send til",
+    "sent": "Sendt!",
+    "sendFailed": "Kunne ikke sende. Prøv igen.",
+    "sending": "Sender...",
+    "images": "billeder"
   }
 }

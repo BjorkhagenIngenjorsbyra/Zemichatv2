@@ -605,5 +605,12 @@
     "voiceNotAllowed": "Et voi lähettää ääniviestejä juuri nyt. Team Ownerisi on rajoittanut tätä toimintoa.",
     "documentNotAllowed": "Et voi lähettää asiakirjoja juuri nyt. Team Ownerisi on rajoittanut tätä toimintoa.",
     "locationNotAllowed": "Et voi jakaa sijaintiasi juuri nyt. Team Ownerisi on rajoittanut tätä toimintoa."
+  },
+  "share": {
+    "sendTo": "Lähetä kenelle",
+    "sent": "Lähetetty!",
+    "sendFailed": "Lähettäminen epäonnistui. Yritä uudelleen.",
+    "sending": "Lähetetään...",
+    "images": "kuvaa"
   }
 }

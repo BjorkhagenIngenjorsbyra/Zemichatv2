@@ -19,6 +19,9 @@ import { IncomingCallModal, CallView, CallPiP } from './components/call';
 /* Network */
 import { OfflineBanner, TrialBanner } from './components/common';
 
+/* Share target */
+import ShareTargetHandler from './components/ShareTargetHandler';
+
 /* Subscription */
 import { Paywall } from './components/subscription';
 
@@ -137,6 +140,7 @@ const App: React.FC = () => (
           <IonReactRouter>
           <AuthCallbackHandler />
           <PushInit />
+          <ShareTargetHandler />
           <IonRouterOutlet>
             <Switch>
             {/* Public routes - redirect to chats if authenticated */}

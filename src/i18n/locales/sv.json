@@ -605,5 +605,12 @@
     "voiceNotAllowed": "Du kan inte skicka röstmeddelanden just nu. Din Team Owner har begränsat denna funktion.",
     "documentNotAllowed": "Du kan inte skicka dokument just nu. Din Team Owner har begränsat denna funktion.",
     "locationNotAllowed": "Du kan inte dela din plats just nu. Din Team Owner har begränsat denna funktion."
+  },
+  "share": {
+    "sendTo": "Skicka till",
+    "sent": "Skickat!",
+    "sendFailed": "Kunde inte skicka. Försök igen.",
+    "sending": "Skickar...",
+    "images": "bilder"
   }
 }

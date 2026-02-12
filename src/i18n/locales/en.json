@@ -605,5 +605,12 @@
     "voiceNotAllowed": "You can't send voice messages right now. Your Team Owner has restricted this feature.",
     "documentNotAllowed": "You can't send documents right now. Your Team Owner has restricted this feature.",
     "locationNotAllowed": "You can't share your location right now. Your Team Owner has restricted this feature."
+  },
+  "share": {
+    "sendTo": "Send to",
+    "sent": "Sent!",
+    "sendFailed": "Failed to send. Try again.",
+    "sending": "Sending...",
+    "images": "images"
   }
 }
