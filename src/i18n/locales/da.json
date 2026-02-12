@@ -494,6 +494,7 @@
     "namePlaceholder": "f.eks. Mor",
     "sendInvite": "Send invitation",
     "inviteSent": "Invitation oprettet!",
+    "inviteSentToEmail": "Invitation sendt til {{email}}!",
     "copyLink": "Kopier link",
     "linkCopied": "Link kopieret!",
     "pendingInvites": "Ventende invitationer",

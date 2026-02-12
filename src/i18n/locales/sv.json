@@ -494,6 +494,7 @@
     "namePlaceholder": "t.ex. Mamma",
     "sendInvite": "Skicka inbjudan",
     "inviteSent": "Inbjudan skapad!",
+    "inviteSentToEmail": "Inbjudan skickad till {{email}}!",
     "copyLink": "Kopiera länk",
     "linkCopied": "Länk kopierad!",
     "pendingInvites": "Väntande inbjudningar",

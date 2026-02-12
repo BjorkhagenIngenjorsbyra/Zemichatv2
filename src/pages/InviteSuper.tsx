@@ -18,11 +18,12 @@ import {
   IonItem,
   IonLabel,
 } from '@ionic/react';
-import { copyOutline, checkmarkOutline, trashOutline } from 'ionicons/icons';
+import { trashOutline } from 'ionicons/icons';
 import {
   createInvitation,
   getTeamInvitations,
   deleteInvitation,
+  sendInvitationEmail,
   type Invitation,
 } from '../services/invitations';
 import { getCurrentLanguage } from '../i18n';
@@ -35,8 +36,7 @@ const InviteSuper: React.FC = () => {
   const [displayName, setDisplayName] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
-  const [createdLink, setCreatedLink] = useState<string | null>(null);
-  const [linkCopied, setLinkCopied] = useState(false);
+  const [sentToEmail, setSentToEmail] = useState<string | null>(null);
 
   const [invitations, setInvitations] = useState<Invitation[]>([]);
   const [loadingInvitations, setLoadingInvitations] = useState(true);
@@ -54,8 +54,10 @@ const InviteSuper: React.FC = () => {
   const handleCreate = async (e: FormEvent) => {
     e.preventDefault();
     setError(null);
-    setCreatedLink(null);
+    setSentToEmail(null);
     setIsCreating(true);
+
+    const recipientEmail = email;
 
     const { invitation, error: createError } = await createInvitation(
       email,
@@ -70,32 +72,28 @@ const InviteSuper: React.FC = () => {
 
     if (invitation) {
       const link = `${window.location.origin}/invite/${invitation.token}?lang=${getCurrentLanguage()}`;
-      setCreatedLink(link);
+
+      // Send invitation email via Edge Function
+      const { error: sendError } = await sendInvitationEmail(
+        recipientEmail,
+        invitation.id,
+        link
+      );
+
+      if (sendError) {
+        setError(sendError.message);
+        setIsCreating(false);
+        await loadInvitations();
+        return;
+      }
+
+      setSentToEmail(recipientEmail);
       setEmail('');
       setDisplayName('');
       await loadInvitations();
     }
 
     setIsCreating(false);
-  };
-
-  const handleCopyLink = async () => {
-    if (!createdLink) return;
-    try {
-      await navigator.clipboard.writeText(createdLink);
-      setLinkCopied(true);
-      setTimeout(() => setLinkCopied(false), 2000);
-    } catch {
-      // Fallback for environments without clipboard API
-      const textarea = document.createElement('textarea');
-      textarea.value = createdLink;
-      document.body.appendChild(textarea);
-      textarea.select();
-      document.execCommand('copy');
-      document.body.removeChild(textarea);
-      setLinkCopied(true);
-      setTimeout(() => setLinkCopied(false), 2000);
-    }
   };
 
   const handleDelete = async (id: string) => {
@@ -176,26 +174,11 @@ const InviteSuper: React.FC = () => {
             </IonButton>
           </form>
 
-          {createdLink && (
+          {sentToEmail && (
             <div className="invite-success">
               <div className="invite-success-header">
                 <span className="invite-success-icon">✅</span>
-                <span>{t('invite.inviteSent')}</span>
-              </div>
-              <div className="invite-link-container">
-                <code className="invite-link-text">{createdLink}</code>
-                <IonButton
-                  fill="outline"
-                  size="small"
-                  onClick={handleCopyLink}
-                  className="invite-copy-btn"
-                >
-                  <IonIcon
-                    icon={linkCopied ? checkmarkOutline : copyOutline}
-                    slot="start"
-                  />
-                  {linkCopied ? t('invite.linkCopied') : t('invite.copyLink')}
-                </IonButton>
+                <span>{t('invite.inviteSentToEmail', { email: sentToEmail })}</span>
               </div>
             </div>
           )}
@@ -288,29 +271,9 @@ const InviteSuper: React.FC = () => {
             align-items: center;
             gap: 8px;
             font-weight: 600;
-            margin-bottom: 8px;
           }
           .invite-success-icon {
             font-size: 20px;
-          }
-          .invite-link-container {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-          }
-          .invite-link-text {
-            display: block;
-            background: hsl(var(--card));
-            border: 1px solid hsl(var(--border));
-            border-radius: 0.5rem;
-            padding: 8px 12px;
-            font-size: 0.8rem;
-            word-break: break-all;
-            color: hsl(var(--foreground));
-          }
-          .invite-copy-btn {
-            --border-radius: 9999px;
-            align-self: flex-start;
           }
           .invite-pending-section {
             margin-top: 1rem;

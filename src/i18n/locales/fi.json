@@ -494,6 +494,7 @@
     "namePlaceholder": "esim. Äiti",
     "sendInvite": "Lähetä kutsu",
     "inviteSent": "Kutsu luotu!",
+    "inviteSentToEmail": "Kutsu lähetetty osoitteeseen {{email}}!",
     "copyLink": "Kopioi linkki",
     "linkCopied": "Linkki kopioitu!",
     "pendingInvites": "Odottavat kutsut",

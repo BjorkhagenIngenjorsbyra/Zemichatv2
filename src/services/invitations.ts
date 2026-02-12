@@ -154,3 +154,32 @@ export async function getInvitationByToken(
     };
   }
 }
+
+/**
+ * Send invitation email via the send-invitation Edge Function.
+ */
+export async function sendInvitationEmail(
+  email: string,
+  invitationId: string,
+  inviteLink: string
+): Promise<{ error: Error | null }> {
+  try {
+    const { data, error } = await supabase.functions.invoke('send-invitation', {
+      body: { email, invitationId, inviteLink },
+    });
+
+    if (error) {
+      return { error: new Error(error.message) };
+    }
+
+    if (data?.error) {
+      return { error: new Error(data.error) };
+    }
+
+    return { error: null };
+  } catch (err) {
+    return {
+      error: err instanceof Error ? err : new Error('Unknown error'),
+    };
+  }
+}

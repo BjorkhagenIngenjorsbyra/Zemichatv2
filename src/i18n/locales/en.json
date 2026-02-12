@@ -494,6 +494,7 @@
     "namePlaceholder": "e.g. Mom",
     "sendInvite": "Send Invitation",
     "inviteSent": "Invitation created!",
+    "inviteSentToEmail": "Invitation sent to {{email}}!",
     "copyLink": "Copy Link",
     "linkCopied": "Link copied!",
     "pendingInvites": "Pending Invitations",
