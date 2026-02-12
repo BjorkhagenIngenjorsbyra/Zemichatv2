@@ -75,27 +75,29 @@ input:-webkit-autofill:active {
   --background: transparent !important;
   --color: hsl(var(--foreground)) !important;
   --placeholder-color: hsl(var(--muted-foreground)) !important;
-  --border-color: rgba(124, 58, 237, 0.3) !important;
-  --border-radius: 12px !important;
+  --border-color: transparent !important;
+  --border-radius: 0px !important;
   --border-width: 0px !important;
   --highlight-color-focused: transparent !important;
   --highlight-color-valid: transparent !important;
   --highlight-background: transparent !important;
   background: transparent !important;
-  border-radius: 12px !important;
-  overflow: hidden !important;
+  /* No border-radius on host — only on the inner .input-wrapper to avoid double-rounding */
+  border-radius: 0 !important;
+  overflow: visible !important;
+  --padding-top: 0px !important;
+  --padding-bottom: 0px !important;
 }
 
 /* Kill any inner white/light backgrounds from Ionic's native input wrappers */
 .auth-input .native-input,
 .auth-input input,
-.auth-input .input-wrapper,
 .auth-input .label-text-wrapper,
 .auth-input .native-wrapper {
   background: transparent !important;
   background-color: transparent !important;
   color: hsl(var(--foreground)) !important;
-  border-radius: 12px !important;
+  border-radius: 0 !important;
   overflow: hidden !important;
 }
 
@@ -111,7 +113,7 @@ input:-webkit-autofill:active {
   display: none !important;
 }
 
-/* Single clean border on the label wrapper instead */
+/* Single clean border on the label wrapper — the ONLY element with border-radius */
 .auth-input .input-wrapper {
   border: 1px solid rgba(124, 58, 237, 0.3) !important;
   border-radius: 12px !important;
