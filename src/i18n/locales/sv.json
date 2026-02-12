@@ -139,7 +139,14 @@
     "typing": "skriver...",
     "typingOne": "{{name}} skriver...",
     "typingMultiple": "{{count}} personer skriver...",
-    "camera": "Kamera"
+    "camera": "Kamera",
+    "gallery": "Galleri",
+    "location": "Plats",
+    "poll": "Omröstning",
+    "document": "Dokument",
+    "emojis": "Emojis",
+    "gifs": "GIFs",
+    "locationComingSoon": "Platsdelning kommer snart"
   },
   "message": {
     "image": "Bild",

@@ -139,7 +139,14 @@
     "typing": "typing...",
     "typingOne": "{{name}} is typing...",
     "typingMultiple": "{{count}} people typing...",
-    "camera": "Camera"
+    "camera": "Camera",
+    "gallery": "Gallery",
+    "location": "Location",
+    "poll": "Poll",
+    "document": "Document",
+    "emojis": "Emojis",
+    "gifs": "GIFs",
+    "locationComingSoon": "Location sharing coming soon"
   },
   "message": {
     "image": "Image",

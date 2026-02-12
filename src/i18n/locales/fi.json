@@ -139,7 +139,14 @@
     "typing": "kirjoittaa...",
     "typingOne": "{{name}} kirjoittaa...",
     "typingMultiple": "{{count}} henkilöä kirjoittaa...",
-    "camera": "Kamera"
+    "camera": "Kamera",
+    "gallery": "Galleria",
+    "location": "Sijainti",
+    "poll": "Äänestys",
+    "document": "Asiakirja",
+    "emojis": "Emojit",
+    "gifs": "GIFit",
+    "locationComingSoon": "Sijaintijako tulossa pian"
   },
   "message": {
     "image": "Kuva",

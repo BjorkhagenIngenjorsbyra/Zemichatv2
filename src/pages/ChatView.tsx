@@ -14,7 +14,7 @@ import {
   IonButton,
   IonToast,
 } from '@ionic/react';
-import { send, searchOutline, arrowDown, createOutline, barChartOutline } from 'ionicons/icons';
+import { searchOutline, arrowDown } from 'ionicons/icons';
 import { Keyboard } from '@capacitor/keyboard';
 import { Capacitor } from '@capacitor/core';
 import { useAuthContext } from '../contexts/AuthContext';
@@ -60,19 +60,19 @@ import {
   MessageBubble,
   QuotedMessage,
   MediaPicker,
-  VoiceRecorder,
   QuickMessageBar,
   ChatSearchModal,
   InlineReactionBar,
   EmojiPicker,
   TypingIndicator,
+  ChatInputToolbar,
+  EmojiGifPanel,
+  AttachmentSheet,
 } from '../components/chat';
+import type { MediaPickerHandle } from '../components/chat';
 import {
   MessageContextMenu,
   ForwardPicker,
-  GifPicker,
-  StickerPicker,
-  MentionAutocomplete,
   PollCreator,
   PollMessage,
 } from '../components/chat';
@@ -95,6 +95,7 @@ const ChatView: React.FC = () => {
   const [isSending, setIsSending] = useState(false);
   const contentRef = useRef<HTMLIonContentElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const mediaPickerRef = useRef<MediaPickerHandle>(null);
 
   // Reply state
   const [replyTo, setReplyTo] = useState<MessageWithSender | null>(null);
@@ -140,9 +141,9 @@ const ChatView: React.FC = () => {
   const [forwardMessage_, setForwardMessage_] = useState<MessageWithSender | null>(null);
   const [showForwardPicker, setShowForwardPicker] = useState(false);
 
-  // GIF & Sticker pickers
-  const [showGifPicker, setShowGifPicker] = useState(false);
-  const [showStickerPicker, setShowStickerPicker] = useState(false);
+  // Emoji/GIF panel + Attachment sheet
+  const [showEmojiGifPanel, setShowEmojiGifPanel] = useState(false);
+  const [showAttachmentSheet, setShowAttachmentSheet] = useState(false);
 
   // Poll creator
   const [showPollCreator, setShowPollCreator] = useState(false);
@@ -401,37 +402,6 @@ const ChatView: React.FC = () => {
     inputRef.current?.focus();
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleSend();
-    } else if (e.key === 'Escape' && editingMessage) {
-      handleEditCancel();
-    }
-  };
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const value = e.target.value;
-    setMessageText(value);
-
-    // Detect @mention
-    const cursorPos = e.target.selectionStart || value.length;
-    const textUpToCursor = value.slice(0, cursorPos);
-    const atMatch = textUpToCursor.match(/@(\w*)$/);
-
-    if (atMatch && chat?.is_group) {
-      setMentionQuery(atMatch[1]);
-      setShowMentions(true);
-    } else {
-      setShowMentions(false);
-    }
-
-    // Send typing indicator
-    if (chatId && profile?.id && profile?.display_name) {
-      sendTyping(chatId, profile.id, profile.display_name);
-    }
-  };
-
   const handleImageSelect = async (file: File, caption?: string) => {
     if (!chatId) return;
 
@@ -599,13 +569,22 @@ const ChatView: React.FC = () => {
     });
   };
 
-  const handleStickerSelect = async (emoji: string) => {
-    if (!chatId) return;
-    await sendMessage({
-      chatId,
-      content: emoji,
-      type: MessageType.STICKER,
-    });
+  const handleEmojiInsert = (emoji: string) => {
+    const textarea = inputRef.current;
+    if (textarea) {
+      const start = textarea.selectionStart || messageText.length;
+      const end = textarea.selectionEnd || messageText.length;
+      const newText = messageText.slice(0, start) + emoji + messageText.slice(end);
+      setMessageText(newText);
+      // Move cursor after inserted emoji
+      setTimeout(() => {
+        const newPos = start + emoji.length;
+        textarea.setSelectionRange(newPos, newPos);
+        textarea.focus();
+      }, 0);
+    } else {
+      setMessageText((prev) => prev + emoji);
+    }
   };
 
   const handlePollCreate = async (question: string, options: string[], allowsMultiple: boolean) => {
@@ -716,6 +695,16 @@ const ChatView: React.FC = () => {
 
   const handleHeaderClick = () => {
     contentRef.current?.scrollToTop(300);
+  };
+
+  const handleCameraCapture = (file: File) => {
+    mediaPickerRef.current?.showPreview(file);
+  };
+
+  const handleTyping = () => {
+    if (chatId && profile?.id && profile?.display_name) {
+      sendTyping(chatId, profile.id, profile.display_name);
+    }
   };
 
   return (
@@ -951,96 +940,42 @@ const ChatView: React.FC = () => {
           </div>
         )}
 
-        <div className="input-container">
-          <MediaPicker
-            onImageSelect={handleImageSelect}
-            onDocumentSelect={handleDocumentSelect}
-            disabled={isSending}
-            imageBlocked={(profile?.role === UserRole.TEXTER && texterSettings?.can_send_images === false) || !canUseFeature('canSendImages')}
-            documentBlocked={(profile?.role === UserRole.TEXTER && texterSettings?.can_send_documents === false) || !canUseFeature('canSendDocuments')}
-            onImageBlocked={() => {
-              if (!canUseFeature('canSendImages')) {
-                showPaywall(t('paywall.upgradeToUse'));
-              } else {
-                setPermissionToast(t('permissions.imageNotAllowed'));
-              }
-            }}
-            onDocumentBlocked={() => {
-              if (!canUseFeature('canSendDocuments')) {
-                showPaywall(t('paywall.upgradeToUse'));
-              } else {
-                setPermissionToast(t('permissions.documentNotAllowed'));
-              }
-            }}
-          />
-
-          <button
-            className="extra-btn"
-            onClick={() => setShowGifPicker(!showGifPicker)}
-            disabled={isSending}
-            aria-label="GIF"
-          >
-            GIF
-          </button>
-
-          <button
-            className="extra-btn"
-            onClick={() => setShowStickerPicker(!showStickerPicker)}
-            disabled={isSending}
-            aria-label="Sticker"
-          >
-            😀
-          </button>
-
-          {chat?.is_group && (
-            <button
-              className="extra-btn"
-              onClick={() => setShowPollCreator(true)}
-              disabled={isSending}
-              aria-label="Poll"
-            >
-              <IonIcon icon={barChartOutline} />
-            </button>
-          )}
-
-          <div className="textarea-wrapper">
-            {showMentions && chat && (
-              <MentionAutocomplete
-                query={mentionQuery}
-                members={chat.members}
-                onSelect={handleMentionSelect}
-                visible={showMentions}
-              />
-            )}
-            <textarea
-              ref={inputRef}
-              className="message-input"
-              data-testid="message-input"
-              placeholder={editingMessage ? t('contextMenu.editPlaceholder') : t('chat.typeMessage')}
-              value={messageText}
-              onChange={handleInputChange}
-              onKeyDown={handleKeyDown}
-              rows={1}
-            />
-          </div>
-
-          {messageText.trim() ? (
-            <IonButton
-              className="send-button"
-              fill="clear"
-              data-testid="send-button"
-              onClick={handleSend}
-              disabled={!messageText.trim() || isSending}
-            >
-              <IonIcon icon={send} />
-            </IonButton>
-          ) : canUseFeature('canSendVoice') ? (
-            <VoiceRecorder
-              onRecord={handleVoiceRecord}
-              disabled={isSending}
-            />
-          ) : null}
-        </div>
+        <ChatInputToolbar
+          messageText={messageText}
+          onMessageTextChange={setMessageText}
+          onSend={handleSend}
+          onVoiceRecord={handleVoiceRecord}
+          onCameraCapture={handleCameraCapture}
+          onToggleEmojiPanel={() => setShowEmojiGifPanel((prev) => !prev)}
+          onToggleAttachmentSheet={() => setShowAttachmentSheet((prev) => !prev)}
+          isEmojiPanelOpen={showEmojiGifPanel}
+          isSending={isSending}
+          placeholder={editingMessage ? t('contextMenu.editPlaceholder') : undefined}
+          editingMessage={!!editingMessage}
+          onEditCancel={handleEditCancel}
+          canSendVoice={canUseFeature('canSendVoice')}
+          chat={chat}
+          inputRef={inputRef}
+          mentionQuery={mentionQuery}
+          showMentions={showMentions}
+          onMentionSelect={handleMentionSelect}
+          onMentionQueryChange={(query, show) => {
+            setMentionQuery(query);
+            setShowMentions(show);
+          }}
+          onTyping={handleTyping}
+          imageBlocked={
+            (profile?.role === UserRole.TEXTER && texterSettings?.can_send_images === false) ||
+            !canUseFeature('canSendImages')
+          }
+          onImageBlocked={() => {
+            if (!canUseFeature('canSendImages')) {
+              showPaywall(t('paywall.upgradeToUse'));
+            } else {
+              setPermissionToast(t('permissions.imageNotAllowed'));
+            }
+          }}
+        />
 
         <style>{`
           .reply-preview {
@@ -1070,49 +1005,6 @@ const ChatView: React.FC = () => {
             font-size: 1.25rem;
             color: hsl(var(--foreground));
             line-height: 1;
-          }
-
-          .input-container {
-            display: flex;
-            align-items: flex-end;
-            gap: 0.5rem;
-            padding: 0.75rem 1rem calc(0.75rem + env(safe-area-inset-bottom, 0px));
-            background: hsl(var(--background));
-            border-top: 1px solid hsl(var(--border));
-          }
-
-          .message-input {
-            flex: 1;
-            background: hsl(var(--card));
-            border: 1px solid hsl(var(--border));
-            border-radius: 1.25rem;
-            padding: 0.75rem 1rem;
-            color: hsl(var(--foreground));
-            font-size: 1rem;
-            resize: none;
-            min-height: 2.5rem;
-            max-height: 120px;
-            outline: none;
-            font-family: inherit;
-          }
-
-          .message-input::placeholder {
-            color: hsl(var(--muted-foreground));
-          }
-
-          .message-input:focus {
-            border-color: hsl(var(--primary));
-          }
-
-          .send-button {
-            --color: hsl(var(--primary));
-            --padding-start: 0.5rem;
-            --padding-end: 0.5rem;
-            min-height: 2.5rem;
-          }
-
-          .send-button:disabled {
-            --color: hsl(var(--muted));
           }
 
           .edit-preview {
@@ -1146,41 +1038,55 @@ const ChatView: React.FC = () => {
             text-overflow: ellipsis;
             white-space: nowrap;
           }
-
-          .extra-btn {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-width: 2rem;
-            height: 2rem;
-            border-radius: 50%;
-            background: transparent;
-            border: none;
-            cursor: pointer;
-            color: hsl(var(--muted-foreground));
-            font-size: 0.75rem;
-            font-weight: 700;
-            transition: color 0.15s;
-          }
-
-          .extra-btn:hover:not(:disabled) {
-            color: hsl(var(--primary));
-          }
-
-          .extra-btn:disabled {
-            opacity: 0.5;
-          }
-
-          .extra-btn ion-icon {
-            font-size: 1.1rem;
-          }
-
-          .textarea-wrapper {
-            flex: 1;
-            position: relative;
-          }
         `}</style>
       </IonFooter>
+
+      {/* MediaPicker (hidden inputs + image preview modal) */}
+      <MediaPicker
+        ref={mediaPickerRef}
+        onImageSelect={handleImageSelect}
+        onDocumentSelect={handleDocumentSelect}
+        imageBlocked={
+          (profile?.role === UserRole.TEXTER && texterSettings?.can_send_images === false) ||
+          !canUseFeature('canSendImages')
+        }
+        documentBlocked={
+          (profile?.role === UserRole.TEXTER && texterSettings?.can_send_documents === false) ||
+          !canUseFeature('canSendDocuments')
+        }
+        onImageBlocked={() => {
+          if (!canUseFeature('canSendImages')) {
+            showPaywall(t('paywall.upgradeToUse'));
+          } else {
+            setPermissionToast(t('permissions.imageNotAllowed'));
+          }
+        }}
+        onDocumentBlocked={() => {
+          if (!canUseFeature('canSendDocuments')) {
+            showPaywall(t('paywall.upgradeToUse'));
+          } else {
+            setPermissionToast(t('permissions.documentNotAllowed'));
+          }
+        }}
+      />
+
+      {/* Emoji + GIF tabbed panel */}
+      <EmojiGifPanel
+        isOpen={showEmojiGifPanel}
+        onClose={() => setShowEmojiGifPanel(false)}
+        onEmojiInsert={handleEmojiInsert}
+        onGifSelect={handleGifSelect}
+      />
+
+      {/* Attachment sheet */}
+      <AttachmentSheet
+        isOpen={showAttachmentSheet}
+        onClose={() => setShowAttachmentSheet(false)}
+        onGallery={() => mediaPickerRef.current?.openGallery()}
+        onLocation={() => {}}
+        onDocument={() => mediaPickerRef.current?.openDocument()}
+        onPoll={chat?.is_group ? () => setShowPollCreator(true) : undefined}
+      />
 
       {/* Inline reaction bar with "+" for full picker */}
       {reactionBarTarget && (
@@ -1238,18 +1144,6 @@ const ChatView: React.FC = () => {
           setForwardMessage_(null);
         }}
         onSelectChat={handleForwardToChat}
-      />
-
-      <GifPicker
-        isOpen={showGifPicker}
-        onClose={() => setShowGifPicker(false)}
-        onSelect={handleGifSelect}
-      />
-
-      <StickerPicker
-        isOpen={showStickerPicker}
-        onClose={() => setShowStickerPicker(false)}
-        onSelect={handleStickerSelect}
       />
 
       <PollCreator

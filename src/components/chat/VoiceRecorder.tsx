@@ -356,20 +356,21 @@ const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
           display: flex;
           align-items: center;
           justify-content: center;
-          width: 2.5rem;
-          height: 2.5rem;
+          width: 2.25rem;
+          height: 2.25rem;
+          min-width: 2.25rem;
           border-radius: 50%;
-          background: hsl(var(--muted) / 0.3);
-          color: hsl(var(--foreground));
+          background: transparent;
+          color: #9CA3AF;
           border: none;
           cursor: pointer;
           transition: all 0.15s;
-          font-size: 1.25rem;
+          font-size: 1.35rem;
+          flex-shrink: 0;
         }
 
         .mic-button:hover:not(:disabled) {
-          background: hsl(var(--primary));
-          color: hsl(var(--primary-foreground));
+          color: hsl(var(--foreground));
         }
 
         .mic-button:disabled {
