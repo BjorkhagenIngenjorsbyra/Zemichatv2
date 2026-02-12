@@ -1,17 +1,10 @@
 import { useEffect, useRef } from 'react';
 import { hapticLight } from '../../utils/haptics';
-import data from '@emoji-mart/data';
-import Picker from '@emoji-mart/react';
+import ReactEmojiPicker, { EmojiClickData, Theme } from 'emoji-picker-react';
 
 interface EmojiPickerProps {
   onSelect: (emoji: string) => void;
   onClose: () => void;
-}
-
-interface EmojiMartEmoji {
-  native: string;
-  id: string;
-  name: string;
 }
 
 const EmojiPicker: React.FC<EmojiPickerProps> = ({ onSelect, onClose }) => {
@@ -27,9 +20,9 @@ const EmojiPicker: React.FC<EmojiPickerProps> = ({ onSelect, onClose }) => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [onClose]);
 
-  const handleSelect = (emoji: EmojiMartEmoji) => {
+  const handleSelect = (emojiData: EmojiClickData) => {
     hapticLight();
-    onSelect(emoji.native);
+    onSelect(emojiData.emoji);
     onClose();
   };
 
@@ -42,30 +35,13 @@ const EmojiPicker: React.FC<EmojiPickerProps> = ({ onSelect, onClose }) => {
         role="dialog"
         aria-label="Select reaction"
       >
-        <Picker
-          data={data}
-          onEmojiSelect={handleSelect}
-          theme="dark"
-          set="native"
-          perLine={8}
-          emojiSize={28}
-          emojiButtonSize={36}
-          maxFrequentRows={2}
-          previewPosition="none"
-          skinTonePosition="search"
-          navPosition="top"
-          categories={[
-            'frequent',
-            'people',
-            'nature',
-            'foods',
-            'activity',
-            'places',
-            'objects',
-            'symbols',
-            'flags',
-          ]}
-          locale="sv"
+        <ReactEmojiPicker
+          onEmojiClick={handleSelect}
+          theme={Theme.DARK}
+          searchPlaceholder="Sök emoji..."
+          width="100%"
+          height={350}
+          previewConfig={{ showPreview: false }}
         />
       </div>
 
@@ -102,21 +78,17 @@ const EmojiPicker: React.FC<EmojiPickerProps> = ({ onSelect, onClose }) => {
           to { transform: translateY(0); }
         }
 
-        /* Override emoji-mart styles for Zemichat dark theme */
-        .full-emoji-picker em-emoji-picker {
-          width: 100% !important;
-          max-width: 100% !important;
-          height: 55vh !important;
-          max-height: 55vh !important;
-          --rgb-background: 20, 24, 36;
-          --rgb-input: 35, 40, 60;
-          --rgb-color: 243, 244, 246;
-          --rgb-accent: 124, 58, 237;
-          --font-family: 'Outfit', system-ui, sans-serif;
-          --font-size: 14px;
-          --shadow: none;
+        .full-emoji-picker .epr-main {
+          --epr-bg-color: rgb(20, 24, 36) !important;
+          --epr-category-label-bg-color: rgb(20, 24, 36) !important;
+          --epr-search-input-bg-color: rgb(35, 40, 60) !important;
+          --epr-hover-bg-color: rgba(124, 58, 237, 0.2) !important;
+          --epr-active-skin-tone-indicator-border-color: rgb(124, 58, 237) !important;
+          --epr-search-input-text-color: #f3f4f6 !important;
+          --epr-text-color: #f3f4f6 !important;
           border: none !important;
           border-radius: 0 !important;
+          font-family: 'Outfit', system-ui, sans-serif !important;
         }
       `}</style>
     </div>
