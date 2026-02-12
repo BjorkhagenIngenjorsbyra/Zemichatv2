@@ -152,7 +152,7 @@ const StickerPicker: React.FC<StickerPickerProps> = ({ isOpen, onClose, onSelect
           display: grid;
           grid-template-columns: repeat(5, 1fr);
           gap: 4px;
-          padding: 0.5rem;
+          padding: 0.5rem 0.5rem calc(0.5rem + env(safe-area-inset-bottom, 0px));
           overflow-y: auto;
           flex: 1;
         }

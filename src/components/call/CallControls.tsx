@@ -84,7 +84,7 @@ const CallControls: React.FC<CallControlsProps> = ({
           justify-content: center;
           align-items: center;
           gap: 1rem;
-          padding: 1.5rem;
+          padding: 1.5rem 1.5rem calc(1.5rem + env(safe-area-inset-bottom, 0px));
           background: hsl(var(--background) / 0.9);
           backdrop-filter: blur(10px);
         }

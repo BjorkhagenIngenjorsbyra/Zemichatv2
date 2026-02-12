@@ -71,6 +71,8 @@ const EmojiPicker: React.FC<EmojiPickerProps> = ({ onSelect, onClose }) => {
           animation: emojiPickerSlideUp 0.2s ease-out;
           overflow: hidden;
           border-radius: 1.25rem 1.25rem 0 0;
+          padding-bottom: env(safe-area-inset-bottom, 0px);
+          background: rgb(20, 24, 36);
         }
 
         @keyframes emojiPickerSlideUp {

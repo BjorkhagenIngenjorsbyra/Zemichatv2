@@ -198,7 +198,7 @@ const PollCreator: React.FC<PollCreatorProps> = ({ isOpen, onClose, onCreate }) 
         .poll-creator-body {
           flex: 1;
           overflow-y: auto;
-          padding: 1rem;
+          padding: 1rem 1rem calc(1rem + env(safe-area-inset-bottom, 0px));
         }
 
         .poll-field {
