@@ -12,6 +12,7 @@ const ALLOWED_ORIGINS = [
   'http://127.0.0.1:8100',
   'capacitor://localhost',
   'http://localhost',
+  'https://app.zemichat.com',
 ];
 
 function getCorsHeaders(req: Request): Record<string, string> {
