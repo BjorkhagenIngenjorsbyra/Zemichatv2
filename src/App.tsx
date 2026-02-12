@@ -30,6 +30,7 @@ import Login from './pages/Login';
 import TexterLogin from './pages/TexterLogin';
 import Signup from './pages/Signup';
 import VerifyEmail from './pages/VerifyEmail';
+import EmailConfirmed from './pages/EmailConfirmed';
 import CreateTeam from './pages/CreateTeam';
 import ChoosePlan from './pages/ChoosePlan';
 import Dashboard from './pages/Dashboard';
@@ -87,6 +88,25 @@ import './theme/variables.css';
 setupIonicReact();
 
 /**
+ * Detects Supabase auth callback hash fragments (email verification, password reset)
+ * and redirects to the appropriate confirmation page.
+ */
+const AuthCallbackHandler: React.FC = () => {
+  const history = useHistory();
+
+  useEffect(() => {
+    const hash = window.location.hash;
+    if (hash && hash.includes('type=signup')) {
+      // Email verification callback — clear the hash and show confirmation
+      window.location.hash = '';
+      history.replace('/email-confirmed');
+    }
+  }, [history]);
+
+  return null;
+};
+
+/**
  * Registers push notification navigation handler and initializes
  * push once the user is authenticated with a profile.
  */
@@ -115,6 +135,7 @@ const App: React.FC = () => (
       <SubscriptionProvider>
         <CallProvider>
           <IonReactRouter>
+          <AuthCallbackHandler />
           <PushInit />
           <IonRouterOutlet>
             <Switch>
@@ -137,6 +158,9 @@ const App: React.FC = () => (
             <PublicRoute exact path="/verify-email">
               <VerifyEmail />
             </PublicRoute>
+            <Route exact path="/email-confirmed">
+              <EmailConfirmed />
+            </Route>
 
             {/* Semi-protected routes - needs auth but not profile */}
             <PrivateRoute exact path="/create-team" requireProfile={false}>

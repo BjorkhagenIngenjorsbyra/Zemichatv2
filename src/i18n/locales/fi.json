@@ -568,6 +568,11 @@
     "resent": "Uusi sähköposti lähetetty!",
     "goToLogin": "Siirry kirjautumiseen"
   },
+  "emailConfirmed": {
+    "title": "Sähköposti vahvistettu!",
+    "description": "Tilisi on nyt aktivoitu. Voit kirjautua sisään.",
+    "redirect": "Ohjataan kirjautumiseen {{seconds}}s..."
+  },
   "choosePlan": {
     "title": "Valitse suunnitelmasi",
     "subtitle": "Kaikki suunnitelmat alkavat ilmaisella kokeilujaksolla",

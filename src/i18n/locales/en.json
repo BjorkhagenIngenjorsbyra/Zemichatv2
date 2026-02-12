@@ -568,6 +568,11 @@
     "resent": "New email sent!",
     "goToLogin": "Go to login"
   },
+  "emailConfirmed": {
+    "title": "Email verified!",
+    "description": "Your account is now activated. You can log in.",
+    "redirect": "Redirecting to login in {{seconds}}s..."
+  },
   "choosePlan": {
     "title": "Choose your plan",
     "subtitle": "All plans start with a free trial",

@@ -568,6 +568,11 @@
     "resent": "Ny e-mail sendt!",
     "goToLogin": "Gå til login"
   },
+  "emailConfirmed": {
+    "title": "E-mail bekræftet!",
+    "description": "Din konto er nu aktiveret. Du kan logge ind.",
+    "redirect": "Omdirigerer til login om {{seconds}}s..."
+  },
   "choosePlan": {
     "title": "Vælg din plan",
     "subtitle": "Alle planer starter med en gratis prøveperiode",
