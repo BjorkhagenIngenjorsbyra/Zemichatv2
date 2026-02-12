@@ -639,5 +639,21 @@
     "sendFailed": "Lähettäminen epäonnistui. Yritä uudelleen.",
     "sending": "Lähetetään...",
     "images": "kuvaa"
+  },
+  "referral": {
+    "title": "Kutsu ystäviä",
+    "yourCode": "Suosittelukoodisi",
+    "share": "Jaa",
+    "shareText": "Kokeile Zemichatia – turvallinen perhechatti! Käytä koodiani {{code}} aloittaaksesi. Lataa: https://zemichat.com",
+    "referredCount": "Olet suositellut {{count}} perhettä",
+    "rewardsEarned": "{{count}} kuukautta ilmaista Plus Ringaa",
+    "pendingRewards": "{{count}} odottavaa palkkiota",
+    "haveCode": "Onko sinulla suosittelukoodi?",
+    "enterCode": "Syötä suosittelukoodi",
+    "codeValid": "Koodi kelvollinen! Suositeltu: {{teamName}}",
+    "codeInvalid": "Virheellinen suosittelukoodi",
+    "skip": "Ohita",
+    "continue": "Jatka",
+    "copied": "Koodi kopioitu!"
   }
 }

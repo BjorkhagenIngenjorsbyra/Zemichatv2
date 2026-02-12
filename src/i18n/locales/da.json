@@ -639,5 +639,21 @@
     "sendFailed": "Kunne ikke sende. Prøv igen.",
     "sending": "Sender...",
     "images": "billeder"
+  },
+  "referral": {
+    "title": "Inviter venner",
+    "yourCode": "Din henvisningskode",
+    "share": "Del",
+    "shareText": "Prøv Zemichat – sikker familiechat! Brug min kode {{code}} for at komme i gang. Download: https://zemichat.com",
+    "referredCount": "Du har henvist {{count}} familier",
+    "rewardsEarned": "{{count}} måneders gratis Plus Ringa",
+    "pendingRewards": "{{count}} ventende belønninger",
+    "haveCode": "Har du en henvisningskode?",
+    "enterCode": "Indtast henvisningskode",
+    "codeValid": "Kode gyldig! Henvist af {{teamName}}",
+    "codeInvalid": "Ugyldig henvisningskode",
+    "skip": "Spring over",
+    "continue": "Fortsæt",
+    "copied": "Koden kopieret!"
   }
 }

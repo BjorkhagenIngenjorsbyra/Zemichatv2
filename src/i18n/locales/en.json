@@ -639,5 +639,21 @@
     "sendFailed": "Failed to send. Try again.",
     "sending": "Sending...",
     "images": "images"
+  },
+  "referral": {
+    "title": "Invite friends",
+    "yourCode": "Your referral code",
+    "share": "Share",
+    "shareText": "Try Zemichat – safe family chat! Use my code {{code}} to get started. Download: https://zemichat.com",
+    "referredCount": "You have referred {{count}} families",
+    "rewardsEarned": "{{count}} months free Plus Ringa",
+    "pendingRewards": "{{count}} pending rewards",
+    "haveCode": "Do you have a referral code?",
+    "enterCode": "Enter referral code",
+    "codeValid": "Code valid! Referred by {{teamName}}",
+    "codeInvalid": "Invalid referral code",
+    "skip": "Skip",
+    "continue": "Continue",
+    "copied": "Code copied!"
   }
 }

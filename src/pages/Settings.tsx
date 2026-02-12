@@ -26,12 +26,17 @@ import {
   gridOutline,
   chevronForwardOutline,
   logOutOutline,
+  shareSocialOutline,
+  copyOutline,
+  peopleOutline,
 } from 'ionicons/icons';
+import { Capacitor } from '@capacitor/core';
 import { useAuthContext } from '../contexts/AuthContext';
 import { useSubscription } from '../contexts/SubscriptionContext';
 import { getTeamMembers } from '../services/members';
 import { exportUserData, deleteOwnerAccount, deleteSuperAccount, updateUserProfile, downloadJSON } from '../services/gdpr';
-import { UserRole, PlanType } from '../types/database';
+import { claimReferralRewards, getReferralStats } from '../services/referral';
+import { UserRole, PlanType, type ReferralStats } from '../types/database';
 import { SOSButton } from '../components/sos';
 import { supportedLanguages, changeLanguage, getCurrentLanguage } from '../i18n';
 
@@ -63,6 +68,10 @@ const Settings: React.FC = () => {
   // Language
   const [currentLang, setCurrentLang] = useState(getCurrentLanguage());
 
+  // Referral
+  const [referralStats, setReferralStats] = useState<ReferralStats | null>(null);
+  const [referralCopied, setReferralCopied] = useState(false);
+
   const confirmWord = t('settings.deleteAccountConfirmWord');
   const canDelete = confirmText === confirmWord;
 
@@ -72,9 +81,18 @@ const Settings: React.FC = () => {
     setMemberCount(members.length);
   }, [isOwner]);
 
+  const loadReferralStats = useCallback(async () => {
+    if (!isOwner) return;
+    // Auto-claim any pending rewards, then fetch stats
+    await claimReferralRewards();
+    const { stats } = await getReferralStats();
+    setReferralStats(stats);
+  }, [isOwner]);
+
   useEffect(() => {
     loadMemberCount();
-  }, [loadMemberCount]);
+    loadReferralStats();
+  }, [loadMemberCount, loadReferralStats]);
 
   useEffect(() => {
     if (profile?.display_name) {
@@ -140,6 +158,36 @@ const Settings: React.FC = () => {
 
   const handleSignOut = async () => {
     await signOut();
+  };
+
+  const handleCopyReferralCode = async () => {
+    if (!referralStats?.referral_code) return;
+    try {
+      await navigator.clipboard.writeText(referralStats.referral_code);
+      setReferralCopied(true);
+      setTimeout(() => setReferralCopied(false), 2000);
+    } catch {
+      // Fallback: do nothing
+    }
+  };
+
+  const handleShareReferral = async () => {
+    if (!referralStats?.referral_code) return;
+    const text = t('referral.shareText', { code: referralStats.referral_code });
+
+    if (Capacitor.isNativePlatform()) {
+      const { Share } = await import('@capacitor/share');
+      await Share.share({ text });
+    } else {
+      // Web fallback: copy to clipboard
+      try {
+        await navigator.clipboard.writeText(text);
+        setReferralCopied(true);
+        setTimeout(() => setReferralCopied(false), 2000);
+      } catch {
+        // Fallback: do nothing
+      }
+    }
   };
 
   const handleLanguageChange = async (langCode: string) => {
@@ -213,6 +261,58 @@ const Settings: React.FC = () => {
                     ? t('settings.changePlan')
                     : t('settings.upgradePlan')}
                 </IonButton>
+              </div>
+            </div>
+          )}
+
+          {/* Referral Section - Owner only */}
+          {isOwner && referralStats && (
+            <div className="section">
+              <h3 className="section-title">{t('referral.title')}</h3>
+              <div className="card referral-card">
+                <div className="referral-code-box">
+                  <span className="referral-code-label">{t('referral.yourCode')}</span>
+                  <div className="referral-code-row">
+                    <span className="referral-code-value">{referralStats.referral_code}</span>
+                    <IonButton
+                      fill="clear"
+                      size="small"
+                      onClick={handleCopyReferralCode}
+                      className="referral-copy-btn"
+                    >
+                      <IonIcon icon={copyOutline} />
+                    </IonButton>
+                  </div>
+                  {referralCopied && (
+                    <p className="success-text" style={{ margin: '0.25rem 0 0 0' }}>{t('referral.copied')}</p>
+                  )}
+                </div>
+
+                <IonButton
+                  expand="block"
+                  size="small"
+                  onClick={handleShareReferral}
+                >
+                  <IonIcon icon={shareSocialOutline} slot="start" />
+                  {t('referral.share')}
+                </IonButton>
+
+                <div className="referral-stats">
+                  <div className="referral-stat-row">
+                    <IonIcon icon={peopleOutline} />
+                    <span>{t('referral.referredCount', { count: referralStats.total_referred })}</span>
+                  </div>
+                  {referralStats.rewards_earned > 0 && (
+                    <div className="referral-stat-row">
+                      <span>{t('referral.rewardsEarned', { count: referralStats.rewards_earned })}</span>
+                    </div>
+                  )}
+                  {referralStats.pending_rewards > 0 && (
+                    <div className="referral-stat-row referral-pending">
+                      <span>{t('referral.pendingRewards', { count: referralStats.pending_rewards })}</span>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           )}
@@ -843,6 +943,71 @@ const Settings: React.FC = () => {
             margin: 0;
             font-size: 0.875rem;
             line-height: 1.5;
+          }
+
+          .referral-card {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+          }
+
+          .referral-code-box {
+            text-align: center;
+            padding: 0.5rem 0;
+          }
+
+          .referral-code-label {
+            font-size: 0.8rem;
+            color: hsl(var(--muted-foreground));
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+          }
+
+          .referral-code-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.25rem;
+            margin-top: 0.25rem;
+          }
+
+          .referral-code-value {
+            font-size: 1.5rem;
+            font-weight: 800;
+            font-family: monospace;
+            color: hsl(var(--primary));
+            letter-spacing: 0.05em;
+          }
+
+          .referral-copy-btn {
+            --color: hsl(var(--muted-foreground));
+            --padding-start: 4px;
+            --padding-end: 4px;
+          }
+
+          .referral-stats {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+            padding-top: 0.5rem;
+            border-top: 1px solid hsl(var(--border));
+          }
+
+          .referral-stat-row {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.85rem;
+            color: hsl(var(--muted-foreground));
+          }
+
+          .referral-stat-row ion-icon {
+            font-size: 1rem;
+          }
+
+          .referral-pending {
+            color: hsl(var(--primary));
+            font-weight: 500;
           }
         `}</style>
       </IonContent>

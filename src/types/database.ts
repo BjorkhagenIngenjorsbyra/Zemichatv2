@@ -81,6 +81,7 @@ export interface Team {
   owner_id: string;
   plan: PlanType;
   trial_ends_at: string | null;
+  referral_code: string;
   created_at: string;
   updated_at: string;
 }
@@ -315,6 +316,21 @@ export interface TeamInvitation {
   created_at: string;
 }
 
+export interface Referral {
+  id: string;
+  referrer_team_id: string;
+  referred_team_id: string;
+  reward_granted_at: string | null;
+  created_at: string;
+}
+
+export interface ReferralStats {
+  referral_code: string | null;
+  total_referred: number;
+  rewards_earned: number;
+  pending_rewards: number;
+}
+
 // ============================================================
 // POLL INTERFACES
 // ============================================================
@@ -479,6 +495,11 @@ export interface Database {
         Insert: Pick<SupportRequest, 'user_id' | 'type' | 'subject' | 'description' | 'email'> & Partial<Omit<SupportRequest, 'id' | 'user_id' | 'type' | 'subject' | 'description' | 'email'>>;
         Update: Partial<Omit<SupportRequest, 'id'>>;
       };
+      referrals: {
+        Row: Referral;
+        Insert: Pick<Referral, 'referrer_team_id' | 'referred_team_id'> & Partial<Omit<Referral, 'id' | 'referrer_team_id' | 'referred_team_id'>>;
+        Update: Partial<Omit<Referral, 'id'>>;
+      };
     };
     Enums: {
       plan_type: PlanType;
@@ -559,6 +580,31 @@ export interface Database {
           inviter_name: string;
           expires_at: string;
         };
+      };
+      validate_referral_code: {
+        Args: {
+          code: string;
+        };
+        Returns: {
+          valid: boolean;
+          team_name: string | null;
+        };
+      };
+      submit_referral: {
+        Args: {
+          code: string;
+        };
+        Returns: void;
+      };
+      claim_referral_rewards: {
+        Args: Record<string, never>;
+        Returns: {
+          claimed_count: number;
+        };
+      };
+      get_referral_stats: {
+        Args: Record<string, never>;
+        Returns: ReferralStats;
       };
     };
   };

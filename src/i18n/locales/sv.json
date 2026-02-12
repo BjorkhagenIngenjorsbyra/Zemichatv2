@@ -639,5 +639,21 @@
     "sendFailed": "Kunde inte skicka. Försök igen.",
     "sending": "Skickar...",
     "images": "bilder"
+  },
+  "referral": {
+    "title": "Bjud in vänner",
+    "yourCode": "Din värvningskod",
+    "share": "Dela",
+    "shareText": "Testa Zemichat – trygg familjechatt! Använd min kod {{code}} för att komma igång. Ladda ner: https://zemichat.com",
+    "referredCount": "Du har värvat {{count}} familjer",
+    "rewardsEarned": "{{count}} månader gratis Plus Ringa",
+    "pendingRewards": "{{count}} väntande belöningar",
+    "haveCode": "Har du en värvningskod?",
+    "enterCode": "Ange värvningskod",
+    "codeValid": "Kod giltig! Värvad av {{teamName}}",
+    "codeInvalid": "Ogiltig värvningskod",
+    "skip": "Hoppa över",
+    "continue": "Fortsätt",
+    "copied": "Koden kopierad!"
   }
 }
