@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSwipeable } from 'react-swipeable';
 import { hapticLight, hapticMedium } from '../../utils/haptics';
@@ -51,8 +51,10 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
   const [showHeartAnim, setShowHeartAnim] = useState(false);
   const bubbleRef = useRef<HTMLDivElement>(null);
   const lastTapRef = useRef<number>(0);
+  const longPressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const SWIPE_THRESHOLD = 60;
   const DOUBLE_TAP_DELAY = 300;
+  const LONG_PRESS_DELAY = 400;
 
   const formatMessageTime = (dateStr: string): string => {
     const date = new Date(dateStr);
@@ -84,6 +86,25 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
       lastTapRef.current = now;
     }
   }, [message.id, onToggleReaction]);
+
+  const cancelLongPress = useCallback(() => {
+    if (longPressTimerRef.current) {
+      clearTimeout(longPressTimerRef.current);
+      longPressTimerRef.current = null;
+    }
+  }, []);
+
+  const handleTouchStart = useCallback(() => {
+    cancelLongPress();
+    longPressTimerRef.current = setTimeout(() => {
+      longPressTimerRef.current = null;
+      handleLongPress();
+    }, LONG_PRESS_DELAY);
+  }, [cancelLongPress, handleLongPress]);
+
+  useEffect(() => {
+    return () => cancelLongPress();
+  }, [cancelLongPress]);
 
   const swipeHandlers = useSwipeable({
     onSwiping: (e) => {
@@ -251,6 +272,9 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
         className={`message-bubble ${isOwn ? 'own' : 'other'} ${isJustSent ? 'message-just-sent' : ''} ${message.type === 'sticker' ? 'sticker-only' : ''}`}
         data-testid={`message-bubble-${message.id}`}
         onClick={handleTap}
+        onTouchStart={handleTouchStart}
+        onTouchMove={cancelLongPress}
+        onTouchEnd={cancelLongPress}
         onContextMenu={(e) => {
           e.preventDefault();
           handleLongPress();
@@ -308,6 +332,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
           transition: transform 0.1s ease-out;
           display: flex;
           align-items: center;
+          max-width: 85%;
         }
 
         .reply-indicator {
@@ -328,7 +353,6 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
         }
 
         .message-bubble {
-          max-width: 80%;
           padding: 0.5rem 0.75rem;
           border-radius: 1.25rem;
           position: relative;

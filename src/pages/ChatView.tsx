@@ -213,7 +213,13 @@ const ChatView: React.FC = () => {
     if (messageIds.length === 0) return;
 
     const { reactionsByMessage } = await getReactionsForMessages(messageIds);
-    setReactions(reactionsByMessage);
+    setReactions((prev) => {
+      const merged = new Map(prev);
+      for (const [msgId, grouped] of reactionsByMessage) {
+        merged.set(msgId, grouped);
+      }
+      return merged;
+    });
   }, []);
 
   const loadReadReceipts = useCallback(async (messageIds: string[]) => {
