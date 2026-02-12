@@ -1,25 +1,7 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-
-// Allowed origins for CORS - restrict to known domains
-const ALLOWED_ORIGINS = [
-  'http://localhost:5173',
-  'http://localhost:8100',
-  'http://127.0.0.1:5173',
-  'http://127.0.0.1:8100',
-  'capacitor://localhost',
-  'http://localhost',
-  'https://app.zemichat.com',
-];
-
-function getCorsHeaders(req: Request): Record<string, string> {
-  const origin = req.headers.get('Origin') || '';
-  const allowedOrigin = ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
-  return {
-    'Access-Control-Allow-Origin': allowedOrigin,
-    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-  };
-}
+import { getCorsHeaders, corsPreflightResponse } from '../_shared/cors.ts';
+import { checkRateLimit, rateLimitResponse } from '../_shared/rate-limit.ts';
 
 interface RequestBody {
   email: string;
@@ -32,7 +14,7 @@ serve(async (req) => {
 
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders });
+    return corsPreflightResponse(req);
   }
 
   try {
@@ -78,6 +60,15 @@ serve(async (req) => {
       });
     }
 
+    // Rate limiting: max 5 calls/minute
+    const serviceClient = createClient(supabaseUrl, supabaseServiceKey, {
+      auth: { autoRefreshToken: false, persistSession: false },
+    });
+    const rl = await checkRateLimit(serviceClient, 'send-invitation', user.id, 5);
+    if (!rl.allowed) {
+      return rateLimitResponse(corsHeaders, rl.retryAfterSeconds);
+    }
+
     // Parse request body
     const body: RequestBody = await req.json();
     const { email, invitationId, inviteLink } = body;
@@ -111,8 +102,6 @@ serve(async (req) => {
     }
 
     // Use service role client to fetch invitation details
-    const serviceClient = createClient(supabaseUrl, supabaseServiceKey);
-
     const { data: invitation, error: invError } = await serviceClient
       .from('team_invitations')
       .select('*, teams(name), users!team_invitations_invited_by_fkey(display_name)')

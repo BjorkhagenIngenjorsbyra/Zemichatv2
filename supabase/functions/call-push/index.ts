@@ -1,5 +1,7 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { getCorsHeaders, corsPreflightResponse } from '../_shared/cors.ts';
+import { checkRateLimit, rateLimitResponse } from '../_shared/rate-limit.ts';
 
 // ============================================================
 // Types
@@ -20,30 +22,7 @@ interface PushTokenRow {
 }
 
 // ============================================================
-// CORS
-// ============================================================
-
-const ALLOWED_ORIGINS = [
-  'http://localhost:5173',
-  'http://localhost:8100',
-  'http://127.0.0.1:5173',
-  'http://127.0.0.1:8100',
-  'capacitor://localhost',
-  'http://localhost',
-  'https://app.zemichat.com',
-];
-
-function getCorsHeaders(req: Request): Record<string, string> {
-  const origin = req.headers.get('Origin') || '';
-  const allowedOrigin = ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
-  return {
-    'Access-Control-Allow-Origin': allowedOrigin,
-    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-  };
-}
-
-// ============================================================
-// FCM Authentication (same as send-push — Google OAuth2)
+// FCM Authentication (Google OAuth2 via Service Account)
 // ============================================================
 
 function base64url(data: Uint8Array): string {
@@ -130,10 +109,7 @@ async function getAccessToken(
 serve(async (req) => {
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
-    return new Response(null, {
-      status: 204,
-      headers: getCorsHeaders(req),
-    });
+    return corsPreflightResponse(req);
   }
 
   if (req.method !== 'POST') {
@@ -169,6 +145,17 @@ serve(async (req) => {
       });
     }
 
+    // Service role client for DB queries (bypasses RLS)
+    const supabase = createClient(supabaseUrl, serviceRoleKey, {
+      auth: { autoRefreshToken: false, persistSession: false },
+    });
+
+    // Rate limiting: max 10 calls/minute
+    const rl = await checkRateLimit(supabase, 'call-push', user.id, 10);
+    if (!rl.allowed) {
+      return rateLimitResponse(corsHeaders, rl.retryAfterSeconds);
+    }
+
     // Parse payload
     const payload: RequestPayload = await req.json();
     const { chatId, callLogId, callType, action } = payload;
@@ -186,11 +173,6 @@ serve(async (req) => {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
-
-    // Service role client for DB queries (bypasses RLS)
-    const supabase = createClient(supabaseUrl, serviceRoleKey, {
-      auth: { autoRefreshToken: false, persistSession: false },
-    });
 
     // Find recipients: all other active chat members
     const { data: members } = await supabase
@@ -357,7 +339,7 @@ serve(async (req) => {
       JSON.stringify({ error: 'Internal server error' }),
       {
         status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
       }
     );
   }

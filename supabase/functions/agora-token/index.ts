@@ -1,28 +1,7 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-
-// ============================================================
-// CORS
-// ============================================================
-
-const ALLOWED_ORIGINS = [
-  'http://localhost:5173',
-  'http://localhost:8100',
-  'http://127.0.0.1:5173',
-  'http://127.0.0.1:8100',
-  'capacitor://localhost',
-  'http://localhost',
-  'https://app.zemichat.com',
-];
-
-function getCorsHeaders(req: Request): Record<string, string> {
-  const origin = req.headers.get('Origin') || '';
-  const allowedOrigin = ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
-  return {
-    'Access-Control-Allow-Origin': allowedOrigin,
-    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-  };
-}
+import { getCorsHeaders, corsPreflightResponse } from '../_shared/cors.ts';
+import { checkRateLimit, rateLimitResponse } from '../_shared/rate-limit.ts';
 
 // ============================================================
 // CRC32 (matches crc-32 npm package used by Agora's Node.js SDK)
@@ -217,7 +196,7 @@ serve(async (req) => {
   const cors = getCorsHeaders(req);
 
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: cors });
+    return corsPreflightResponse(req);
   }
 
   try {
@@ -242,6 +221,15 @@ serve(async (req) => {
         JSON.stringify({ error: 'Unauthorized' }),
         { status: 401, headers: { ...cors, 'Content-Type': 'application/json' } }
       );
+    }
+
+    // Rate limiting: max 10 calls/minute
+    const serviceClient = createClient(supabaseUrl, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!, {
+      auth: { autoRefreshToken: false, persistSession: false },
+    });
+    const rl = await checkRateLimit(serviceClient, 'agora-token', user.id, 10);
+    if (!rl.allowed) {
+      return rateLimitResponse(cors, rl.retryAfterSeconds);
     }
 
     // Parse & validate body

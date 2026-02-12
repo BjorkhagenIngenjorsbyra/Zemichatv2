@@ -1,5 +1,6 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { checkRateLimit } from '../_shared/rate-limit.ts';
 
 // ============================================================
 // Types
@@ -211,7 +212,7 @@ function getNotificationBody(messageType: string, content: string): string {
 // ============================================================
 
 serve(async (req) => {
-  // Only accept POST
+  // No CORS needed — this is triggered internally by pg_net
   if (req.method !== 'POST') {
     return new Response('Method not allowed', { status: 405 });
   }
@@ -234,6 +235,15 @@ serve(async (req) => {
     const supabase = createClient(supabaseUrl, serviceRoleKey, {
       auth: { autoRefreshToken: false, persistSession: false },
     });
+
+    // Rate limiting: max 60 calls/minute per sender
+    const rl = await checkRateLimit(supabase, 'send-push', sender_id, 60);
+    if (!rl.allowed) {
+      return new Response(JSON.stringify({ error: 'Rate limit exceeded' }), {
+        status: 429,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
 
     // Verify message exists and was created recently (< 5 minutes)
     // This replaces Bearer auth — only the DB trigger sends valid, fresh message IDs
