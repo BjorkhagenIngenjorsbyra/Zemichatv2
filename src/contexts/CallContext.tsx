@@ -46,6 +46,11 @@ import {
   canMakeCall,
   canScreenShare,
 } from '../services/call';
+import {
+  sendCallPush,
+  getPendingCallAction,
+  dismissNativeCallNotification,
+} from '../services/callPush';
 import { supabase } from '../services/supabase';
 import { type CallLog } from '../types/database';
 
@@ -330,6 +335,9 @@ export function CallProvider({ children }: CallProviderProps) {
 
       // Send ring signal to other participant
       await sendCallSignal(chatId, callLog.id, SignalType.RING);
+
+      // Push notification for background/killed app
+      sendCallPush(chatId, callLog.id, callType, 'ring');
     } catch (err) {
       console.error('Call setup failed:', err);
       setCallError('call.error');
@@ -342,6 +350,9 @@ export function CallProvider({ children }: CallProviderProps) {
     if (!incomingCall || !profile) return;
 
     setCallError(null);
+
+    // Dismiss native call notification if present
+    dismissNativeCallNotification();
 
     const newCall: ActiveCall = {
       callLogId: incomingCall.callLogId,
@@ -469,6 +480,7 @@ export function CallProvider({ children }: CallProviderProps) {
 
   const declineCall = useCallback(async () => {
     if (!incomingCall) return;
+    dismissNativeCallNotification();
     await updateCallStatus(incomingCall.callLogId, CallStatus.DECLINED);
     await deleteCallSignals(incomingCall.callLogId);
     setIncomingCall(null);
@@ -481,6 +493,9 @@ export function CallProvider({ children }: CallProviderProps) {
       clearTimeout(ringTimeoutRef.current);
       ringTimeoutRef.current = null;
     }
+
+    // Cancel push notification on receiver's device
+    sendCallPush(activeCall.chatId, activeCall.callLogId, activeCall.callType, 'cancel');
 
     if (activeCall.connectedAt) {
       await endCallLog(activeCall.callLogId, activeCall.connectedAt);
@@ -582,8 +597,19 @@ export function CallProvider({ children }: CallProviderProps) {
   useEffect(() => {
     if (!profile) return;
 
-    const unsubscribe = subscribeToCallSignals((signal, caller) => {
+    const unsubscribe = subscribeToCallSignals(async (signal, caller) => {
       if (activeCall) return;
+
+      // Look up call type from the call log (signal itself doesn't carry it)
+      let detectedCallType = CallType.VOICE;
+      const { data: log } = await supabase
+        .from('call_logs')
+        .select('type')
+        .eq('id', signal.call_log_id)
+        .single() as { data: { type: string } | null };
+      if (log?.type === 'video') {
+        detectedCallType = CallType.VIDEO;
+      }
 
       setIncomingCall({
         callLogId: signal.call_log_id,
@@ -591,15 +617,68 @@ export function CallProvider({ children }: CallProviderProps) {
         callerId: caller.id,
         callerName: caller.display_name || 'Unknown',
         callerAvatar: caller.avatar_url || undefined,
-        callType: signal.signal_type === 'ring'
-          ? CallType.VOICE
-          : CallType.VOICE,
+        callType: detectedCallType,
         signalId: signal.id,
       });
     });
 
     return unsubscribe;
   }, [profile, activeCall]);
+
+  // ============================================================
+  // NATIVE CALL ANSWER DETECTION
+  // ============================================================
+  // When the user taps "Answer" on the native incoming call screen,
+  // the app opens with pending call data. We detect it and auto-answer.
+
+  useEffect(() => {
+    if (!profile) return;
+
+    let cancelled = false;
+
+    const checkNativeCallAction = async () => {
+      const action = await getPendingCallAction();
+      if (cancelled || !action || action.action !== 'answer') return;
+
+      // Set incoming call state, then immediately answer
+      const incoming: IncomingCall = {
+        callLogId: action.callLogId,
+        chatId: action.chatId,
+        callerId: action.callerId,
+        callerName: action.callerName,
+        callerAvatar: action.callerAvatar || undefined,
+        callType: action.callType === 'video' ? CallType.VIDEO : CallType.VOICE,
+        signalId: '', // Not needed for answer flow
+      };
+      setIncomingCall(incoming);
+    };
+
+    // Check once on mount and also when app resumes
+    checkNativeCallAction();
+
+    // Re-check when the app becomes visible (resume from background)
+    const onVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        checkNativeCallAction();
+      }
+    };
+    document.addEventListener('visibilitychange', onVisibilityChange);
+
+    return () => {
+      cancelled = true;
+      document.removeEventListener('visibilitychange', onVisibilityChange);
+    };
+  }, [profile]);
+
+  // ============================================================
+  // AUTO-ANSWER FROM NATIVE (signalId is empty when opened via native Answer button)
+  // ============================================================
+
+  useEffect(() => {
+    if (incomingCall && incomingCall.signalId === '') {
+      answerCall();
+    }
+  }, [incomingCall, answerCall]);
 
   // ============================================================
   // CALL CONNECTED DETECTION
