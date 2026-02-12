@@ -238,7 +238,7 @@ const ImageMessage: React.FC<ImageMessageProps> = ({
       }
     } catch (err) {
       // User cancelled share or not supported
-      console.log('Share cancelled:', err);
+      // User cancelled share or not supported
     }
   }, [currentUrl, metadata?.fileName]);
 

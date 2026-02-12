@@ -43,7 +43,7 @@ export async function initializeRevenueCat(userId: string): Promise<{ error: Err
 
     // Skip on web
     if (!Capacitor.isNativePlatform()) {
-      console.log('RevenueCat: Skipping initialization on web');
+      // Web: RevenueCat not available
       isInitialized = true;
       return { error: null };
     }

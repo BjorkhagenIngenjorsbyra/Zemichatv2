@@ -154,7 +154,7 @@ function registerListeners(): void {
 
   // Notification received while app is in foreground
   PushNotifications.addListener('pushNotificationReceived', (notification) => {
-    console.log('Push received in foreground:', notification.title);
+    // Foreground notification received — handled by Realtime
   });
 
   // User tapped on a notification

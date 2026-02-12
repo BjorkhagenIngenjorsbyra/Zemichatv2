@@ -6,4 +6,4 @@ export { default as CallPiP } from './CallPiP';
 export { default as VideoGrid } from './VideoGrid';
 export { default as VideoTile } from './VideoTile';
 export { default as IncomingCallModal } from './IncomingCallModal';
-export { default as CallLogMessage } from './CallLogMessage';
+

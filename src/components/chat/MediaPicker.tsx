@@ -105,7 +105,7 @@ const MediaPicker: React.FC<MediaPickerProps> = ({
       }
     } catch (err) {
       // User cancelled or permission denied
-      console.log('Camera cancelled:', err);
+      // User cancelled or permission denied
     }
   };
 
