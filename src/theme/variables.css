@@ -164,6 +164,23 @@ ion-input input::placeholder {
 
 ion-modal {
   --background: hsl(var(--background));
+  --backdrop-opacity: 0.7;
+}
+
+ion-modal::part(backdrop) {
+  background: #000;
+}
+
+ion-modal::part(content) {
+  background: hsl(var(--background));
+}
+
+ion-modal ion-content {
+  --background: hsl(var(--background));
+}
+
+ion-modal ion-header {
+  --background: hsl(var(--background));
 }
 
 ion-modal ion-toolbar {
