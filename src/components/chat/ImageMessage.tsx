@@ -489,6 +489,10 @@ const ImageMessage: React.FC<ImageMessageProps> = ({
           --background: transparent;
         }
 
+        .fullscreen-image-modal::part(content) {
+          background: transparent !important;
+        }
+
         .gallery-nav {
           position: absolute;
           top: 50%;

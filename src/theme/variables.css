@@ -163,29 +163,30 @@ ion-input input::placeholder {
 }
 
 ion-modal {
-  --background: hsl(var(--background));
+  --background: hsl(220, 50%, 7%);
   --backdrop-opacity: 0.7;
 }
 
 ion-modal::part(backdrop) {
-  background: #000;
+  background: #000 !important;
+  opacity: 0.7 !important;
 }
 
 ion-modal::part(content) {
-  background: hsl(var(--background));
+  background: hsl(220, 50%, 7%) !important;
 }
 
 ion-modal ion-content {
-  --background: hsl(var(--background));
+  --background: hsl(220, 50%, 7%);
 }
 
 ion-modal ion-header {
-  --background: hsl(var(--background));
+  --background: hsl(220, 50%, 7%);
 }
 
 ion-modal ion-toolbar {
-  --background: hsl(var(--card));
-  --color: hsl(var(--foreground));
+  --background: hsl(220, 39%, 11%);
+  --color: hsl(210, 40%, 98%);
 }
 
 ion-button {

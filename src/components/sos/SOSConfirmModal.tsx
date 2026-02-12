@@ -112,7 +112,7 @@ export const SOSConfirmModal: React.FC<SOSConfirmModalProps> = ({
           display: flex;
           align-items: center;
           justify-content: center;
-          background: transparent;
+          background: transparent !important;
         }
 
         .modal-content {
