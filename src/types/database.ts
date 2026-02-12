@@ -95,6 +95,7 @@ export interface User {
   status_message: string | null;
   last_seen_at: string | null;
   is_active: boolean;
+  is_paused: boolean;
   consent_accepted_at: string | null;
   created_at: string;
   updated_at: string;
@@ -369,10 +370,11 @@ export interface Database {
       };
       users: {
         Row: User;
-        Insert: Omit<User, 'created_at' | 'updated_at' | 'is_active'> & {
+        Insert: Omit<User, 'created_at' | 'updated_at' | 'is_active' | 'is_paused'> & {
           created_at?: string;
           updated_at?: string;
           is_active?: boolean;
+          is_paused?: boolean;
         };
         Update: Partial<Omit<User, 'id'>>;
       };

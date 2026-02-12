@@ -10,6 +10,7 @@ import {
   IonSpinner,
 } from '@ionic/react';
 import { useAuthContext } from '../contexts/AuthContext';
+import { useSubscription } from '../contexts/SubscriptionContext';
 import { createTeam } from '../services/team';
 import { ConfettiAnimation } from '../components/ConfettiAnimation';
 import { hapticSuccess } from '../utils/haptics';
@@ -18,6 +19,7 @@ const CreateTeam: React.FC = () => {
   const { t } = useTranslation();
   const history = useHistory();
   const { authUser, hasProfile, refreshProfile } = useAuthContext();
+  const { startTrial } = useSubscription();
   const [teamName, setTeamName] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -72,10 +74,12 @@ const CreateTeam: React.FC = () => {
       return;
     }
 
-    await refreshProfile();
     setShowConfetti(true);
     hapticSuccess();
-    redirectTimer.current = setTimeout(() => history.replace('/choose-plan'), 2000);
+    await refreshProfile();
+    // Auto-start 10-day Plus Ringa trial
+    await startTrial();
+    redirectTimer.current = setTimeout(() => history.replace('/chats'), 2000);
   };
 
   return (
@@ -83,9 +87,6 @@ const CreateTeam: React.FC = () => {
       <IonContent className="ion-padding" fullscreen>
         <div className="create-team-container">
           <div className="create-team-header">
-            <div className="step-indicator">
-              <span className="step-badge">{t('team.stepOf', { current: 1, total: 2 })}</span>
-            </div>
             <h1 className="create-team-title">{t('team.createTitle')}</h1>
             <p className="create-team-subtitle">{t('team.createSubtitle')}</p>
           </div>
@@ -148,19 +149,6 @@ const CreateTeam: React.FC = () => {
           .create-team-header {
             text-align: center;
             margin-bottom: 2rem;
-          }
-
-          .step-indicator {
-            margin-bottom: 1rem;
-          }
-
-          .step-badge {
-            background: hsl(var(--primary) / 0.15);
-            color: hsl(var(--primary));
-            padding: 0.375rem 0.75rem;
-            border-radius: 9999px;
-            font-size: 0.875rem;
-            font-weight: 600;
           }
 
           .create-team-title {

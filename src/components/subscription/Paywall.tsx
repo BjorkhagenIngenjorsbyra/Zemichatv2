@@ -16,21 +16,23 @@ import { useSubscription } from '../../contexts/SubscriptionContext';
 import { PlanType } from '../../types/database';
 import { PLAN_FEATURES, PLAN_PRICING, type RevenueCatPackage } from '../../types/subscription';
 
-type PlanId = 'start' | 'plus' | 'plus_ringa';
+type PlanId = 'plus' | 'plus_ringa';
 
 const PLAN_ID_TO_TYPE: Record<PlanId, PlanType> = {
-  start: PlanType.FREE,
   plus: PlanType.BASIC,
   plus_ringa: PlanType.PRO,
 };
 
 const PLAN_ID_TO_I18N: Record<PlanId, string> = {
-  start: 'paywall.planStart',
   plus: 'paywall.planPlus',
   plus_ringa: 'paywall.planPlusRinga',
 };
 
-const Paywall: React.FC = () => {
+interface PaywallProps {
+  blocking?: boolean;
+}
+
+const Paywall: React.FC<PaywallProps> = ({ blocking = false }) => {
   const { t } = useTranslation();
   const {
     isPaywallVisible,
@@ -39,10 +41,7 @@ const Paywall: React.FC = () => {
     currentOffering,
     purchase,
     restore,
-    startTrial,
     isLoading,
-    currentPlan,
-    isTrialActive,
   } = useSubscription();
 
   const [selectedPlan, setSelectedPlan] = useState<PlanId>('plus_ringa');
@@ -72,31 +71,11 @@ const Paywall: React.FC = () => {
     setIsProcessing(false);
   };
 
-  const handleStartTrial = async () => {
-    setIsProcessing(true);
-    const success = await startTrial();
-    if (success) {
-      hidePaywall();
-    }
-    setIsProcessing(false);
-  };
-
   const plans = [
-    {
-      id: 'start' as const,
-      name: t('paywall.planStart'),
-      price: PLAN_PRICING[PlanType.FREE].price,
-      isOneTime: true,
-      features: [
-        t('paywall.features.maxUsers', { count: PLAN_FEATURES[PlanType.FREE].maxUsers }),
-        t('paywall.features.textMessages'),
-      ],
-    },
     {
       id: 'plus' as const,
       name: t('paywall.planPlus'),
       price: PLAN_PRICING[PlanType.BASIC].price,
-      isOneTime: false,
       features: [
         t('paywall.features.maxUsers', { count: PLAN_FEATURES[PlanType.BASIC].maxUsers }),
         t('paywall.features.textMessages'),
@@ -107,7 +86,6 @@ const Paywall: React.FC = () => {
       id: 'plus_ringa' as const,
       name: t('paywall.planPlusRinga'),
       price: PLAN_PRICING[PlanType.PRO].price,
-      isOneTime: false,
       features: [
         t('paywall.features.maxUsers', { count: PLAN_FEATURES[PlanType.PRO].maxUsers }),
         t('paywall.features.textMessages'),
@@ -122,16 +100,20 @@ const Paywall: React.FC = () => {
     },
   ];
 
+  const isOpen = blocking || isPaywallVisible;
+
   return (
-    <IonModal isOpen={isPaywallVisible} onDidDismiss={hidePaywall}>
+    <IonModal isOpen={isOpen} onDidDismiss={blocking ? undefined : hidePaywall} canDismiss={!blocking}>
       <IonHeader>
         <IonToolbar>
-          <IonTitle>{t('paywall.title')}</IonTitle>
-          <IonButtons slot="end">
-            <IonButton onClick={hidePaywall}>
-              <IonIcon icon={close} />
-            </IonButton>
-          </IonButtons>
+          <IonTitle>{blocking ? t('paywall.trialExpiredTitle') : t('paywall.title')}</IonTitle>
+          {!blocking && (
+            <IonButtons slot="end">
+              <IonButton onClick={hidePaywall}>
+                <IonIcon icon={close} />
+              </IonButton>
+            </IonButtons>
+          )}
         </IonToolbar>
       </IonHeader>
 
@@ -140,27 +122,18 @@ const Paywall: React.FC = () => {
           {/* Header */}
           <div className="paywall-header">
             <IonIcon icon={sparkles} className="header-icon" />
-            <h2>{t('paywall.upgradeTitle')}</h2>
-            {paywallFeature && (
+            <h2>{blocking ? t('paywall.trialExpiredTitle') : t('paywall.upgradeTitle')}</h2>
+            {blocking && (
+              <p className="feature-hint">
+                {t('paywall.trialExpiredMessage')}
+              </p>
+            )}
+            {!blocking && paywallFeature && (
               <p className="feature-hint">
                 {t('paywall.featureRequires', { feature: paywallFeature })}
               </p>
             )}
           </div>
-
-          {/* Trial banner */}
-          {!isTrialActive && currentPlan === PlanType.FREE && (
-            <div className="trial-banner">
-              <p>{t('paywall.trialOffer', { days: 10 })}</p>
-              <IonButton
-                expand="block"
-                onClick={handleStartTrial}
-                disabled={isProcessing}
-              >
-                {isProcessing ? <IonSpinner name="crescent" /> : t('paywall.startTrial')}
-              </IonButton>
-            </div>
-          )}
 
           {/* Plan cards */}
           <div className="plan-cards">
@@ -177,9 +150,7 @@ const Paywall: React.FC = () => {
                 <div className="price">
                   <span className="amount">{plan.price}</span>
                   <span className="period">
-                    {plan.isOneTime
-                      ? ` kr (${t('paywall.oneTimePurchase')})`
-                      : ` kr/${t('paywall.month')}`}
+                    {` kr/${t('paywall.month')}`}
                   </span>
                 </div>
                 <ul className="features">
@@ -257,21 +228,6 @@ const Paywall: React.FC = () => {
             margin: 0.5rem 0 0;
             color: hsl(var(--muted-foreground));
             font-size: 0.875rem;
-          }
-
-          .trial-banner {
-            background: linear-gradient(135deg, hsl(var(--primary) / 0.1), hsl(var(--primary) / 0.05));
-            border: 1px solid hsl(var(--primary) / 0.2);
-            border-radius: 1rem;
-            padding: 1rem;
-            margin-bottom: 1.5rem;
-            text-align: center;
-          }
-
-          .trial-banner p {
-            margin: 0 0 0.75rem;
-            font-weight: 500;
-            color: hsl(var(--foreground));
           }
 
           .plan-cards {

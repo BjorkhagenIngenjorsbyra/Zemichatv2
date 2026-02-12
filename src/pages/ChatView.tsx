@@ -18,6 +18,7 @@ import { send, searchOutline, arrowDown, createOutline, barChartOutline } from '
 import { Keyboard } from '@capacitor/keyboard';
 import { Capacitor } from '@capacitor/core';
 import { useAuthContext } from '../contexts/AuthContext';
+import { useSubscription } from '../contexts/SubscriptionContext';
 import { getChat, markChatAsRead, type ChatWithDetails } from '../services/chat';
 import {
   getChatMessages,
@@ -86,6 +87,7 @@ const ChatView: React.FC = () => {
   const history = useHistory();
   const { chatId } = useParams<{ chatId: string }>();
   const { profile } = useAuthContext();
+  const { canUseFeature, showPaywall } = useSubscription();
   const [chat, setChat] = useState<ChatWithDetails | null>(null);
   const [messages, setMessages] = useState<MessageWithSender[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -724,8 +726,8 @@ const ChatView: React.FC = () => {
             {getChatDisplayName()}
           </IonTitle>
           <IonButtons slot="end">
-            <CallButton chatId={chatId} type="voice" hidden={texterSettings?.can_voice_call === false} />
-            <CallButton chatId={chatId} type="video" hidden={texterSettings?.can_video_call === false} />
+            <CallButton chatId={chatId} type="voice" hidden={texterSettings?.can_voice_call === false || !canUseFeature('canVoiceCall')} />
+            <CallButton chatId={chatId} type="video" hidden={texterSettings?.can_video_call === false || !canUseFeature('canVideoCall')} />
             <IonButton onClick={() => setShowSearch(true)}>
               <IonIcon icon={searchOutline} />
             </IonButton>
@@ -948,10 +950,22 @@ const ChatView: React.FC = () => {
             onImageSelect={handleImageSelect}
             onDocumentSelect={handleDocumentSelect}
             disabled={isSending}
-            imageBlocked={profile?.role === UserRole.TEXTER && texterSettings?.can_send_images === false}
-            documentBlocked={profile?.role === UserRole.TEXTER && texterSettings?.can_send_documents === false}
-            onImageBlocked={() => setPermissionToast(t('permissions.imageNotAllowed'))}
-            onDocumentBlocked={() => setPermissionToast(t('permissions.documentNotAllowed'))}
+            imageBlocked={(profile?.role === UserRole.TEXTER && texterSettings?.can_send_images === false) || !canUseFeature('canSendImages')}
+            documentBlocked={(profile?.role === UserRole.TEXTER && texterSettings?.can_send_documents === false) || !canUseFeature('canSendDocuments')}
+            onImageBlocked={() => {
+              if (!canUseFeature('canSendImages')) {
+                showPaywall(t('paywall.upgradeToUse'));
+              } else {
+                setPermissionToast(t('permissions.imageNotAllowed'));
+              }
+            }}
+            onDocumentBlocked={() => {
+              if (!canUseFeature('canSendDocuments')) {
+                showPaywall(t('paywall.upgradeToUse'));
+              } else {
+                setPermissionToast(t('permissions.documentNotAllowed'));
+              }
+            }}
           />
 
           <button
@@ -1014,12 +1028,12 @@ const ChatView: React.FC = () => {
             >
               <IonIcon icon={send} />
             </IonButton>
-          ) : (
+          ) : canUseFeature('canSendVoice') ? (
             <VoiceRecorder
               onRecord={handleVoiceRecord}
               disabled={isSending}
             />
-          )}
+          ) : null}
         </div>
 
         <style>{`

@@ -63,6 +63,8 @@ const TexterLogin: React.FC = () => {
     if (signInError) {
       if (signInError.message === 'Account is deactivated') {
         setError(t('texterLogin.accountDeactivated'));
+      } else if (signInError.message === 'Account is paused') {
+        setError(t('auth.accountPaused'));
       } else {
         setError(signInError.message);
       }

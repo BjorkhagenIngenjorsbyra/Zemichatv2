@@ -432,17 +432,29 @@ Team Owner kan skapa templates åt sina Texters:
 
 | Nivå | Pris | Användare | Funktioner |
 |------|------|-----------|------------|
-| **Free** | 0 kr | Max 3 (1 Owner + 2) | Endast text |
-| **Basic** | 25 kr/mån | Max 10 | Text + Bilder |
-| **Pro** | 69 kr/mån | Max 10 | Allt inkl. samtal |
+| **Start (Free)** | Gratis | Max 3 (1 Owner + 2) | Endast text |
+| **Plus (Basic)** | 25 kr/mån | Max 10 | Text + Bilder |
+| **Plus Ringa (Pro)** | 69 kr/mån | Max 10 | Allt inkl. samtal |
 
 ### 18.1 Trial
-- 10 dagar gratis Pro-funktionalitet
-- Kräver betalkortsverifiering (via App Store / Google Play)
+- 10 dagar gratis Plus Ringa-funktionalitet startar automatiskt vid team-skapande
+- Ingen planvalssida vid signup – alla börjar med trial automatiskt
+- Efter trial (dag 11): faller tillbaka till Start (gratis)
 
-### 18.2 Gating
+### 18.2 Trial-utgång med för många medlemmar
+- Om teamet har fler än 3 medlemmar (inkl. Owner) när trial går ut:
+  - **Blockerande dialog** visas vid inloggning
+  - Owner väljer vilka 2 medlemmar (utöver sig själv) som ska vara kvar
+  - Övriga medlemmar **pausas** (inte raderade)
+  - Pausade medlemmar kan inte logga in, visas med "Pausad"-badge i dashboard
+  - Pausade medlemmar aktiveras automatiskt vid uppgradering
+
+### 18.3 Gating
 - Funktioner som kräver högre nivå är synliga men låsta
 - Tydlig upgrade-prompt vid försök att använda
+- Start: bara textmeddelanden (bilder, samtal, mm. blockerade)
+- Plus: text + bilder (samtal blockerade)
+- Plus Ringa: allt inklusive samtal
 
 ---
 
@@ -451,9 +463,9 @@ Team Owner kan skapa templates åt sina Texters:
 ### 19.1 Team Owner
 1. Laddar ner appen
 2. Registrerar med e-post
-3. Verifierar betalkort via App Store / Google Play
-4. Skapar team (namnger det)
-5. Guided tour av dashboard
+3. Skapar team (namnger det)
+4. 10-dagars Plus Ringa trial startar automatiskt
+5. Direkt in i appen (chattvyn)
 
 ### 19.2 Super
 1. Får inbjudan via e-post från Owner

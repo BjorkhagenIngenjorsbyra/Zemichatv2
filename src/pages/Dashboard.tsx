@@ -252,9 +252,15 @@ const Dashboard: React.FC = () => {
                         </h3>
                         <p className="member-zemi">{member.zemi_number}</p>
                       </IonLabel>
-                      <IonBadge slot="end" color={badge.color} className="role-badge-small">
-                        {badge.label}
-                      </IonBadge>
+                      {member.is_paused ? (
+                        <IonBadge slot="end" color="warning" className="role-badge-small">
+                          {t('dashboard.paused')}
+                        </IonBadge>
+                      ) : (
+                        <IonBadge slot="end" color={badge.color} className="role-badge-small">
+                          {badge.label}
+                        </IonBadge>
+                      )}
                     </IonItem>
                   );
                 })}

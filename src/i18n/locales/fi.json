@@ -44,7 +44,8 @@
     "termsLink": "käyttöehdot",
     "privacyLink": "tietosuojakäytännön",
     "consentLabel": "Olen lukenut ja hyväksyn",
-    "consentRequired": "Sinun on hyväksyttävä käyttöehdot ja tietosuojakäytäntö"
+    "consentRequired": "Sinun on hyväksyttävä käyttöehdot ja tietosuojakäytäntö",
+    "accountPaused": "Tilisi on tauolla. Ota yhteyttä Team Owneriin."
   },
   "team": {
     "createTitle": "Luo tiimisi",
@@ -80,7 +81,8 @@
     "noMembers": "Et ole vielä lisännyt jäseniä.",
     "createFirstTexter": "Luo ensimmäinen Texter",
     "user": "Käyttäjä",
-    "unnamed": "Nimetön"
+    "unnamed": "Nimetön",
+    "paused": "Tauolla"
   },
   "roles": {
     "owner": "Owner",
@@ -367,6 +369,9 @@
     "title": "Päivitä",
     "upgradeTitle": "Avaa premium-ominaisuudet",
     "featureRequires": "Tämä ominaisuus vaatii premium-paketin",
+    "trialExpiredTitle": "Kokeilujakso on päättynyt",
+    "trialExpiredMessage": "Kokeilujakso on päättynyt — valitse suunnitelma jatkaaksesi Zemichatin käyttöä",
+    "upgradeToUse": "Päivitä suunnitelmasi käyttääksesi tätä ominaisuutta",
     "trialOffer": "Kokeile Plus Ringaa {{days}} päivää!",
     "startTrial": "Aloita kokeilujakso",
     "recommended": "Suositeltu",
@@ -414,7 +419,15 @@
     "profileSaved": "Profiili päivitetty",
     "teamDashboard": "Team Dashboard",
     "teamDashboardDescription": "Hallitse Textereita, hyväksyntöjä ja valvontaa",
-    "language": "Kieli"
+    "language": "Kieli",
+    "myPlan": "Oma suunnitelma",
+    "currentPlan": "Nykyinen suunnitelma",
+    "trialActive": "Kokeilujakso: {{days}} päivää jäljellä",
+    "trialExpired": "Kokeilujakso on päättynyt",
+    "activePlan": "Aktiivinen tilaus",
+    "noPlan": "Ei aktiivista suunnitelmaa",
+    "upgradePlan": "Päivitä",
+    "changePlan": "Vaihda suunnitelma"
   },
   "call": {
     "call": "Puhelu",
@@ -581,11 +594,25 @@
     "trialBanner": "Kokeile kaikkia ominaisuuksia ilmaiseksi 10 päivää!",
     "startTrial": "Aloita ilmainen kokeilujakso",
     "perMonth": "/kk",
-    "oneTime": "kertaostos"
+    "oneTime": "kertaostos",
+    "free": "Ilmainen",
+    "selectStart": "Valitse Start",
+    "selectPlus": "Valitse Plus",
+    "selectPlusRinga": "Valitse Plus Ringa"
   },
   "trial": {
     "banner": "Kokeilujakso: {{days}} päivää jäljellä",
-    "bannerLastDay": "Kokeilujakso päättyy tänään"
+    "bannerLastDay": "Kokeilujakso päättyy tänään",
+    "bannerUnlocked": "Kokeilujakso: {{days}} päivää jäljellä – kaikki ominaisuudet ovat käytössä!"
+  },
+  "memberLimit": {
+    "title": "Tiimi on liian suuri",
+    "heading": "Kokeilujakso päättynyt",
+    "description": "Start-paketti sallii enintään {{max}} jäsentä (sinä + {{maxOthers}} muuta). Valitse ketkä pidetään.",
+    "ownerAlwaysIncluded": "Sinä (Owner) olet aina mukana",
+    "selectedCount": "{{count}} / {{max}} valittu",
+    "keepSelected": "Pidä valitut",
+    "upgradeInstead": "Päivitä sen sijaan"
   },
   "network": {
     "offline": "Ei internetyhteyttä",

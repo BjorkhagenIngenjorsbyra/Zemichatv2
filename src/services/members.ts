@@ -131,3 +131,36 @@ export async function reactivateMember(userId: string): Promise<{ error: Error |
 
   return { error: null };
 }
+
+/**
+ * Pause a team member (due to plan member limit).
+ * Paused members cannot log in but are not deactivated.
+ */
+export async function pauseMember(userId: string): Promise<{ error: Error | null }> {
+  const { error } = await supabase
+    .from('users')
+    .update({ is_paused: true } as never)
+    .eq('id', userId);
+
+  if (error) {
+    return { error: new Error(error.message) };
+  }
+
+  return { error: null };
+}
+
+/**
+ * Unpause a team member.
+ */
+export async function unpauseMember(userId: string): Promise<{ error: Error | null }> {
+  const { error } = await supabase
+    .from('users')
+    .update({ is_paused: false } as never)
+    .eq('id', userId);
+
+  if (error) {
+    return { error: new Error(error.message) };
+  }
+
+  return { error: null };
+}

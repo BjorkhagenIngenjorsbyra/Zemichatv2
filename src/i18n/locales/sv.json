@@ -44,7 +44,8 @@
     "termsLink": "användarvillkor",
     "privacyLink": "integritetspolicy",
     "consentLabel": "Jag har läst och godkänner",
-    "consentRequired": "Du måste godkänna användarvillkoren och integritetspolicyn"
+    "consentRequired": "Du måste godkänna användarvillkoren och integritetspolicyn",
+    "accountPaused": "Ditt konto är pausat. Kontakta din Team Owner."
   },
   "team": {
     "createTitle": "Skapa ditt team",
@@ -80,7 +81,8 @@
     "noMembers": "Du har inte lagt till några medlemmar än.",
     "createFirstTexter": "Skapa första Texter",
     "user": "Användare",
-    "unnamed": "Utan namn"
+    "unnamed": "Utan namn",
+    "paused": "Pausad"
   },
   "roles": {
     "owner": "Owner",
@@ -367,6 +369,9 @@
     "title": "Uppgradera",
     "upgradeTitle": "Lås upp premiumfunktioner",
     "featureRequires": "Denna funktion kräver en premiumplan",
+    "trialExpiredTitle": "Provperioden är slut",
+    "trialExpiredMessage": "Provperioden är slut — välj en plan för att fortsätta använda Zemichat",
+    "upgradeToUse": "Uppgradera din plan för att använda denna funktion",
     "trialOffer": "Prova Plus Ringa i {{days}} dagar!",
     "startTrial": "Starta provperiod",
     "recommended": "Rekommenderas",
@@ -414,7 +419,15 @@
     "profileSaved": "Profilen har uppdaterats",
     "teamDashboard": "Team Dashboard",
     "teamDashboardDescription": "Hantera Texters, godkännanden och insyn",
-    "language": "Språk"
+    "language": "Språk",
+    "myPlan": "Min plan",
+    "currentPlan": "Nuvarande plan",
+    "trialActive": "Provperiod: {{days}} dagar kvar",
+    "trialExpired": "Provperioden har gått ut",
+    "activePlan": "Aktiv prenumeration",
+    "noPlan": "Ingen aktiv plan",
+    "upgradePlan": "Uppgradera",
+    "changePlan": "Ändra plan"
   },
   "call": {
     "call": "Samtal",
@@ -581,11 +594,25 @@
     "trialBanner": "Prova alla funktioner gratis i 10 dagar!",
     "startTrial": "Starta gratis provperiod",
     "perMonth": "/mån",
-    "oneTime": "engångsköp"
+    "oneTime": "engångsköp",
+    "free": "Gratis",
+    "selectStart": "Välj Start",
+    "selectPlus": "Välj Plus",
+    "selectPlusRinga": "Välj Plus Ringa"
   },
   "trial": {
     "banner": "Provperiod: {{days}} dagar kvar",
-    "bannerLastDay": "Provperioden slutar idag"
+    "bannerLastDay": "Provperioden slutar idag",
+    "bannerUnlocked": "Provperiod: {{days}} dagar kvar – alla funktioner är upplåsta!"
+  },
+  "memberLimit": {
+    "title": "Teamet är för stort",
+    "heading": "Provperioden är slut",
+    "description": "Start-planen tillåter max {{max}} medlemmar (dig + {{maxOthers}} till). Välj vilka som ska vara kvar.",
+    "ownerAlwaysIncluded": "Du (Owner) är alltid inkluderad",
+    "selectedCount": "{{count}} av {{max}} valda",
+    "keepSelected": "Behåll valda",
+    "upgradeInstead": "Uppgradera istället"
   },
   "network": {
     "offline": "Ingen internetanslutning",

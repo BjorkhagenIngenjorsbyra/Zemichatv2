@@ -44,7 +44,8 @@
     "termsLink": "brugervilkår",
     "privacyLink": "privatlivspolitik",
     "consentLabel": "Jeg har læst og accepterer",
-    "consentRequired": "Du skal acceptere brugervilkårene og privatlivspolitikken"
+    "consentRequired": "Du skal acceptere brugervilkårene og privatlivspolitikken",
+    "accountPaused": "Din konto er sat på pause. Kontakt din Team Owner."
   },
   "team": {
     "createTitle": "Opret dit team",
@@ -80,7 +81,8 @@
     "noMembers": "Du har ikke tilføjet nogen medlemmer endnu.",
     "createFirstTexter": "Opret første Texter",
     "user": "Bruger",
-    "unnamed": "Uden navn"
+    "unnamed": "Uden navn",
+    "paused": "Pauset"
   },
   "roles": {
     "owner": "Owner",
@@ -367,6 +369,9 @@
     "title": "Opgrader",
     "upgradeTitle": "Lås op for premiumfunktioner",
     "featureRequires": "Denne funktion kræver en premiumplan",
+    "trialExpiredTitle": "Prøveperioden er slut",
+    "trialExpiredMessage": "Prøveperioden er slut — vælg en plan for at fortsætte med at bruge Zemichat",
+    "upgradeToUse": "Opgrader din plan for at bruge denne funktion",
     "trialOffer": "Prøv Plus Ringa i {{days}} dage!",
     "startTrial": "Start prøveperiode",
     "recommended": "Anbefalet",
@@ -414,7 +419,15 @@
     "profileSaved": "Profilen er opdateret",
     "teamDashboard": "Team Dashboard",
     "teamDashboardDescription": "Administrer Texters, godkendelser og indsigt",
-    "language": "Sprog"
+    "language": "Sprog",
+    "myPlan": "Min plan",
+    "currentPlan": "Nuværende plan",
+    "trialActive": "Prøveperiode: {{days}} dage tilbage",
+    "trialExpired": "Prøveperioden er udløbet",
+    "activePlan": "Aktivt abonnement",
+    "noPlan": "Ingen aktiv plan",
+    "upgradePlan": "Opgrader",
+    "changePlan": "Skift plan"
   },
   "call": {
     "call": "Opkald",
@@ -581,11 +594,25 @@
     "trialBanner": "Prøv alle funktioner gratis i 10 dage!",
     "startTrial": "Start gratis prøveperiode",
     "perMonth": "/md",
-    "oneTime": "engangskøb"
+    "oneTime": "engangskøb",
+    "free": "Gratis",
+    "selectStart": "Vælg Start",
+    "selectPlus": "Vælg Plus",
+    "selectPlusRinga": "Vælg Plus Ringa"
   },
   "trial": {
     "banner": "Prøveperiode: {{days}} dage tilbage",
-    "bannerLastDay": "Prøveperioden slutter i dag"
+    "bannerLastDay": "Prøveperioden slutter i dag",
+    "bannerUnlocked": "Prøveperiode: {{days}} dage tilbage – alle funktioner er låst op!"
+  },
+  "memberLimit": {
+    "title": "Teamet er for stort",
+    "heading": "Prøveperioden er slut",
+    "description": "Start-planen tillader maks {{max}} medlemmer (dig + {{maxOthers}} mere). Vælg hvem der skal beholdes.",
+    "ownerAlwaysIncluded": "Du (Owner) er altid inkluderet",
+    "selectedCount": "{{count}} af {{max}} valgt",
+    "keepSelected": "Behold valgte",
+    "upgradeInstead": "Opgrader i stedet"
   },
   "network": {
     "offline": "Ingen internetforbindelse",

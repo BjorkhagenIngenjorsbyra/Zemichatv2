@@ -23,7 +23,8 @@ import { OfflineBanner, TrialBanner } from './components/common';
 import ShareTargetHandler from './components/ShareTargetHandler';
 
 /* Subscription */
-import { Paywall } from './components/subscription';
+import { Paywall, MemberLimitDialog } from './components/subscription';
+import { useSubscription } from './contexts/SubscriptionContext';
 
 /* Tab layout */
 import TabLayout from './components/TabLayout';
@@ -132,6 +133,16 @@ const PushInit: React.FC = () => {
   return null;
 };
 
+/**
+ * Shows a blocking paywall when the trial has expired
+ * and no active subscription exists.
+ */
+const BlockingPaywall: React.FC = () => {
+  const { isTrialExpired } = useSubscription();
+  if (!isTrialExpired) return null;
+  return <Paywall blocking />;
+};
+
 const App: React.FC = () => (
   <IonApp>
     <AuthProvider>
@@ -169,9 +180,6 @@ const App: React.FC = () => (
             {/* Semi-protected routes - needs auth but not profile */}
             <PrivateRoute exact path="/create-team" requireProfile={false}>
               <CreateTeam />
-            </PrivateRoute>
-            <PrivateRoute exact path="/choose-plan">
-              <ChoosePlan />
             </PrivateRoute>
             <PrivateRoute exact path="/mfa-verify" requireProfile={false}>
               <MFAVerify />
@@ -230,6 +238,9 @@ const App: React.FC = () => (
             <PrivateRoute exact path="/support">
               <Support />
             </PrivateRoute>
+            <PrivateRoute exact path="/choose-plan">
+              <ChoosePlan />
+            </PrivateRoute>
 
             {/* Legal pages - accessible regardless of auth state */}
             <Route exact path="/privacy">
@@ -258,6 +269,8 @@ const App: React.FC = () => (
 
           {/* Subscription paywall */}
           <Paywall />
+          <BlockingPaywall />
+          <MemberLimitDialog />
 
           {/* Network status */}
           <OfflineBanner />

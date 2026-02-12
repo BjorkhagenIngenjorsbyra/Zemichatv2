@@ -67,8 +67,8 @@ export interface PlanPricing {
 
 export const PLAN_PRICING: Record<PlanType, PlanPricing> = {
   [PlanType.FREE]: {
-    price: 20,
-    isOneTime: true,
+    price: 0,
+    isOneTime: false,
     currency: 'SEK',
     productId: 'zemichat_start',
   },

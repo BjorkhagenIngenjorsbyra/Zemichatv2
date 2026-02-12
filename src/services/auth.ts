@@ -58,9 +58,9 @@ export async function signIn({ email, password }: SignInData): Promise<AuthResul
   if (data.user && !error) {
     const { data: profile } = await supabase
       .from('users')
-      .select('is_active')
+      .select('is_active, is_paused')
       .eq('id', data.user.id)
-      .single<{ is_active: boolean }>();
+      .single<{ is_active: boolean; is_paused: boolean }>();
 
     if (profile && profile.is_active === false) {
       await supabase.auth.signOut();
@@ -68,6 +68,15 @@ export async function signIn({ email, password }: SignInData): Promise<AuthResul
         user: null,
         session: null,
         error: { message: 'Account is deactivated', name: 'AuthApiError', status: 403 } as AuthError,
+      };
+    }
+
+    if (profile && profile.is_paused === true) {
+      await supabase.auth.signOut();
+      return {
+        user: null,
+        session: null,
+        error: { message: 'Account is paused', name: 'AuthApiError', status: 403 } as AuthError,
       };
     }
   }
@@ -82,7 +91,7 @@ export async function signIn({ email, password }: SignInData): Promise<AuthResul
 /**
  * Sign in as a Texter using Zemi-number and password.
  * Texters don't have email - they use a fake email based on their Zemi-number.
- * After successful auth, checks if the user account is active.
+ * After successful auth, checks if the user account is active and not paused.
  */
 export async function signInAsTexter({ zemiNumber, password }: TexterSignInData): Promise<AuthResult> {
   // Convert Zemi-number to fake email used during account creation
@@ -97,9 +106,9 @@ export async function signInAsTexter({ zemiNumber, password }: TexterSignInData)
   if (data.user && !error) {
     const { data: profile } = await supabase
       .from('users')
-      .select('is_active')
+      .select('is_active, is_paused')
       .eq('id', data.user.id)
-      .single<{ is_active: boolean }>();
+      .single<{ is_active: boolean; is_paused: boolean }>();
 
     if (profile && profile.is_active === false) {
       await supabase.auth.signOut();
@@ -107,6 +116,15 @@ export async function signInAsTexter({ zemiNumber, password }: TexterSignInData)
         user: null,
         session: null,
         error: { message: 'Account is deactivated', name: 'AuthApiError', status: 403 } as AuthError,
+      };
+    }
+
+    if (profile && profile.is_paused === true) {
+      await supabase.auth.signOut();
+      return {
+        user: null,
+        session: null,
+        error: { message: 'Account is paused', name: 'AuthApiError', status: 403 } as AuthError,
       };
     }
   }

@@ -41,14 +41,16 @@ interface SubscriptionContextValue {
   // Computed
   currentPlan: PlanType;
   isTrialActive: boolean;
+  isTrialExpired: boolean;
+  trialDaysLeft: number;
   canUseFeature: (feature: keyof typeof PLAN_FEATURES[PlanType.FREE]) => boolean;
 
   // Actions
   refreshStatus: () => Promise<void>;
   purchase: (pkg: RevenueCatPackage) => Promise<boolean>;
   restore: () => Promise<boolean>;
-  startTrial: () => Promise<boolean>;
-  showPaywall: () => void;
+  startTrial: (planType?: PlanType) => Promise<boolean>;
+  showPaywall: (feature?: string) => void;
   hidePaywall: () => void;
 
   // Paywall state
@@ -142,6 +144,21 @@ export function SubscriptionProvider({ children }: SubscriptionProviderProps) {
   const currentPlan = status?.plan || PlanType.FREE;
   const isTrialActive = status?.isTrialActive || false;
 
+  // Trial expired: had a trial that ended, and no active paid subscription
+  const isTrialExpired = !!(
+    status?.trialEndsAt &&
+    !status.isTrialActive &&
+    status.plan === PlanType.FREE &&
+    !status.isActive
+  );
+
+  // Days left in trial (0 if no trial or expired)
+  const trialDaysLeft = (() => {
+    if (!status?.trialEndsAt || !status.isTrialActive) return 0;
+    const diff = status.trialEndsAt.getTime() - Date.now();
+    return Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)));
+  })();
+
   const canUseFeature = useCallback(
     (feature: keyof typeof PLAN_FEATURES[PlanType.FREE]): boolean => {
       const plan = status?.isTrialActive ? PlanType.PRO : (status?.plan || PlanType.FREE);
@@ -195,9 +212,9 @@ export function SubscriptionProvider({ children }: SubscriptionProviderProps) {
     return true;
   }, []);
 
-  const startTrial = useCallback(async (): Promise<boolean> => {
+  const startTrial = useCallback(async (planType?: PlanType): Promise<boolean> => {
     setIsLoading(true);
-    const { success, error: trialError } = await startFreeTrial();
+    const { success, error: trialError } = await startFreeTrial(planType);
     if (trialError) {
       setError(trialError);
       setIsLoading(false);
@@ -230,6 +247,8 @@ export function SubscriptionProvider({ children }: SubscriptionProviderProps) {
     error,
     currentPlan,
     isTrialActive,
+    isTrialExpired,
+    trialDaysLeft,
     canUseFeature,
     refreshStatus,
     purchase,

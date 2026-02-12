@@ -28,9 +28,10 @@ import {
   logOutOutline,
 } from 'ionicons/icons';
 import { useAuthContext } from '../contexts/AuthContext';
+import { useSubscription } from '../contexts/SubscriptionContext';
 import { getTeamMembers } from '../services/members';
 import { exportUserData, deleteOwnerAccount, deleteSuperAccount, updateUserProfile, downloadJSON } from '../services/gdpr';
-import { UserRole } from '../types/database';
+import { UserRole, PlanType } from '../types/database';
 import { SOSButton } from '../components/sos';
 import { supportedLanguages, changeLanguage, getCurrentLanguage } from '../i18n';
 
@@ -38,6 +39,7 @@ const Settings: React.FC = () => {
   const { t } = useTranslation();
   const history = useHistory();
   const { profile, signOut } = useAuthContext();
+  const { currentPlan, isTrialActive, isTrialExpired, trialDaysLeft, status, showPaywall } = useSubscription();
 
   const isOwner = profile?.role === UserRole.OWNER;
   const isSuper = profile?.role === UserRole.SUPER;
@@ -171,6 +173,45 @@ const Settings: React.FC = () => {
                     <span>{t('settings.teamDashboardDescription')}</span>
                   </div>
                   <IonIcon icon={chevronForwardOutline} slot="end" />
+                </IonButton>
+              </div>
+            </div>
+          )}
+
+          {/* My Plan - Owner only */}
+          {isOwner && (
+            <div className="section">
+              <h3 className="section-title">{t('settings.myPlan')}</h3>
+              <div className="card plan-card">
+                <div className="plan-row">
+                  <span className="profile-label">{t('settings.currentPlan')}</span>
+                  <span className={`plan-badge plan-${currentPlan}`}>
+                    {currentPlan === PlanType.FREE
+                      ? t('paywall.planStart')
+                      : currentPlan === PlanType.BASIC
+                        ? t('paywall.planPlus')
+                        : t('paywall.planPlusRinga')}
+                  </span>
+                </div>
+                <div className="plan-row">
+                  <span className="plan-status-text">
+                    {isTrialActive
+                      ? t('settings.trialActive', { days: trialDaysLeft })
+                      : isTrialExpired
+                        ? t('settings.trialExpired')
+                        : status?.isActive
+                          ? t('settings.activePlan')
+                          : t('settings.noPlan')}
+                  </span>
+                </div>
+                <IonButton
+                  expand="block"
+                  size="small"
+                  onClick={() => showPaywall()}
+                >
+                  {status?.isActive && !isTrialActive
+                    ? t('settings.changePlan')
+                    : t('settings.upgradePlan')}
                 </IonButton>
               </div>
             </div>
@@ -580,6 +621,46 @@ const Settings: React.FC = () => {
 
           .role-badge.texter {
             background: hsl(var(--muted) / 0.3);
+            color: hsl(var(--muted-foreground));
+          }
+
+          .plan-card {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+          }
+
+          .plan-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+          }
+
+          .plan-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+          }
+
+          .plan-badge.plan-free {
+            background: hsl(var(--muted) / 0.3);
+            color: hsl(var(--muted-foreground));
+          }
+
+          .plan-badge.plan-basic {
+            background: hsl(var(--primary) / 0.15);
+            color: hsl(var(--primary));
+          }
+
+          .plan-badge.plan-pro {
+            background: hsl(var(--secondary) / 0.15);
+            color: hsl(var(--secondary));
+          }
+
+          .plan-status-text {
+            font-size: 0.85rem;
             color: hsl(var(--muted-foreground));
           }
 

@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { IonButton, IonIcon, IonSpinner, IonToast } from '@ionic/react';
 import { call, videocam } from 'ionicons/icons';
 import { useCallContext } from '../../contexts/CallContext';
+import { useSubscription } from '../../contexts/SubscriptionContext';
 import { CallType } from '../../types/call';
 
 interface CallButtonProps {
@@ -15,6 +16,7 @@ interface CallButtonProps {
 const CallButton: React.FC<CallButtonProps> = ({ chatId, type, disabled = false, hidden = false }) => {
   const { t } = useTranslation();
   const { initiateCall, activeCall, callError, clearCallError } = useCallContext();
+  const { canUseFeature, showPaywall } = useSubscription();
   const [isLoading, setIsLoading] = useState(false);
   const [showToast, setShowToast] = useState(false);
 
@@ -28,6 +30,13 @@ const CallButton: React.FC<CallButtonProps> = ({ chatId, type, disabled = false,
 
   const handleClick = async () => {
     if (isLoading || activeCall) return;
+
+    // Check plan-level permission
+    const featureKey = type === 'video' ? 'canVideoCall' : 'canVoiceCall';
+    if (!canUseFeature(featureKey)) {
+      showPaywall(t('paywall.upgradeToUse'));
+      return;
+    }
 
     setIsLoading(true);
     try {

@@ -44,7 +44,8 @@
     "termsLink": "terms of service",
     "privacyLink": "privacy policy",
     "consentLabel": "I have read and accept the",
-    "consentRequired": "You must accept the terms of service and privacy policy"
+    "consentRequired": "You must accept the terms of service and privacy policy",
+    "accountPaused": "Your account is paused. Contact your Team Owner."
   },
   "team": {
     "createTitle": "Create your team",
@@ -80,7 +81,8 @@
     "noMembers": "You haven't added any members yet.",
     "createFirstTexter": "Create first Texter",
     "user": "User",
-    "unnamed": "Unnamed"
+    "unnamed": "Unnamed",
+    "paused": "Paused"
   },
   "roles": {
     "owner": "Owner",
@@ -367,6 +369,9 @@
     "title": "Upgrade",
     "upgradeTitle": "Unlock Premium Features",
     "featureRequires": "This feature requires a premium plan",
+    "trialExpiredTitle": "Trial has ended",
+    "trialExpiredMessage": "Your trial has ended — choose a plan to continue using Zemichat",
+    "upgradeToUse": "Upgrade your plan to use this feature",
     "trialOffer": "Try Plus Ringa for {{days}} days!",
     "startTrial": "Start trial",
     "recommended": "Recommended",
@@ -414,7 +419,15 @@
     "profileSaved": "Profile updated",
     "teamDashboard": "Team Dashboard",
     "teamDashboardDescription": "Manage Texters, approvals and oversight",
-    "language": "Language"
+    "language": "Language",
+    "myPlan": "My Plan",
+    "currentPlan": "Current plan",
+    "trialActive": "Trial: {{days}} days left",
+    "trialExpired": "Trial has expired",
+    "activePlan": "Active subscription",
+    "noPlan": "No active plan",
+    "upgradePlan": "Upgrade",
+    "changePlan": "Change plan"
   },
   "call": {
     "call": "Call",
@@ -581,11 +594,25 @@
     "trialBanner": "Try all features free for 10 days!",
     "startTrial": "Start free trial",
     "perMonth": "/mo",
-    "oneTime": "one-time"
+    "oneTime": "one-time",
+    "free": "Free",
+    "selectStart": "Select Start",
+    "selectPlus": "Select Plus",
+    "selectPlusRinga": "Select Plus Ringa"
   },
   "trial": {
     "banner": "Trial: {{days}} days left",
-    "bannerLastDay": "Trial ends today"
+    "bannerLastDay": "Trial ends today",
+    "bannerUnlocked": "Trial: {{days}} days left – all features are unlocked!"
+  },
+  "memberLimit": {
+    "title": "Team is too large",
+    "heading": "Trial period ended",
+    "description": "The Start plan allows max {{max}} members (you + {{maxOthers}} more). Choose who to keep.",
+    "ownerAlwaysIncluded": "You (Owner) are always included",
+    "selectedCount": "{{count}} of {{max}} selected",
+    "keepSelected": "Keep selected",
+    "upgradeInstead": "Upgrade instead"
   },
   "network": {
     "offline": "No internet connection",

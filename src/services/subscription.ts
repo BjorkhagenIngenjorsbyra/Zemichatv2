@@ -471,8 +471,8 @@ function createMockOffering(): RevenueCatOffering {
         packageType: 'CUSTOM',
         product: {
           identifier: PLAN_PRICING[PlanType.FREE].productId,
-          priceString: `${PLAN_PRICING[PlanType.FREE].price} kr`,
-          price: PLAN_PRICING[PlanType.FREE].price,
+          priceString: 'Gratis',
+          price: 0,
           currencyCode: 'SEK',
           title: 'Start',
           description: 'Text, max 3 användare',
@@ -589,8 +589,9 @@ export async function restorePurchases(): Promise<{
 
 /**
  * Start a free trial (Pro features for 10 days).
+ * Optionally set the chosen plan type at the same time.
  */
-export async function startFreeTrial(): Promise<{
+export async function startFreeTrial(planType?: PlanType): Promise<{
   success: boolean;
   trialEndsAt: Date | null;
   error: Error | null;
@@ -615,12 +616,17 @@ export async function startFreeTrial(): Promise<{
     const trialEndsAt = new Date();
     trialEndsAt.setDate(trialEndsAt.getDate() + TRIAL_DURATION_DAYS);
 
-    // Update team with trial
+    // Update team with trial (and optionally the chosen plan)
+    const updateData: Record<string, unknown> = {
+      trial_ends_at: trialEndsAt.toISOString(),
+    };
+    if (planType) {
+      updateData.plan = planType;
+    }
+
     const { error: updateError } = await supabase
       .from('teams')
-      .update({
-        trial_ends_at: trialEndsAt.toISOString(),
-      } as never)
+      .update(updateData as never)
       .eq('id', (userData as { team_id: string }).team_id);
 
     if (updateError) {

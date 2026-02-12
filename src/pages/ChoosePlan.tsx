@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useHistory } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
@@ -26,27 +26,33 @@ const ChoosePlan: React.FC = () => {
     }
   }, [isLoading, status, history]);
 
-  const handleStartTrial = async () => {
-    await startTrial();
+  const [isProcessing, setIsProcessing] = useState(false);
+
+  const handleSelectPlan = async (planType: PlanType) => {
+    setIsProcessing(true);
+    await startTrial(planType);
+    setIsProcessing(false);
     history.replace('/chats');
   };
 
   const plans = [
     {
-      id: 'start',
+      id: 'start' as const,
+      planType: PlanType.FREE,
       name: t('paywall.planStart'),
       price: PLAN_PRICING[PlanType.FREE].price,
-      isOneTime: true,
+      buttonLabel: t('choosePlan.selectStart'),
       features: [
         t('paywall.features.maxUsers', { count: PLAN_FEATURES[PlanType.FREE].maxUsers }),
         t('paywall.features.textMessages'),
       ],
     },
     {
-      id: 'plus',
+      id: 'plus' as const,
+      planType: PlanType.BASIC,
       name: t('paywall.planPlus'),
       price: PLAN_PRICING[PlanType.BASIC].price,
-      isOneTime: false,
+      buttonLabel: t('choosePlan.selectPlus'),
       features: [
         t('paywall.features.maxUsers', { count: PLAN_FEATURES[PlanType.BASIC].maxUsers }),
         t('paywall.features.textMessages'),
@@ -54,11 +60,12 @@ const ChoosePlan: React.FC = () => {
       ],
     },
     {
-      id: 'plus_ringa',
+      id: 'plus_ringa' as const,
+      planType: PlanType.PRO,
       name: t('paywall.planPlusRinga'),
       price: PLAN_PRICING[PlanType.PRO].price,
-      isOneTime: false,
       recommended: true,
+      buttonLabel: t('choosePlan.selectPlusRinga'),
       features: [
         t('paywall.features.maxUsers', { count: PLAN_FEATURES[PlanType.PRO].maxUsers }),
         t('paywall.features.textMessages'),
@@ -77,9 +84,6 @@ const ChoosePlan: React.FC = () => {
       <IonContent className="ion-padding" fullscreen>
         <div className="choose-plan-container">
           <div className="choose-plan-header">
-            <div className="step-indicator">
-              <span className="step-badge">{t('team.stepOf', { current: 2, total: 2 })}</span>
-            </div>
             <IonIcon icon={sparkles} className="choose-plan-icon" />
             <h1 className="choose-plan-title">{t('choosePlan.title')}</h1>
             <p className="choose-plan-subtitle">{t('choosePlan.subtitle')}</p>
@@ -102,12 +106,14 @@ const ChoosePlan: React.FC = () => {
                 )}
                 <h3>{plan.name}</h3>
                 <div className="choose-plan-price">
-                  <span className="amount">{plan.price}</span>
-                  <span className="period">
-                    {plan.isOneTime
-                      ? ` kr (${t('choosePlan.oneTime')})`
-                      : ` kr${t('choosePlan.perMonth')}`}
-                  </span>
+                  {plan.price === 0 ? (
+                    <span className="amount">{t('choosePlan.free')}</span>
+                  ) : (
+                    <>
+                      <span className="amount">{plan.price}</span>
+                      <span className="period">{` kr${t('choosePlan.perMonth')}`}</span>
+                    </>
+                  )}
                 </div>
                 <ul className="choose-plan-features">
                   {plan.features.map((feature, i) => (
@@ -117,19 +123,18 @@ const ChoosePlan: React.FC = () => {
                     </li>
                   ))}
                 </ul>
+                <IonButton
+                  expand="block"
+                  size="small"
+                  className={`choose-plan-card-btn ${plan.recommended ? 'glow-primary' : ''}`}
+                  onClick={() => handleSelectPlan(plan.planType)}
+                  disabled={isLoading || isProcessing}
+                >
+                  {isProcessing ? <IonSpinner name="crescent" /> : plan.buttonLabel}
+                </IonButton>
               </div>
             ))}
           </div>
-
-          {/* CTA */}
-          <IonButton
-            expand="block"
-            className="choose-plan-cta glow-primary"
-            onClick={handleStartTrial}
-            disabled={isLoading}
-          >
-            {isLoading ? <IonSpinner name="crescent" /> : t('choosePlan.startTrial')}
-          </IonButton>
         </div>
 
         <style>{`
@@ -145,19 +150,6 @@ const ChoosePlan: React.FC = () => {
           .choose-plan-header {
             text-align: center;
             margin-bottom: 1.5rem;
-          }
-
-          .step-indicator {
-            margin-bottom: 1rem;
-          }
-
-          .step-badge {
-            background: hsl(var(--primary) / 0.15);
-            color: hsl(var(--primary));
-            padding: 0.375rem 0.75rem;
-            border-radius: 9999px;
-            font-size: 0.875rem;
-            font-weight: 600;
           }
 
           .choose-plan-icon {
@@ -277,11 +269,17 @@ const ChoosePlan: React.FC = () => {
             flex-shrink: 0;
           }
 
-          .choose-plan-cta {
+          .choose-plan-card-btn {
+            --background: hsl(var(--primary) / 0.1);
+            --color: hsl(var(--primary));
+            margin-top: 0.75rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+          }
+
+          .choose-plan-card.recommended .choose-plan-card-btn {
             --background: hsl(var(--primary));
             --color: hsl(var(--primary-foreground));
-            height: 3rem;
-            margin-top: 0.5rem;
           }
         `}</style>
       </IonContent>
