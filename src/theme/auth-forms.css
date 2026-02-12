@@ -65,55 +65,65 @@
   --color: hsl(var(--foreground)) !important;
   --placeholder-color: hsl(var(--muted-foreground)) !important;
   --border-color: rgba(124, 58, 237, 0.3) !important;
-  --border-radius: 1rem !important;
-  --border-width: 1px !important;
-  --highlight-color-focused: hsl(var(--primary)) !important;
-  --highlight-color-valid: hsl(var(--primary)) !important;
+  --border-radius: 12px !important;
+  --border-width: 0px !important;
+  --highlight-color-focused: transparent !important;
+  --highlight-color-valid: transparent !important;
+  --highlight-background: transparent !important;
   background: transparent !important;
-  border-radius: 1rem;
-  overflow: hidden;
+  border-radius: 12px !important;
+  overflow: hidden !important;
 }
 
-/* Kill any inner white backgrounds from Ionic's native input wrapper */
+/* Kill any inner white/light backgrounds from Ionic's native input wrappers */
 .auth-input .native-input,
 .auth-input input,
 .auth-input .input-wrapper,
 .auth-input .label-text-wrapper,
 .auth-input .native-wrapper {
   background: transparent !important;
+  background-color: transparent !important;
   color: hsl(var(--foreground)) !important;
+  border-radius: 12px !important;
+  overflow: hidden !important;
 }
 
-/* Outline fill mode: Ionic wraps the input in an extra container */
+/*
+ * Hide Ionic's 3-segment outline (start/notch/end) entirely.
+ * These cause subtle visual artifacts at segment junctions.
+ * We replace with a single clean border on the label wrapper.
+ */
+.auth-input .input-outline-container,
+.auth-input .input-outline-start,
+.auth-input .input-outline-notch,
+.auth-input .input-outline-end {
+  display: none !important;
+}
+
+/* Single clean border on the label wrapper instead */
+.auth-input .input-wrapper {
+  border: 1px solid rgba(124, 58, 237, 0.3) !important;
+  border-radius: 12px !important;
+  overflow: hidden !important;
+  background: transparent !important;
+}
+
+.auth-input.has-focus .input-wrapper {
+  border-color: hsl(var(--primary)) !important;
+}
+
+/* Outline fill mode overrides */
 .auth-input.input-fill-outline {
   --background: transparent !important;
   background: transparent !important;
 }
 
-.auth-input.input-fill-outline .input-outline {
-  border-color: rgba(124, 58, 237, 0.3) !important;
-  border-radius: 1rem !important;
-  background: transparent !important;
-}
-
-/* Focused state: brighter border */
-.auth-input.has-focus .input-outline,
-.auth-input.input-fill-outline.has-focus .input-outline {
-  border-color: hsl(var(--primary)) !important;
-}
-
-/* The three outline segments (start, notch, end) */
-.auth-input .input-outline-start,
-.auth-input .input-outline-notch,
-.auth-input .input-outline-end {
-  border-color: rgba(124, 58, 237, 0.3) !important;
-  background: transparent !important;
-}
-
-.auth-input.has-focus .input-outline-start,
-.auth-input.has-focus .input-outline-notch,
-.auth-input.has-focus .input-outline-end {
-  border-color: hsl(var(--primary)) !important;
+/* ion-item wrappers if used */
+ion-item.auth-item,
+.auth-form ion-item {
+  --background: transparent !important;
+  --background-focused: transparent !important;
+  --background-hover: transparent !important;
 }
 
 /* ── Primary button (LOGGA IN / SIGNUP) ── */

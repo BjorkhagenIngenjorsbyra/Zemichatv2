@@ -137,7 +137,7 @@ ion-toolbar {
 }
 
 ion-input {
-  --background: hsl(var(--card)) !important;
+  --background: transparent !important;
   --color: hsl(var(--foreground)) !important;
   --placeholder-color: hsl(var(--muted-foreground)) !important;
   --border-color: hsl(var(--border)) !important;
@@ -146,7 +146,8 @@ ion-input {
   --padding-start: 1rem !important;
   --padding-end: 1rem !important;
   --highlight-color-focused: hsl(var(--primary)) !important;
-  background: hsl(var(--card));
+  --highlight-background: transparent !important;
+  background: transparent !important;
 }
 
 ion-input .native-input,
