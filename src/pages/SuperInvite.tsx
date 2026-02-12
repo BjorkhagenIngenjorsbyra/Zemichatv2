@@ -10,7 +10,7 @@ import {
   IonSpinner,
   IonCheckbox,
 } from '@ionic/react';
-import { signUp } from '../services/auth';
+import { signUp, signIn } from '../services/auth';
 import { getInvitationByToken, claimInvitation, type InvitationPublicInfo } from '../services/invitations';
 import { PasswordStrength } from '../components/PasswordStrength';
 import '../theme/auth-forms.css';
@@ -98,7 +98,16 @@ const SuperInvite: React.FC = () => {
       return;
     }
 
-    // Step 2: Claim the invitation (creates user profile in team)
+    // Step 2: Sign in to establish session (signUp may not create session if email confirmation is enabled)
+    const { error: signInError } = await signIn({ email, password });
+
+    if (signInError) {
+      setError(signInError.message);
+      setIsLoading(false);
+      return;
+    }
+
+    // Step 3: Claim the invitation (creates user profile in team)
     const { error: claimError } = await claimInvitation(token);
 
     if (claimError) {
