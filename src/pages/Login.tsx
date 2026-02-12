@@ -10,6 +10,7 @@ import {
   IonSpinner,
 } from '@ionic/react';
 import { signIn } from '../services/auth';
+import { claimInvitation } from '../services/invitations';
 import '../theme/auth-forms.css';
 
 const Login: React.FC = () => {
@@ -35,6 +36,13 @@ const Login: React.FC = () => {
       }
       setIsLoading(false);
       return;
+    }
+
+    // Auto-claim pending invitation if one was stored during signup
+    const pendingToken = localStorage.getItem('zemichat-pending-invite-token');
+    if (pendingToken) {
+      localStorage.removeItem('zemichat-pending-invite-token');
+      await claimInvitation(pendingToken);
     }
 
     history.replace('/chats');

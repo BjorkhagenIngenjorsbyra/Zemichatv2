@@ -508,7 +508,9 @@
     "claimButton": "Liity tiimiin",
     "alreadyHasAccount": "Sinulla on jo tili tiimissä",
     "invalidToken": "Virheellinen tai vanhentunut kutsu",
-    "tokenExpired": "Tämä kutsu on vanhentunut"
+    "tokenExpired": "Tämä kutsu on vanhentunut",
+    "verificationSentTitle": "Vahvistussähköposti lähetetty!",
+    "verificationSentDesc": "Tarkista sähköpostisi ja klikkaa vahvistuslinkkiä. Kirjaudu sitten sisään täältä."
   },
   "passwordStrength": {
     "weak": "Heikko",

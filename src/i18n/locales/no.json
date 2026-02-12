@@ -508,7 +508,9 @@
     "claimButton": "Bli med i teamet",
     "alreadyHasAccount": "Du har allerede en konto i et team",
     "invalidToken": "Ugyldig eller utgått invitasjon",
-    "tokenExpired": "Denne invitasjonen har gått ut"
+    "tokenExpired": "Denne invitasjonen har gått ut",
+    "verificationSentTitle": "Verifiseringsmail sendt!",
+    "verificationSentDesc": "Sjekk e-posten din og klikk på verifiseringslenken. Logg deretter inn her."
   },
   "passwordStrength": {
     "weak": "Svakt",

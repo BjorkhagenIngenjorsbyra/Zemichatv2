@@ -508,7 +508,9 @@
     "claimButton": "Join the Team",
     "alreadyHasAccount": "You already have an account in a team",
     "invalidToken": "Invalid or expired invitation",
-    "tokenExpired": "This invitation has expired"
+    "tokenExpired": "This invitation has expired",
+    "verificationSentTitle": "Verification email sent!",
+    "verificationSentDesc": "Check your email and click the verification link. Then log in here."
   },
   "passwordStrength": {
     "weak": "Weak",

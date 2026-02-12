@@ -31,6 +31,7 @@ const SuperInvite: React.FC = () => {
   const [consentAccepted, setConsentAccepted] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [emailSent, setEmailSent] = useState(false);
 
   useEffect(() => {
     async function loadInvitation() {
@@ -98,11 +99,14 @@ const SuperInvite: React.FC = () => {
       return;
     }
 
-    // Step 2: Sign in to establish session (signUp may not create session if email confirmation is enabled)
+    // Step 2: Try to sign in (may fail if email confirmation is required)
     const { error: signInError } = await signIn({ email, password });
 
     if (signInError) {
-      setError(signInError.message);
+      // Email not confirmed — this is expected when email verification is enabled
+      // Store the token so we can claim the invitation after email verification + login
+      localStorage.setItem('zemichat-pending-invite-token', token);
+      setEmailSent(true);
       setIsLoading(false);
       return;
     }
@@ -116,7 +120,7 @@ const SuperInvite: React.FC = () => {
       return;
     }
 
-    // Step 3: Redirect to Super tour
+    // Step 4: Redirect to Super tour
     history.replace('/super-tour');
   };
 
@@ -140,6 +144,23 @@ const SuperInvite: React.FC = () => {
             <div style={{ fontSize: '64px', marginBottom: '16px' }}>😔</div>
             <h2 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '8px' }}>{t('invite.invalidToken')}</h2>
             <p style={{ color: 'hsl(var(--muted-foreground))', marginBottom: '24px' }}>{loadError}</p>
+            <IonButton expand="block" className="auth-button" onClick={() => history.push('/login')}>
+              {t('auth.login')}
+            </IonButton>
+          </div>
+        </IonContent>
+      </IonPage>
+    );
+  }
+
+  if (emailSent) {
+    return (
+      <IonPage>
+        <IonContent className="ion-padding" fullscreen>
+          <div className="auth-container" style={{ alignItems: 'center', textAlign: 'center' }}>
+            <div style={{ fontSize: '64px', marginBottom: '16px' }}>📧</div>
+            <h2 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '8px' }}>{t('invite.verificationSentTitle')}</h2>
+            <p style={{ color: 'hsl(var(--muted-foreground))', marginBottom: '24px' }}>{t('invite.verificationSentDesc')}</p>
             <IonButton expand="block" className="auth-button" onClick={() => history.push('/login')}>
               {t('auth.login')}
             </IonButton>
