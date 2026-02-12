@@ -68,7 +68,6 @@ All current `any` usages are justified (Supabase RPC return types). No unnecessa
 
 | Item | Location | Priority |
 |------|----------|----------|
-| Agora token generation | `supabase/functions/agora-token/index.ts` | **HIGH** — placeholder, needs Agora SDK |
 | Production CORS origins | `supabase/functions/*/index.ts` | **HIGH** — add production domain before deploy |
 | Input length validation | `create_team_with_owner`, `create_texter` SQL functions | Medium |
 | MFA friendly name | `src/services/mfa.ts:104` — hardcoded `'Zemichat Authenticator'` | Low |
@@ -98,13 +97,12 @@ All current `any` usages are justified (Supabase RPC return types). No unnecessa
 
 ## Summary — Top 10 Critical Items
 
-1. **Agora token generation is placeholder** — not production-safe
-2. **Add production domain to CORS whitelist** in Edge Functions
-3. **iOS platform not added** — no push, calls, or share on iOS
-4. **No rate limiting** on Edge Functions
-5. **Extract hardcoded timeouts** to shared constants
-6. **Refactor inline CSS** in SkeletonLoader and other components
-7. **Input length validation** in SQL functions
-8. **Consolidate E2E test frameworks** (Playwright vs Cypress)
-9. **Replace `any` types** when Supabase generates RPC types
-10. **Add APNs VoIP certificates** before iOS launch
+1. **Add production domain to CORS whitelist** in Edge Functions
+2. **iOS platform not added** — no push, calls, or share on iOS
+3. **No rate limiting** on Edge Functions
+4. **Extract hardcoded timeouts** to shared constants
+5. **Refactor inline CSS** in SkeletonLoader and other components
+6. **Input length validation** in SQL functions
+7. **Consolidate E2E test frameworks** (Playwright vs Cypress)
+8. **Replace `any` types** when Supabase generates RPC types
+9. **Add APNs VoIP certificates** before iOS launch
