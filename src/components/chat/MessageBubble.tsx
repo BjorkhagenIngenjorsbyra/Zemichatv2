@@ -416,8 +416,8 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
         }
 
         .message-time {
-          font-size: 0.6rem;
-          opacity: 0.6;
+          font-size: 0.65rem;
+          opacity: 0.75;
         }
 
         /* Edge-to-edge media in bubbles */
@@ -451,7 +451,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
         }
 
         .read-status.sent {
-          opacity: 0.5;
+          opacity: 0.65;
         }
 
         .read-status.delivered {

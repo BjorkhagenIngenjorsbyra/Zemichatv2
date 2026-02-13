@@ -185,8 +185,8 @@ const CallPiP: React.FC = () => {
         }
 
         .pip-status {
-          font-size: 0.5rem;
-          color: hsl(var(--muted-foreground));
+          font-size: 0.6rem;
+          color: hsl(var(--foreground) / 0.7);
         }
 
         .pip-actions {

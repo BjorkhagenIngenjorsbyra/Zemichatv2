@@ -204,7 +204,7 @@ export const SOSAlertCard: React.FC<SOSAlertCardProps> = ({
 
         .alert-time {
           font-size: 0.8rem;
-          color: hsl(var(--muted-foreground));
+          color: hsl(var(--foreground) / 0.7);
           margin: 0;
         }
 

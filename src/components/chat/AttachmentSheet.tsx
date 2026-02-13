@@ -124,9 +124,9 @@ const AttachmentSheet: React.FC<AttachmentSheetProps> = ({
           }
 
           .attachment-label {
-            font-size: 0.7rem;
+            font-size: 0.75rem;
             font-weight: 500;
-            color: hsl(var(--muted-foreground));
+            color: hsl(var(--foreground) / 0.8);
           }
         `}</style>
       </div>

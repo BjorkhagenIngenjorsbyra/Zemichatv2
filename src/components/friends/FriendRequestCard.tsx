@@ -146,8 +146,8 @@ export const FriendRequestCard: React.FC<FriendRequestCardProps> = ({
 
         .request-zemi {
           font-family: monospace;
-          font-size: 0.8rem;
-          color: hsl(var(--muted-foreground));
+          font-size: 0.85rem;
+          color: hsl(var(--foreground) / 0.7);
           margin: 0;
         }
 
@@ -156,8 +156,8 @@ export const FriendRequestCard: React.FC<FriendRequestCardProps> = ({
           align-items: center;
           gap: 0.25rem;
           margin-top: 0.25rem;
-          font-size: 0.75rem;
-          color: hsl(var(--muted-foreground));
+          font-size: 0.8rem;
+          color: hsl(var(--foreground) / 0.65);
         }
 
         .request-status ion-icon {

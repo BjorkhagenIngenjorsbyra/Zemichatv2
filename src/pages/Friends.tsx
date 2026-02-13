@@ -20,7 +20,7 @@ import {
   IonActionSheet,
   RefresherEventDetail,
 } from '@ionic/react';
-import { personAddOutline, peopleOutline, timeOutline, chatbubbleOutline } from 'ionicons/icons';
+import { personAddOutline, peopleOutline, timeOutline, chatbubbleOutline, call, videocam } from 'ionicons/icons';
 import { useAuthContext } from '../contexts/AuthContext';
 import {
   getMyFriends,
@@ -34,6 +34,8 @@ import {
 import { createChat } from '../services/chat';
 import { FriendCard, FriendRequestCard } from '../components/friends';
 import { UserRole } from '../types/database';
+import { CallType } from '../types/call';
+import { useCallContext } from '../contexts/CallContext';
 import { SkeletonLoader, EmptyStateIllustration } from '../components/common';
 
 type TabValue = 'friends' | 'requests';
@@ -42,6 +44,7 @@ const Friends: React.FC = () => {
   const { t } = useTranslation();
   const history = useHistory();
   const { profile } = useAuthContext();
+  const { initiateCall } = useCallContext();
   const [activeTab, setActiveTab] = useState<TabValue>('friends');
   const [friends, setFriends] = useState<FriendWithUser[]>([]);
   const [incomingRequests, setIncomingRequests] = useState<PendingRequestWithUser[]>([]);
@@ -107,6 +110,17 @@ const Friends: React.FC = () => {
     });
     if (!error && chat) {
       history.push(`/chat/${chat.id}`);
+    }
+  };
+
+  const handleCall = async (userId: string, type: 'voice' | 'video') => {
+    const { chat, error } = await createChat({
+      memberIds: [userId],
+      isGroup: false,
+    });
+    if (!error && chat) {
+      history.push(`/chat/${chat.id}`);
+      await initiateCall(chat.id, type === 'video' ? CallType.VIDEO : CallType.VOICE);
     }
   };
 
@@ -288,6 +302,24 @@ const Friends: React.FC = () => {
               },
             },
             {
+              text: t('call.voiceCall'),
+              icon: call,
+              handler: () => {
+                if (actionTarget) {
+                  handleCall(actionTarget.userId, 'voice');
+                }
+              },
+            },
+            {
+              text: t('call.videoCall'),
+              icon: videocam,
+              handler: () => {
+                if (actionTarget) {
+                  handleCall(actionTarget.userId, 'video');
+                }
+              },
+            },
+            {
               text: t('friends.addToExistingChat'),
               icon: peopleOutline,
               handler: () => {
@@ -340,7 +372,7 @@ const Friends: React.FC = () => {
 
           .empty-state p {
             margin: 0;
-            color: hsl(var(--muted-foreground));
+            color: hsl(var(--foreground) / 0.7);
           }
 
           .section {
@@ -350,7 +382,7 @@ const Friends: React.FC = () => {
           .section-title {
             font-size: 0.875rem;
             font-weight: 600;
-            color: hsl(var(--muted-foreground));
+            color: hsl(var(--foreground) / 0.7);
             text-transform: uppercase;
             letter-spacing: 0.05em;
             margin: 0 0 0.75rem 0.5rem;
@@ -367,7 +399,7 @@ const Friends: React.FC = () => {
           .texter-note {
             text-align: center;
             font-size: 0.8rem;
-            color: hsl(var(--muted-foreground));
+            color: hsl(var(--foreground) / 0.7);
             margin: 0.75rem 0 0 0;
             padding: 0 1rem;
           }

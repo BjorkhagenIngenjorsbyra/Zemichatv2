@@ -228,19 +228,19 @@ const VoiceMessage: React.FC<VoiceMessageProps> = ({
         }
 
         .time-display {
-          font-size: 0.7rem;
-          opacity: 0.7;
+          font-size: 0.75rem;
+          opacity: 0.85;
         }
 
         .rate-button {
-          font-size: 0.65rem;
+          font-size: 0.7rem;
           padding: 0.125rem 0.375rem;
           border-radius: 0.25rem;
           background: hsl(var(--muted) / 0.3);
           border: none;
           cursor: pointer;
           color: inherit;
-          opacity: 0.7;
+          opacity: 0.85;
         }
 
         .rate-button:hover {

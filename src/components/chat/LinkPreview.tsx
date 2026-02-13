@@ -121,9 +121,9 @@ const LinkPreview: React.FC<LinkPreviewProps> = ({ url, isOwn }) => {
         }
 
         .link-preview-domain {
-          font-size: 0.65rem;
+          font-size: 0.7rem;
           text-transform: uppercase;
-          opacity: 0.6;
+          opacity: 0.8;
           letter-spacing: 0.03em;
         }
 
@@ -138,8 +138,8 @@ const LinkPreview: React.FC<LinkPreviewProps> = ({ url, isOwn }) => {
         }
 
         .link-preview-desc {
-          font-size: 0.7rem;
-          opacity: 0.7;
+          font-size: 0.75rem;
+          opacity: 0.8;
           line-height: 1.3;
           display: -webkit-box;
           -webkit-line-clamp: 2;

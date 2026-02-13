@@ -316,7 +316,7 @@ const GifPicker: React.FC<GifPickerProps> = ({ isOpen, onClose, onSelect }) => {
         .gif-powered-by {
           text-align: center;
           font-size: 0.65rem;
-          color: hsl(var(--muted-foreground));
+          color: hsl(var(--foreground) / 0.5);
           padding: 0.35rem 0.35rem calc(0.35rem + env(safe-area-inset-bottom, 0px));
           border-top: 1px solid hsl(var(--border));
           flex-shrink: 0;

@@ -125,8 +125,8 @@ export const FriendCard: React.FC<FriendCardProps> = ({
 
         .friend-zemi {
           font-family: monospace;
-          font-size: 0.8rem;
-          color: hsl(var(--muted-foreground));
+          font-size: 0.85rem;
+          color: hsl(var(--foreground) / 0.7);
           margin: 0;
         }
       `}</style>

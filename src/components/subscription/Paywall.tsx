@@ -326,8 +326,8 @@ const Paywall: React.FC<PaywallProps> = ({ blocking = false }) => {
 
           .terms-text {
             text-align: center;
-            font-size: 0.625rem;
-            color: hsl(var(--muted-foreground));
+            font-size: 0.7rem;
+            color: hsl(var(--foreground) / 0.6);
             margin-top: 1rem;
           }
         `}</style>

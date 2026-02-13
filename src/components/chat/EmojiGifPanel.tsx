@@ -413,8 +413,8 @@ const EmojiGifPanel: React.FC<EmojiGifPanelProps> = ({
 
         .egp-powered-by {
           text-align: center;
-          font-size: 0.6rem;
-          color: hsl(var(--muted-foreground));
+          font-size: 0.65rem;
+          color: hsl(var(--foreground) / 0.5);
           padding: 0.25rem 0.25rem calc(0.25rem + env(safe-area-inset-bottom, 0px));
           border-top: 1px solid hsl(var(--border));
           flex-shrink: 0;
