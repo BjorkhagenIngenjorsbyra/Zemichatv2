@@ -281,7 +281,8 @@
     "texterApprovalNote": "Friend requests must be approved by your Team Owner",
     "myTeam": "My Team",
     "startNewChat": "Start new chat",
-    "addToExistingChat": "Add to chat"
+    "addToExistingChat": "Add to chat",
+    "settings": "Settings"
   },
   "ownerApprovals": {
     "title": "Friend Approvals",
@@ -646,6 +647,19 @@
     "sendFailed": "Failed to send. Try again.",
     "sending": "Sending...",
     "images": "images"
+  },
+  "friendSettings": {
+    "title": "Friend Settings",
+    "nickname": "Nickname",
+    "nicknamePlaceholder": "Enter nickname...",
+    "categories": "Categories",
+    "family": "Family",
+    "relative": "Relative",
+    "friend": "Friend",
+    "classmate": "Classmate",
+    "teammate": "Teammate",
+    "saved": "Saved!",
+    "all": "All"
   },
   "referral": {
     "title": "Invite friends",

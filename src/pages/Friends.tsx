@@ -20,7 +20,7 @@ import {
   IonActionSheet,
   RefresherEventDetail,
 } from '@ionic/react';
-import { personAddOutline, peopleOutline, timeOutline, chatbubbleOutline, call, videocam } from 'ionicons/icons';
+import { personAddOutline, peopleOutline, timeOutline, chatbubbleOutline, call, videocam, settingsOutline } from 'ionicons/icons';
 import { useAuthContext } from '../contexts/AuthContext';
 import {
   getMyFriends,
@@ -31,9 +31,10 @@ import {
   type FriendWithUser,
   type PendingRequestWithUser,
 } from '../services/friend';
+import { getAllFriendSettings } from '../services/friendSettings';
 import { createChat } from '../services/chat';
-import { FriendCard, FriendRequestCard } from '../components/friends';
-import { UserRole } from '../types/database';
+import { FriendCard, FriendRequestCard, FriendSettingsModal } from '../components/friends';
+import { type FriendSettings, type User, UserRole, FRIEND_CATEGORIES } from '../types/database';
 import { CallType } from '../types/call';
 import { useCallContext } from '../contexts/CallContext';
 import { SkeletonLoader, EmptyStateIllustration } from '../components/common';
@@ -57,17 +58,23 @@ const Friends: React.FC = () => {
   const [actionTarget, setActionTarget] = useState<{
     userId: string;
     name: string;
+    user: User;
   } | null>(null);
+  const [friendSettingsMap, setFriendSettingsMap] = useState<Map<string, FriendSettings>>(new Map());
+  const [activeCategory, setActiveCategory] = useState<string>('all');
+  const [settingsTarget, setSettingsTarget] = useState<User | null>(null);
 
   const loadData = useCallback(async () => {
-    const [friendsResult, requestsResult] = await Promise.all([
+    const [friendsResult, requestsResult, settingsResult] = await Promise.all([
       getMyFriends(),
       getPendingRequests(),
+      getAllFriendSettings(),
     ]);
 
     setFriends(friendsResult.friends);
     setIncomingRequests(requestsResult.incoming);
     setOutgoingRequests(requestsResult.outgoing);
+    setFriendSettingsMap(settingsResult.settings);
 
     setIsLoading(false);
   }, []);
@@ -177,27 +184,60 @@ const Friends: React.FC = () => {
                 <p>{t('friends.addFriendsHint')}</p>
               </div>
             ) : (
-              <IonList className="friends-list" data-testid="friends-list">
-                {friends.map((friend) => (
-                  <FriendCard
-                    key={friend.id}
-                    user={friend.user}
-                    friendshipId={friend.id}
-                    onUnfriend={() =>
-                      setUnfriendTarget({
-                        id: friend.id,
-                        name: friend.user.display_name || t('dashboard.unnamed'),
-                      })
-                    }
-                    onClick={() =>
-                      setActionTarget({
-                        userId: friend.user.id,
-                        name: friend.user.display_name || t('dashboard.unnamed'),
-                      })
-                    }
-                  />
-                ))}
-              </IonList>
+              <>
+                {/* Category filter bar */}
+                <div className="category-filter-bar">
+                  <button
+                    className={`category-chip ${activeCategory === 'all' ? 'active' : ''}`}
+                    onClick={() => setActiveCategory('all')}
+                  >
+                    {t('friendSettings.all')}
+                  </button>
+                  {FRIEND_CATEGORIES.map((cat) => (
+                    <button
+                      key={cat}
+                      className={`category-chip ${activeCategory === cat ? 'active' : ''}`}
+                      onClick={() => setActiveCategory(cat)}
+                    >
+                      {t(`friendSettings.${cat}`)}
+                    </button>
+                  ))}
+                </div>
+
+                <IonList className="friends-list" data-testid="friends-list">
+                  {friends
+                    .filter((friend) => {
+                      if (activeCategory === 'all') return true;
+                      const settings = friendSettingsMap.get(friend.user.id);
+                      return settings?.categories?.includes(activeCategory) ?? false;
+                    })
+                    .map((friend) => {
+                      const settings = friendSettingsMap.get(friend.user.id);
+                      return (
+                        <FriendCard
+                          key={friend.id}
+                          user={friend.user}
+                          friendshipId={friend.id}
+                          nickname={settings?.nickname}
+                          categories={settings?.categories}
+                          onUnfriend={() =>
+                            setUnfriendTarget({
+                              id: friend.id,
+                              name: friend.user.display_name || t('dashboard.unnamed'),
+                            })
+                          }
+                          onClick={() =>
+                            setActionTarget({
+                              userId: friend.user.id,
+                              name: friend.user.display_name || t('dashboard.unnamed'),
+                              user: friend.user,
+                            })
+                          }
+                        />
+                      );
+                    })}
+                </IonList>
+              </>
             )}
           </div>
         ) : (
@@ -329,10 +369,43 @@ const Friends: React.FC = () => {
               },
             },
             {
+              text: t('friends.settings'),
+              icon: settingsOutline,
+              handler: () => {
+                if (actionTarget) {
+                  setSettingsTarget(actionTarget.user);
+                }
+              },
+            },
+            {
               text: t('common.cancel'),
               role: 'cancel',
             },
           ]}
+        />
+
+        <FriendSettingsModal
+          isOpen={!!settingsTarget}
+          friend={settingsTarget}
+          initialNickname={settingsTarget ? (friendSettingsMap.get(settingsTarget.id)?.nickname ?? '') : ''}
+          initialCategories={settingsTarget ? (friendSettingsMap.get(settingsTarget.id)?.categories ?? []) : []}
+          onClose={() => setSettingsTarget(null)}
+          onSaved={(friendUserId, nickname, categories) => {
+            setFriendSettingsMap((prev) => {
+              const next = new Map(prev);
+              const existing = next.get(friendUserId);
+              next.set(friendUserId, {
+                id: existing?.id ?? '',
+                user_id: existing?.user_id ?? '',
+                friend_user_id: friendUserId,
+                nickname,
+                categories,
+                created_at: existing?.created_at ?? new Date().toISOString(),
+                updated_at: new Date().toISOString(),
+              });
+              return next;
+            });
+          }}
         />
 
         <style>{`
@@ -402,6 +475,39 @@ const Friends: React.FC = () => {
             color: hsl(var(--foreground) / 0.7);
             margin: 0.75rem 0 0 0;
             padding: 0 1rem;
+          }
+
+          .category-filter-bar {
+            display: flex;
+            gap: 0.5rem;
+            overflow-x: auto;
+            padding-bottom: 0.75rem;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+          }
+
+          .category-filter-bar::-webkit-scrollbar {
+            display: none;
+          }
+
+          .category-chip {
+            flex-shrink: 0;
+            padding: 0.4rem 0.85rem;
+            border-radius: 999px;
+            border: 1.5px solid hsl(var(--border));
+            background: transparent;
+            color: hsl(var(--foreground));
+            font-size: 0.85rem;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.15s;
+            white-space: nowrap;
+          }
+
+          .category-chip.active {
+            background: hsl(var(--primary));
+            color: hsl(var(--primary-foreground));
+            border-color: hsl(var(--primary));
           }
 
           .safe-fab {

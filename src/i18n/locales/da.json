@@ -281,7 +281,8 @@
     "texterApprovalNote": "Venneanmodninger skal godkendes af din Team Owner",
     "myTeam": "Mit team",
     "startNewChat": "Start ny chat",
-    "addToExistingChat": "Tilføj til chat"
+    "addToExistingChat": "Tilføj til chat",
+    "settings": "Indstillinger"
   },
   "ownerApprovals": {
     "title": "Venne-godkendelser",
@@ -646,6 +647,19 @@
     "sendFailed": "Kunne ikke sende. Prøv igen.",
     "sending": "Sender...",
     "images": "billeder"
+  },
+  "friendSettings": {
+    "title": "Venneindstillinger",
+    "nickname": "Kaldenavn",
+    "nicknamePlaceholder": "Indtast kaldenavn...",
+    "categories": "Kategorier",
+    "family": "Familie",
+    "relative": "Slægtning",
+    "friend": "Ven",
+    "classmate": "Klassekammerat",
+    "teammate": "Holdkammerat",
+    "saved": "Gemt!",
+    "all": "Alle"
   },
   "referral": {
     "title": "Inviter venner",

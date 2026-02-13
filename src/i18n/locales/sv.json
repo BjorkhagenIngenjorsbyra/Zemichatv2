@@ -281,7 +281,8 @@
     "texterApprovalNote": "Vänförfrågningar måste godkännas av din Team Owner",
     "myTeam": "Mitt team",
     "startNewChat": "Starta ny chatt",
-    "addToExistingChat": "Lägg till i chatt"
+    "addToExistingChat": "Lägg till i chatt",
+    "settings": "Inställningar"
   },
   "ownerApprovals": {
     "title": "Vän-godkännanden",
@@ -646,6 +647,19 @@
     "sendFailed": "Kunde inte skicka. Försök igen.",
     "sending": "Skickar...",
     "images": "bilder"
+  },
+  "friendSettings": {
+    "title": "Väninställningar",
+    "nickname": "Smeknamn",
+    "nicknamePlaceholder": "Ange smeknamn...",
+    "categories": "Kategorier",
+    "family": "Familj",
+    "relative": "Släkt",
+    "friend": "Vän",
+    "classmate": "Klasskompis",
+    "teammate": "Lagkamrat",
+    "saved": "Sparat!",
+    "all": "Alla"
   },
   "referral": {
     "title": "Bjud in vänner",

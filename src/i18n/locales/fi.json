@@ -281,7 +281,8 @@
     "texterApprovalNote": "Ystäväpyynnöt on hyväksytettävä Team Ownerillasi",
     "myTeam": "Tiimini",
     "startNewChat": "Aloita uusi keskustelu",
-    "addToExistingChat": "Lisää keskusteluun"
+    "addToExistingChat": "Lisää keskusteluun",
+    "settings": "Asetukset"
   },
   "ownerApprovals": {
     "title": "Ystävähyväksynnät",
@@ -646,6 +647,19 @@
     "sendFailed": "Lähettäminen epäonnistui. Yritä uudelleen.",
     "sending": "Lähetetään...",
     "images": "kuvaa"
+  },
+  "friendSettings": {
+    "title": "Ystäväasetukset",
+    "nickname": "Lempinimi",
+    "nicknamePlaceholder": "Syötä lempinimi...",
+    "categories": "Kategoriat",
+    "family": "Perhe",
+    "relative": "Sukulainen",
+    "friend": "Ystävä",
+    "classmate": "Luokkakaveri",
+    "teammate": "Joukkuekaveri",
+    "saved": "Tallennettu!",
+    "all": "Kaikki"
   },
   "referral": {
     "title": "Kutsu ystäviä",

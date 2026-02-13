@@ -130,6 +130,19 @@ export interface Friendship {
   updated_at: string;
 }
 
+export interface FriendSettings {
+  id: string;
+  user_id: string;
+  friend_user_id: string;
+  nickname: string;
+  categories: string[];
+  created_at: string;
+  updated_at: string;
+}
+
+export const FRIEND_CATEGORIES = ['family', 'relative', 'friend', 'classmate', 'teammate'] as const;
+export type FriendCategory = typeof FRIEND_CATEGORIES[number];
+
 export interface DeniedFriendRequest {
   id: string;
   texter_id: string;
@@ -403,6 +416,11 @@ export interface Database {
         Row: Friendship;
         Insert: Pick<Friendship, 'requester_id' | 'addressee_id'> & Partial<Omit<Friendship, 'id' | 'requester_id' | 'addressee_id'>>;
         Update: Partial<Omit<Friendship, 'id'>>;
+      };
+      friend_settings: {
+        Row: FriendSettings;
+        Insert: Pick<FriendSettings, 'user_id' | 'friend_user_id'> & Partial<Omit<FriendSettings, 'id' | 'user_id' | 'friend_user_id'>>;
+        Update: Partial<Omit<FriendSettings, 'id' | 'user_id' | 'friend_user_id'>>;
       };
       denied_friend_requests: {
         Row: DeniedFriendRequest;

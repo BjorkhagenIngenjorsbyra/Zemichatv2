@@ -10,11 +10,13 @@ import {
   IonItemOption,
 } from '@ionic/react';
 import { ellipse, ellipseOutline, personRemoveOutline } from 'ionicons/icons';
-import { type User } from '../../types/database';
+import { type User, FRIEND_CATEGORIES } from '../../types/database';
 
 interface FriendCardProps {
   user: User;
   friendshipId: string;
+  nickname?: string;
+  categories?: string[];
   onUnfriend: (friendshipId: string) => void;
   onClick?: () => void;
 }
@@ -25,6 +27,8 @@ interface FriendCardProps {
 export const FriendCard: React.FC<FriendCardProps> = ({
   user,
   friendshipId,
+  nickname,
+  categories,
   onUnfriend,
   onClick,
 }) => {
@@ -56,7 +60,23 @@ export const FriendCard: React.FC<FriendCardProps> = ({
               className={`status-dot ${user.is_active ? 'active' : 'inactive'}`}
             />
           </h2>
-          <p className="friend-zemi">{user.zemi_number}</p>
+          {nickname ? (
+            <p className="friend-nickname">{nickname}</p>
+          ) : null}
+          <p className="friend-zemi">
+            {user.zemi_number}
+            {categories && categories.length > 0 && (
+              <span className="friend-cat-pills">
+                {categories
+                  .filter((c) => (FRIEND_CATEGORIES as readonly string[]).includes(c))
+                  .map((cat) => (
+                    <span key={cat} className="friend-cat-pill">
+                      {t(`friendSettings.${cat}`)}
+                    </span>
+                  ))}
+              </span>
+            )}
+          </p>
         </IonLabel>
       </IonItem>
 
@@ -123,11 +143,39 @@ export const FriendCard: React.FC<FriendCardProps> = ({
           color: hsl(var(--muted));
         }
 
+        .friend-nickname {
+          font-size: 0.8rem;
+          color: hsl(var(--primary));
+          margin: 0 0 0.15rem 0;
+          font-style: italic;
+        }
+
         .friend-zemi {
           font-family: monospace;
           font-size: 0.85rem;
           color: hsl(var(--foreground) / 0.7);
           margin: 0;
+          display: flex;
+          align-items: center;
+          flex-wrap: wrap;
+          gap: 0.35rem;
+        }
+
+        .friend-cat-pills {
+          display: inline-flex;
+          gap: 0.25rem;
+          margin-left: 0.25rem;
+        }
+
+        .friend-cat-pill {
+          font-family: inherit;
+          font-size: 0.65rem;
+          padding: 0.1rem 0.4rem;
+          border-radius: 999px;
+          background: hsl(var(--primary) / 0.15);
+          color: hsl(var(--primary));
+          font-weight: 500;
+          white-space: nowrap;
         }
       `}</style>
     </IonItemSliding>
