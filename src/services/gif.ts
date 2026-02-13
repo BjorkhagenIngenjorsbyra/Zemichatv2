@@ -14,10 +14,12 @@ const GIPHY_BASE_URL = 'https://api.giphy.com/v1/gifs';
 export interface GifResult {
   id: string;
   title: string;
-  previewUrl: string; // Small preview
-  url: string; // Full size gif
+  previewUrl: string; // fixed_width (200px) for grid preview
+  url: string; // downsized or original for chat display
   width: number;
   height: number;
+  previewWidth: number; // fixed_width dimensions for masonry layout
+  previewHeight: number;
 }
 
 interface GiphyImage {
@@ -31,6 +33,7 @@ interface GiphyItem {
   title: string;
   images: {
     original: GiphyImage;
+    downsized: GiphyImage;
     fixed_width: GiphyImage;
     fixed_width_small: GiphyImage;
     preview_gif: GiphyImage;
@@ -39,16 +42,20 @@ interface GiphyItem {
 
 function mapGiphyItem(item: GiphyItem): GifResult {
   const original = item.images.original;
-  // Use fixed_width (200px) for sharper previews instead of fixed_width_small (100px)
+  const downsized = item.images.downsized;
+  // Use fixed_width (200px) for sharper previews in the picker grid
   const preview = item.images.fixed_width || item.images.fixed_width_small || item.images.preview_gif;
 
   return {
     id: item.id,
     title: item.title || '',
     previewUrl: preview?.url || original?.url || '',
-    url: original?.url || '',
-    width: parseInt(original?.width, 10) || 200,
-    height: parseInt(original?.height, 10) || 200,
+    // Use downsized (< 2 MB) for chat messages, fall back to original
+    url: downsized?.url || original?.url || '',
+    width: parseInt(downsized?.width || original?.width, 10) || 200,
+    height: parseInt(downsized?.height || original?.height, 10) || 200,
+    previewWidth: parseInt(preview?.width, 10) || 200,
+    previewHeight: parseInt(preview?.height, 10) || 150,
   };
 }
 

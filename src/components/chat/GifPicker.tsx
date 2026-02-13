@@ -136,6 +136,9 @@ const GifPicker: React.FC<GifPickerProps> = ({ isOpen, onClose, onSelect }) => {
                 key={gif.id}
                 className="gif-item"
                 onClick={() => handleSelect(gif)}
+                style={{
+                  aspectRatio: `${gif.previewWidth} / ${gif.previewHeight}`,
+                }}
               >
                 <img
                   src={gif.previewUrl}
@@ -266,9 +269,8 @@ const GifPicker: React.FC<GifPickerProps> = ({ isOpen, onClose, onSelect }) => {
         }
 
         .gif-grid {
-          display: grid;
-          grid-template-columns: repeat(2, 1fr);
-          gap: 6px;
+          columns: 2;
+          column-gap: 6px;
           padding: 6px;
           overflow-y: auto;
           flex: 1;
@@ -277,7 +279,7 @@ const GifPicker: React.FC<GifPickerProps> = ({ isOpen, onClose, onSelect }) => {
 
         .gif-loading,
         .gif-empty {
-          grid-column: 1 / -1;
+          column-span: all;
           display: flex;
           justify-content: center;
           align-items: center;
@@ -293,7 +295,10 @@ const GifPicker: React.FC<GifPickerProps> = ({ isOpen, onClose, onSelect }) => {
           padding: 0;
           overflow: hidden;
           border-radius: 0.5rem;
-          aspect-ratio: 4/3;
+          break-inside: avoid;
+          margin-bottom: 6px;
+          display: block;
+          width: 100%;
         }
 
         .gif-item img {

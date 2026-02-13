@@ -10,7 +10,7 @@ interface EmojiGifPanelProps {
   isOpen: boolean;
   onClose: () => void;
   onEmojiInsert: (emoji: string) => void;
-  onGifSelect: (url: string, width: number, height: number) => void;
+  onGifSelect: (url: string, width: number, height: number) => void | Promise<void>;
 }
 
 type TabType = 'emoji' | 'gif';
@@ -96,10 +96,15 @@ const EmojiGifPanel: React.FC<EmojiGifPanelProps> = ({
     loadCategory(QUICK_CATEGORIES[index].query);
   };
 
-  const handleGifSelect = (gif: GifResult) => {
-    onGifSelect(gif.url, gif.width, gif.height);
+  const handleGifSelect = async (gif: GifResult) => {
+    hapticLight();
     onClose();
     setGifQuery('');
+    try {
+      await onGifSelect(gif.url, gif.width, gif.height);
+    } catch (err) {
+      console.error('[Zemichat] Failed to send GIF:', err);
+    }
   };
 
   const handleEmojiClick = (emojiData: EmojiClickData) => {
@@ -190,6 +195,9 @@ const EmojiGifPanel: React.FC<EmojiGifPanelProps> = ({
                   key={gif.id}
                   className="egp-gif-item"
                   onClick={() => handleGifSelect(gif)}
+                  style={{
+                    aspectRatio: `${gif.previewWidth} / ${gif.previewHeight}`,
+                  }}
                 >
                   <img src={gif.previewUrl} alt={gif.title} loading="lazy" />
                 </button>
@@ -359,9 +367,8 @@ const EmojiGifPanel: React.FC<EmojiGifPanelProps> = ({
         }
 
         .egp-gif-grid {
-          display: grid;
-          grid-template-columns: repeat(2, 1fr);
-          gap: 4px;
+          columns: 2;
+          column-gap: 4px;
           padding: 4px;
           overflow-y: auto;
           flex: 1;
@@ -370,7 +377,7 @@ const EmojiGifPanel: React.FC<EmojiGifPanelProps> = ({
 
         .egp-gif-loading,
         .egp-gif-empty {
-          grid-column: 1 / -1;
+          column-span: all;
           display: flex;
           justify-content: center;
           align-items: center;
@@ -386,7 +393,10 @@ const EmojiGifPanel: React.FC<EmojiGifPanelProps> = ({
           padding: 0;
           overflow: hidden;
           border-radius: 0.4rem;
-          aspect-ratio: 4/3;
+          break-inside: avoid;
+          margin-bottom: 4px;
+          display: block;
+          width: 100%;
         }
 
         .egp-gif-item img {

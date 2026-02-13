@@ -191,13 +191,23 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
         );
       case 'poll':
         return <PollMessage messageId={message.id} isOwn={isOwn} />;
-      case 'gif':
+      case 'gif': {
+        const gifMeta = message.media_metadata as { width?: number; height?: number } | null;
         return (
           <div className="gif-message">
-            <img src={message.media_url || ''} alt="GIF" className="message-gif" loading="lazy" />
+            <img
+              src={message.media_url || ''}
+              alt="GIF"
+              className="message-gif"
+              loading="lazy"
+              style={gifMeta?.width && gifMeta?.height ? {
+                aspectRatio: `${gifMeta.width} / ${gifMeta.height}`,
+              } : undefined}
+            />
             {message.content && <p className="message-caption">{message.content}</p>}
           </div>
         );
+      }
       case 'sticker':
         return <span className="sticker-message">{message.content}</span>;
       case 'text':
@@ -534,8 +544,9 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
 
         .message-gif {
           width: 100%;
-          max-height: 250px;
-          object-fit: cover;
+          max-width: 300px;
+          max-height: 300px;
+          object-fit: contain;
           display: block;
         }
 
