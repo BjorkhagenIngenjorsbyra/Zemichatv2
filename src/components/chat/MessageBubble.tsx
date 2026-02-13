@@ -65,11 +65,10 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
     if (bubbleRef.current) {
       hapticMedium();
       const rect = bubbleRef.current.getBoundingClientRect();
-      // Show both reaction bar and context menu (WhatsApp-style)
-      onReact?.(message, rect);
+      // Show unified context menu with reactions + actions
       onContextMenu?.(message, rect);
     }
-  }, [onContextMenu, onReact, message]);
+  }, [onContextMenu, message]);
 
   const handleTap = useCallback(() => {
     const now = Date.now();

@@ -62,7 +62,6 @@ import {
   MediaPicker,
   QuickMessageBar,
   ChatSearchModal,
-  InlineReactionBar,
   EmojiPicker,
   TypingIndicator,
   ChatInputToolbar,
@@ -102,11 +101,6 @@ const ChatView: React.FC = () => {
 
   // Reactions state
   const [reactions, setReactions] = useState<Map<string, GroupedReaction[]>>(new Map());
-  const [reactionBarTarget, setReactionBarTarget] = useState<{
-    message: MessageWithSender;
-    rect: DOMRect;
-    isOwn: boolean;
-  } | null>(null);
 
   // Search state
   const [showSearch, setShowSearch] = useState(false);
@@ -486,11 +480,6 @@ const ChatView: React.FC = () => {
     setIsSending(false);
   };
 
-  const handleOpenReactionBar = (message: MessageWithSender, rect: DOMRect) => {
-    const isOwn = message.sender_id === profile?.id;
-    setReactionBarTarget({ message, rect, isOwn });
-  };
-
   const handleContextMenu = (message: MessageWithSender, _rect: DOMRect) => {
     setContextMenuTarget(message);
   };
@@ -622,9 +611,9 @@ const ChatView: React.FC = () => {
   };
 
   const handleOpenFullEmojiPicker = () => {
-    if (reactionBarTarget) {
-      setFullPickerMessageId(reactionBarTarget.message.id);
-      setReactionBarTarget(null);
+    if (contextMenuTarget) {
+      setFullPickerMessageId(contextMenuTarget.id);
+      setContextMenuTarget(null);
       setShowFullEmojiPicker(true);
     }
   };
@@ -639,11 +628,11 @@ const ChatView: React.FC = () => {
   };
 
   const handleSelectReaction = async (emoji: string) => {
-    if (!reactionBarTarget) return;
+    if (!contextMenuTarget) return;
     hapticLight();
 
-    await toggleReaction(reactionBarTarget.message.id, emoji);
-    loadReactions([reactionBarTarget.message.id]);
+    await toggleReaction(contextMenuTarget.id, emoji);
+    loadReactions([contextMenuTarget.id]);
   };
 
   const handleToggleReaction = async (messageId: string, emoji: string) => {
@@ -776,7 +765,6 @@ const ChatView: React.FC = () => {
                       isJustSent={message.id === lastSentId}
                       galleryUrls={galleryUrls}
                       onReply={() => handleReply(message)}
-                      onReact={(msg, rect) => handleOpenReactionBar(msg, rect)}
                       onContextMenu={(msg, rect) => handleContextMenu(msg, rect)}
                       userId={profile?.id}
                       userRole={profile?.role}
@@ -1087,22 +1075,6 @@ const ChatView: React.FC = () => {
         onPoll={chat?.is_group ? () => setShowPollCreator(true) : undefined}
       />
 
-      {/* Inline reaction bar with "+" for full picker */}
-      {reactionBarTarget && (
-        <InlineReactionBar
-          targetRect={{
-            top: reactionBarTarget.rect.top,
-            left: reactionBarTarget.rect.left,
-            width: reactionBarTarget.rect.width,
-            bottom: reactionBarTarget.rect.bottom,
-          }}
-          isOwn={reactionBarTarget.isOwn}
-          onSelect={handleSelectReaction}
-          onOpenFullPicker={handleOpenFullEmojiPicker}
-          onClose={() => setReactionBarTarget(null)}
-        />
-      )}
-
       {/* Full emoji picker (from "+" button) */}
       {showFullEmojiPicker && (
         <EmojiPicker
@@ -1134,6 +1106,8 @@ const ChatView: React.FC = () => {
         onCopy={handleCopy}
         onForward={handleForwardStart}
         onDeleteForAll={handleDeleteForAll}
+        onReaction={handleSelectReaction}
+        onOpenFullPicker={handleOpenFullEmojiPicker}
       />
 
       <ForwardPicker
