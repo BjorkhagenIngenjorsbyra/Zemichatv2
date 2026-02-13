@@ -345,6 +345,43 @@ export interface ReferralStats {
 }
 
 // ============================================================
+// WALL INTERFACES
+// ============================================================
+
+export interface WallPost {
+  id: string;
+  team_id: string;
+  author_id: string;
+  content: string | null;
+  media_url: string | null;
+  media_metadata: Record<string, unknown> | null;
+  deleted_at: string | null;
+  deleted_by: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface WallComment {
+  id: string;
+  post_id: string;
+  author_id: string;
+  parent_comment_id: string | null;
+  content: string;
+  deleted_at: string | null;
+  deleted_by: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface WallReaction {
+  id: string;
+  post_id: string;
+  user_id: string;
+  emoji: string;
+  created_at: string;
+}
+
+// ============================================================
 // POLL INTERFACES
 // ============================================================
 
@@ -517,6 +554,21 @@ export interface Database {
         Row: Referral;
         Insert: Pick<Referral, 'referrer_team_id' | 'referred_team_id'> & Partial<Omit<Referral, 'id' | 'referrer_team_id' | 'referred_team_id'>>;
         Update: Partial<Omit<Referral, 'id'>>;
+      };
+      wall_posts: {
+        Row: WallPost;
+        Insert: Pick<WallPost, 'team_id' | 'author_id'> & Partial<Omit<WallPost, 'id' | 'team_id' | 'author_id'>>;
+        Update: Partial<Omit<WallPost, 'id'>>;
+      };
+      wall_comments: {
+        Row: WallComment;
+        Insert: Pick<WallComment, 'post_id' | 'author_id' | 'content'> & Partial<Omit<WallComment, 'id' | 'post_id' | 'author_id' | 'content'>>;
+        Update: Partial<Omit<WallComment, 'id'>>;
+      };
+      wall_reactions: {
+        Row: WallReaction;
+        Insert: Pick<WallReaction, 'post_id' | 'user_id' | 'emoji'> & Partial<Omit<WallReaction, 'id' | 'post_id' | 'user_id' | 'emoji'>>;
+        Update: Partial<Omit<WallReaction, 'id'>>;
       };
     };
     Enums: {

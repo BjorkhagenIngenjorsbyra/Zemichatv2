@@ -1,7 +1,7 @@
 import React from 'react';
 
 interface EmptyStateIllustrationProps {
-  type: 'no-chats' | 'no-friends' | 'no-members' | 'no-requests' | 'no-messages';
+  type: 'no-chats' | 'no-friends' | 'no-members' | 'no-requests' | 'no-messages' | 'no-posts';
 }
 
 const NoChats: React.FC = () => (
@@ -83,6 +83,26 @@ const NoMessages: React.FC = () => (
   </svg>
 );
 
+const NoPosts: React.FC = () => (
+  <svg width="120" height="120" viewBox="0 0 120 120" fill="none">
+    {/* Camera body */}
+    <rect x="24" y="36" width="72" height="52" rx="12" fill="hsl(var(--primary))" opacity="0.1" />
+    <rect x="24" y="36" width="72" height="52" rx="12" stroke="hsl(var(--primary))" strokeWidth="2" fill="none" />
+    {/* Camera lens */}
+    <circle cx="60" cy="62" r="16" fill="hsl(var(--primary))" opacity="0.15" />
+    <circle cx="60" cy="62" r="16" stroke="hsl(var(--primary))" strokeWidth="2" fill="none" />
+    <circle cx="60" cy="62" r="8" fill="hsl(var(--primary))" opacity="0.25" />
+    {/* Flash */}
+    <rect x="44" y="28" width="24" height="12" rx="4" fill="hsl(var(--primary))" opacity="0.15" />
+    <rect x="44" y="28" width="24" height="12" rx="4" stroke="hsl(var(--primary))" strokeWidth="1.5" fill="none" />
+    {/* Plus badge */}
+    <circle cx="88" cy="42" r="12" fill="hsl(var(--primary))" opacity="0.2" />
+    <circle cx="88" cy="42" r="12" stroke="hsl(var(--primary))" strokeWidth="1.5" fill="none" />
+    <line x1="88" y1="36" x2="88" y2="48" stroke="hsl(var(--primary))" strokeWidth="2" strokeLinecap="round" />
+    <line x1="82" y1="42" x2="94" y2="42" stroke="hsl(var(--primary))" strokeWidth="2" strokeLinecap="round" />
+  </svg>
+);
+
 export const EmptyStateIllustration: React.FC<EmptyStateIllustrationProps> = ({ type }) => {
   return (
     <div className="empty-illustration" style={{ animation: 'gentle-float 3s ease-in-out infinite' }}>
@@ -91,6 +111,7 @@ export const EmptyStateIllustration: React.FC<EmptyStateIllustrationProps> = ({ 
       {type === 'no-members' && <NoMembers />}
       {type === 'no-requests' && <NoRequests />}
       {type === 'no-messages' && <NoMessages />}
+      {type === 'no-posts' && <NoPosts />}
     </div>
   );
 };

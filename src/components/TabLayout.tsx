@@ -8,8 +8,9 @@ import {
   IonLabel,
   IonRouterOutlet,
 } from '@ionic/react';
-import { chatbubblesOutline, peopleOutline, settingsOutline } from 'ionicons/icons';
+import { chatbubblesOutline, newspaperOutline, peopleOutline, settingsOutline } from 'ionicons/icons';
 import ChatList from '../pages/ChatList';
+import Wall from '../pages/Wall';
 import Friends from '../pages/Friends';
 import Settings from '../pages/Settings';
 
@@ -20,6 +21,7 @@ const TabLayout: React.FC = () => {
     <IonTabs>
       <IonRouterOutlet>
         <Route exact path="/chats" component={ChatList} />
+        <Route exact path="/wall" component={Wall} />
         <Route exact path="/friends" component={Friends} />
         <Route exact path="/settings" component={Settings} />
         <Redirect exact from="/" to="/chats" />
@@ -28,6 +30,10 @@ const TabLayout: React.FC = () => {
         <IonTabButton tab="chats" href="/chats">
           <IonIcon icon={chatbubblesOutline} />
           <IonLabel>{t('dashboard.chats')}</IonLabel>
+        </IonTabButton>
+        <IonTabButton tab="wall" href="/wall">
+          <IonIcon icon={newspaperOutline} />
+          <IonLabel>{t('wall.title')}</IonLabel>
         </IonTabButton>
         <IonTabButton tab="friends" href="/friends">
           <IonIcon icon={peopleOutline} />

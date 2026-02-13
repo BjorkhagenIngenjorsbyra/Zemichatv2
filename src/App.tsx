@@ -197,6 +197,9 @@ const App: React.FC = () => (
             <PrivateRoute path="/chats">
               <TabLayout />
             </PrivateRoute>
+            <PrivateRoute path="/wall">
+              <TabLayout />
+            </PrivateRoute>
             <PrivateRoute path="/friends">
               <TabLayout />
             </PrivateRoute>
