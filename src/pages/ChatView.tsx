@@ -114,11 +114,9 @@ const ChatView: React.FC = () => {
   // Texter call permissions
   const [texterSettings, setTexterSettings] = useState<TexterSettings | null>(null);
 
-  // Keyboard height (native only)
-  const [keyboardHeight, setKeyboardHeight] = useState(0);
-
   // Auto-scroll + "new messages" button
   const [isNearBottom, setIsNearBottom] = useState(true);
+  const isNearBottomRef = useRef(true);
   const [newMessageCount, setNewMessageCount] = useState(0);
 
   // Send animation
@@ -160,21 +158,17 @@ const ChatView: React.FC = () => {
   const [showMentions, setShowMentions] = useState(false);
 
   // --- Keyboard handling (native) ---
+  // Capacitor Keyboard plugin with resize: 'body' handles viewport resizing.
+  // We only scroll to bottom when keyboard opens so the latest messages stay visible.
   useEffect(() => {
     if (!Capacitor.isNativePlatform()) return;
 
-    const showListener = Keyboard.addListener('keyboardWillShow', (info) => {
-      setKeyboardHeight(info.keyboardHeight);
+    const showListener = Keyboard.addListener('keyboardWillShow', () => {
       setTimeout(() => contentRef.current?.scrollToBottom(200), 100);
-    });
-
-    const hideListener = Keyboard.addListener('keyboardWillHide', () => {
-      setKeyboardHeight(0);
     });
 
     return () => {
       showListener.then((l) => l.remove());
-      hideListener.then((l) => l.remove());
     };
   }, []);
 
@@ -188,6 +182,7 @@ const ChatView: React.FC = () => {
     const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
     const nearBottom = distanceFromBottom < 200;
     setIsNearBottom(nearBottom);
+    isNearBottomRef.current = nearBottom;
 
     if (nearBottom) {
       setNewMessageCount(0);
@@ -210,6 +205,9 @@ const ChatView: React.FC = () => {
     }, 100);
   }, []);
 
+  const scrollToBottomRef = useRef(scrollToBottom);
+  scrollToBottomRef.current = scrollToBottom;
+
   const loadReactions = useCallback(async (messageIds: string[]) => {
     if (messageIds.length === 0) return;
 
@@ -222,6 +220,9 @@ const ChatView: React.FC = () => {
       return merged;
     });
   }, []);
+
+  const loadReactionsRef = useRef(loadReactions);
+  loadReactionsRef.current = loadReactions;
 
   const loadReadReceipts = useCallback(async (messageIds: string[]) => {
     if (messageIds.length === 0) return;
@@ -299,16 +300,16 @@ const ChatView: React.FC = () => {
           return [...prev, newMessage];
         });
 
-        if (isNearBottom) {
-          scrollToBottom();
+        if (isNearBottomRef.current) {
+          scrollToBottomRef.current();
         } else {
           setNewMessageCount((n) => n + 1);
         }
 
-        loadReactions([newMessage.id]);
+        loadReactionsRef.current([newMessage.id]);
 
         if (newMessage.sender_id !== profile?.id) {
-          if (isNearBottom) {
+          if (isNearBottomRef.current) {
             insertReadReceipts([newMessage.id]);
           }
           markChatAsRead(chatId);
@@ -323,7 +324,7 @@ const ChatView: React.FC = () => {
     );
 
     return unsubscribe;
-  }, [chatId, profile?.id, scrollToBottom, loadReactions, isNearBottom]);
+  }, [chatId, profile?.id]);
 
   // Subscribe to read receipts
   useEffect(() => {
@@ -737,7 +738,6 @@ const ChatView: React.FC = () => {
         fullscreen
         scrollEvents
         onIonScroll={handleScroll}
-        style={keyboardHeight > 0 ? { '--keyboard-offset': `${keyboardHeight}px` } as React.CSSProperties : undefined}
       >
         {isLoading ? (
           <SkeletonLoader variant="messages" />
@@ -751,7 +751,6 @@ const ChatView: React.FC = () => {
           <div
             className="messages-container"
             data-testid="messages-container"
-            style={keyboardHeight > 0 ? { paddingBottom: `${keyboardHeight}px` } : undefined}
           >
             {(() => {
               const galleryUrls = getGalleryUrls(messages);
