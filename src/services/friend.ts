@@ -15,9 +15,16 @@ export interface FriendWithUser extends Friendship {
   user: User;
 }
 
+export interface RequesterOwnerInfo {
+  team_name: string;
+  owner_display_name: string | null;
+  owner_email: string;
+}
+
 export interface PendingRequestWithUser extends Friendship {
   requester: User;
   addressee: User;
+  requesterOwnerInfo?: RequesterOwnerInfo;
 }
 
 // ============================================================
@@ -587,6 +594,28 @@ export async function getAllTexterPendingRequests(): Promise<{
     const requesterMap = new Map(typedRequesters.map((u) => [u.id, u]));
     const texterMap = new Map(typedTexters.map((t) => [t.id, t]));
 
+    // Fetch team owner info for all requesters
+    const ownerInfoMap = new Map<string, RequesterOwnerInfo>();
+    const { data: ownerInfoData } = await supabase.rpc('get_requester_owner_info' as never, {
+      user_ids: requesterIds,
+    } as never);
+
+    if (ownerInfoData) {
+      const typedOwnerInfo = ownerInfoData as unknown as Array<{
+        user_id: string;
+        team_name: string;
+        owner_display_name: string | null;
+        owner_email: string;
+      }>;
+      for (const info of typedOwnerInfo) {
+        ownerInfoMap.set(info.user_id, {
+          team_name: info.team_name,
+          owner_display_name: info.owner_display_name,
+          owner_email: info.owner_email,
+        });
+      }
+    }
+
     // Group by Texter
     const requestsByTexter = new Map<
       string,
@@ -607,6 +636,7 @@ export async function getAllTexterPendingRequests(): Promise<{
         ...f,
         requester,
         addressee: texter,
+        requesterOwnerInfo: ownerInfoMap.get(f.requester_id),
       });
     }
 

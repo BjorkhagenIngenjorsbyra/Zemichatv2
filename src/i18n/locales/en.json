@@ -295,7 +295,8 @@
     "moreActions": "More actions",
     "denyFuture": "Deny future requests",
     "denyFutureTitle": "Deny future requests?",
-    "denyFutureMessage": "This will reject the current request and prevent {{requester}} from sending requests to {{texter}} in the future."
+    "denyFutureMessage": "This will reject the current request and prevent {{requester}} from sending requests to {{texter}} in the future.",
+    "guardian": "Guardian: {{ownerName}}, {{teamName}} ({{email}})"
   },
   "sos": {
     "button": "SOS",

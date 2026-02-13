@@ -256,6 +256,15 @@ const OwnerApprovals: React.FC = () => {
                           <p className="requester-zemi">
                             {request.requester.zemi_number}
                           </p>
+                          {request.requesterOwnerInfo && (
+                            <p className="requester-guardian">
+                              {t('ownerApprovals.guardian', {
+                                ownerName: request.requesterOwnerInfo.owner_display_name || request.requesterOwnerInfo.owner_email,
+                                teamName: request.requesterOwnerInfo.team_name,
+                                email: request.requesterOwnerInfo.owner_email,
+                              })}
+                            </p>
+                          )}
                         </IonLabel>
 
                         {isProcessing ? (
@@ -465,6 +474,12 @@ const OwnerApprovals: React.FC = () => {
             font-size: 0.8rem;
             color: hsl(var(--muted-foreground));
             margin: 0;
+          }
+
+          .requester-guardian {
+            font-size: 0.75rem;
+            color: hsl(var(--muted-foreground));
+            margin: 0.15rem 0 0 0;
           }
 
           .action-buttons {

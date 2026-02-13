@@ -295,7 +295,8 @@
     "moreActions": "Fler åtgärder",
     "denyFuture": "Neka framtida förfrågningar",
     "denyFutureTitle": "Neka framtida förfrågningar?",
-    "denyFutureMessage": "Detta nekar nuvarande förfrågan och hindrar {{requester}} från att skicka förfrågningar till {{texter}} i framtiden."
+    "denyFutureMessage": "Detta nekar nuvarande förfrågan och hindrar {{requester}} från att skicka förfrågningar till {{texter}} i framtiden.",
+    "guardian": "Ansvarig: {{ownerName}}, {{teamName}} ({{email}})"
   },
   "sos": {
     "button": "SOS",

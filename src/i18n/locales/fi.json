@@ -295,7 +295,8 @@
     "moreActions": "Lisää toimintoja",
     "denyFuture": "Hylkää tulevat pyynnöt",
     "denyFutureTitle": "Hylkää tulevat pyynnöt?",
-    "denyFutureMessage": "Tämä hylkää nykyisen pyynnön ja estää käyttäjää {{requester}} lähettämästä pyyntöjä käyttäjälle {{texter}} tulevaisuudessa."
+    "denyFutureMessage": "Tämä hylkää nykyisen pyynnön ja estää käyttäjää {{requester}} lähettämästä pyyntöjä käyttäjälle {{texter}} tulevaisuudessa.",
+    "guardian": "Vastuuhenkilö: {{ownerName}}, {{teamName}} ({{email}})"
   },
   "sos": {
     "button": "SOS",

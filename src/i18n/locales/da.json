@@ -295,7 +295,8 @@
     "moreActions": "Flere handlinger",
     "denyFuture": "Afvis fremtidige anmodninger",
     "denyFutureTitle": "Afvis fremtidige anmodninger?",
-    "denyFutureMessage": "Dette afviser den aktuelle anmodning og forhindrer {{requester}} i at sende anmodninger til {{texter}} i fremtiden."
+    "denyFutureMessage": "Dette afviser den aktuelle anmodning og forhindrer {{requester}} i at sende anmodninger til {{texter}} i fremtiden.",
+    "guardian": "Ansvarlig: {{ownerName}}, {{teamName}} ({{email}})"
   },
   "sos": {
     "button": "SOS",
