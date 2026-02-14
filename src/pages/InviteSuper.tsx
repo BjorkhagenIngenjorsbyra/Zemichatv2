@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useCallback, FormEvent } from 'react';
-import { useHistory } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
   IonPage,
@@ -17,8 +16,9 @@ import {
   IonList,
   IonItem,
   IonLabel,
+  IonToast,
 } from '@ionic/react';
-import { trashOutline } from 'ionicons/icons';
+import { trashOutline, copyOutline } from 'ionicons/icons';
 import {
   createInvitation,
   getTeamInvitations,
@@ -30,13 +30,13 @@ import { getCurrentLanguage } from '../i18n';
 
 const InviteSuper: React.FC = () => {
   const { t } = useTranslation();
-  const history = useHistory();
 
   const [email, setEmail] = useState('');
-  const [displayName, setDisplayName] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
   const [sentToEmail, setSentToEmail] = useState<string | null>(null);
+  const [inviteLink, setInviteLink] = useState<string | null>(null);
+  const [linkCopied, setLinkCopied] = useState(false);
 
   const [invitations, setInvitations] = useState<Invitation[]>([]);
   const [loadingInvitations, setLoadingInvitations] = useState(true);
@@ -51,18 +51,34 @@ const InviteSuper: React.FC = () => {
     loadInvitations();
   }, [loadInvitations]);
 
+  const copyToClipboard = async (text: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setLinkCopied(true);
+    } catch {
+      // Fallback for older browsers/webviews
+      const textarea = document.createElement('textarea');
+      textarea.value = text;
+      textarea.style.position = 'fixed';
+      textarea.style.opacity = '0';
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textarea);
+      setLinkCopied(true);
+    }
+  };
+
   const handleCreate = async (e: FormEvent) => {
     e.preventDefault();
     setError(null);
     setSentToEmail(null);
+    setInviteLink(null);
     setIsCreating(true);
 
     const recipientEmail = email;
 
-    const { invitation, error: createError } = await createInvitation(
-      email,
-      displayName || undefined
-    );
+    const { invitation, error: createError } = await createInvitation(recipientEmail);
 
     if (createError) {
       setError(createError.message);
@@ -73,7 +89,7 @@ const InviteSuper: React.FC = () => {
     if (invitation) {
       const link = `${window.location.origin}/invite/${invitation.token}?lang=${getCurrentLanguage()}`;
 
-      // Send invitation email via Edge Function
+      // Try to send invitation email via Edge Function
       const { error: sendError } = await sendInvitationEmail(
         recipientEmail,
         invitation.id,
@@ -81,15 +97,17 @@ const InviteSuper: React.FC = () => {
       );
 
       if (sendError) {
-        setError(sendError.message);
-        setIsCreating(false);
+        // Invitation was created but email failed — show link for manual sharing
+        setInviteLink(link);
+        setSentToEmail(recipientEmail);
+        setEmail('');
         await loadInvitations();
+        setIsCreating(false);
         return;
       }
 
       setSentToEmail(recipientEmail);
       setEmail('');
-      setDisplayName('');
       await loadInvitations();
     }
 
@@ -151,19 +169,6 @@ const InviteSuper: React.FC = () => {
               />
             </div>
 
-            <div className="input-group">
-              <IonInput
-                type="text"
-                label={t('invite.nameLabel')}
-                labelPlacement="stacked"
-                placeholder={t('invite.namePlaceholder')}
-                value={displayName}
-                onIonInput={(e) => setDisplayName(e.detail.value || '')}
-                className="invite-input"
-                fill="outline"
-              />
-            </div>
-
             <IonButton
               type="submit"
               expand="block"
@@ -174,11 +179,30 @@ const InviteSuper: React.FC = () => {
             </IonButton>
           </form>
 
-          {sentToEmail && (
+          {sentToEmail && !inviteLink && (
             <div className="invite-success">
               <div className="invite-success-header">
-                <span className="invite-success-icon">✅</span>
+                <span className="invite-success-icon">&#x2705;</span>
                 <span>{t('invite.inviteSentToEmail', { email: sentToEmail })}</span>
+              </div>
+            </div>
+          )}
+
+          {sentToEmail && inviteLink && (
+            <div className="invite-link-fallback">
+              <p className="invite-link-msg">
+                {t('invite.emailFailed', { email: sentToEmail })}
+              </p>
+              <div className="invite-link-box">
+                <span className="invite-link-text">{inviteLink}</span>
+                <button
+                  className="invite-copy-btn"
+                  onClick={() => copyToClipboard(inviteLink)}
+                  type="button"
+                >
+                  <IonIcon icon={copyOutline} />
+                  {t('invite.copyLink')}
+                </button>
               </div>
             </div>
           )}
@@ -198,8 +222,7 @@ const InviteSuper: React.FC = () => {
                   return (
                     <IonItem key={inv.id} className="invite-list-item">
                       <IonLabel>
-                        <h3>{inv.display_name || inv.email}</h3>
-                        <p>{inv.email}</p>
+                        <h3>{inv.email}</h3>
                         <p style={{ color: status.color, fontSize: '0.8rem' }}>
                           {status.label}
                         </p>
@@ -275,6 +298,50 @@ const InviteSuper: React.FC = () => {
           .invite-success-icon {
             font-size: 20px;
           }
+          .invite-link-fallback {
+            background: hsl(45 93% 47% / 0.08);
+            border: 1px solid hsl(45 93% 47% / 0.25);
+            border-radius: 1rem;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+          }
+          .invite-link-msg {
+            font-size: 0.9rem;
+            color: hsl(var(--foreground));
+            margin: 0 0 0.75rem 0;
+          }
+          .invite-link-box {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+          }
+          .invite-link-text {
+            font-size: 0.75rem;
+            color: hsl(var(--muted-foreground));
+            word-break: break-all;
+            background: hsl(var(--card));
+            padding: 0.5rem 0.75rem;
+            border-radius: 0.5rem;
+            border: 1px solid hsl(var(--border));
+          }
+          .invite-copy-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.4rem;
+            background: hsl(var(--primary));
+            color: hsl(var(--primary-foreground));
+            border: none;
+            border-radius: 9999px;
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: inherit;
+          }
+          .invite-copy-btn ion-icon {
+            font-size: 1rem;
+          }
           .invite-pending-section {
             margin-top: 1rem;
           }
@@ -301,6 +368,14 @@ const InviteSuper: React.FC = () => {
             --padding-start: 0;
           }
         `}</style>
+
+        <IonToast
+          isOpen={linkCopied}
+          message={t('invite.linkCopied')}
+          duration={2000}
+          onDidDismiss={() => setLinkCopied(false)}
+          color="success"
+        />
       </IonContent>
     </IonPage>
   );

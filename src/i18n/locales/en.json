@@ -519,6 +519,7 @@
     "sendInvite": "Send Invitation",
     "inviteSent": "Invitation created!",
     "inviteSentToEmail": "Invitation sent to {{email}}!",
+    "emailFailed": "Invitation created but the email could not be sent to {{email}}. Copy the link below and share it manually.",
     "copyLink": "Copy Link",
     "linkCopied": "Link copied!",
     "pendingInvites": "Pending Invitations",

@@ -519,6 +519,7 @@
     "sendInvite": "Skicka inbjudan",
     "inviteSent": "Inbjudan skapad!",
     "inviteSentToEmail": "Inbjudan skickad till {{email}}!",
+    "emailFailed": "Inbjudan skapad men mailet kunde inte skickas till {{email}}. Kopiera länken nedan och dela den manuellt.",
     "copyLink": "Kopiera länk",
     "linkCopied": "Länk kopierad!",
     "pendingInvites": "Väntande inbjudningar",

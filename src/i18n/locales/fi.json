@@ -519,6 +519,7 @@
     "sendInvite": "Lähetä kutsu",
     "inviteSent": "Kutsu luotu!",
     "inviteSentToEmail": "Kutsu lähetetty osoitteeseen {{email}}!",
+    "emailFailed": "Kutsu luotu, mutta sähköpostia ei voitu lähettää osoitteeseen {{email}}. Kopioi alla oleva linkki ja jaa se manuaalisesti.",
     "copyLink": "Kopioi linkki",
     "linkCopied": "Linkki kopioitu!",
     "pendingInvites": "Odottavat kutsut",

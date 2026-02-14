@@ -519,6 +519,7 @@
     "sendInvite": "Send invitasjon",
     "inviteSent": "Invitasjon opprettet!",
     "inviteSentToEmail": "Invitasjon sendt til {{email}}!",
+    "emailFailed": "Invitasjon opprettet, men e-posten kunne ikke sendes til {{email}}. Kopier lenken nedenfor og del den manuelt.",
     "copyLink": "Kopier lenke",
     "linkCopied": "Lenke kopiert!",
     "pendingInvites": "Ventende invitasjoner",
