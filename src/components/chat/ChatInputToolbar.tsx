@@ -208,6 +208,7 @@ const ChatInputToolbar: React.FC<ChatInputToolbarProps> = ({
         <button
           className="toolbar-send-btn"
           data-testid="send-button"
+          onMouseDown={(e) => e.preventDefault()}
           onClick={onSend}
           disabled={!hasText || isSending}
           aria-label={t('chat.send')}
