@@ -312,22 +312,12 @@ test.describe('Bug 7: Call error messages', () => {
     await page.goto('/chats');
     await waitForIonicReady(page);
 
-    // Evaluate the i18n translation function to confirm the key exists
-    const hasKey = await page.evaluate(() => {
-      // Access the i18next instance from window (React injects it)
-      const i18n = (window as unknown as { __NEXT_DATA__?: unknown; i18next?: { t: (key: string) => string }}).i18next;
-      if (i18n) {
-        const val = i18n.t('call.serviceUnavailable');
-        return val !== 'call.serviceUnavailable'; // Returns true if key resolves
-      }
-      // Fallback: check if the page bundle contains the translation
-      return document.documentElement.innerHTML.includes('serviceUnavailable');
-    });
-    // The key should exist (either resolved or present in bundle)
-    // If i18next isn't directly accessible, we verify from the source
-    const source = await page.content();
-    // At minimum, the bundle should contain the string somewhere
-    expect(source.includes('serviceUnavailable') || hasKey).toBeTruthy();
+    // Verify the i18n key exists by fetching the locale JSON directly.
+    // In dev mode, locale files are served as separate modules.
+    const response = await page.request.get('/src/i18n/locales/sv.json');
+    const json = await response.json();
+    // The call.serviceUnavailable key should exist in the Swedish locale
+    expect(json.call?.serviceUnavailable).toBeTruthy();
   });
 });
 
