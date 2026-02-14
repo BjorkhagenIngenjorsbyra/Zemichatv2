@@ -462,8 +462,9 @@
     "maxDurationReached": "Puhelun enimmäiskesto saavutettu",
     "noAnswer": "Ei vastausta",
     "unavailable": "Ei tavoitettavissa",
-    "error": "Puhelua ei voitu yhdistää",
-    "permissionDenied": "Sinulla ei ole lupaa soittaa"
+    "error": "Jokin meni pieleen. Yritä myöhemmin uudelleen.",
+    "permissionDenied": "Sinulla ei ole lupaa soittaa",
+    "serviceUnavailable": "Puhelutoiminto ei ole vielä käytettävissä"
   },
   "onboarding": {
     "skip": "Ohita",

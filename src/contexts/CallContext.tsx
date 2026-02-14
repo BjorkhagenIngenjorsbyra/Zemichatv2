@@ -101,6 +101,15 @@ export function CallProvider({ children }: CallProviderProps) {
 
   const clearCallError = useCallback(() => setCallError(null), []);
 
+  /** Map server/SDK errors to user-friendly i18n keys */
+  const mapCallError = useCallback((err: Error | null): string => {
+    const msg = err?.message?.toLowerCase() || '';
+    if (msg.includes('not configured') || msg.includes('agora')) return 'call.serviceUnavailable';
+    if (msg.includes('permission denied')) return 'call.permissionDenied';
+    if (msg.includes('not a member')) return 'call.permissionDenied';
+    return 'call.error';
+  }, []);
+
   // ============================================================
   // CLEANUP HELPER
   // ============================================================
@@ -256,7 +265,7 @@ export function CallProvider({ children }: CallProviderProps) {
       // Get Agora token
       const { token, error: tokenError } = await getAgoraToken(chatId, callType);
       if (tokenError || !token) {
-        setCallError('call.error');
+        setCallError(mapCallError(tokenError));
         setActiveCall((prev) => prev ? { ...prev, state: CallState.ENDED } : prev);
         setTimeout(() => cleanupCall(), 2500);
         return;

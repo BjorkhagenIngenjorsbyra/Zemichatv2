@@ -39,7 +39,14 @@ export async function getAgoraToken(
     });
 
     if (error) {
-      return { token: null, error: new Error(error.message) };
+      // Try to extract the server error message (e.g. "Agora not configured")
+      const msg = (error as { context?: { body?: string } })?.context?.body || error.message;
+      try {
+        const parsed = JSON.parse(msg);
+        return { token: null, error: new Error(parsed.error || error.message) };
+      } catch {
+        return { token: null, error: new Error(error.message) };
+      }
     }
 
     if (!data) {

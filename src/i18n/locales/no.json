@@ -462,8 +462,9 @@
     "maxDurationReached": "Maksimal samtaletid nådd",
     "noAnswer": "Ingen svar",
     "unavailable": "Ikke tilgjengelig",
-    "error": "Samtalen kunne ikke kobles",
-    "permissionDenied": "Du har ikke tillatelse til å ringe"
+    "error": "Noe gikk galt. Prøv igjen senere.",
+    "permissionDenied": "Du har ikke tillatelse til å ringe",
+    "serviceUnavailable": "Ringefunksjonen er ikke tilgjengelig ennå"
   },
   "onboarding": {
     "skip": "Hopp over",

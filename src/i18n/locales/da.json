@@ -462,8 +462,9 @@
     "maxDurationReached": "Maksimal opkaldstid nået",
     "noAnswer": "Intet svar",
     "unavailable": "Ikke tilgængelig",
-    "error": "Opkaldet kunne ikke forbindes",
-    "permissionDenied": "Du har ikke tilladelse til at ringe"
+    "error": "Noget gik galt. Prøv igen senere.",
+    "permissionDenied": "Du har ikke tilladelse til at ringe",
+    "serviceUnavailable": "Opkaldsfunktionen er ikke tilgængelig endnu"
   },
   "onboarding": {
     "skip": "Spring over",

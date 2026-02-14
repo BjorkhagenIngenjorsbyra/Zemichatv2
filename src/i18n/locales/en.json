@@ -462,8 +462,9 @@
     "maxDurationReached": "Maximum call duration reached",
     "noAnswer": "No answer",
     "unavailable": "Unavailable",
-    "error": "Call could not be connected",
-    "permissionDenied": "You don't have permission to make calls"
+    "error": "Something went wrong. Please try again later.",
+    "permissionDenied": "You don't have permission to make calls",
+    "serviceUnavailable": "Calling is not available yet"
   },
   "onboarding": {
     "skip": "Skip",

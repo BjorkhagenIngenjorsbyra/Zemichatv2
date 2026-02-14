@@ -462,8 +462,9 @@
     "maxDurationReached": "Maximal samtalstid uppnådd",
     "noAnswer": "Inget svar",
     "unavailable": "Inte tillgänglig",
-    "error": "Samtalet kunde inte kopplas",
-    "permissionDenied": "Du har inte behörighet att ringa"
+    "error": "Något gick fel. Försök igen senare.",
+    "permissionDenied": "Du har inte behörighet att ringa",
+    "serviceUnavailable": "Samtalsfunktionen är inte tillgänglig ännu"
   },
   "onboarding": {
     "skip": "Hoppa över",
