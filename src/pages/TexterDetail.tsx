@@ -39,7 +39,7 @@ import {
   deactivateMember,
   reactivateMember,
 } from '../services/members';
-import { QuickMessageManager, QuietHoursManager } from '../components/owner';
+import { QuietHoursManager } from '../components/owner';
 import { type User, type TexterSettings } from '../types/database';
 
 const TexterDetail: React.FC = () => {
@@ -276,13 +276,6 @@ const TexterDetail: React.FC = () => {
               </IonItem>
             </IonList>
           </div>
-
-          {/* Quick Messages */}
-          {userId && (
-            <div className="section">
-              <QuickMessageManager userId={userId} />
-            </div>
-          )}
 
           {/* Quiet Hours */}
           {userId && (

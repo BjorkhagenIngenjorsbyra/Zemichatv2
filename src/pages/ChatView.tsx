@@ -60,7 +60,6 @@ import {
   MessageBubble,
   QuotedMessage,
   MediaPicker,
-  QuickMessageBar,
   ChatSearchModal,
   EmojiPicker,
   TypingIndicator,
@@ -461,23 +460,6 @@ const ChatView: React.FC = () => {
   const handleReply = (message: MessageWithSender) => {
     setReplyTo(message);
     inputRef.current?.focus();
-  };
-
-  const handleQuickMessage = async (content: string) => {
-    if (!chatId || isSending) return;
-
-    setIsSending(true);
-
-    const { error } = await sendMessage({
-      chatId,
-      content,
-    });
-
-    if (error) {
-      console.error('Failed to send quick message:', error);
-    }
-
-    setIsSending(false);
   };
 
   const handleContextMenu = (message: MessageWithSender, _rect: DOMRect) => {
@@ -893,11 +875,6 @@ const ChatView: React.FC = () => {
       </IonContent>
 
       <IonFooter>
-        <QuickMessageBar
-          onSend={handleQuickMessage}
-          disabled={isSending}
-        />
-
         {editingMessage && (
           <div className="edit-preview">
             <div className="edit-preview-content">

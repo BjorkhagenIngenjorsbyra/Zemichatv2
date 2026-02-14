@@ -313,18 +313,6 @@
     "unacknowledged": "Ubekreftede SOS-alarmer",
     "noAlerts": "Ingen SOS-alarmer"
   },
-  "quickMessages": {
-    "title": "Hurtigmeldinger",
-    "noMessages": "Ingen hurtigmeldinger",
-    "noMessagesDescription": "Hurtigmeldinger gir svar med ett trykk",
-    "add": "Legg til melding",
-    "placeholder": "Meldingstekst...",
-    "edit": "Rediger",
-    "delete": "Slett",
-    "deleteConfirm": "Slette denne hurtigmeldingen?",
-    "suggestions": ["Jeg er fremme!", "Hent meg", "Alt bra", "Jeg er sen"],
-    "addDefaults": "Legg til standardmeldinger"
-  },
   "notifications": {
     "permissionTitle": "Aktiver varsler",
     "permissionMessage": "Hold deg oppdatert med meldinger og alarmer.",

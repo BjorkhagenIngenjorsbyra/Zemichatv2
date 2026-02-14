@@ -313,18 +313,6 @@
     "unacknowledged": "Unacknowledged SOS alerts",
     "noAlerts": "No SOS alerts"
   },
-  "quickMessages": {
-    "title": "Quick Messages",
-    "noMessages": "No quick messages",
-    "noMessagesDescription": "Quick messages allow one-tap responses",
-    "add": "Add Message",
-    "placeholder": "Message text...",
-    "edit": "Edit",
-    "delete": "Delete",
-    "deleteConfirm": "Delete this quick message?",
-    "suggestions": ["I'm here!", "Pick me up", "All good", "I'm late"],
-    "addDefaults": "Add default messages"
-  },
   "notifications": {
     "permissionTitle": "Enable Notifications",
     "permissionMessage": "Stay updated with messages and alerts.",

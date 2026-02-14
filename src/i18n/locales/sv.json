@@ -313,18 +313,6 @@
     "unacknowledged": "Obekräftade SOS-larm",
     "noAlerts": "Inga SOS-larm"
   },
-  "quickMessages": {
-    "title": "Snabbmeddelanden",
-    "noMessages": "Inga snabbmeddelanden",
-    "noMessagesDescription": "Snabbmeddelanden möjliggör svar med ett tryck",
-    "add": "Lägg till meddelande",
-    "placeholder": "Meddelandetext...",
-    "edit": "Redigera",
-    "delete": "Radera",
-    "deleteConfirm": "Radera detta snabbmeddelande?",
-    "suggestions": ["Jag är framme!", "Hämta mig", "Allt bra", "Jag är sen"],
-    "addDefaults": "Lägg till standardmeddelanden"
-  },
   "notifications": {
     "permissionTitle": "Aktivera notiser",
     "permissionMessage": "Håll dig uppdaterad med meddelanden och larm.",
