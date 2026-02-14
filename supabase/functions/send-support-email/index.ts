@@ -85,16 +85,49 @@ serve(async (req) => {
       );
     }
 
-    // TODO: Send actual email notification (e.g. via Resend, SendGrid, etc.)
-    // For now, log the support request for manual review
-    console.log('Support request received:', {
-      userId: user.id,
-      email: user.email,
-      type,
-      subject,
-      descriptionLength: description.length,
-      contactEmail: email,
+    // Send email notification via Resend
+    const resendApiKey = Deno.env.get('RESEND_API_KEY') ?? '';
+    if (!resendApiKey) {
+      console.error('RESEND_API_KEY not configured');
+      return new Response(
+        JSON.stringify({ error: 'Email service not configured' }),
+        { status: 500, headers: { ...cors, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const typeLabel = type === 'bug' ? 'Bug Report' : type === 'suggestion' ? 'Suggestion' : 'Support';
+
+    const htmlEmail = `
+<h2>Zemichat ${typeLabel}</h2>
+<p><strong>From:</strong> ${email} (User: ${user.id})</p>
+<p><strong>Subject:</strong> ${subject}</p>
+<hr/>
+<p>${description.replace(/\n/g, '<br/>')}</p>
+`.trim();
+
+    const resendResponse = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${resendApiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        from: 'Zemichat Support <noreply@zemichat.com>',
+        to: 'support@zemichat.com',
+        reply_to: email,
+        subject: `[${typeLabel}] ${subject}`,
+        html: htmlEmail,
+      }),
     });
+
+    if (!resendResponse.ok) {
+      const resendError = await resendResponse.text();
+      console.error('Resend API error:', resendError);
+      return new Response(
+        JSON.stringify({ error: 'Failed to send support email' }),
+        { status: 502, headers: { ...cors, 'Content-Type': 'application/json' } }
+      );
+    }
 
     return new Response(
       JSON.stringify({ success: true }),

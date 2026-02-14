@@ -19,12 +19,11 @@ import {
   IonLabel,
 } from '@ionic/react';
 import {
-  mailOutline,
   imageOutline,
   checkmarkCircleOutline,
 } from 'ionicons/icons';
 import { SupportRequestType } from '../types/database';
-import { buildMailtoUrl, submitSupportRequest } from '../services/support';
+import { submitSupportRequest } from '../services/support';
 
 const Support: React.FC = () => {
   const { t } = useTranslation();
@@ -115,18 +114,6 @@ const Support: React.FC = () => {
                 </IonAccordion>
               ))}
             </IonAccordionGroup>
-          </div>
-
-          {/* Contact Section */}
-          <div className="section">
-            <h3 className="section-title">{t('support.contactTitle')}</h3>
-            <div className="card">
-              <p className="card-description">{t('support.contactDescription')}</p>
-              <IonButton expand="block" fill="outline" href={buildMailtoUrl()}>
-                <IonIcon icon={mailOutline} slot="start" />
-                {t('support.contactButton')}
-              </IonButton>
-            </div>
           </div>
 
           {/* Feedback Form */}
