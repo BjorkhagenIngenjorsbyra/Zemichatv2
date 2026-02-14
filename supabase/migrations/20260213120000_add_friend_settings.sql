@@ -42,4 +42,4 @@ CREATE POLICY friend_settings_select_owner ON friend_settings
 -- updated_at trigger (reuse existing function)
 CREATE TRIGGER set_friend_settings_updated_at
   BEFORE UPDATE ON friend_settings
-  FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+  FOR EACH ROW EXECUTE FUNCTION update_updated_at();
