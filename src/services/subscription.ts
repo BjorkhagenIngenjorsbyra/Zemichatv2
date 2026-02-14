@@ -220,51 +220,61 @@ export async function getSubscriptionStatus(): Promise<{
       return getSubscriptionStatusFromDatabase();
     }
 
-    const { customerInfo } = await Purchases.getCustomerInfo();
-    const info = customerInfo as unknown as RevenueCatCustomerInfo;
+    // On native, try RevenueCat first, but always fall back to database
+    let rcPlan = PlanType.FREE;
+    let rcTrialActive = false;
+    let rcExpiresAt: Date | null = null;
+    let rcWillRenew = false;
+    let rcSuccess = false;
 
-    // Check active entitlements
-    const hasBasic = info.entitlements.active[ENTITLEMENT_BASIC]?.isActive || false;
-    const hasPro = info.entitlements.active[ENTITLEMENT_PRO]?.isActive || false;
+    try {
+      const { customerInfo } = await Purchases.getCustomerInfo();
+      const info = customerInfo as unknown as RevenueCatCustomerInfo;
 
-    let plan = PlanType.FREE;
-    let isTrialActive = false;
-    let expiresAt: Date | null = null;
-    let willRenew = false;
+      // Check active entitlements
+      const hasBasic = info.entitlements.active[ENTITLEMENT_BASIC]?.isActive || false;
+      const hasPro = info.entitlements.active[ENTITLEMENT_PRO]?.isActive || false;
 
-    if (hasPro) {
-      plan = PlanType.PRO;
-      const proEntitlement = info.entitlements.active[ENTITLEMENT_PRO];
-      isTrialActive = proEntitlement.periodType === 'TRIAL';
-      expiresAt = proEntitlement.expirationDate ? new Date(proEntitlement.expirationDate) : null;
-      willRenew = proEntitlement.willRenew;
-    } else if (hasBasic) {
-      plan = PlanType.BASIC;
-      const basicEntitlement = info.entitlements.active[ENTITLEMENT_BASIC];
-      isTrialActive = basicEntitlement.periodType === 'TRIAL';
-      expiresAt = basicEntitlement.expirationDate ? new Date(basicEntitlement.expirationDate) : null;
-      willRenew = basicEntitlement.willRenew;
+      if (hasPro) {
+        rcPlan = PlanType.PRO;
+        const proEntitlement = info.entitlements.active[ENTITLEMENT_PRO];
+        rcTrialActive = proEntitlement.periodType === 'TRIAL';
+        rcExpiresAt = proEntitlement.expirationDate ? new Date(proEntitlement.expirationDate) : null;
+        rcWillRenew = proEntitlement.willRenew;
+      } else if (hasBasic) {
+        rcPlan = PlanType.BASIC;
+        const basicEntitlement = info.entitlements.active[ENTITLEMENT_BASIC];
+        rcTrialActive = basicEntitlement.periodType === 'TRIAL';
+        rcExpiresAt = basicEntitlement.expirationDate ? new Date(basicEntitlement.expirationDate) : null;
+        rcWillRenew = basicEntitlement.willRenew;
+      }
+
+      rcSuccess = true;
+    } catch (rcError) {
+      console.warn('RevenueCat getCustomerInfo failed, falling back to database:', rcError);
     }
 
-    // If RevenueCat says FREE, check database for an active trial
-    if (plan === PlanType.FREE) {
+    // If RevenueCat says FREE (or failed entirely), check database for an active trial
+    if (rcPlan === PlanType.FREE) {
       const { status: dbStatus } = await getSubscriptionStatusFromDatabase();
-      if (dbStatus && dbStatus.isTrialActive) {
+      if (dbStatus && (dbStatus.isTrialActive || dbStatus.isActive)) {
         return { status: dbStatus, error: null };
       }
     }
 
     const status: SubscriptionStatus = {
-      isActive: plan !== PlanType.FREE,
-      plan,
-      isTrialActive,
-      trialEndsAt: isTrialActive ? expiresAt : null,
-      expiresAt,
-      willRenew,
+      isActive: rcPlan !== PlanType.FREE,
+      plan: rcPlan,
+      isTrialActive: rcTrialActive,
+      trialEndsAt: rcTrialActive ? rcExpiresAt : null,
+      expiresAt: rcExpiresAt,
+      willRenew: rcWillRenew,
     };
 
-    // Sync with database
-    await syncSubscriptionToDatabase(status);
+    // Sync with database only if RevenueCat succeeded with a paid plan
+    if (rcSuccess && rcPlan !== PlanType.FREE) {
+      await syncSubscriptionToDatabase(status);
+    }
 
     return { status, error: null };
   } catch (err) {

@@ -112,8 +112,11 @@ export function SubscriptionProvider({ children }: SubscriptionProviderProps) {
       // Get subscription status
       const { status: subStatus, error: statusError } = await getSubscriptionStatus();
       if (statusError) {
+        console.warn('Subscription status error:', statusError);
         setError(statusError);
-      } else {
+      }
+      // Always set status if we got one, even alongside an error
+      if (subStatus) {
         setStatus(subStatus);
       }
 
