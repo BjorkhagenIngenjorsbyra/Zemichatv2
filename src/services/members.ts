@@ -49,9 +49,27 @@ export async function createTexter({
  * Get all team members for the current user's team.
  */
 export async function getTeamMembers(): Promise<{ members: User[]; error: Error | null }> {
+  // First get the current user's team_id
+  const { data: { user: authUser } } = await supabase.auth.getUser();
+  if (!authUser) {
+    return { members: [], error: new Error('Not authenticated') };
+  }
+
+  const { data: profile } = await supabase
+    .from('users')
+    .select('team_id')
+    .eq('id', authUser.id)
+    .single();
+
+  if (!profile) {
+    return { members: [], error: new Error('Profile not found') };
+  }
+
+  // Filter by team_id to exclude friends from other teams
   const { data, error } = await supabase
     .from('users')
     .select('*')
+    .eq('team_id', (profile as { team_id: string }).team_id)
     .order('role', { ascending: true })
     .order('display_name', { ascending: true });
 
