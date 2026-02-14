@@ -282,6 +282,8 @@
     "myTeam": "Tiimini",
     "startNewChat": "Aloita uusi keskustelu",
     "addToExistingChat": "Lisää keskusteluun",
+    "addUserToChat": "Lisää {{name}} olemassa olevaan keskusteluun",
+    "noChatsAvailable": "Ei keskusteluja saatavilla",
     "settings": "Asetukset"
   },
   "ownerApprovals": {

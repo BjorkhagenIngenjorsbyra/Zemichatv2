@@ -282,6 +282,8 @@
     "myTeam": "Mitt team",
     "startNewChat": "Starta ny chatt",
     "addToExistingChat": "Lägg till i chatt",
+    "addUserToChat": "Lägg till {{name}} i en befintlig chatt",
+    "noChatsAvailable": "Inga chattar tillgängliga",
     "settings": "Inställningar"
   },
   "ownerApprovals": {

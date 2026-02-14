@@ -282,6 +282,8 @@
     "myTeam": "My Team",
     "startNewChat": "Start new chat",
     "addToExistingChat": "Add to chat",
+    "addUserToChat": "Add {{name}} to an existing chat",
+    "noChatsAvailable": "No chats available",
     "settings": "Settings"
   },
   "ownerApprovals": {

@@ -225,6 +225,24 @@ export async function createChat({
 }
 
 /**
+ * Add a member to an existing chat.
+ */
+export async function addMemberToChat(
+  chatId: string,
+  userId: string
+): Promise<{ error: Error | null }> {
+  const { error } = await supabase
+    .from('chat_members')
+    .insert({ chat_id: chatId, user_id: userId } as never);
+
+  if (error) {
+    return { error: new Error(error.message) };
+  }
+
+  return { error: null };
+}
+
+/**
  * Find an existing 1-on-1 chat with a specific user.
  */
 async function findExisting1on1Chat(otherUserId: string): Promise<Chat | null> {

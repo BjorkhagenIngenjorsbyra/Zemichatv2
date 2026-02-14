@@ -33,7 +33,7 @@ import {
 } from '../services/friend';
 import { getAllFriendSettings } from '../services/friendSettings';
 import { createChat } from '../services/chat';
-import { FriendCard, FriendRequestCard, FriendSettingsModal } from '../components/friends';
+import { FriendCard, FriendRequestCard, FriendSettingsModal, AddToChatPicker } from '../components/friends';
 import { type FriendSettings, type User, UserRole, FRIEND_CATEGORIES } from '../types/database';
 import { CallType } from '../types/call';
 import { useCallContext } from '../contexts/CallContext';
@@ -63,6 +63,10 @@ const Friends: React.FC = () => {
   const [friendSettingsMap, setFriendSettingsMap] = useState<Map<string, FriendSettings>>(new Map());
   const [activeCategory, setActiveCategory] = useState<string>('all');
   const [settingsTarget, setSettingsTarget] = useState<User | null>(null);
+  const [addToChatTarget, setAddToChatTarget] = useState<{
+    userId: string;
+    name: string;
+  } | null>(null);
 
   const loadData = useCallback(async () => {
     const [friendsResult, requestsResult, settingsResult] = await Promise.all([
@@ -364,7 +368,10 @@ const Friends: React.FC = () => {
               icon: peopleOutline,
               handler: () => {
                 if (actionTarget) {
-                  history.push(`/new-chat?add=${actionTarget.userId}`);
+                  setAddToChatTarget({
+                    userId: actionTarget.userId,
+                    name: actionTarget.name,
+                  });
                 }
               },
             },
@@ -405,6 +412,17 @@ const Friends: React.FC = () => {
               });
               return next;
             });
+          }}
+        />
+
+        <AddToChatPicker
+          isOpen={!!addToChatTarget}
+          userId={addToChatTarget?.userId ?? null}
+          userName={addToChatTarget?.name ?? null}
+          onClose={() => setAddToChatTarget(null)}
+          onAdded={(chatId) => {
+            setAddToChatTarget(null);
+            history.push(`/chat/${chatId}`);
           }}
         />
 
