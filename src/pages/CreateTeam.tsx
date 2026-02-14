@@ -14,6 +14,7 @@ import { checkmarkCircleOutline, closeCircleOutline } from 'ionicons/icons';
 import { useAuthContext } from '../contexts/AuthContext';
 import { useSubscription } from '../contexts/SubscriptionContext';
 import { createTeam } from '../services/team';
+import { PlanType } from '../types/database';
 import { validateReferralCode, submitReferral } from '../services/referral';
 import { ConfettiAnimation } from '../components/ConfettiAnimation';
 import { hapticSuccess } from '../utils/haptics';
@@ -59,7 +60,7 @@ const CreateTeam: React.FC = () => {
   }, [authUser, history]);
 
   const handleFinish = useCallback(async () => {
-    await startTrial();
+    await startTrial(PlanType.PRO);
     history.replace('/chats');
   }, [startTrial, history]);
 
