@@ -57,30 +57,36 @@ export function useAuth(): AuthState {
     let mounted = true;
 
     const initialize = async () => {
-      const { session: initialSession } = await getSession();
+      try {
+        const { session: initialSession } = await getSession();
 
-      if (!mounted) return;
-
-      if (initialSession) {
-        setSession(initialSession);
-        setAuthUser(initialSession.user);
-
-        // Load profile before declaring init complete to prevent
-        // false redirect to /create-team
-        const has = await hasTeamProfile();
         if (!mounted) return;
-        setHasProfile(has);
 
-        if (has) {
-          const { user } = await getMyProfile();
+        if (initialSession) {
+          setSession(initialSession);
+          setAuthUser(initialSession.user);
+
+          // Load profile before declaring init complete to prevent
+          // false redirect to /create-team
+          const has = await hasTeamProfile();
           if (!mounted) return;
-          setProfile(user);
-        }
+          setHasProfile(has);
 
-        initProfileLoaded.current = true;
+          if (has) {
+            const { user } = await getMyProfile();
+            if (!mounted) return;
+            setProfile(user);
+          }
+
+          initProfileLoaded.current = true;
+        }
+      } catch {
+        // If session check fails, fall through to login
       }
 
-      setIsLoading(false);
+      if (mounted) {
+        setIsLoading(false);
+      }
     };
 
     initialize();

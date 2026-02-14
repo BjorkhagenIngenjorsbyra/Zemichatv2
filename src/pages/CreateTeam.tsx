@@ -21,7 +21,7 @@ import { hapticSuccess } from '../utils/haptics';
 const CreateTeam: React.FC = () => {
   const { t } = useTranslation();
   const history = useHistory();
-  const { authUser, hasProfile, refreshProfile } = useAuthContext();
+  const { authUser, hasProfile, refreshProfile, signOut } = useAuthContext();
   const { startTrial } = useSubscription();
   const [teamName, setTeamName] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -345,6 +345,17 @@ const CreateTeam: React.FC = () => {
             >
               {isLoading ? <IonSpinner name="crescent" /> : t('team.createButton')}
             </IonButton>
+
+            <button
+              className="create-team-signout-link"
+              onClick={async () => {
+                await signOut();
+                history.replace('/login');
+              }}
+              type="button"
+            >
+              {t('settings.logout')}
+            </button>
           </form>
         </div>
 
@@ -443,6 +454,18 @@ const CreateTeam: React.FC = () => {
             --color: hsl(var(--primary-foreground));
             height: 3rem;
             margin-top: 0.5rem;
+          }
+
+          .create-team-signout-link {
+            background: none;
+            border: none;
+            color: hsl(var(--muted-foreground));
+            font-size: 0.875rem;
+            text-align: center;
+            cursor: pointer;
+            padding: 0.75rem;
+            text-decoration: underline;
+            width: 100%;
           }
         `}</style>
       </IonContent>

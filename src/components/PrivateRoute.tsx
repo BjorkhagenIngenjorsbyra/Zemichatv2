@@ -70,10 +70,8 @@ export const PublicRoute: React.FC<PublicRouteProps> = ({ children, ...rest }) =
     return <Redirect to="/chats" />;
   }
 
-  // Authenticated without profile - redirect to create team
-  if (isAuthenticated && !hasProfile) {
-    return <Redirect to="/create-team" />;
-  }
+  // Authenticated without profile - let them stay on public pages.
+  // They will reach /create-team via PrivateRoute after explicit login.
 
   return <Route {...rest}>{children}</Route>;
 };
