@@ -246,6 +246,14 @@ export async function getSubscriptionStatus(): Promise<{
       willRenew = basicEntitlement.willRenew;
     }
 
+    // If RevenueCat says FREE, check database for an active trial
+    if (plan === PlanType.FREE) {
+      const { status: dbStatus } = await getSubscriptionStatusFromDatabase();
+      if (dbStatus && dbStatus.isTrialActive) {
+        return { status: dbStatus, error: null };
+      }
+    }
+
     const status: SubscriptionStatus = {
       isActive: plan !== PlanType.FREE,
       plan,
