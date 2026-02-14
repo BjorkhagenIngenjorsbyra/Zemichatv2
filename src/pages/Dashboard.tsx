@@ -200,10 +200,6 @@ const Dashboard: React.FC = () => {
           <div className="section">
             <div className="section-header">
               <h3 className="section-title">{t('dashboard.yourTeam')}</h3>
-              <IonButton fill="clear" size="small" onClick={() => setShowCreateTexter(true)}>
-                <IonIcon icon={personAddOutline} slot="start" />
-                {t('dashboard.addMember')}
-              </IonButton>
             </div>
 
             {isLoading ? (
