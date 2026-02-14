@@ -180,7 +180,7 @@ CREATE POLICY wall_comments_insert_member ON public.wall_comments
       parent_comment_id IS NULL
       OR EXISTS (
         SELECT 1 FROM wall_comments pc
-        WHERE pc.id = parent_comment_id
+        WHERE pc.id = wall_comments.parent_comment_id
           AND pc.parent_comment_id IS NULL
           AND pc.deleted_at IS NULL
       )
