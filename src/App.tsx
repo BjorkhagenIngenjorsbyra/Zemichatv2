@@ -2,6 +2,8 @@ import { useEffect } from 'react';
 import { Redirect, Route, Switch, useHistory } from 'react-router-dom';
 import { IonApp, IonRouterOutlet, setupIonicReact } from '@ionic/react';
 import { IonReactRouter } from '@ionic/react-router';
+import { StatusBar, Style } from '@capacitor/status-bar';
+import { Capacitor } from '@capacitor/core';
 
 /* Auth */
 import { AuthProvider } from './contexts/AuthContext';
@@ -90,6 +92,12 @@ import '@ionic/react/css/palettes/dark.system.css';
 import './theme/variables.css';
 
 setupIonicReact();
+
+if (Capacitor.isNativePlatform()) {
+  StatusBar.setOverlaysWebView({ overlay: false });
+  StatusBar.setBackgroundColor({ color: '#0a0d17' });
+  StatusBar.setStyle({ style: Style.Dark });
+}
 
 /**
  * Detects Supabase auth callback hash fragments (email verification, password reset)
