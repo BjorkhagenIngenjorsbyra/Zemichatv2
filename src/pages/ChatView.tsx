@@ -14,7 +14,7 @@ import {
   IonButton,
   IonToast,
 } from '@ionic/react';
-import { searchOutline, arrowDown } from 'ionicons/icons';
+import { searchOutline, arrowDown, chevronForwardOutline } from 'ionicons/icons';
 import { Keyboard } from '@capacitor/keyboard';
 import { Capacitor } from '@capacitor/core';
 import { useAuthContext } from '../contexts/AuthContext';
@@ -80,6 +80,10 @@ import { SOSButton } from '../components/sos';
 import { CallButton } from '../components/call';
 import { UserRole, type TexterSettings } from '../types/database';
 import { getTexterSettings } from '../services/members';
+import { usePresence } from '../hooks/usePresence';
+import { canShareLocation } from '../services/location';
+import LocationPicker from '../components/chat/LocationPicker';
+import { MAX_GROUP_CALL_PARTICIPANTS } from '../types/call';
 
 const ChatView: React.FC = () => {
   const { t } = useTranslation();
@@ -140,6 +144,9 @@ const ChatView: React.FC = () => {
 
   // Poll creator
   const [showPollCreator, setShowPollCreator] = useState(false);
+
+  // Location picker
+  const [showLocationPicker, setShowLocationPicker] = useState(false);
 
   // Permission denied toast
   const [permissionToast, setPermissionToast] = useState<string | null>(null);
@@ -351,6 +358,16 @@ const ChatView: React.FC = () => {
       cleanupTypingChannel(chatId);
     };
   }, [chatId, profile?.id]);
+
+  // Presence for 1-on-1 chats
+  const otherUserId = (!chat?.is_group && chat?.members)
+    ? chat.members.find((m) => m.user_id !== profile?.id)?.user_id
+    : undefined;
+  const { isOnline, lastSeenText } = usePresence(otherUserId);
+
+  // Group call: hide call buttons if > MAX_GROUP_CALL_PARTICIPANTS active members
+  const activeMemberCount = chat?.members.filter((m) => !m.left_at).length || 0;
+  const hideCallForGroupSize = chat?.is_group && activeMemberCount > MAX_GROUP_CALL_PARTICIPANTS;
 
   const getChatDisplayName = (): string => {
     if (!chat) return '';
@@ -583,6 +600,27 @@ const ChatView: React.FC = () => {
     }
   };
 
+  const handleLocationOpen = async () => {
+    if (!chatId) return;
+    const canShare = await canShareLocation(chatId);
+    if (!canShare) {
+      setPermissionToast(t('location.texterRestricted'));
+      return;
+    }
+    setShowLocationPicker(true);
+  };
+
+  const handleLocationShare = async (lat: number, lng: number) => {
+    if (!chatId) return;
+    await sendMessage({
+      chatId,
+      type: MessageType.LOCATION,
+      mediaMetadata: { lat, lng },
+      replyToId: replyTo?.id,
+    });
+    setReplyTo(null);
+  };
+
   const handleMentionSelect = (user: { display_name: string | null }) => {
     const name = user.display_name || '';
     // Replace the @query with @name
@@ -669,7 +707,7 @@ const ChatView: React.FC = () => {
   };
 
   const handleHeaderClick = () => {
-    contentRef.current?.scrollToTop(300);
+    history.push(`/chat/${chatId}/info`);
   };
 
   const handleCameraCapture = (file: File) => {
@@ -693,11 +731,18 @@ const ChatView: React.FC = () => {
             onClick={handleHeaderClick}
             style={{ cursor: 'pointer' }}
           >
-            {getChatDisplayName()}
+            <div className="chat-header-title">
+              <span>{getChatDisplayName()}</span>
+              {!chat?.is_group && lastSeenText && (
+                <span className={`chat-header-subtitle ${isOnline ? 'online' : ''}`}>
+                  {lastSeenText}
+                </span>
+              )}
+            </div>
           </IonTitle>
           <IonButtons slot="end">
-            <CallButton chatId={chatId} type="voice" hidden={texterSettings?.can_voice_call === false || !canUseFeature('canVoiceCall')} />
-            <CallButton chatId={chatId} type="video" hidden={texterSettings?.can_video_call === false || !canUseFeature('canVideoCall')} />
+            <CallButton chatId={chatId} type="voice" hidden={texterSettings?.can_voice_call === false || !canUseFeature('canVoiceCall') || !!hideCallForGroupSize} />
+            <CallButton chatId={chatId} type="video" hidden={texterSettings?.can_video_call === false || !canUseFeature('canVideoCall') || !!hideCallForGroupSize} />
             <IonButton onClick={() => setShowSearch(true)}>
               <IonIcon icon={searchOutline} />
             </IonButton>
@@ -777,6 +822,23 @@ const ChatView: React.FC = () => {
         )}
 
         <style>{`
+          .chat-header-title {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            line-height: 1.2;
+          }
+
+          .chat-header-subtitle {
+            font-size: 0.7rem;
+            font-weight: 400;
+            color: hsl(var(--muted-foreground));
+          }
+
+          .chat-header-subtitle.online {
+            color: hsl(var(--secondary));
+          }
+
           .chat-content {
             --background: hsl(var(--background));
           }
@@ -1050,7 +1112,7 @@ const ChatView: React.FC = () => {
         isOpen={showAttachmentSheet}
         onClose={() => setShowAttachmentSheet(false)}
         onGallery={() => mediaPickerRef.current?.openGallery()}
-        onLocation={() => {}}
+        onLocation={handleLocationOpen}
         onDocument={() => mediaPickerRef.current?.openDocument()}
         onPoll={chat?.is_group ? () => setShowPollCreator(true) : undefined}
       />
@@ -1103,6 +1165,12 @@ const ChatView: React.FC = () => {
         isOpen={showPollCreator}
         onClose={() => setShowPollCreator(false)}
         onCreate={handlePollCreate}
+      />
+
+      <LocationPicker
+        isOpen={showLocationPicker}
+        onClose={() => setShowLocationPicker(false)}
+        onShare={handleLocationShare}
       />
 
       <IonToast

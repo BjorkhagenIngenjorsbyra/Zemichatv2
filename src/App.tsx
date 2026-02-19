@@ -46,6 +46,7 @@ import OwnerOversight from './pages/OwnerOversight';
 import OwnerChatView from './pages/OwnerChatView';
 import NewChat from './pages/NewChat';
 import ChatView from './pages/ChatView';
+import ChatInfo from './pages/ChatInfo';
 import AddFriend from './pages/AddFriend';
 import OwnerApprovals from './pages/OwnerApprovals';
 import MFASetup from './pages/MFASetup';
@@ -213,6 +214,9 @@ const App: React.FC = () => (
             <PrivateRoute path="/friends">
               <TabLayout />
             </PrivateRoute>
+            <PrivateRoute path="/calls">
+              <TabLayout />
+            </PrivateRoute>
             <PrivateRoute path="/settings">
               <TabLayout />
             </PrivateRoute>
@@ -235,6 +239,9 @@ const App: React.FC = () => (
             </PrivateRoute>
             <PrivateRoute exact path="/chat/:chatId">
               <ChatView />
+            </PrivateRoute>
+            <PrivateRoute exact path="/chat/:chatId/info">
+              <ChatInfo />
             </PrivateRoute>
             <PrivateRoute exact path="/add-friend">
               <AddFriend />

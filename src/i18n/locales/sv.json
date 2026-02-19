@@ -467,7 +467,15 @@
     "unavailable": "Inte tillgänglig",
     "error": "Något gick fel. Försök igen senare.",
     "permissionDenied": "Du har inte behörighet att ringa",
-    "serviceUnavailable": "Samtalsfunktionen är inte tillgänglig ännu"
+    "serviceUnavailable": "Samtalsfunktionen är inte tillgänglig ännu",
+    "speakerOn": "Högtalare på",
+    "speakerOff": "Högtalare av",
+    "groupCall": "Gruppsamtal",
+    "addParticipant": "Lägg till deltagare",
+    "participantCount": "{{count}} deltagare",
+    "waitingForOthers": "Väntar på andra...",
+    "maxParticipants": "Inga fler deltagare kan läggas till",
+    "callingGroup": "Ringer grupp..."
   },
   "onboarding": {
     "skip": "Hoppa över",
@@ -713,5 +721,42 @@
     "wallComment": "{{name}} kommenterade din post",
     "sosAlert": "{{name}} behöver dig!",
     "newMessages": "Nya meddelanden"
+  },
+  "presence": {
+    "online": "Online",
+    "lastSeenMinutes": "Senast sedd {{count}} min sedan",
+    "lastSeenHours": "Senast sedd {{count}}h sedan",
+    "lastSeenDays": "Senast sedd {{count}}d sedan"
+  },
+  "chatInfo": {
+    "title": "Chattinfo",
+    "members": "Medlemmar",
+    "addMember": "Lägg till medlem",
+    "leaveGroup": "Lämna grupp",
+    "leaveGroupConfirm": "Är du säker på att du vill lämna den här gruppen?",
+    "sharedMedia": "Delad media",
+    "noSharedMedia": "Ingen delad media ännu",
+    "editGroupName": "Ändra gruppnamn",
+    "muteNotifications": "Tysta notiser",
+    "contactInfo": "Kontaktinfo"
+  },
+  "calls": {
+    "title": "Samtal",
+    "all": "Alla",
+    "missed": "Missade",
+    "incoming": "Inkommande",
+    "outgoing": "Utgående",
+    "noCalls": "Inga samtal ännu",
+    "noMissedCalls": "Inga missade samtal"
+  },
+  "location": {
+    "shareLocation": "Plats",
+    "pickLocation": "Välj plats",
+    "useCurrentLocation": "Använd min position",
+    "share": "Dela",
+    "permissionDenied": "Platsåtkomst nekad",
+    "texterRestricted": "Du kan bara dela din position med din teamägare",
+    "loading": "Laddar...",
+    "openInMaps": "Öppna i karta"
   }
 }

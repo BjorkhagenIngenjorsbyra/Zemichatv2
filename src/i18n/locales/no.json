@@ -467,7 +467,15 @@
     "unavailable": "Ikke tilgjengelig",
     "error": "Noe gikk galt. Prøv igjen senere.",
     "permissionDenied": "Du har ikke tillatelse til å ringe",
-    "serviceUnavailable": "Ringefunksjonen er ikke tilgjengelig ennå"
+    "serviceUnavailable": "Ringefunksjonen er ikke tilgjengelig ennå",
+    "speakerOn": "Høyttaler på",
+    "speakerOff": "Høyttaler av",
+    "groupCall": "Gruppesamtale",
+    "addParticipant": "Legg til deltaker",
+    "participantCount": "{{count}} deltakere",
+    "waitingForOthers": "Venter på andre...",
+    "maxParticipants": "Ingen flere deltakere kan legges til",
+    "callingGroup": "Ringer gruppe..."
   },
   "onboarding": {
     "skip": "Hopp over",
@@ -713,5 +721,42 @@
     "wallComment": "{{name}} kommenterte innlegget ditt",
     "sosAlert": "{{name}} trenger deg!",
     "newMessages": "Nye meldinger"
+  },
+  "presence": {
+    "online": "Pålogget",
+    "lastSeenMinutes": "Sist sett {{count}} min siden",
+    "lastSeenHours": "Sist sett {{count}}t siden",
+    "lastSeenDays": "Sist sett {{count}}d siden"
+  },
+  "chatInfo": {
+    "title": "Chatinfo",
+    "members": "Medlemmer",
+    "addMember": "Legg til medlem",
+    "leaveGroup": "Forlat gruppe",
+    "leaveGroupConfirm": "Er du sikker på at du vil forlate denne gruppen?",
+    "sharedMedia": "Delt media",
+    "noSharedMedia": "Ingen delt media ennå",
+    "editGroupName": "Endre gruppenavn",
+    "muteNotifications": "Demp varsler",
+    "contactInfo": "Kontaktinfo"
+  },
+  "calls": {
+    "title": "Samtaler",
+    "all": "Alle",
+    "missed": "Tapte",
+    "incoming": "Innkommende",
+    "outgoing": "Utgående",
+    "noCalls": "Ingen samtaler ennå",
+    "noMissedCalls": "Ingen tapte samtaler"
+  },
+  "location": {
+    "shareLocation": "Posisjon",
+    "pickLocation": "Velg posisjon",
+    "useCurrentLocation": "Bruk min posisjon",
+    "share": "Del",
+    "permissionDenied": "Posisjonstilgang nektet",
+    "texterRestricted": "Du kan bare dele posisjonen din med teameieren din",
+    "loading": "Laster...",
+    "openInMaps": "Åpne i kart"
   }
 }

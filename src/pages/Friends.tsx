@@ -37,6 +37,7 @@ import { FriendCard, FriendRequestCard, FriendSettingsModal, AddToChatPicker } f
 import { type FriendSettings, type User, UserRole, FRIEND_CATEGORIES } from '../types/database';
 import { CallType } from '../types/call';
 import { useCallContext } from '../contexts/CallContext';
+import { useSubscription } from '../contexts/SubscriptionContext';
 import { useNotifications } from '../contexts/NotificationContext';
 import { SkeletonLoader, EmptyStateIllustration } from '../components/common';
 
@@ -47,6 +48,7 @@ const Friends: React.FC = () => {
   const history = useHistory();
   const { profile } = useAuthContext();
   const { initiateCall } = useCallContext();
+  const { canUseFeature } = useSubscription();
   const { refreshCounts } = useNotifications();
   const [activeTab, setActiveTab] = useState<TabValue>('friends');
   const [friends, setFriends] = useState<FriendWithUser[]>([]);
@@ -349,7 +351,7 @@ const Friends: React.FC = () => {
                 }
               },
             },
-            {
+            ...(canUseFeature('canVoiceCall') ? [{
               text: t('call.voiceCall'),
               icon: call,
               handler: () => {
@@ -357,8 +359,8 @@ const Friends: React.FC = () => {
                   handleCall(actionTarget.userId, 'voice');
                 }
               },
-            },
-            {
+            }] : []),
+            ...(canUseFeature('canVideoCall') ? [{
               text: t('call.videoCall'),
               icon: videocam,
               handler: () => {
@@ -366,7 +368,7 @@ const Friends: React.FC = () => {
                   handleCall(actionTarget.userId, 'video');
                 }
               },
-            },
+            }] : []),
             {
               text: t('friends.addToExistingChat'),
               icon: peopleOutline,

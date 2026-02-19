@@ -11,6 +11,7 @@ import {
 } from '@ionic/react';
 import { ellipse, ellipseOutline, personRemoveOutline } from 'ionicons/icons';
 import { type User, FRIEND_CATEGORIES } from '../../types/database';
+import { isUserOnline } from '../../services/presence';
 
 interface FriendCardProps {
   user: User;
@@ -56,8 +57,8 @@ export const FriendCard: React.FC<FriendCardProps> = ({
           <h2 className="friend-name">
             {user.display_name || t('dashboard.unnamed')}
             <IonIcon
-              icon={user.is_active ? ellipse : ellipseOutline}
-              className={`status-dot ${user.is_active ? 'active' : 'inactive'}`}
+              icon={isUserOnline(user.last_seen_at) ? ellipse : ellipseOutline}
+              className={`status-dot ${isUserOnline(user.last_seen_at) ? 'active' : 'inactive'}`}
             />
           </h2>
           {nickname ? (

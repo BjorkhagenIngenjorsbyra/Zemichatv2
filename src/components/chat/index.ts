@@ -23,3 +23,6 @@ export { default as MuteOptions } from './MuteOptions';
 export { default as ChatInputToolbar } from './ChatInputToolbar';
 export { default as EmojiGifPanel } from './EmojiGifPanel';
 export { default as AttachmentSheet } from './AttachmentSheet';
+export { default as LocationPicker } from './LocationPicker';
+export { default as LocationMessage } from './LocationMessage';
+export { default as LocationViewer } from './LocationViewer';

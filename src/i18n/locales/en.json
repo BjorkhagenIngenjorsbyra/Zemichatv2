@@ -467,7 +467,15 @@
     "unavailable": "Unavailable",
     "error": "Something went wrong. Please try again later.",
     "permissionDenied": "You don't have permission to make calls",
-    "serviceUnavailable": "Calling is not available yet"
+    "serviceUnavailable": "Calling is not available yet",
+    "speakerOn": "Speaker on",
+    "speakerOff": "Speaker off",
+    "groupCall": "Group call",
+    "addParticipant": "Add participant",
+    "participantCount": "{{count}} participants",
+    "waitingForOthers": "Waiting for others...",
+    "maxParticipants": "No more participants can be added",
+    "callingGroup": "Calling group..."
   },
   "onboarding": {
     "skip": "Skip",
@@ -713,5 +721,42 @@
     "wallComment": "{{name}} commented on your post",
     "sosAlert": "{{name}} needs you!",
     "newMessages": "New messages"
+  },
+  "presence": {
+    "online": "Online",
+    "lastSeenMinutes": "Last seen {{count}} min ago",
+    "lastSeenHours": "Last seen {{count}}h ago",
+    "lastSeenDays": "Last seen {{count}}d ago"
+  },
+  "chatInfo": {
+    "title": "Chat info",
+    "members": "Members",
+    "addMember": "Add member",
+    "leaveGroup": "Leave group",
+    "leaveGroupConfirm": "Are you sure you want to leave this group?",
+    "sharedMedia": "Shared media",
+    "noSharedMedia": "No shared media yet",
+    "editGroupName": "Edit group name",
+    "muteNotifications": "Mute notifications",
+    "contactInfo": "Contact info"
+  },
+  "calls": {
+    "title": "Calls",
+    "all": "All",
+    "missed": "Missed",
+    "incoming": "Incoming",
+    "outgoing": "Outgoing",
+    "noCalls": "No calls yet",
+    "noMissedCalls": "No missed calls"
+  },
+  "location": {
+    "shareLocation": "Location",
+    "pickLocation": "Pick location",
+    "useCurrentLocation": "Use my current location",
+    "share": "Share",
+    "permissionDenied": "Location access denied",
+    "texterRestricted": "You can only share your location with your team owner",
+    "loading": "Loading...",
+    "openInMaps": "Open in maps"
   }
 }

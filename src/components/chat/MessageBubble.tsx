@@ -10,6 +10,7 @@ import QuotedMessage from './QuotedMessage';
 import MessageReactions from './MessageReactions';
 import LinkPreview, { extractUrl } from './LinkPreview';
 import PollMessage from './PollMessage';
+import LocationMessage from './LocationMessage';
 
 export type ReadStatus = 'sent' | 'delivered' | 'read';
 
@@ -181,13 +182,18 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
             </a>
           </div>
         );
-      case 'location':
+      case 'location': {
+        const locMeta = message.media_metadata as { lat?: number; lng?: number } | null;
+        if (locMeta?.lat && locMeta?.lng) {
+          return <LocationMessage lat={locMeta.lat} lng={locMeta.lng} />;
+        }
         return (
           <div className="location-message">
             <span className="location-icon">📍</span>
             <span>{t('message.location')}</span>
           </div>
         );
+      }
       case 'poll':
         return <PollMessage messageId={message.id} isOwn={isOwn} />;
       case 'gif': {

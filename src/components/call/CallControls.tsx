@@ -6,6 +6,8 @@ import {
   videocam,
   videocamOff,
   desktop,
+  volumeHigh,
+  volumeLow,
   call as callIcon,
 } from 'ionicons/icons';
 import { useCallContext } from '../../contexts/CallContext';
@@ -24,6 +26,7 @@ const CallControls: React.FC<CallControlsProps> = ({
   const {
     activeCall,
     toggleMute,
+    toggleSpeaker,
     toggleVideo,
     toggleScreenShare,
     endCall,
@@ -41,6 +44,16 @@ const CallControls: React.FC<CallControlsProps> = ({
         aria-label={activeCall.isMuted ? t('call.unmute') : t('call.mute')}
       >
         <IonIcon icon={activeCall.isMuted ? micOff : mic} />
+      </IonButton>
+
+      {/* Speaker toggle button */}
+      <IonButton
+        className={`control-button ${activeCall.isSpeakerOn ? 'active' : ''}`}
+        fill="clear"
+        onClick={toggleSpeaker}
+        aria-label={activeCall.isSpeakerOn ? t('call.speakerOff') : t('call.speakerOn')}
+      >
+        <IonIcon icon={activeCall.isSpeakerOn ? volumeHigh : volumeLow} />
       </IonButton>
 
       {/* Video toggle button (for video calls) */}

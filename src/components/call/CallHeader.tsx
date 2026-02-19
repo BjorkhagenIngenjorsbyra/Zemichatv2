@@ -41,6 +41,8 @@ const CallHeader: React.FC<CallHeaderProps> = ({ chatName }) => {
     ? t('call.videoCall')
     : t('call.voiceCall');
 
+  const participantCount = activeCall.participants.length;
+
   return (
     <div className="call-header">
       <IonButton
@@ -55,7 +57,9 @@ const CallHeader: React.FC<CallHeaderProps> = ({ chatName }) => {
       <div className="call-info">
         <span className="call-name">{chatName || t('call.call')}</span>
         <span className="call-status">
-          {callTypeLabel} • {getStateLabel()}
+          {callTypeLabel}
+          {participantCount > 2 && ` • ${t('call.participantCount', { count: participantCount })}`}
+          {' • '}{getStateLabel()}
         </span>
       </div>
 

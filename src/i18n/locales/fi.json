@@ -467,7 +467,15 @@
     "unavailable": "Ei tavoitettavissa",
     "error": "Jokin meni pieleen. Yritä myöhemmin uudelleen.",
     "permissionDenied": "Sinulla ei ole lupaa soittaa",
-    "serviceUnavailable": "Puhelutoiminto ei ole vielä käytettävissä"
+    "serviceUnavailable": "Puhelutoiminto ei ole vielä käytettävissä",
+    "speakerOn": "Kaiutin päällä",
+    "speakerOff": "Kaiutin pois",
+    "groupCall": "Ryhmäpuhelu",
+    "addParticipant": "Lisää osallistuja",
+    "participantCount": "{{count}} osallistujaa",
+    "waitingForOthers": "Odotetaan muita...",
+    "maxParticipants": "Osallistujia ei voi enää lisätä",
+    "callingGroup": "Soitetaan ryhmälle..."
   },
   "onboarding": {
     "skip": "Ohita",
@@ -713,5 +721,42 @@
     "wallComment": "{{name}} kommentoi julkaisuasi",
     "sosAlert": "{{name}} tarvitsee sinua!",
     "newMessages": "Uusia viestejä"
+  },
+  "presence": {
+    "online": "Paikalla",
+    "lastSeenMinutes": "Nähty {{count}} min sitten",
+    "lastSeenHours": "Nähty {{count}}t sitten",
+    "lastSeenDays": "Nähty {{count}}pv sitten"
+  },
+  "chatInfo": {
+    "title": "Chatin tiedot",
+    "members": "Jäsenet",
+    "addMember": "Lisää jäsen",
+    "leaveGroup": "Poistu ryhmästä",
+    "leaveGroupConfirm": "Haluatko varmasti poistua tästä ryhmästä?",
+    "sharedMedia": "Jaettu media",
+    "noSharedMedia": "Ei jaettua mediaa vielä",
+    "editGroupName": "Muokkaa ryhmän nimeä",
+    "muteNotifications": "Mykistä ilmoitukset",
+    "contactInfo": "Yhteystiedot"
+  },
+  "calls": {
+    "title": "Puhelut",
+    "all": "Kaikki",
+    "missed": "Vastaamattomat",
+    "incoming": "Saapuva",
+    "outgoing": "Lähtevä",
+    "noCalls": "Ei puheluita vielä",
+    "noMissedCalls": "Ei vastaamattomia puheluita"
+  },
+  "location": {
+    "shareLocation": "Sijainti",
+    "pickLocation": "Valitse sijainti",
+    "useCurrentLocation": "Käytä nykyistä sijaintia",
+    "share": "Jaa",
+    "permissionDenied": "Sijaintilupa evätty",
+    "texterRestricted": "Voit jakaa sijaintisi vain tiimin omistajan kanssa",
+    "loading": "Ladataan...",
+    "openInMaps": "Avaa kartalla"
   }
 }

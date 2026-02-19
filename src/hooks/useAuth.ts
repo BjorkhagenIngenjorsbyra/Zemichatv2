@@ -8,6 +8,7 @@ import {
   type PermissionStatus,
 } from '../services/push';
 import type { User } from '../types/database';
+import { startPresenceUpdates, stopPresenceUpdates } from '../services/presence';
 
 export interface AuthState {
   isLoading: boolean;
@@ -121,6 +122,16 @@ export function useAuth(): AuthState {
       refreshProfile();
     }
   }, [authUser, isLoading, refreshProfile]);
+
+  // Start/stop presence updates based on profile
+  useEffect(() => {
+    if (profile) {
+      startPresenceUpdates();
+    } else {
+      stopPresenceUpdates();
+    }
+    return () => stopPresenceUpdates();
+  }, [profile]);
 
   const signOut = useCallback(async () => {
     // Cleanup push notifications before signing out

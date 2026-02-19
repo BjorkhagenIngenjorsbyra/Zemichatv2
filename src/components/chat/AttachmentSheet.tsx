@@ -1,6 +1,4 @@
 import { useTranslation } from 'react-i18next';
-import { IonToast } from '@ionic/react';
-import { useState } from 'react';
 
 interface AttachmentSheetProps {
   isOpen: boolean;
@@ -20,15 +18,8 @@ const AttachmentSheet: React.FC<AttachmentSheetProps> = ({
   onPoll,
 }) => {
   const { t } = useTranslation();
-  const [showLocationToast, setShowLocationToast] = useState(false);
 
   if (!isOpen) return null;
-
-  const handleLocation = () => {
-    onLocation();
-    setShowLocationToast(true);
-    onClose();
-  };
 
   return (
     <>
@@ -39,7 +30,7 @@ const AttachmentSheet: React.FC<AttachmentSheetProps> = ({
             <span className="attachment-icon">🖼️</span>
             <span className="attachment-label">{t('chat.gallery')}</span>
           </button>
-          <button className="attachment-option" onClick={handleLocation}>
+          <button className="attachment-option" onClick={() => { onLocation(); onClose(); }}>
             <span className="attachment-icon">📍</span>
             <span className="attachment-label">{t('chat.location')}</span>
           </button>
@@ -130,14 +121,6 @@ const AttachmentSheet: React.FC<AttachmentSheetProps> = ({
           }
         `}</style>
       </div>
-
-      <IonToast
-        isOpen={showLocationToast}
-        message={t('chat.locationComingSoon')}
-        duration={2000}
-        onDidDismiss={() => setShowLocationToast(false)}
-        color="medium"
-      />
     </>
   );
 };

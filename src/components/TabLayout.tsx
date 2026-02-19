@@ -10,21 +10,25 @@ import {
   IonBadge,
   IonRouterOutlet,
 } from '@ionic/react';
-import { chatbubblesOutline, newspaperOutline, peopleOutline, settingsOutline } from 'ionicons/icons';
+import { chatbubblesOutline, newspaperOutline, peopleOutline, settingsOutline, callOutline } from 'ionicons/icons';
 import { useAuthContext } from '../contexts/AuthContext';
+import { useSubscription } from '../contexts/SubscriptionContext';
 import { useNotifications } from '../contexts/NotificationContext';
 import { UserRole } from '../types/database';
 import { supabase } from '../services/supabase';
 import ChatList from '../pages/ChatList';
 import Wall from '../pages/Wall';
 import Friends from '../pages/Friends';
+import Calls from '../pages/Calls';
 import Settings from '../pages/Settings';
 
 const TabLayout: React.FC = () => {
   const { t } = useTranslation();
   const { profile } = useAuthContext();
+  const { canUseFeature } = useSubscription();
   const { unreadChatCount, pendingFriendRequests, hasNewWallPosts } = useNotifications();
   const [wallVisible, setWallVisible] = useState(true);
+  const callsVisible = canUseFeature('canVoiceCall');
 
   const checkWallAccess = useCallback(async () => {
     if (!profile) return;
@@ -55,6 +59,7 @@ const TabLayout: React.FC = () => {
         <Route exact path="/chats" component={ChatList} />
         <Route exact path="/wall" component={Wall} />
         <Route exact path="/friends" component={Friends} />
+        <Route exact path="/calls" component={Calls} />
         <Route exact path="/settings" component={Settings} />
         <Redirect exact from="/" to="/chats" />
       </IonRouterOutlet>
@@ -82,6 +87,12 @@ const TabLayout: React.FC = () => {
             <IonBadge color="danger">{pendingFriendRequests}</IonBadge>
           )}
         </IonTabButton>
+        {callsVisible && (
+          <IonTabButton tab="calls" href="/calls">
+            <IonIcon icon={callOutline} />
+            <IonLabel>{t('calls.title')}</IonLabel>
+          </IonTabButton>
+        )}
         <IonTabButton tab="settings" href="/settings">
           <IonIcon icon={settingsOutline} />
           <IonLabel>{t('settings.title')}</IonLabel>

@@ -467,7 +467,15 @@
     "unavailable": "Ikke tilgængelig",
     "error": "Noget gik galt. Prøv igen senere.",
     "permissionDenied": "Du har ikke tilladelse til at ringe",
-    "serviceUnavailable": "Opkaldsfunktionen er ikke tilgængelig endnu"
+    "serviceUnavailable": "Opkaldsfunktionen er ikke tilgængelig endnu",
+    "speakerOn": "Højttaler til",
+    "speakerOff": "Højttaler fra",
+    "groupCall": "Gruppeopkald",
+    "addParticipant": "Tilføj deltager",
+    "participantCount": "{{count}} deltagere",
+    "waitingForOthers": "Venter på andre...",
+    "maxParticipants": "Ingen flere deltagere kan tilføjes",
+    "callingGroup": "Ringer gruppe..."
   },
   "onboarding": {
     "skip": "Spring over",
@@ -713,5 +721,42 @@
     "wallComment": "{{name}} kommenterede dit opslag",
     "sosAlert": "{{name}} har brug for dig!",
     "newMessages": "Nye beskeder"
+  },
+  "presence": {
+    "online": "Online",
+    "lastSeenMinutes": "Sidst set {{count}} min siden",
+    "lastSeenHours": "Sidst set {{count}}t siden",
+    "lastSeenDays": "Sidst set {{count}}d siden"
+  },
+  "chatInfo": {
+    "title": "Chatinfo",
+    "members": "Medlemmer",
+    "addMember": "Tilføj medlem",
+    "leaveGroup": "Forlad gruppe",
+    "leaveGroupConfirm": "Er du sikker på, at du vil forlade denne gruppe?",
+    "sharedMedia": "Delt media",
+    "noSharedMedia": "Ingen delt media endnu",
+    "editGroupName": "Rediger gruppenavn",
+    "muteNotifications": "Slå notifikationer fra",
+    "contactInfo": "Kontaktinfo"
+  },
+  "calls": {
+    "title": "Opkald",
+    "all": "Alle",
+    "missed": "Ubesvarede",
+    "incoming": "Indgående",
+    "outgoing": "Udgående",
+    "noCalls": "Ingen opkald endnu",
+    "noMissedCalls": "Ingen ubesvarede opkald"
+  },
+  "location": {
+    "shareLocation": "Position",
+    "pickLocation": "Vælg position",
+    "useCurrentLocation": "Brug min position",
+    "share": "Del",
+    "permissionDenied": "Positionsadgang nægtet",
+    "texterRestricted": "Du kan kun dele din position med din teamejer",
+    "loading": "Indlæser...",
+    "openInMaps": "Åbn i kort"
   }
 }

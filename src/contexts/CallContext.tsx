@@ -54,6 +54,8 @@ import {
   reportCallEnded,
   registerVoipPushIfNeeded,
 } from '../services/callPush';
+import { startRingtone, stopRingtone } from '../services/ringtone';
+import { setAudioRoute } from '../services/audioRouting';
 import { supabase } from '../services/supabase';
 import { type CallLog } from '../types/database';
 
@@ -115,6 +117,8 @@ export function CallProvider({ children }: CallProviderProps) {
   // ============================================================
 
   const cleanupCall = useCallback(async () => {
+    stopRingtone();
+
     if (durationTimerRef.current) {
       clearInterval(durationTimerRef.current);
       durationTimerRef.current = null;
@@ -149,11 +153,11 @@ export function CallProvider({ children }: CallProviderProps) {
   // FETCH OTHER PARTICIPANT
   // ============================================================
 
-  async function fetchOtherMember(chatId: string, myId: string): Promise<{
+  async function fetchOtherMembers(chatId: string, myId: string): Promise<{
     id: string;
     displayName: string;
     avatarUrl?: string;
-  } | null> {
+  }[]> {
     // Get all member IDs in this chat
     const { data: members } = await supabase
       .from('chat_members')
@@ -161,25 +165,25 @@ export function CallProvider({ children }: CallProviderProps) {
       .eq('chat_id', chatId)
       .is('left_at', null) as { data: Array<{ user_id: string }> | null };
 
-    if (!members) return null;
+    if (!members) return [];
 
-    const otherId = members.find((m) => m.user_id !== myId)?.user_id;
-    if (!otherId) return null;
+    const otherIds = members
+      .filter((m) => m.user_id !== myId)
+      .map((m) => m.user_id);
 
-    // Fetch the other user's profile
-    const { data: user } = await supabase
+    if (otherIds.length === 0) return [];
+
+    // Fetch other users' profiles
+    const { data: users } = await supabase
       .from('users')
       .select('id, display_name, avatar_url')
-      .eq('id', otherId)
-      .single() as { data: { id: string; display_name: string; avatar_url: string | null } | null };
+      .in('id', otherIds) as { data: Array<{ id: string; display_name: string; avatar_url: string | null }> | null };
 
-    if (!user) return null;
-
-    return {
-      id: user.id,
-      displayName: user.display_name || 'Unknown',
-      avatarUrl: user.avatar_url || undefined,
-    };
+    return (users || []).map((u) => ({
+      id: u.id,
+      displayName: u.display_name || 'Unknown',
+      avatarUrl: u.avatar_url || undefined,
+    }));
   }
 
   // ============================================================
@@ -198,8 +202,8 @@ export function CallProvider({ children }: CallProviderProps) {
       return;
     }
 
-    // 2. Fetch other participant info
-    const otherMember = await fetchOtherMember(chatId, profile.id);
+    // 2. Fetch other participant(s) info
+    const otherMembers = await fetchOtherMembers(chatId, profile.id);
 
     // 3. Create call log
     const { callLog, error: logError } = await createCallLog(chatId, callType);
@@ -218,18 +222,15 @@ export function CallProvider({ children }: CallProviderProps) {
         hasAudio: true,
         isScreenSharing: false,
       },
-    ];
-
-    if (otherMember) {
-      participants.push({
-        id: otherMember.id,
-        displayName: otherMember.displayName,
-        avatarUrl: otherMember.avatarUrl,
+      ...otherMembers.map((m) => ({
+        id: m.id,
+        displayName: m.displayName,
+        avatarUrl: m.avatarUrl,
         hasVideo: false,
         hasAudio: false,
         isScreenSharing: false,
-      });
-    }
+      })),
+    ];
 
     // 5. Show call screen immediately with RINGING state
     const newCall: ActiveCall = {
@@ -241,6 +242,7 @@ export function CallProvider({ children }: CallProviderProps) {
       participants,
       startedAt: new Date(),
       isMuted: false,
+      isSpeakerOn: callType === CallType.VIDEO, // Video defaults to speaker, voice to earpiece
       isVideoEnabled: callType === CallType.VIDEO,
       isScreenSharing: false,
       isMinimized: false,
@@ -362,6 +364,7 @@ export function CallProvider({ children }: CallProviderProps) {
     if (!incomingCall || !profile) return;
 
     setCallError(null);
+    stopRingtone();
 
     // Dismiss native call notification if present
     dismissNativeCallNotification();
@@ -392,6 +395,7 @@ export function CallProvider({ children }: CallProviderProps) {
       ],
       startedAt: new Date(),
       isMuted: false,
+      isSpeakerOn: incomingCall.callType === CallType.VIDEO,
       isVideoEnabled: incomingCall.callType === CallType.VIDEO,
       isScreenSharing: false,
       isMinimized: false,
@@ -496,6 +500,7 @@ export function CallProvider({ children }: CallProviderProps) {
 
   const declineCall = useCallback(async () => {
     if (!incomingCall) return;
+    stopRingtone();
     dismissNativeCallNotification();
     reportCallEnded(incomingCall.callLogId, 'declinedElsewhere');
     await updateCallStatus(incomingCall.callLogId, CallStatus.DECLINED);
@@ -541,6 +546,12 @@ export function CallProvider({ children }: CallProviderProps) {
     audioTrackRef.current.setMuted(newMuted);
     setActiveCall((prev) => prev ? { ...prev, isMuted: newMuted } : prev);
   }, [activeCall?.isMuted]);
+
+  const toggleSpeaker = useCallback(() => {
+    const newSpeaker = !activeCall?.isSpeakerOn;
+    setAudioRoute(newSpeaker);
+    setActiveCall((prev) => prev ? { ...prev, isSpeakerOn: newSpeaker } : prev);
+  }, [activeCall?.isSpeakerOn]);
 
   const toggleVideo = useCallback(async () => {
     if (!clientRef.current) return;
@@ -646,6 +657,9 @@ export function CallProvider({ children }: CallProviderProps) {
         callType: detectedCallType,
         signalId: signal.id,
       });
+
+      // Start ringtone + vibration for incoming call
+      startRingtone();
     });
 
     return unsubscribe;
@@ -773,6 +787,7 @@ export function CallProvider({ children }: CallProviderProps) {
     declineCall,
     endCall,
     toggleMute,
+    toggleSpeaker,
     toggleVideo,
     toggleScreenShare,
     toggleMinimize,

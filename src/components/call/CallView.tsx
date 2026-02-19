@@ -22,20 +22,23 @@ const CallView: React.FC = () => {
   const isConnected = activeCall.state === CallState.CONNECTED;
   const isEnded = activeCall.state === CallState.ENDED;
 
-  // Find the OTHER participant (not self)
-  const otherParticipant = activeCall.participants.find(
+  // Find the OTHER participant(s) (not self)
+  const otherParticipants = activeCall.participants.filter(
     (p) => p.id !== activeCall.initiatorId
   );
+  const isGroupCall = activeCall.participants.length > 2;
 
-  const displayName = otherParticipant?.displayName || t('call.call');
-  const avatarUrl = otherParticipant?.avatarUrl;
+  const displayName = isGroupCall
+    ? t('call.groupCall')
+    : (otherParticipants[0]?.displayName || t('call.call'));
+  const avatarUrl = !isGroupCall ? otherParticipants[0]?.avatarUrl : undefined;
   const initial = displayName.charAt(0).toUpperCase();
 
   const getStatusText = (): string => {
     if (callError) return t(callError);
     switch (activeCall.state) {
       case CallState.RINGING:
-        return t('call.ringing');
+        return isGroupCall ? t('call.waitingForOthers') : t('call.ringing');
       case CallState.CONNECTING:
         return t('call.connecting');
       case CallState.ENDED:
