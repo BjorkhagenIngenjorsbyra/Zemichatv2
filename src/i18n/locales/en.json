@@ -57,7 +57,8 @@
     "changePassword": "Change password",
     "verifyingResetLink": "Verifying reset link...",
     "passwordChangedTitle": "Password changed!",
-    "passwordChangedMessage": "Your password has been updated successfully. You can now log in with your new password."
+    "passwordChangedMessage": "Your password has been updated successfully. You can now log in with your new password.",
+    "resetLinkExpired": "This reset link has expired or is invalid. Please request a new one."
   },
   "team": {
     "createTitle": "Create your team",

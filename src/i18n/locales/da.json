@@ -57,7 +57,8 @@
     "changePassword": "Skift adgangskode",
     "verifyingResetLink": "Verificerer nulstillingslink...",
     "passwordChangedTitle": "Adgangskoden er ændret!",
-    "passwordChangedMessage": "Din adgangskode er opdateret. Du kan nu logge ind med din nye adgangskode."
+    "passwordChangedMessage": "Din adgangskode er opdateret. Du kan nu logge ind med din nye adgangskode.",
+    "resetLinkExpired": "Dette nulstillingslink er udløbet eller ugyldigt. Bed venligst om et nyt."
   },
   "team": {
     "createTitle": "Opret dit team",

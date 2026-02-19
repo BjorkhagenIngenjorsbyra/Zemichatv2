@@ -117,10 +117,6 @@ const AuthCallbackHandler: React.FC = () => {
       // Email verification callback — clear the hash and show confirmation
       window.location.hash = '';
       history.replace('/email-confirmed');
-    } else if (hash && hash.includes('type=recovery')) {
-      // Password reset callback — redirect to reset-password page
-      // Keep the hash so Supabase client can extract the token
-      history.replace('/reset-password' + hash);
     }
   }, [history]);
 

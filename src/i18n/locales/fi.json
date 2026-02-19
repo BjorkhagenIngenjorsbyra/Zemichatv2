@@ -57,7 +57,8 @@
     "changePassword": "Vaihda salasana",
     "verifyingResetLink": "Vahvistetaan nollauslinkkiä...",
     "passwordChangedTitle": "Salasana vaihdettu!",
-    "passwordChangedMessage": "Salasanasi on päivitetty. Voit nyt kirjautua sisään uudella salasanallasi."
+    "passwordChangedMessage": "Salasanasi on päivitetty. Voit nyt kirjautua sisään uudella salasanallasi.",
+    "resetLinkExpired": "Tämä nollauslinkki on vanhentunut tai virheellinen. Pyydä uusi."
   },
   "team": {
     "createTitle": "Luo tiimisi",

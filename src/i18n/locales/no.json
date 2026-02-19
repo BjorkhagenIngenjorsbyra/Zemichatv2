@@ -57,7 +57,8 @@
     "changePassword": "Endre passord",
     "verifyingResetLink": "Verifiserer tilbakestillingslenke...",
     "passwordChangedTitle": "Passordet er endret!",
-    "passwordChangedMessage": "Passordet ditt er oppdatert. Du kan nå logge inn med ditt nye passord."
+    "passwordChangedMessage": "Passordet ditt er oppdatert. Du kan nå logge inn med ditt nye passord.",
+    "resetLinkExpired": "Denne tilbakestillingslenken har utløpt eller er ugyldig. Vennligst be om en ny."
   },
   "team": {
     "createTitle": "Opprett teamet ditt",

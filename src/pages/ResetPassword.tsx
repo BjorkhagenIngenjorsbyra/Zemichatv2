@@ -21,24 +21,42 @@ const ResetPassword: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isReady, setIsReady] = useState(false);
+  const [linkExpired, setLinkExpired] = useState(false);
 
   useEffect(() => {
-    // Listen for PASSWORD_RECOVERY event from Supabase
-    // This fires when the user clicks the reset link (hash fragment contains the token)
+    let cancelled = false;
+
+    // Listen for PASSWORD_RECOVERY or SIGNED_IN events from Supabase
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
-      if (event === 'PASSWORD_RECOVERY') {
+      if (cancelled) return;
+      if (event === 'PASSWORD_RECOVERY' || event === 'SIGNED_IN') {
         setIsReady(true);
       }
     });
 
-    // Also check if we already have a session (e.g. page reload after token was consumed)
-    supabase.auth.getSession().then(({ data }) => {
-      if (data.session) {
-        setIsReady(true);
+    // Poll for session — Supabase processes the hash asynchronously
+    const pollSession = async () => {
+      for (let i = 0; i < 15; i++) {
+        if (cancelled) return;
+        const { data } = await supabase.auth.getSession();
+        if (data.session) {
+          setIsReady(true);
+          return;
+        }
+        await new Promise((resolve) => setTimeout(resolve, 500));
       }
-    });
+      // After ~7.5 seconds with no session, the link is likely expired/invalid
+      if (!cancelled) {
+        setLinkExpired(true);
+      }
+    };
 
-    return () => subscription.unsubscribe();
+    pollSession();
+
+    return () => {
+      cancelled = true;
+      subscription.unsubscribe();
+    };
   }, []);
 
   const handleSubmit = async (e: FormEvent) => {
@@ -85,7 +103,31 @@ const ResetPassword: React.FC = () => {
             <p className="auth-subtitle">{t('auth.newPasswordSubtitle')}</p>
           </div>
 
-          {!isReady ? (
+          {linkExpired ? (
+            <div className="auth-form">
+              <div className="auth-error">
+                <IonText color="danger">{t('auth.resetLinkExpired')}</IonText>
+              </div>
+              <IonButton
+                fill="outline"
+                expand="block"
+                routerLink="/forgot-password"
+                className="auth-secondary-button"
+              >
+                {t('auth.sendResetEmail')}
+              </IonButton>
+              <div className="auth-links">
+                <IonButton
+                  fill="clear"
+                  size="small"
+                  routerLink="/login"
+                  className="auth-link"
+                >
+                  {t('auth.backToLogin')}
+                </IonButton>
+              </div>
+            </div>
+          ) : !isReady ? (
             <div className="auth-form" style={{ textAlign: 'center', padding: '2rem 0' }}>
               <IonSpinner name="crescent" />
               <p style={{ marginTop: '1rem', color: 'hsl(var(--muted-foreground))' }}>

@@ -57,7 +57,8 @@
     "changePassword": "Byt lösenord",
     "verifyingResetLink": "Verifierar återställningslänk...",
     "passwordChangedTitle": "Lösenordet är ändrat!",
-    "passwordChangedMessage": "Ditt lösenord har uppdaterats. Du kan nu logga in med ditt nya lösenord."
+    "passwordChangedMessage": "Ditt lösenord har uppdaterats. Du kan nu logga in med ditt nya lösenord.",
+    "resetLinkExpired": "Denna återställningslänk har gått ut eller är ogiltig. Begär en ny."
   },
   "team": {
     "createTitle": "Skapa ditt team",
