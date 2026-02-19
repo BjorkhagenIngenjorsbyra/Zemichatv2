@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSubscription } from '../../contexts/SubscriptionContext';
 
@@ -5,10 +6,25 @@ const TrialBanner: React.FC = () => {
   const { t } = useTranslation();
   const { status, isLoading, showPaywall } = useSubscription();
 
-  if (isLoading || !status?.isTrialActive || !status.trialEndsAt) return null;
+  const isVisible = !isLoading && status?.isTrialActive && !!status.trialEndsAt;
+
+  // Override --ion-safe-area-top so Ionic headers push down below the banner
+  useEffect(() => {
+    if (isVisible) {
+      document.documentElement.style.setProperty(
+        '--ion-safe-area-top',
+        'calc(32px + env(safe-area-inset-top, 0px))'
+      );
+    }
+    return () => {
+      document.documentElement.style.removeProperty('--ion-safe-area-top');
+    };
+  }, [isVisible]);
+
+  if (!isVisible) return null;
 
   const daysLeft = Math.ceil(
-    (new Date(status.trialEndsAt).getTime() - Date.now()) / 86_400_000
+    (new Date(status!.trialEndsAt!).getTime() - Date.now()) / 86_400_000
   );
 
   return (
@@ -31,7 +47,8 @@ const TrialBanner: React.FC = () => {
           display: flex;
           align-items: center;
           justify-content: center;
-          height: 32px;
+          padding-top: env(safe-area-inset-top, 0px);
+          min-height: 32px;
           background: hsl(var(--primary) / 0.1);
           cursor: pointer;
           animation: trial-slide-down 0.3s ease-out;

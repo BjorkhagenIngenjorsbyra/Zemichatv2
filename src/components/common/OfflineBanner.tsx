@@ -82,7 +82,7 @@ const OfflineBanner: React.FC = () => {
           align-items: center;
           justify-content: center;
           gap: 0.5rem;
-          padding: 0.5rem 1rem;
+          padding: calc(0.5rem + env(safe-area-inset-top, 0px)) 1rem 0.5rem;
           font-size: 0.8rem;
           font-weight: 600;
           animation: banner-slide-down 0.3s ease-out;
