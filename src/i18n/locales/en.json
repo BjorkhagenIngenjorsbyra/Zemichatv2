@@ -442,7 +442,9 @@
     "upgradePlan": "Upgrade",
     "changePlan": "Change plan",
     "wallEnabled": "Show wall",
-    "wallEnabledDesc": "Show the wall tab in navigation"
+    "wallEnabledDesc": "Show the wall tab in navigation",
+    "tabGeneral": "General",
+    "tabMore": "More"
   },
   "call": {
     "call": "Call",

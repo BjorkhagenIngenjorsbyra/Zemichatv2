@@ -442,7 +442,9 @@
     "upgradePlan": "Uppgradera",
     "changePlan": "Ändra plan",
     "wallEnabled": "Visa vägg",
-    "wallEnabledDesc": "Visa vägg-fliken i navigeringen"
+    "wallEnabledDesc": "Visa vägg-fliken i navigeringen",
+    "tabGeneral": "Allmänt",
+    "tabMore": "Mer"
   },
   "call": {
     "call": "Samtal",

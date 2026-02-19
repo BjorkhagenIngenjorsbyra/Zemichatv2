@@ -442,7 +442,9 @@
     "upgradePlan": "Päivitä",
     "changePlan": "Vaihda suunnitelma",
     "wallEnabled": "Näytä seinä",
-    "wallEnabledDesc": "Näytä seinä-välilehti navigoinnissa"
+    "wallEnabledDesc": "Näytä seinä-välilehti navigoinnissa",
+    "tabGeneral": "Yleiset",
+    "tabMore": "Lisää"
   },
   "call": {
     "call": "Puhelu",

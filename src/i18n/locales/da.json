@@ -442,7 +442,9 @@
     "upgradePlan": "Opgrader",
     "changePlan": "Skift plan",
     "wallEnabled": "Vis væg",
-    "wallEnabledDesc": "Vis væg-fanen i navigationen"
+    "wallEnabledDesc": "Vis væg-fanen i navigationen",
+    "tabGeneral": "Generelt",
+    "tabMore": "Mere"
   },
   "call": {
     "call": "Opkald",

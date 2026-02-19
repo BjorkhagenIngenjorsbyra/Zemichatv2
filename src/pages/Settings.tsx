@@ -13,6 +13,9 @@ import {
   IonInput,
   IonText,
   IonToggle,
+  IonSegment,
+  IonSegmentButton,
+  IonLabel,
 } from '@ionic/react';
 import {
   downloadOutline,
@@ -60,6 +63,7 @@ const Settings: React.FC = () => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [showDeleteSection, setShowDeleteSection] = useState(false);
+  const [activeTab, setActiveTab] = useState<'general' | 'more'>('general');
 
   // Profile editing
   const [isEditingProfile, setIsEditingProfile] = useState(false);
@@ -231,6 +235,20 @@ const Settings: React.FC = () => {
 
       <IonContent className="ion-padding" fullscreen>
         <div className="settings-container">
+          <IonSegment
+            value={activeTab}
+            onIonChange={(e) => setActiveTab(e.detail.value as 'general' | 'more')}
+            className="settings-segment"
+          >
+            <IonSegmentButton value="general">
+              <IonLabel>{t('settings.tabGeneral')}</IonLabel>
+            </IonSegmentButton>
+            <IonSegmentButton value="more">
+              <IonLabel>{t('settings.tabMore')}</IonLabel>
+            </IonSegmentButton>
+          </IonSegment>
+
+          {activeTab === 'general' && (<>
           {/* Team Dashboard - Owner only */}
           {isOwner && (
             <div className="section">
@@ -414,25 +432,6 @@ const Settings: React.FC = () => {
             </div>
           </div>
 
-          {/* Language Section */}
-          <div className="section">
-            <h3 className="section-title">{t('settings.language')}</h3>
-            <div className="card language-card">
-              <div className="language-grid" data-testid="language-grid">
-                {supportedLanguages.map((lang) => (
-                  <button
-                    key={lang.code}
-                    className={`language-option ${currentLang === lang.code ? 'active' : ''}`}
-                    onClick={() => handleLanguageChange(lang.code)}
-                  >
-                    <span className="language-flag">{lang.flag}</span>
-                    <span className="language-name">{lang.name}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-
           {/* Wall Visibility - Owner and Super only */}
           {(isOwner || isSuper) && (
             <div className="section">
@@ -454,6 +453,55 @@ const Settings: React.FC = () => {
               </div>
             </div>
           )}
+
+          {/* Feedback & Support Section */}
+          <div className="section">
+            <h3 className="section-title">{t('support.title')}</h3>
+            <div className="card legal-card">
+              <IonButton
+                fill="clear"
+                expand="block"
+                className="legal-link-btn"
+                routerLink="/support"
+              >
+                <IonIcon icon={helpCircleOutline} slot="start" />
+                {t('support.settingsButton')}
+              </IonButton>
+            </div>
+          </div>
+
+          {/* Logout Section */}
+          <div className="section">
+            <IonButton
+              expand="block"
+              onClick={handleSignOut}
+            >
+              <IonIcon icon={logOutOutline} slot="start" />
+              {t('auth.logout')}
+            </IonButton>
+          </div>
+
+          </>)}
+
+          {activeTab === 'more' && (<>
+          {/* Language Section */}
+          <div className="section">
+            <h3 className="section-title">{t('settings.language')}</h3>
+            <div className="card language-card">
+              <div className="language-grid" data-testid="language-grid">
+                {supportedLanguages.map((lang) => (
+                  <button
+                    key={lang.code}
+                    className={`language-option ${currentLang === lang.code ? 'active' : ''}`}
+                    onClick={() => handleLanguageChange(lang.code)}
+                  >
+                    <span className="language-flag">{lang.flag}</span>
+                    <span className="language-name">{lang.name}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
 
           {/* Export Data Section */}
           <div className="section">
@@ -509,33 +557,6 @@ const Settings: React.FC = () => {
                 {t('settings.termsOfService')}
               </IonButton>
             </div>
-          </div>
-
-          {/* Feedback & Support Section */}
-          <div className="section">
-            <h3 className="section-title">{t('support.title')}</h3>
-            <div className="card legal-card">
-              <IonButton
-                fill="clear"
-                expand="block"
-                className="legal-link-btn"
-                routerLink="/support"
-              >
-                <IonIcon icon={helpCircleOutline} slot="start" />
-                {t('support.settingsButton')}
-              </IonButton>
-            </div>
-          </div>
-
-          {/* Logout Section */}
-          <div className="section">
-            <IonButton
-              expand="block"
-              onClick={handleSignOut}
-            >
-              <IonIcon icon={logOutOutline} slot="start" />
-              {t('auth.logout')}
-            </IonButton>
           </div>
 
           {/* Delete Account - subtle link that expands */}
@@ -618,12 +639,17 @@ const Settings: React.FC = () => {
               </div>
             )}
           </div>
+          </>)}
         </div>
 
         <style>{`
           .settings-container {
             max-width: 600px;
             margin: 0 auto;
+          }
+
+          .settings-segment {
+            margin-bottom: 1.5rem;
           }
 
           .section {
