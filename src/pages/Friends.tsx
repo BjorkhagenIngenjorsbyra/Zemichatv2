@@ -395,6 +395,7 @@ const Friends: React.FC = () => {
               role: 'cancel',
             },
           ]}
+          cssClass="friends-action-sheet"
         />
 
         <FriendSettingsModal
@@ -536,6 +537,15 @@ const Friends: React.FC = () => {
 
           .safe-fab {
             bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+          }
+
+          .friends-action-sheet .action-sheet-button {
+            color: hsl(260 30% 55%) !important;
+          }
+
+          .friends-action-sheet .action-sheet-button.action-sheet-cancel {
+            color: hsl(260 20% 45%) !important;
+            font-weight: 600;
           }
         `}</style>
       </IonContent>
