@@ -22,7 +22,6 @@ import {
   checkmarkOutline,
   documentTextOutline,
   shieldCheckmarkOutline,
-  informationCircleOutline,
   helpCircleOutline,
   gridOutline,
   chevronForwardOutline,
@@ -60,6 +59,7 @@ const Settings: React.FC = () => {
   const [confirmText, setConfirmText] = useState('');
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [showDeleteSection, setShowDeleteSection] = useState(false);
 
   // Profile editing
   const [isEditingProfile, setIsEditingProfile] = useState(false);
@@ -531,8 +531,6 @@ const Settings: React.FC = () => {
           <div className="section">
             <IonButton
               expand="block"
-              fill="outline"
-              color="medium"
               onClick={handleSignOut}
             >
               <IonIcon icon={logOutOutline} slot="start" />
@@ -540,132 +538,86 @@ const Settings: React.FC = () => {
             </IonButton>
           </div>
 
-          {/* Delete Account Section - Owner */}
-          {isOwner && (
-            <div className="section danger-section">
-              <h3 className="section-title danger-title">{t('settings.deleteAccount')}</h3>
+          {/* Delete Account - subtle link that expands */}
+          <div className="section delete-account-section">
+            {!showDeleteSection ? (
+              <button
+                className="delete-account-link"
+                onClick={() => setShowDeleteSection(true)}
+              >
+                {t('settings.deleteAccount')}
+              </button>
+            ) : (
               <div className="card danger-card">
-                <div className="warning-header">
+                <div className="danger-card-header">
                   <IonIcon icon={warningOutline} className="warning-icon" />
-                  <IonText>
-                    <p className="danger-description">
-                      {t('settings.deleteAccountDescription', { count: memberCount })}
-                    </p>
-                    <p className="danger-warning">
-                      {t('settings.deleteAccountWarning')}
-                    </p>
-                  </IonText>
+                  <h3 className="danger-card-title">{t('settings.deleteAccount')}</h3>
                 </div>
 
-                <div className="confirm-input">
-                  <label className="confirm-label">
-                    {t('settings.deleteAccountConfirmLabel')}
-                  </label>
-                  <IonInput
-                    value={confirmText}
-                    onIonInput={(e) => setConfirmText(e.detail.value || '')}
-                    placeholder={confirmWord}
-                    className="confirm-field"
-                    disabled={isDeleting}
-                  />
-                </div>
-
-                <IonButton
-                  expand="block"
-                  color="danger"
-                  onClick={handleDelete}
-                  disabled={!canDelete || isDeleting}
-                >
-                  {isDeleting ? (
-                    <>
-                      <IonSpinner name="crescent" slot="start" />
-                      {t('settings.deleteAccountProgress')}
-                    </>
-                  ) : (
-                    <>
-                      <IonIcon icon={trashOutline} slot="start" />
-                      {t('settings.deleteAccountButton')}
-                    </>
-                  )}
-                </IonButton>
-
-                {deleteError && (
-                  <p className="error-text">{deleteError}</p>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* Delete Account Section - Super */}
-          {isSuper && (
-            <div className="section danger-section">
-              <h3 className="section-title danger-title">{t('settings.deleteAccount')}</h3>
-              <div className="card danger-card">
-                <div className="warning-header">
-                  <IonIcon icon={warningOutline} className="warning-icon" />
-                  <IonText>
-                    <p className="danger-description">
-                      {t('settings.deleteAccountSuperDescription')}
-                    </p>
-                    <p className="danger-warning">
-                      {t('settings.deleteAccountWarning')}
-                    </p>
-                  </IonText>
-                </div>
-
-                <div className="confirm-input">
-                  <label className="confirm-label">
-                    {t('settings.deleteAccountConfirmLabel')}
-                  </label>
-                  <IonInput
-                    value={confirmText}
-                    onIonInput={(e) => setConfirmText(e.detail.value || '')}
-                    placeholder={confirmWord}
-                    className="confirm-field"
-                    disabled={isDeleting}
-                  />
-                </div>
-
-                <IonButton
-                  expand="block"
-                  color="danger"
-                  onClick={handleDelete}
-                  disabled={!canDelete || isDeleting}
-                >
-                  {isDeleting ? (
-                    <>
-                      <IonSpinner name="crescent" slot="start" />
-                      {t('settings.deleteAccountProgress')}
-                    </>
-                  ) : (
-                    <>
-                      <IonIcon icon={trashOutline} slot="start" />
-                      {t('settings.deleteAccountButton')}
-                    </>
-                  )}
-                </IonButton>
-
-                {deleteError && (
-                  <p className="error-text">{deleteError}</p>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* Texter - Cannot delete, show info */}
-          {isTexter && (
-            <div className="section">
-              <h3 className="section-title">{t('settings.deleteAccount')}</h3>
-              <div className="card info-card">
-                <div className="info-header">
-                  <IonIcon icon={informationCircleOutline} className="info-icon" />
+                {isTexter ? (
                   <p className="info-text">
                     {t('settings.deleteAccountTexterMessage')}
                   </p>
-                </div>
+                ) : (
+                  <>
+                    <IonText>
+                      <p className="danger-description">
+                        {isOwner
+                          ? t('settings.deleteAccountDescription', { count: memberCount })
+                          : t('settings.deleteAccountSuperDescription')}
+                      </p>
+                      <p className="danger-warning">
+                        {t('settings.deleteAccountWarning')}
+                      </p>
+                    </IonText>
+
+                    <div className="confirm-input">
+                      <label className="confirm-label">
+                        {t('settings.deleteAccountConfirmLabel')}
+                      </label>
+                      <IonInput
+                        value={confirmText}
+                        onIonInput={(e) => setConfirmText(e.detail.value || '')}
+                        placeholder={confirmWord}
+                        className="confirm-field"
+                        disabled={isDeleting}
+                      />
+                    </div>
+
+                    <IonButton
+                      expand="block"
+                      color="danger"
+                      onClick={handleDelete}
+                      disabled={!canDelete || isDeleting}
+                    >
+                      {isDeleting ? (
+                        <>
+                          <IonSpinner name="crescent" slot="start" />
+                          {t('settings.deleteAccountProgress')}
+                        </>
+                      ) : (
+                        <>
+                          <IonIcon icon={trashOutline} slot="start" />
+                          {t('settings.deleteAccountButton')}
+                        </>
+                      )}
+                    </IonButton>
+
+                    {deleteError && (
+                      <p className="error-text">{deleteError}</p>
+                    )}
+                  </>
+                )}
+
+                <button
+                  className="delete-cancel-link"
+                  onClick={() => { setShowDeleteSection(false); setConfirmText(''); setDeleteError(null); }}
+                >
+                  {t('common.cancel')}
+                </button>
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
 
         <style>{`
@@ -947,41 +899,61 @@ const Settings: React.FC = () => {
             border-bottom: 1px solid hsl(var(--border));
           }
 
-          .danger-section {
-            margin-top: 3rem;
+          .delete-account-section {
+            text-align: center;
+            padding-bottom: 2rem;
           }
 
-          .danger-title {
-            color: hsl(var(--destructive)) !important;
+          .delete-account-link {
+            background: none;
+            border: none;
+            color: hsl(var(--muted-foreground));
+            font-size: 0.8rem;
+            cursor: pointer;
+            padding: 0.5rem 1rem;
+            opacity: 0.7;
+          }
+
+          .delete-account-link:hover {
+            opacity: 1;
+            color: hsl(var(--destructive));
           }
 
           .danger-card {
             border-color: hsl(var(--destructive) / 0.3);
           }
 
-          .warning-header {
+          .danger-card-header {
             display: flex;
-            gap: 0.75rem;
-            margin-bottom: 1.5rem;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+          }
+
+          .danger-card-title {
+            margin: 0;
+            font-size: 1rem;
+            font-weight: 700;
+            color: hsl(var(--destructive));
           }
 
           .warning-icon {
             color: hsl(var(--destructive));
-            font-size: 1.5rem;
+            font-size: 1.25rem;
             flex-shrink: 0;
-            margin-top: 0.125rem;
           }
 
           .danger-description {
             color: hsl(var(--foreground));
             margin: 0 0 0.5rem 0;
             font-size: 0.875rem;
+            line-height: 1.5;
           }
 
           .danger-warning {
             color: hsl(var(--destructive));
             font-weight: 700;
-            margin: 0;
+            margin: 0 0 1rem 0;
             font-size: 0.875rem;
           }
 
@@ -1005,21 +977,20 @@ const Settings: React.FC = () => {
             border-radius: 0.5rem;
           }
 
-          .info-card {
-            border-color: hsl(var(--primary) / 0.3);
+          .delete-cancel-link {
+            display: block;
+            width: 100%;
+            background: none;
+            border: none;
+            color: hsl(var(--muted-foreground));
+            font-size: 0.85rem;
+            cursor: pointer;
+            padding: 0.75rem 0 0.25rem;
+            text-align: center;
           }
 
-          .info-header {
-            display: flex;
-            gap: 0.75rem;
-            align-items: flex-start;
-          }
-
-          .info-icon {
-            color: hsl(var(--primary));
-            font-size: 1.5rem;
-            flex-shrink: 0;
-            margin-top: 0.125rem;
+          .delete-cancel-link:hover {
+            color: hsl(var(--foreground));
           }
 
           .info-text {
