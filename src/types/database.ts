@@ -138,6 +138,7 @@ export interface FriendSettings {
   friend_user_id: string;
   nickname: string;
   categories: string[];
+  show_real_name: boolean;
   created_at: string;
   updated_at: string;
 }

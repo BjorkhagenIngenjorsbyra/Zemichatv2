@@ -17,6 +17,7 @@ interface FriendCardProps {
   user: User;
   friendshipId: string;
   nickname?: string;
+  showRealName?: boolean;
   categories?: string[];
   onUnfriend: (friendshipId: string) => void;
   onClick?: () => void;
@@ -29,6 +30,7 @@ export const FriendCard: React.FC<FriendCardProps> = ({
   user,
   friendshipId,
   nickname,
+  showRealName,
   categories,
   onUnfriend,
   onClick,
@@ -61,7 +63,7 @@ export const FriendCard: React.FC<FriendCardProps> = ({
               className={`status-dot ${isUserOnline(user.last_seen_at) ? 'active' : 'inactive'}`}
             />
           </h2>
-          {nickname && user.display_name ? (
+          {nickname && showRealName && user.display_name ? (
             <p className="friend-real-name">{user.display_name}</p>
           ) : null}
           <p className="friend-zemi">

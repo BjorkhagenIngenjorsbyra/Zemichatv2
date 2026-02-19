@@ -229,6 +229,7 @@ const Friends: React.FC = () => {
                           user={friend.user}
                           friendshipId={friend.id}
                           nickname={settings?.nickname}
+                          showRealName={settings?.show_real_name}
                           categories={settings?.categories}
                           onUnfriend={() =>
                             setUnfriendTarget({
@@ -402,9 +403,10 @@ const Friends: React.FC = () => {
           isOpen={!!settingsTarget}
           friend={settingsTarget}
           initialNickname={settingsTarget ? (friendSettingsMap.get(settingsTarget.id)?.nickname ?? '') : ''}
+          initialShowRealName={settingsTarget ? (friendSettingsMap.get(settingsTarget.id)?.show_real_name ?? false) : false}
           initialCategories={settingsTarget ? (friendSettingsMap.get(settingsTarget.id)?.categories ?? []) : []}
           onClose={() => setSettingsTarget(null)}
-          onSaved={(friendUserId, nickname, categories) => {
+          onSaved={(friendUserId, nickname, showRealName, categories) => {
             setFriendSettingsMap((prev) => {
               const next = new Map(prev);
               const existing = next.get(friendUserId);
@@ -414,6 +416,7 @@ const Friends: React.FC = () => {
                 friend_user_id: friendUserId,
                 nickname,
                 categories,
+                show_real_name: showRealName,
                 created_at: existing?.created_at ?? new Date().toISOString(),
                 updated_at: new Date().toISOString(),
               });

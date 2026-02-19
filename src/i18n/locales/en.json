@@ -678,7 +678,8 @@
     "classmate": "Classmate",
     "teammate": "Teammate",
     "saved": "Saved!",
-    "all": "All"
+    "all": "All",
+    "showRealName": "Show real name"
   },
   "wall": {
     "title": "Wall",

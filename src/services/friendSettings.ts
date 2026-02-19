@@ -46,7 +46,7 @@ export async function getAllFriendSettings(): Promise<{
  */
 export async function upsertFriendSettings(
   friendUserId: string,
-  updates: { nickname?: string; categories?: string[] }
+  updates: { nickname?: string; categories?: string[]; show_real_name?: boolean }
 ): Promise<{ error: Error | null }> {
   try {
     const {
@@ -65,6 +65,7 @@ export async function upsertFriendSettings(
           friend_user_id: friendUserId,
           nickname: updates.nickname ?? '',
           categories: updates.categories ?? [],
+          show_real_name: updates.show_real_name ?? false,
         } as never,
         { onConflict: 'user_id,friend_user_id' }
       );

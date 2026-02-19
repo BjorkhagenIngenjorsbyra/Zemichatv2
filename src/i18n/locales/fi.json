@@ -678,7 +678,8 @@
     "classmate": "Luokkakaveri",
     "teammate": "Joukkuekaveri",
     "saved": "Tallennettu!",
-    "all": "Kaikki"
+    "all": "Kaikki",
+    "showRealName": "Näytä oikea nimi"
   },
   "wall": {
     "title": "Seinä",

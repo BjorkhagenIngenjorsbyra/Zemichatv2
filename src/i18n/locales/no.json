@@ -678,7 +678,8 @@
     "classmate": "Klassekamerat",
     "teammate": "Lagkamerat",
     "saved": "Lagret!",
-    "all": "Alle"
+    "all": "Alle",
+    "showRealName": "Vis ekte navn"
   },
   "wall": {
     "title": "Vegg",

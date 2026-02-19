@@ -8,15 +8,17 @@ interface FriendSettingsModalProps {
   isOpen: boolean;
   friend: User | null;
   initialNickname?: string;
+  initialShowRealName?: boolean;
   initialCategories?: string[];
   onClose: () => void;
-  onSaved: (friendUserId: string, nickname: string, categories: string[]) => void;
+  onSaved: (friendUserId: string, nickname: string, showRealName: boolean, categories: string[]) => void;
 }
 
 export const FriendSettingsModal: React.FC<FriendSettingsModalProps> = ({
   isOpen,
   friend,
   initialNickname = '',
+  initialShowRealName = false,
   initialCategories = [],
   onClose,
   onSaved,
@@ -24,15 +26,17 @@ export const FriendSettingsModal: React.FC<FriendSettingsModalProps> = ({
   const { t } = useTranslation();
   const [presentToast] = useIonToast();
   const [nickname, setNickname] = useState(initialNickname);
+  const [showRealName, setShowRealName] = useState(initialShowRealName);
   const [categories, setCategories] = useState<string[]>(initialCategories);
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
       setNickname(initialNickname);
+      setShowRealName(initialShowRealName);
       setCategories(initialCategories);
     }
-  }, [isOpen, initialNickname, initialCategories]);
+  }, [isOpen, initialNickname, initialShowRealName, initialCategories]);
 
   if (!isOpen || !friend) return null;
 
@@ -47,11 +51,12 @@ export const FriendSettingsModal: React.FC<FriendSettingsModalProps> = ({
     const { error } = await upsertFriendSettings(friend.id, {
       nickname: nickname.trim(),
       categories,
+      show_real_name: showRealName,
     });
     setIsSaving(false);
 
     if (!error) {
-      onSaved(friend.id, nickname.trim(), categories);
+      onSaved(friend.id, nickname.trim(), showRealName, categories);
       presentToast({
         message: t('friendSettings.saved'),
         duration: 1500,
@@ -91,6 +96,16 @@ export const FriendSettingsModal: React.FC<FriendSettingsModalProps> = ({
             maxLength={50}
           />
         </div>
+
+        {/* Show real name toggle — only when nickname is set */}
+        {nickname.trim() && (
+          <div className="fs-toggle-row" onClick={() => setShowRealName(!showRealName)}>
+            <span className="fs-toggle-label">{t('friendSettings.showRealName')}</span>
+            <div className={`fs-toggle ${showRealName ? 'active' : ''}`}>
+              <div className="fs-toggle-thumb" />
+            </div>
+          </div>
+        )}
 
         {/* Category chips */}
         <div className="fs-section">
@@ -239,6 +254,51 @@ export const FriendSettingsModal: React.FC<FriendSettingsModalProps> = ({
           background: hsl(var(--primary));
           color: hsl(var(--primary-foreground));
           border-color: hsl(var(--primary));
+        }
+
+        .fs-toggle-row {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 0.6rem 0;
+          margin-bottom: 1rem;
+          cursor: pointer;
+          -webkit-tap-highlight-color: transparent;
+        }
+
+        .fs-toggle-label {
+          font-size: 0.95rem;
+          color: hsl(var(--foreground));
+        }
+
+        .fs-toggle {
+          width: 44px;
+          height: 26px;
+          border-radius: 13px;
+          background: hsl(var(--muted));
+          position: relative;
+          transition: background 0.2s;
+          flex-shrink: 0;
+        }
+
+        .fs-toggle.active {
+          background: hsl(var(--primary));
+        }
+
+        .fs-toggle-thumb {
+          width: 22px;
+          height: 22px;
+          border-radius: 50%;
+          background: white;
+          position: absolute;
+          top: 2px;
+          left: 2px;
+          transition: transform 0.2s;
+          box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
+
+        .fs-toggle.active .fs-toggle-thumb {
+          transform: translateX(18px);
         }
 
         .fs-save-btn {
