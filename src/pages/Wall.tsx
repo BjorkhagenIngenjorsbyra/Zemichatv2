@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useHistory } from 'react-router-dom';
 import {
   IonPage,
   IonContent,
@@ -18,6 +19,7 @@ import {
 import { add } from 'ionicons/icons';
 import { useAuthContext } from '../contexts/AuthContext';
 import { useNotifications } from '../contexts/NotificationContext';
+import { supabase } from '../services/supabase';
 import { UserRole } from '../types/database';
 import {
   getWallPosts,
@@ -32,6 +34,7 @@ import { SkeletonLoader, EmptyStateIllustration } from '../components/common';
 
 const Wall: React.FC = () => {
   const { t } = useTranslation();
+  const history = useHistory();
   const { profile } = useAuthContext();
   const { markWallVisited } = useNotifications();
   const [posts, setPosts] = useState<WallPostWithAuthor[]>([]);
@@ -42,6 +45,28 @@ const Wall: React.FC = () => {
   const contentRef = useRef<HTMLIonContentElement>(null);
 
   const isOwner = profile?.role === UserRole.OWNER;
+
+  // Redirect if wall is disabled for this user
+  useEffect(() => {
+    const checkAccess = async () => {
+      if (!profile) return;
+
+      if (profile.role === UserRole.TEXTER) {
+        const { data } = await supabase
+          .from('texter_settings')
+          .select('can_access_wall')
+          .eq('user_id', profile.id)
+          .maybeSingle();
+        const typed = data as unknown as { can_access_wall: boolean } | null;
+        if (typed && !typed.can_access_wall) {
+          history.replace('/chats');
+        }
+      } else if (!profile.wall_enabled) {
+        history.replace('/chats');
+      }
+    };
+    checkAccess();
+  }, [profile, history]);
 
   const loadPosts = useCallback(async (before?: string) => {
     if (!profile?.team_id) return;

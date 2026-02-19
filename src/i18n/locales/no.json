@@ -238,7 +238,8 @@
     "deactivateTitle": "Deaktiver Texter?",
     "deactivateMessage": "Vil du deaktivere {{name}}? De vil ikke kunne logge inn.",
     "reactivateTitle": "Reaktiver Texter?",
-    "reactivateMessage": "Vil du reaktivere {{name}}? De vil kunne logge inn igjen."
+    "reactivateMessage": "Vil du reaktivere {{name}}? De vil kunne logge inn igjen.",
+    "canAccessWall": "Kan se veggen"
   },
   "oversight": {
     "title": "Texter-innsyn",
@@ -426,7 +427,9 @@
     "activePlan": "Aktivt abonnement",
     "noPlan": "Ingen aktiv plan",
     "upgradePlan": "Oppgrader",
-    "changePlan": "Endre plan"
+    "changePlan": "Endre plan",
+    "wallEnabled": "Vis vegg",
+    "wallEnabledDesc": "Vis vegg-fanen i navigasjonen"
   },
   "call": {
     "call": "Samtale",
@@ -676,7 +679,8 @@
     "commentDeleted": "Kommentaren er slettet",
     "noComments": "Ingen kommentarer ennå",
     "showComments": "Vis kommentarer",
-    "hideComments": "Skjul kommentarer"
+    "hideComments": "Skjul kommentarer",
+    "deletedPostTapToShow": "Trykk for å vise"
   },
   "referral": {
     "title": "Inviter venner",

@@ -12,6 +12,8 @@ import {
   chatbubbleOutline,
   chevronDown,
   chevronUp,
+  chevronForwardOutline,
+  trashBinOutline,
 } from 'ionicons/icons';
 import { useAuthContext } from '../../contexts/AuthContext';
 import { UserRole } from '../../types/database';
@@ -42,6 +44,7 @@ const WallPostCard: React.FC<WallPostCardProps> = ({
   const [commentCount, setCommentCount] = useState(0);
   const [showFullImage, setShowFullImage] = useState(false);
   const [showDeleteAlert, setShowDeleteAlert] = useState(false);
+  const [isDeletedExpanded, setIsDeletedExpanded] = useState(false);
 
   const isOwner = profile?.role === UserRole.OWNER;
   const isAuthor = post.author_id === profile?.id;
@@ -75,6 +78,59 @@ const WallPostCard: React.FC<WallPostCardProps> = ({
   // Non-owner should not see deleted posts (filtered in parent), but just in case:
   if (isDeleted && !isOwner) return null;
 
+  // Collapsed deleted post view
+  if (isDeleted && !isDeletedExpanded) {
+    return (
+      <div
+        className="wall-post-card wall-post-deleted-collapsed"
+        onClick={() => setIsDeletedExpanded(true)}
+      >
+        <IonIcon icon={trashBinOutline} className="deleted-collapsed-icon" />
+        <span className="deleted-collapsed-text">{t('wall.postDeleted')}</span>
+        <span className="deleted-collapsed-hint">{t('wall.deletedPostTapToShow')}</span>
+        <IonIcon icon={chevronForwardOutline} className="deleted-collapsed-chevron" />
+
+        <style>{`
+          .wall-post-deleted-collapsed {
+            background: hsl(var(--muted) / 0.15);
+            border-radius: 0.75rem;
+            padding: 0.5rem 0.75rem;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+            height: 32px;
+          }
+
+          .deleted-collapsed-icon {
+            font-size: 0.85rem;
+            color: hsl(var(--muted-foreground));
+            flex-shrink: 0;
+          }
+
+          .deleted-collapsed-text {
+            font-size: 0.8rem;
+            color: hsl(var(--muted-foreground));
+            font-weight: 500;
+          }
+
+          .deleted-collapsed-hint {
+            font-size: 0.7rem;
+            color: hsl(var(--muted-foreground) / 0.6);
+            margin-left: auto;
+          }
+
+          .deleted-collapsed-chevron {
+            font-size: 0.7rem;
+            color: hsl(var(--muted-foreground) / 0.6);
+            flex-shrink: 0;
+          }
+        `}</style>
+      </div>
+    );
+  }
+
   return (
     <div className={`wall-post-card ${isDeleted ? 'wall-post-deleted' : ''}`}>
       {/* Header */}
@@ -92,6 +148,11 @@ const WallPostCard: React.FC<WallPostCardProps> = ({
           <span className="post-author-name">{post.author?.display_name || '?'}</span>
           <span className="post-time">{formatTime(post.created_at)}</span>
         </div>
+        {isDeleted && (
+          <IonButton fill="clear" size="small" className="post-collapse-btn" onClick={() => setIsDeletedExpanded(false)}>
+            <IonIcon icon={chevronUp} />
+          </IonButton>
+        )}
         {canDelete && (
           <IonButton fill="clear" size="small" className="post-delete-btn" onClick={() => setShowDeleteAlert(true)}>
             <IonIcon icon={trashOutline} />
@@ -208,7 +269,10 @@ const WallPostCard: React.FC<WallPostCardProps> = ({
 
         .wall-post-deleted {
           opacity: 0.7;
-          border: 1px dashed hsl(var(--muted));
+        }
+
+        .post-collapse-btn {
+          --color: hsl(var(--muted-foreground));
         }
 
         .post-header {

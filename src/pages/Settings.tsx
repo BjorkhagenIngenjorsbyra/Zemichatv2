@@ -12,6 +12,7 @@ import {
   IonSpinner,
   IonInput,
   IonText,
+  IonToggle,
 } from '@ionic/react';
 import {
   downloadOutline,
@@ -29,8 +30,10 @@ import {
   shareSocialOutline,
   copyOutline,
   peopleOutline,
+  newspaperOutline,
 } from 'ionicons/icons';
 import { Capacitor } from '@capacitor/core';
+import { supabase } from '../services/supabase';
 import { useAuthContext } from '../contexts/AuthContext';
 import { useSubscription } from '../contexts/SubscriptionContext';
 import { getTeamMembers } from '../services/members';
@@ -68,6 +71,9 @@ const Settings: React.FC = () => {
   // Language
   const [currentLang, setCurrentLang] = useState(getCurrentLanguage());
 
+  // Wall visibility
+  const [wallEnabled, setWallEnabled] = useState(profile?.wall_enabled ?? true);
+
   // Referral
   const [referralStats, setReferralStats] = useState<ReferralStats | null>(null);
   const [referralCopied, setReferralCopied] = useState(false);
@@ -99,6 +105,24 @@ const Settings: React.FC = () => {
       setEditName(profile.display_name);
     }
   }, [profile?.display_name]);
+
+  useEffect(() => {
+    if (profile?.wall_enabled !== undefined) {
+      setWallEnabled(profile.wall_enabled);
+    }
+  }, [profile?.wall_enabled]);
+
+  const handleWallToggle = async (checked: boolean) => {
+    if (!profile) return;
+    setWallEnabled(checked);
+    const { error } = await supabase
+      .from('users')
+      .update({ wall_enabled: checked } as never)
+      .eq('id', profile.id);
+    if (error) {
+      setWallEnabled(!checked);
+    }
+  };
 
   const handleExport = async () => {
     setIsExporting(true);
@@ -406,6 +430,28 @@ const Settings: React.FC = () => {
               </div>
             </div>
           </div>
+
+          {/* Wall Visibility - Owner and Super only */}
+          {(isOwner || isSuper) && (
+            <div className="section">
+              <h3 className="section-title">{t('wall.title')}</h3>
+              <div className="card wall-toggle-card">
+                <div className="wall-toggle-row">
+                  <div className="wall-toggle-info">
+                    <IonIcon icon={newspaperOutline} className="wall-toggle-icon" />
+                    <div>
+                      <span className="wall-toggle-label">{t('settings.wallEnabled')}</span>
+                      <span className="wall-toggle-desc">{t('settings.wallEnabledDesc')}</span>
+                    </div>
+                  </div>
+                  <IonToggle
+                    checked={wallEnabled}
+                    onIonChange={(e) => handleWallToggle(e.detail.checked)}
+                  />
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Export Data Section */}
           <div className="section">
@@ -822,6 +868,42 @@ const Settings: React.FC = () => {
             font-size: 0.85rem;
             color: hsl(var(--foreground));
             font-weight: 500;
+          }
+
+          .wall-toggle-card {
+            padding: 0.75rem 1rem;
+          }
+
+          .wall-toggle-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.75rem;
+          }
+
+          .wall-toggle-info {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+          }
+
+          .wall-toggle-icon {
+            font-size: 1.25rem;
+            color: hsl(var(--primary));
+            flex-shrink: 0;
+          }
+
+          .wall-toggle-label {
+            display: block;
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: hsl(var(--foreground));
+          }
+
+          .wall-toggle-desc {
+            display: block;
+            font-size: 0.75rem;
+            color: hsl(var(--muted-foreground));
           }
 
           .card-description {

@@ -276,28 +276,54 @@ export async function toggleWallReaction(
       return { added: false, error: new Error('Not authenticated') };
     }
 
-    // Check if reaction exists
+    // Check if user has ANY existing reaction on this post
     const { data: existing } = await supabase
       .from('wall_reactions')
-      .select('id')
+      .select('id, emoji')
       .eq('post_id', postId)
       .eq('user_id', user.id)
-      .eq('emoji', emoji)
       .maybeSingle();
 
-    if (existing) {
-      // Remove
-      const { error } = await supabase
-        .from('wall_reactions')
-        .delete()
-        .eq('id', (existing as unknown as { id: string }).id);
+    const typed = existing as unknown as { id: string; emoji: string } | null;
 
-      if (error) {
-        return { added: false, error: new Error(error.message) };
+    if (typed) {
+      if (typed.emoji === emoji) {
+        // Same emoji — untoggle (remove)
+        const { error } = await supabase
+          .from('wall_reactions')
+          .delete()
+          .eq('id', typed.id);
+
+        if (error) {
+          return { added: false, error: new Error(error.message) };
+        }
+        return { added: false, error: null };
+      } else {
+        // Different emoji — replace (delete old + insert new)
+        const { error: delError } = await supabase
+          .from('wall_reactions')
+          .delete()
+          .eq('id', typed.id);
+
+        if (delError) {
+          return { added: false, error: new Error(delError.message) };
+        }
+
+        const { error: insError } = await supabase
+          .from('wall_reactions')
+          .insert({
+            post_id: postId,
+            user_id: user.id,
+            emoji,
+          } as never);
+
+        if (insError) {
+          return { added: true, error: new Error(insError.message) };
+        }
+        return { added: true, error: null };
       }
-      return { added: false, error: null };
     } else {
-      // Add
+      // No existing reaction — insert new
       const { error } = await supabase
         .from('wall_reactions')
         .insert({
@@ -307,9 +333,6 @@ export async function toggleWallReaction(
         } as never);
 
       if (error) {
-        if (error.code === '23505') {
-          return { added: false, error: new Error('Already reacted') };
-        }
         return { added: true, error: new Error(error.message) };
       }
       return { added: true, error: null };

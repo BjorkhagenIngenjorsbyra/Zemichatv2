@@ -238,7 +238,8 @@
     "deactivateTitle": "Deactivate Texter?",
     "deactivateMessage": "Do you want to deactivate {{name}}? They won't be able to log in.",
     "reactivateTitle": "Reactivate Texter?",
-    "reactivateMessage": "Do you want to reactivate {{name}}? They will be able to log in again."
+    "reactivateMessage": "Do you want to reactivate {{name}}? They will be able to log in again.",
+    "canAccessWall": "Can access the wall"
   },
   "oversight": {
     "title": "Texter oversight",
@@ -426,7 +427,9 @@
     "activePlan": "Active subscription",
     "noPlan": "No active plan",
     "upgradePlan": "Upgrade",
-    "changePlan": "Change plan"
+    "changePlan": "Change plan",
+    "wallEnabled": "Show wall",
+    "wallEnabledDesc": "Show the wall tab in navigation"
   },
   "call": {
     "call": "Call",
@@ -676,7 +679,8 @@
     "commentDeleted": "Comment has been deleted",
     "noComments": "No comments yet",
     "showComments": "Show comments",
-    "hideComments": "Hide comments"
+    "hideComments": "Hide comments",
+    "deletedPostTapToShow": "Tap to show"
   },
   "referral": {
     "title": "Invite friends",

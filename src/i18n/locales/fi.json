@@ -238,7 +238,8 @@
     "deactivateTitle": "Poista Texter käytöstä?",
     "deactivateMessage": "Haluatko poistaa käyttäjän {{name}} käytöstä? He eivät voi kirjautua sisään.",
     "reactivateTitle": "Ota Texter uudelleen käyttöön?",
-    "reactivateMessage": "Haluatko ottaa käyttäjän {{name}} uudelleen käyttöön? He voivat kirjautua uudelleen."
+    "reactivateMessage": "Haluatko ottaa käyttäjän {{name}} uudelleen käyttöön? He voivat kirjautua uudelleen.",
+    "canAccessWall": "Pääsy seinälle"
   },
   "oversight": {
     "title": "Texter-valvonta",
@@ -426,7 +427,9 @@
     "activePlan": "Aktiivinen tilaus",
     "noPlan": "Ei aktiivista suunnitelmaa",
     "upgradePlan": "Päivitä",
-    "changePlan": "Vaihda suunnitelma"
+    "changePlan": "Vaihda suunnitelma",
+    "wallEnabled": "Näytä seinä",
+    "wallEnabledDesc": "Näytä seinä-välilehti navigoinnissa"
   },
   "call": {
     "call": "Puhelu",
@@ -676,7 +679,8 @@
     "commentDeleted": "Kommentti on poistettu",
     "noComments": "Ei kommentteja vielä",
     "showComments": "Näytä kommentit",
-    "hideComments": "Piilota kommentit"
+    "hideComments": "Piilota kommentit",
+    "deletedPostTapToShow": "Näytä napauttamalla"
   },
   "referral": {
     "title": "Kutsu ystäviä",

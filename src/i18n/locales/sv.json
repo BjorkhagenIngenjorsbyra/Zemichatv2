@@ -238,7 +238,8 @@
     "deactivateTitle": "Inaktivera Texter?",
     "deactivateMessage": "Vill du inaktivera {{name}}? De kommer inte kunna logga in.",
     "reactivateTitle": "Återaktivera Texter?",
-    "reactivateMessage": "Vill du återaktivera {{name}}? De kommer kunna logga in igen."
+    "reactivateMessage": "Vill du återaktivera {{name}}? De kommer kunna logga in igen.",
+    "canAccessWall": "Kan se väggen"
   },
   "oversight": {
     "title": "Texter-insyn",
@@ -426,7 +427,9 @@
     "activePlan": "Aktiv prenumeration",
     "noPlan": "Ingen aktiv plan",
     "upgradePlan": "Uppgradera",
-    "changePlan": "Ändra plan"
+    "changePlan": "Ändra plan",
+    "wallEnabled": "Visa vägg",
+    "wallEnabledDesc": "Visa vägg-fliken i navigeringen"
   },
   "call": {
     "call": "Samtal",
@@ -676,7 +679,8 @@
     "commentDeleted": "Kommentaren har tagits bort",
     "noComments": "Inga kommentarer än",
     "showComments": "Visa kommentarer",
-    "hideComments": "Dölj kommentarer"
+    "hideComments": "Dölj kommentarer",
+    "deletedPostTapToShow": "Tryck för att visa"
   },
   "referral": {
     "title": "Bjud in vänner",

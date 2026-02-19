@@ -31,6 +31,7 @@ import {
   personOutline,
   banOutline,
   checkmarkCircleOutline,
+  newspaperOutline,
 } from 'ionicons/icons';
 import { supabase } from '../services/supabase';
 import {
@@ -218,6 +219,12 @@ const TexterDetail: React.FC = () => {
           label: t('texterDetail.canScreenShare'),
           icon: desktopOutline,
           value: settings.can_screen_share,
+        },
+        {
+          field: 'can_access_wall' as const,
+          label: t('texterDetail.canAccessWall'),
+          icon: newspaperOutline,
+          value: settings.can_access_wall,
         },
       ]
     : [];

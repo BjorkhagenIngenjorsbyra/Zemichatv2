@@ -97,6 +97,7 @@ export interface User {
   last_seen_at: string | null;
   is_active: boolean;
   is_paused: boolean;
+  wall_enabled: boolean;
   consent_accepted_at: string | null;
   created_at: string;
   updated_at: string;
@@ -113,6 +114,7 @@ export interface TexterSettings {
   can_voice_call: boolean;
   can_video_call: boolean;
   can_screen_share: boolean;
+  can_access_wall: boolean;
   quiet_hours_start: string | null;
   quiet_hours_end: string | null;
   quiet_hours_days: number[] | null;
