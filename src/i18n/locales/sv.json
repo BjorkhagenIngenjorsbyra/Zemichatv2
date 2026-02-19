@@ -693,5 +693,21 @@
     "skip": "Hoppa över",
     "continue": "Fortsätt",
     "copied": "Koden kopierad!"
+  },
+  "notification": {
+    "sentImage": "skickade en bild",
+    "sentVoice": "skickade ett röstmeddelande",
+    "sentVideo": "skickade en video",
+    "sentGif": "skickade en GIF",
+    "sentDocument": "skickade ett dokument",
+    "sentLocation": "skickade en plats",
+    "sentPoll": "skickade en omröstning",
+    "missedCall": "Missat samtal från {{name}}",
+    "missedVideoCall": "Missat videosamtal från {{name}}",
+    "friendRequest": "{{name}} vill bli din vän",
+    "wallPost": "{{name}} postade på väggen",
+    "wallComment": "{{name}} kommenterade din post",
+    "sosAlert": "{{name}} behöver dig!",
+    "newMessages": "Nya meddelanden"
   }
 }

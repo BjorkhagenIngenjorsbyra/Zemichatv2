@@ -10,6 +10,7 @@ import { AuthProvider } from './contexts/AuthContext';
 import { useAuthContext } from './contexts/AuthContext';
 import { CallProvider } from './contexts/CallContext';
 import { SubscriptionProvider } from './contexts/SubscriptionContext';
+import { NotificationProvider } from './contexts/NotificationContext';
 import { PrivateRoute, PublicRoute } from './components/PrivateRoute';
 
 /* Push */
@@ -155,6 +156,7 @@ const App: React.FC = () => (
   <IonApp>
     <AuthProvider>
       <SubscriptionProvider>
+        <NotificationProvider>
         <CallProvider>
           <IonReactRouter>
           <AuthCallbackHandler />
@@ -290,6 +292,7 @@ const App: React.FC = () => (
           <TrialBanner />
         </IonReactRouter>
       </CallProvider>
+        </NotificationProvider>
     </SubscriptionProvider>
   </AuthProvider>
 </IonApp>

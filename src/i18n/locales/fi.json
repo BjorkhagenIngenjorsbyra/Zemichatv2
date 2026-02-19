@@ -693,5 +693,21 @@
     "skip": "Ohita",
     "continue": "Jatka",
     "copied": "Koodi kopioitu!"
+  },
+  "notification": {
+    "sentImage": "lähetti kuvan",
+    "sentVoice": "lähetti ääniviestin",
+    "sentVideo": "lähetti videon",
+    "sentGif": "lähetti GIF:n",
+    "sentDocument": "lähetti asiakirjan",
+    "sentLocation": "lähetti sijainnin",
+    "sentPoll": "lähetti äänestyksen",
+    "missedCall": "Vastaamaton puhelu: {{name}}",
+    "missedVideoCall": "Vastaamaton videopuhelu: {{name}}",
+    "friendRequest": "{{name}} haluaa olla kaverisi",
+    "wallPost": "{{name}} julkaisi seinälle",
+    "wallComment": "{{name}} kommentoi julkaisuasi",
+    "sosAlert": "{{name}} tarvitsee sinua!",
+    "newMessages": "Uusia viestejä"
   }
 }

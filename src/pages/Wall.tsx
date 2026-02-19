@@ -17,6 +17,7 @@ import {
 } from '@ionic/react';
 import { add } from 'ionicons/icons';
 import { useAuthContext } from '../contexts/AuthContext';
+import { useNotifications } from '../contexts/NotificationContext';
 import { UserRole } from '../types/database';
 import {
   getWallPosts,
@@ -32,6 +33,7 @@ import { SkeletonLoader, EmptyStateIllustration } from '../components/common';
 const Wall: React.FC = () => {
   const { t } = useTranslation();
   const { profile } = useAuthContext();
+  const { markWallVisited } = useNotifications();
   const [posts, setPosts] = useState<WallPostWithAuthor[]>([]);
   const [reactionsByPost, setReactionsByPost] = useState<Map<string, WallGroupedReaction[]>>(new Map());
   const [isLoading, setIsLoading] = useState(true);
@@ -77,6 +79,11 @@ const Wall: React.FC = () => {
   useEffect(() => {
     loadPosts();
   }, [loadPosts]);
+
+  // Mark wall as visited to clear the tab badge dot
+  useEffect(() => {
+    markWallVisited();
+  }, [markWallVisited]);
 
   const handleRefresh = async (event: CustomEvent<RefresherEventDetail>) => {
     setHasMore(true);

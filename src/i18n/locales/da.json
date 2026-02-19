@@ -693,5 +693,21 @@
     "skip": "Spring over",
     "continue": "Fortsæt",
     "copied": "Koden kopieret!"
+  },
+  "notification": {
+    "sentImage": "sendte et billede",
+    "sentVoice": "sendte en talebesked",
+    "sentVideo": "sendte en video",
+    "sentGif": "sendte en GIF",
+    "sentDocument": "sendte et dokument",
+    "sentLocation": "sendte en placering",
+    "sentPoll": "sendte en afstemning",
+    "missedCall": "Ubesvaret opkald fra {{name}}",
+    "missedVideoCall": "Ubesvaret videoopkald fra {{name}}",
+    "friendRequest": "{{name}} vil gerne være din ven",
+    "wallPost": "{{name}} slog op på væggen",
+    "wallComment": "{{name}} kommenterede dit opslag",
+    "sosAlert": "{{name}} har brug for dig!",
+    "newMessages": "Nye beskeder"
   }
 }

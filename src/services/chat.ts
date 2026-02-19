@@ -8,6 +8,7 @@ export interface ChatWithDetails extends Chat {
   isPinned: boolean;
   isArchived: boolean;
   isMuted: boolean;
+  markedUnread: boolean;
 }
 
 export interface CreateChatData {
@@ -28,6 +29,7 @@ interface ChatMemberWithChat {
   is_pinned: boolean;
   is_archived: boolean;
   is_muted: boolean;
+  marked_unread: boolean;
   chats: Chat;
 }
 
@@ -54,6 +56,7 @@ export async function getMyChats(): Promise<{ chats: ChatWithDetails[]; error: E
         is_pinned,
         is_archived,
         is_muted,
+        marked_unread,
         chats (
           id,
           name,
@@ -136,6 +139,7 @@ export async function getMyChats(): Promise<{ chats: ChatWithDetails[]; error: E
         isPinned: m.is_pinned,
         isArchived: m.is_archived,
         isMuted: m.is_muted,
+        markedUnread: m.marked_unread,
       };
     });
 
@@ -319,7 +323,7 @@ export async function getChat(
 
     const { data: currentMember } = await supabase
       .from('chat_members')
-      .select('unread_count, is_pinned, is_archived, is_muted')
+      .select('unread_count, is_pinned, is_archived, is_muted, marked_unread')
       .eq('chat_id', chatId)
       .single();
 
@@ -328,6 +332,7 @@ export async function getChat(
       is_pinned: boolean;
       is_archived: boolean;
       is_muted: boolean;
+      marked_unread: boolean;
     } | null;
 
     return {
@@ -338,6 +343,7 @@ export async function getChat(
         isPinned: typedCurrentMember?.is_pinned || false,
         isArchived: typedCurrentMember?.is_archived || false,
         isMuted: typedCurrentMember?.is_muted || false,
+        markedUnread: typedCurrentMember?.marked_unread || false,
       },
       error: null,
     };

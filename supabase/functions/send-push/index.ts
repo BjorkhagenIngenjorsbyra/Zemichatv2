@@ -271,14 +271,23 @@ serve(async (req) => {
       });
     }
 
-    // Get sender name
-    const { data: sender } = await supabase
-      .from('users')
-      .select('display_name')
-      .eq('id', sender_id)
-      .single();
+    // Get sender name and chat info in parallel
+    const [{ data: sender }, { data: chatInfo }] = await Promise.all([
+      supabase
+        .from('users')
+        .select('display_name')
+        .eq('id', sender_id)
+        .single(),
+      supabase
+        .from('chats')
+        .select('name, is_group')
+        .eq('id', chat_id)
+        .single(),
+    ]);
 
     const senderName = sender?.display_name || 'Någon';
+    const isGroup = chatInfo?.is_group ?? false;
+    const chatName = chatInfo?.name || '';
 
     // Find recipients: active chat members who are not the sender
     const { data: members } = await supabase
@@ -389,18 +398,39 @@ serve(async (req) => {
 
     // Send notifications
     const notificationBody = getNotificationBody(message_type, content);
+    // Group chats: title = chat name, body = "Sender: content"
+    // DM chats: title = sender name, body = content
+    const notificationTitle = isGroup && chatName ? chatName : senderName;
+    const notificationText = isGroup ? `${senderName}: ${notificationBody}` : notificationBody;
+
     const fcmUrl = `https://fcm.googleapis.com/v1/projects/${projectId}/messages:send`;
 
     let sentCount = 0;
     const invalidTokenIds: string[] = [];
 
     const sendPromises = tokens.map(async (tokenRow: PushTokenRow) => {
+      // Query recipient's total unread count for APNs badge
+      let badgeCount = 1;
+      if (tokenRow.platform === 'ios') {
+        const { data: unreadRows } = await supabase
+          .from('chat_members')
+          .select('unread_count')
+          .eq('user_id', tokenRow.user_id)
+          .is('left_at', null);
+        if (unreadRows) {
+          badgeCount = unreadRows.reduce(
+            (sum: number, r: { unread_count: number }) => sum + r.unread_count,
+            0
+          );
+        }
+      }
+
       const fcmMessage: FcmMessage = {
         message: {
           token: tokenRow.token,
           notification: {
-            title: senderName,
-            body: notificationBody,
+            title: notificationTitle,
+            body: notificationText,
           },
           data: {
             chatId: chat_id,
@@ -419,7 +449,7 @@ serve(async (req) => {
               payload: {
                 aps: {
                   sound: 'default',
-                  badge: 1,
+                  badge: badgeCount,
                 },
               },
             },

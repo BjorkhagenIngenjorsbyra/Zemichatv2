@@ -37,6 +37,7 @@ import { FriendCard, FriendRequestCard, FriendSettingsModal, AddToChatPicker } f
 import { type FriendSettings, type User, UserRole, FRIEND_CATEGORIES } from '../types/database';
 import { CallType } from '../types/call';
 import { useCallContext } from '../contexts/CallContext';
+import { useNotifications } from '../contexts/NotificationContext';
 import { SkeletonLoader, EmptyStateIllustration } from '../components/common';
 
 type TabValue = 'friends' | 'requests';
@@ -46,6 +47,7 @@ const Friends: React.FC = () => {
   const history = useHistory();
   const { profile } = useAuthContext();
   const { initiateCall } = useCallContext();
+  const { refreshCounts } = useNotifications();
   const [activeTab, setActiveTab] = useState<TabValue>('friends');
   const [friends, setFriends] = useState<FriendWithUser[]>([]);
   const [incomingRequests, setIncomingRequests] = useState<PendingRequestWithUser[]>([]);
@@ -104,6 +106,7 @@ const Friends: React.FC = () => {
     const { error } = await acceptFriendRequest(friendshipId);
     if (!error) {
       await loadData();
+      refreshCounts();
     }
   };
 
@@ -111,6 +114,7 @@ const Friends: React.FC = () => {
     const { error } = await rejectFriendRequest(friendshipId);
     if (!error) {
       setIncomingRequests((prev) => prev.filter((r) => r.id !== friendshipId));
+      refreshCounts();
     }
   };
 

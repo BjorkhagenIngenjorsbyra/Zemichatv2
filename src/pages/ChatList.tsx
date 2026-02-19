@@ -311,7 +311,7 @@ const ChatList: React.FC = () => {
                 {chat.isMuted && (
                   <IonIcon icon={volumeMute} className="mute-icon" />
                 )}
-                <h2 className="chat-name">{displayName}</h2>
+                <h2 className={`chat-name${chat.unreadCount > 0 || chat.markedUnread ? ' chat-name-unread' : ''}`}>{displayName}</h2>
               </div>
               {chat.lastMessage && (
                 <span className="chat-time">
@@ -320,10 +320,10 @@ const ChatList: React.FC = () => {
               )}
             </div>
             <div className="chat-preview">
-              <p className="last-message">{lastMessagePreview}</p>
-              {chat.unreadCount > 0 && (
-                <IonBadge color="primary" className="unread-badge">
-                  {chat.unreadCount}
+              <p className={`last-message${chat.unreadCount > 0 || chat.markedUnread ? ' last-message-unread' : ''}`}>{lastMessagePreview}</p>
+              {(chat.unreadCount > 0 || chat.markedUnread) && (
+                <IonBadge color={chat.isMuted ? 'medium' : 'primary'} className="unread-badge">
+                  {chat.unreadCount > 0 ? chat.unreadCount : ' '}
                 </IonBadge>
               )}
             </div>
@@ -630,6 +630,15 @@ const ChatList: React.FC = () => {
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
+          }
+
+          .chat-name-unread {
+            font-weight: 700;
+          }
+
+          .last-message-unread {
+            color: hsl(var(--foreground));
+            font-weight: 500;
           }
 
           .unread-badge {

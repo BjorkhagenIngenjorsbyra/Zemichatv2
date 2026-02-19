@@ -693,5 +693,21 @@
     "skip": "Skip",
     "continue": "Continue",
     "copied": "Code copied!"
+  },
+  "notification": {
+    "sentImage": "sent a photo",
+    "sentVoice": "sent a voice message",
+    "sentVideo": "sent a video",
+    "sentGif": "sent a GIF",
+    "sentDocument": "sent a document",
+    "sentLocation": "sent a location",
+    "sentPoll": "sent a poll",
+    "missedCall": "Missed call from {{name}}",
+    "missedVideoCall": "Missed video call from {{name}}",
+    "friendRequest": "{{name}} wants to be your friend",
+    "wallPost": "{{name}} posted on the wall",
+    "wallComment": "{{name}} commented on your post",
+    "sosAlert": "{{name}} needs you!",
+    "newMessages": "New messages"
   }
 }

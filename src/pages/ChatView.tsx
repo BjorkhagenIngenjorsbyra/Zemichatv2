@@ -19,6 +19,7 @@ import { Keyboard } from '@capacitor/keyboard';
 import { Capacitor } from '@capacitor/core';
 import { useAuthContext } from '../contexts/AuthContext';
 import { useSubscription } from '../contexts/SubscriptionContext';
+import { useNotifications } from '../contexts/NotificationContext';
 import { getChat, markChatAsRead, type ChatWithDetails } from '../services/chat';
 import {
   getChatMessages,
@@ -86,6 +87,7 @@ const ChatView: React.FC = () => {
   const { chatId } = useParams<{ chatId: string }>();
   const { profile } = useAuthContext();
   const { canUseFeature, showPaywall } = useSubscription();
+  const { refreshCounts } = useNotifications();
   const [chat, setChat] = useState<ChatWithDetails | null>(null);
   const [messages, setMessages] = useState<MessageWithSender[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -253,6 +255,7 @@ const ChatView: React.FC = () => {
 
     // Mark as read
     await markChatAsRead(chatId);
+    refreshCounts();
 
     // Mark visible messages as read
     const otherMessages = chatMessages
@@ -305,7 +308,7 @@ const ChatView: React.FC = () => {
           if (isNearBottomRef.current) {
             insertReadReceipts([newMessage.id]);
           }
-          markChatAsRead(chatId);
+          markChatAsRead(chatId).then(() => refreshCounts());
         }
       },
       // Handle message updates (edit, delete-for-all)
