@@ -156,6 +156,39 @@ export async function getInvitationByToken(
 }
 
 /**
+ * Create a pre-confirmed user account for an invited Super.
+ * Uses an Edge Function that calls supabase.auth.admin.createUser()
+ * with email_confirm: true, so no verification email is needed.
+ * The invitation token acts as authorization.
+ */
+export async function createInvitedUser(
+  token: string,
+  email: string,
+  password: string,
+  displayName?: string
+): Promise<{ error: Error | null }> {
+  try {
+    const { data, error } = await supabase.functions.invoke('create-invited-user', {
+      body: { token, email, password, displayName },
+    });
+
+    if (error) {
+      return { error: new Error(error.message) };
+    }
+
+    if (data?.error) {
+      return { error: new Error(data.error) };
+    }
+
+    return { error: null };
+  } catch (err) {
+    return {
+      error: err instanceof Error ? err : new Error('Unknown error'),
+    };
+  }
+}
+
+/**
  * Send invitation email via the send-invitation Edge Function.
  */
 export async function sendInvitationEmail(
