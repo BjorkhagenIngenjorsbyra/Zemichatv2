@@ -46,7 +46,7 @@ import { supportedLanguages, changeLanguage, getCurrentLanguage } from '../i18n'
 const Settings: React.FC = () => {
   const { t } = useTranslation();
   const history = useHistory();
-  const { profile, signOut } = useAuthContext();
+  const { profile, signOut, refreshProfile } = useAuthContext();
   const { currentPlan, isTrialActive, isTrialExpired, trialDaysLeft, status, showPaywall } = useSubscription();
 
   const isOwner = profile?.role === UserRole.OWNER;
@@ -121,6 +121,8 @@ const Settings: React.FC = () => {
       .eq('id', profile.id);
     if (error) {
       setWallEnabled(!checked);
+    } else {
+      await refreshProfile();
     }
   };
 
