@@ -235,12 +235,13 @@ export async function addMemberToChat(
   chatId: string,
   userId: string
 ): Promise<{ error: Error | null }> {
-  const { error } = await supabase
-    .from('chat_members')
-    .insert({ chat_id: chatId, user_id: userId } as never);
+  const { error } = await supabase.rpc('add_member_to_chat' as never, {
+    p_chat_id: chatId,
+    p_user_id: userId,
+  } as never);
 
   if (error) {
-    return { error: new Error(error.message) };
+    return { error: new Error((error as { message: string }).message) };
   }
 
   return { error: null };
