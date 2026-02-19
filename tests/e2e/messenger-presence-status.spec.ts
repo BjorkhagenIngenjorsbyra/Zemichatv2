@@ -123,9 +123,11 @@ test.describe('Suite 1: Online status in chat view header', () => {
     }
     const chatId = chatIdMatch[1];
 
-    // Click on the header title
-    const headerTitle = page.locator('ion-title');
-    await headerTitle.first().click();
+    // Click ion-title programmatically (shadow DOM intercepts normal clicks)
+    await page.evaluate(() => {
+      const title = document.querySelector('ion-title');
+      if (title) title.click();
+    });
     await waitForIonicReady(page);
 
     // Should navigate to /chat/:chatId/info

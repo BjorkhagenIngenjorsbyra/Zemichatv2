@@ -65,9 +65,11 @@ test.describe('Suite 1: Chat info navigation', () => {
       return;
     }
 
-    // Click the title to navigate to chat info
-    const title = page.locator('ion-title').first();
-    await title.click();
+    // Click ion-title programmatically (shadow DOM intercepts normal clicks)
+    await page.evaluate(() => {
+      const title = document.querySelector('ion-title');
+      if (title) title.click();
+    });
     await waitForIonicReady(page);
 
     // Should be on the info page
@@ -104,9 +106,11 @@ test.describe('Suite 1: Chat info navigation', () => {
       return;
     }
 
-    // Navigate to info via header click
-    const title = page.locator('ion-title').first();
-    await title.click();
+    // Navigate to info via header click (programmatic to bypass shadow DOM)
+    await page.evaluate(() => {
+      const title = document.querySelector('ion-title');
+      if (title) title.click();
+    });
     await waitForIonicReady(page);
 
     // Verify we're on the info page
@@ -452,9 +456,11 @@ test.describe('Suite 4: Stability during navigation', () => {
       await item.click();
       await waitForIonicReady(page);
 
-      // Click header to go to info
-      const title = page.locator('ion-title').first();
-      await title.click();
+      // Click header to go to info (programmatic to bypass shadow DOM)
+      await page.evaluate(() => {
+        const title = document.querySelector('ion-title');
+        if (title) title.click();
+      });
       await waitForIonicReady(page);
 
       // Wait for data to load
@@ -488,8 +494,10 @@ test.describe('Suite 4: Stability during navigation', () => {
 
     // Rapid navigation: chat → info → chat → info → chat
     for (let i = 0; i < 3; i++) {
-      const title = page.locator('ion-title').first();
-      await title.click();
+      await page.evaluate(() => {
+        const title = document.querySelector('ion-title');
+        if (title) title.click();
+      });
       await page.waitForTimeout(400);
 
       await page.goBack();
