@@ -5,6 +5,7 @@ import {
   IonIcon,
   IonAvatar,
   IonSpinner,
+  useIonToast,
 } from '@ionic/react';
 import { closeCircleOutline, returnDownForwardOutline, trashOutline } from 'ionicons/icons';
 import { useAuthContext } from '../../contexts/AuthContext';
@@ -24,6 +25,7 @@ interface WallCommentsProps {
 const WallComments: React.FC<WallCommentsProps> = ({ postId, onCommentCountChange }) => {
   const { t } = useTranslation();
   const { profile } = useAuthContext();
+  const [presentToast] = useIonToast();
   const [comments, setComments] = useState<WallCommentWithAuthor[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [newComment, setNewComment] = useState('');
@@ -52,6 +54,14 @@ const WallComments: React.FC<WallCommentsProps> = ({ postId, onCommentCountChang
       setNewComment('');
       setReplyTo(null);
       await loadComments();
+    } else {
+      console.error('Failed to add comment:', error.message);
+      presentToast({
+        message: t('wall.commentError', 'Could not post comment'),
+        duration: 3000,
+        color: 'danger',
+        position: 'top',
+      });
     }
     setIsSubmitting(false);
   };
