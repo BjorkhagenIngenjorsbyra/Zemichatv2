@@ -50,7 +50,14 @@
     "resetPasswordSubtitle": "Syötä sähköpostiosoitteesi, niin lähetämme nollauslinkin",
     "sendResetEmail": "Lähetä nollaussähköposti",
     "resetEmailSent": "Salasanan nollauslinkki on lähetetty sähköpostiisi. Tarkista saapuneet-kansiosi ja seuraa linkkiä asettaaksesi uuden salasanan.",
-    "backToLogin": "Takaisin kirjautumiseen"
+    "backToLogin": "Takaisin kirjautumiseen",
+    "newPasswordTitle": "Aseta uusi salasana",
+    "newPasswordSubtitle": "Syötä uusi salasanasi alle",
+    "newPassword": "Uusi salasana",
+    "changePassword": "Vaihda salasana",
+    "verifyingResetLink": "Vahvistetaan nollauslinkkiä...",
+    "passwordChangedTitle": "Salasana vaihdettu!",
+    "passwordChangedMessage": "Salasanasi on päivitetty. Voit nyt kirjautua sisään uudella salasanallasi."
   },
   "team": {
     "createTitle": "Luo tiimisi",

@@ -50,7 +50,14 @@
     "resetPasswordSubtitle": "Indtast din e-mail, så sender vi et nulstillingslink",
     "sendResetEmail": "Send nulstillings-e-mail",
     "resetEmailSent": "Et link til at nulstille din adgangskode er sendt til din e-mail. Tjek din indbakke og følg linket for at sætte en ny adgangskode.",
-    "backToLogin": "Tilbage til login"
+    "backToLogin": "Tilbage til login",
+    "newPasswordTitle": "Angiv ny adgangskode",
+    "newPasswordSubtitle": "Indtast din nye adgangskode nedenfor",
+    "newPassword": "Ny adgangskode",
+    "changePassword": "Skift adgangskode",
+    "verifyingResetLink": "Verificerer nulstillingslink...",
+    "passwordChangedTitle": "Adgangskoden er ændret!",
+    "passwordChangedMessage": "Din adgangskode er opdateret. Du kan nu logge ind med din nye adgangskode."
   },
   "team": {
     "createTitle": "Opret dit team",

@@ -182,3 +182,12 @@ export async function resetPassword(email: string): Promise<{ error: AuthError |
   });
   return { error };
 }
+
+/**
+ * Update the current user's password.
+ * Must be called while the user has an active session (e.g. after clicking the reset link).
+ */
+export async function updatePassword(newPassword: string): Promise<{ error: AuthError | null }> {
+  const { error } = await supabase.auth.updateUser({ password: newPassword });
+  return { error };
+}

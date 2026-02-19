@@ -50,7 +50,14 @@
     "resetPasswordSubtitle": "Enter your email and we'll send you a reset link",
     "sendResetEmail": "Send reset email",
     "resetEmailSent": "A password reset link has been sent to your email. Check your inbox and follow the link to set a new password.",
-    "backToLogin": "Back to login"
+    "backToLogin": "Back to login",
+    "newPasswordTitle": "Set new password",
+    "newPasswordSubtitle": "Enter your new password below",
+    "newPassword": "New password",
+    "changePassword": "Change password",
+    "verifyingResetLink": "Verifying reset link...",
+    "passwordChangedTitle": "Password changed!",
+    "passwordChangedMessage": "Your password has been updated successfully. You can now log in with your new password."
   },
   "team": {
     "createTitle": "Create your team",

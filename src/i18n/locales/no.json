@@ -50,7 +50,14 @@
     "resetPasswordSubtitle": "Skriv inn e-posten din, så sender vi en tilbakestillingslenke",
     "sendResetEmail": "Send tilbakestillings-e-post",
     "resetEmailSent": "En lenke for å tilbakestille passordet ditt er sendt til e-posten din. Sjekk innboksen din og følg lenken for å sette et nytt passord.",
-    "backToLogin": "Tilbake til innlogging"
+    "backToLogin": "Tilbake til innlogging",
+    "newPasswordTitle": "Sett nytt passord",
+    "newPasswordSubtitle": "Skriv inn ditt nye passord nedenfor",
+    "newPassword": "Nytt passord",
+    "changePassword": "Endre passord",
+    "verifyingResetLink": "Verifiserer tilbakestillingslenke...",
+    "passwordChangedTitle": "Passordet er endret!",
+    "passwordChangedMessage": "Passordet ditt er oppdatert. Du kan nå logge inn med ditt nye passord."
   },
   "team": {
     "createTitle": "Opprett teamet ditt",

@@ -50,7 +50,14 @@
     "resetPasswordSubtitle": "Ange din e-post så skickar vi en återställningslänk",
     "sendResetEmail": "Skicka återställningsmail",
     "resetEmailSent": "En länk för att återställa ditt lösenord har skickats till din e-post. Kolla din inkorg och följ länken för att sätta ett nytt lösenord.",
-    "backToLogin": "Tillbaka till inloggning"
+    "backToLogin": "Tillbaka till inloggning",
+    "newPasswordTitle": "Ange nytt lösenord",
+    "newPasswordSubtitle": "Skriv in ditt nya lösenord nedan",
+    "newPassword": "Nytt lösenord",
+    "changePassword": "Byt lösenord",
+    "verifyingResetLink": "Verifierar återställningslänk...",
+    "passwordChangedTitle": "Lösenordet är ändrat!",
+    "passwordChangedMessage": "Ditt lösenord har uppdaterats. Du kan nu logga in med ditt nya lösenord."
   },
   "team": {
     "createTitle": "Skapa ditt team",

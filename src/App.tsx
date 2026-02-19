@@ -35,6 +35,8 @@ import TabLayout from './components/TabLayout';
 /* Pages */
 import Login from './pages/Login';
 import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
+import PasswordChanged from './pages/PasswordChanged';
 import TexterLogin from './pages/TexterLogin';
 import Signup from './pages/Signup';
 import VerifyEmail from './pages/VerifyEmail';
@@ -115,6 +117,10 @@ const AuthCallbackHandler: React.FC = () => {
       // Email verification callback — clear the hash and show confirmation
       window.location.hash = '';
       history.replace('/email-confirmed');
+    } else if (hash && hash.includes('type=recovery')) {
+      // Password reset callback — redirect to reset-password page
+      // Keep the hash so Supabase client can extract the token
+      history.replace('/reset-password' + hash);
     }
   }, [history]);
 
@@ -190,6 +196,12 @@ const App: React.FC = () => (
             </PublicRoute>
             <Route exact path="/email-confirmed">
               <EmailConfirmed />
+            </Route>
+            <Route exact path="/reset-password">
+              <ResetPassword />
+            </Route>
+            <Route exact path="/password-changed">
+              <PasswordChanged />
             </Route>
 
             {/* Semi-protected routes - needs auth but not profile */}
