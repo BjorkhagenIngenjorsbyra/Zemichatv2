@@ -12,7 +12,6 @@ import {
 } from '@ionic/react';
 import { signIn } from '../services/auth';
 import { getInvitationByToken, claimInvitation, createInvitedUser, type InvitationPublicInfo } from '../services/invitations';
-import { useAuthContext } from '../contexts/AuthContext';
 import { PasswordStrength } from '../components/PasswordStrength';
 import '../theme/auth-forms.css';
 
@@ -20,7 +19,6 @@ const SuperInvite: React.FC = () => {
   const { t } = useTranslation();
   const { token } = useParams<{ token: string }>();
   const history = useHistory();
-  const { refreshProfile } = useAuthContext();
 
   const [invitation, setInvitation] = useState<InvitationPublicInfo | null>(null);
   const [loadingInvite, setLoadingInvite] = useState(true);
@@ -109,11 +107,9 @@ const SuperInvite: React.FC = () => {
       return;
     }
 
-    // Step 4: Refresh profile so PrivateRoute sees hasProfile=true
-    await refreshProfile();
-
-    // Step 5: Redirect to Super tour
-    history.replace('/super-tour');
+    // Step 4: Hard navigate to force useAuth to re-initialize with
+    // both session and profile present (avoids stale closure issues)
+    window.location.href = '/super-tour';
   };
 
   if (loadingInvite) {
