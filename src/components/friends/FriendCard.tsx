@@ -49,20 +49,20 @@ export const FriendCard: React.FC<FriendCardProps> = ({
             <img src={user.avatar_url} alt={user.display_name || ''} />
           ) : (
             <div className="avatar-placeholder">
-              {user.display_name?.charAt(0)?.toUpperCase() || '?'}
+              {(nickname || user.display_name)?.charAt(0)?.toUpperCase() || '?'}
             </div>
           )}
         </IonAvatar>
         <IonLabel>
           <h2 className="friend-name">
-            {user.display_name || t('dashboard.unnamed')}
+            {nickname || user.display_name || t('dashboard.unnamed')}
             <IonIcon
               icon={isUserOnline(user.last_seen_at) ? ellipse : ellipseOutline}
               className={`status-dot ${isUserOnline(user.last_seen_at) ? 'active' : 'inactive'}`}
             />
           </h2>
-          {nickname ? (
-            <p className="friend-nickname">{nickname}</p>
+          {nickname && user.display_name ? (
+            <p className="friend-real-name">{user.display_name}</p>
           ) : null}
           <p className="friend-zemi">
             {user.zemi_number}
@@ -144,11 +144,10 @@ export const FriendCard: React.FC<FriendCardProps> = ({
           color: hsl(var(--muted));
         }
 
-        .friend-nickname {
+        .friend-real-name {
           font-size: 0.8rem;
-          color: hsl(var(--primary));
+          color: hsl(var(--muted-foreground));
           margin: 0 0 0.15rem 0;
-          font-style: italic;
         }
 
         .friend-zemi {

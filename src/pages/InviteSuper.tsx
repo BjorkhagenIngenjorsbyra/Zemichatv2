@@ -32,6 +32,7 @@ const InviteSuper: React.FC = () => {
   const { t } = useTranslation();
 
   const [email, setEmail] = useState('');
+  const [displayName, setDisplayName] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
   const [sentToEmail, setSentToEmail] = useState<string | null>(null);
@@ -78,7 +79,7 @@ const InviteSuper: React.FC = () => {
 
     const recipientEmail = email;
 
-    const { invitation, error: createError } = await createInvitation(recipientEmail);
+    const { invitation, error: createError } = await createInvitation(recipientEmail, displayName.trim() || undefined);
 
     if (createError) {
       setError(createError.message);
@@ -101,6 +102,7 @@ const InviteSuper: React.FC = () => {
         setInviteLink(link);
         setSentToEmail(recipientEmail);
         setEmail('');
+        setDisplayName('');
         await loadInvitations();
         setIsCreating(false);
         return;
@@ -108,6 +110,7 @@ const InviteSuper: React.FC = () => {
 
       setSentToEmail(recipientEmail);
       setEmail('');
+      setDisplayName('');
       await loadInvitations();
     }
 
@@ -154,6 +157,20 @@ const InviteSuper: React.FC = () => {
                 <IonText color="danger">{error}</IonText>
               </div>
             )}
+
+            <div className="input-group">
+              <IonInput
+                type="text"
+                label={t('invite.nameLabel')}
+                labelPlacement="stacked"
+                placeholder={t('invite.namePlaceholder')}
+                value={displayName}
+                onIonInput={(e) => setDisplayName(e.detail.value || '')}
+                className="invite-input"
+                fill="outline"
+                maxlength={50}
+              />
+            </div>
 
             <div className="input-group">
               <IonInput

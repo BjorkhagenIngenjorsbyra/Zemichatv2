@@ -111,6 +111,9 @@ serve(async (req) => {
           await serviceClient.auth.admin.updateUser(existingUser.id, {
             email_confirm: true,
             password,
+            user_metadata: {
+              display_name: displayName || invitation.display_name || '',
+            },
           });
         } else {
           return new Response(
