@@ -45,7 +45,12 @@
     "privacyLink": "privacy policy",
     "consentLabel": "I have read and accept the",
     "consentRequired": "You must accept the terms of service and privacy policy",
-    "accountPaused": "Your account is paused. Contact your Team Owner."
+    "accountPaused": "Your account is paused. Contact your Team Owner.",
+    "resetPasswordTitle": "Reset password",
+    "resetPasswordSubtitle": "Enter your email and we'll send you a reset link",
+    "sendResetEmail": "Send reset email",
+    "resetEmailSent": "A password reset link has been sent to your email. Check your inbox and follow the link to set a new password.",
+    "backToLogin": "Back to login"
   },
   "team": {
     "createTitle": "Create your team",

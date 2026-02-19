@@ -45,7 +45,12 @@
     "privacyLink": "integritetspolicy",
     "consentLabel": "Jag har läst och godkänner",
     "consentRequired": "Du måste godkänna användarvillkoren och integritetspolicyn",
-    "accountPaused": "Ditt konto är pausat. Kontakta din Team Owner."
+    "accountPaused": "Ditt konto är pausat. Kontakta din Team Owner.",
+    "resetPasswordTitle": "Återställ lösenord",
+    "resetPasswordSubtitle": "Ange din e-post så skickar vi en återställningslänk",
+    "sendResetEmail": "Skicka återställningsmail",
+    "resetEmailSent": "En länk för att återställa ditt lösenord har skickats till din e-post. Kolla din inkorg och följ länken för att sätta ett nytt lösenord.",
+    "backToLogin": "Tillbaka till inloggning"
   },
   "team": {
     "createTitle": "Skapa ditt team",

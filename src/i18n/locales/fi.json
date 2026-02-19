@@ -45,7 +45,12 @@
     "privacyLink": "tietosuojakäytännön",
     "consentLabel": "Olen lukenut ja hyväksyn",
     "consentRequired": "Sinun on hyväksyttävä käyttöehdot ja tietosuojakäytäntö",
-    "accountPaused": "Tilisi on tauolla. Ota yhteyttä Team Owneriin."
+    "accountPaused": "Tilisi on tauolla. Ota yhteyttä Team Owneriin.",
+    "resetPasswordTitle": "Nollaa salasana",
+    "resetPasswordSubtitle": "Syötä sähköpostiosoitteesi, niin lähetämme nollauslinkin",
+    "sendResetEmail": "Lähetä nollaussähköposti",
+    "resetEmailSent": "Salasanan nollauslinkki on lähetetty sähköpostiisi. Tarkista saapuneet-kansiosi ja seuraa linkkiä asettaaksesi uuden salasanan.",
+    "backToLogin": "Takaisin kirjautumiseen"
   },
   "team": {
     "createTitle": "Luo tiimisi",

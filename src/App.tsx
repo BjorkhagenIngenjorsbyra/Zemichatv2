@@ -34,6 +34,7 @@ import TabLayout from './components/TabLayout';
 
 /* Pages */
 import Login from './pages/Login';
+import ForgotPassword from './pages/ForgotPassword';
 import TexterLogin from './pages/TexterLogin';
 import Signup from './pages/Signup';
 import VerifyEmail from './pages/VerifyEmail';
@@ -177,6 +178,9 @@ const App: React.FC = () => (
             </PublicRoute>
             <PublicRoute exact path="/texter-login">
               <TexterLogin />
+            </PublicRoute>
+            <PublicRoute exact path="/forgot-password">
+              <ForgotPassword />
             </PublicRoute>
             <PublicRoute exact path="/signup">
               <Signup />

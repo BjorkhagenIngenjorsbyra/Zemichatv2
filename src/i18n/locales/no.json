@@ -45,7 +45,12 @@
     "privacyLink": "personvernregler",
     "consentLabel": "Jeg har lest og godtar",
     "consentRequired": "Du må godta brukervilkårene og personvernreglene",
-    "accountPaused": "Kontoen din er satt på pause. Kontakt din Team Owner."
+    "accountPaused": "Kontoen din er satt på pause. Kontakt din Team Owner.",
+    "resetPasswordTitle": "Tilbakestill passord",
+    "resetPasswordSubtitle": "Skriv inn e-posten din, så sender vi en tilbakestillingslenke",
+    "sendResetEmail": "Send tilbakestillings-e-post",
+    "resetEmailSent": "En lenke for å tilbakestille passordet ditt er sendt til e-posten din. Sjekk innboksen din og følg lenken for å sette et nytt passord.",
+    "backToLogin": "Tilbake til innlogging"
   },
   "team": {
     "createTitle": "Opprett teamet ditt",

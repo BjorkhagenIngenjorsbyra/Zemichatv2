@@ -45,7 +45,12 @@
     "privacyLink": "privatlivspolitik",
     "consentLabel": "Jeg har læst og accepterer",
     "consentRequired": "Du skal acceptere brugervilkårene og privatlivspolitikken",
-    "accountPaused": "Din konto er sat på pause. Kontakt din Team Owner."
+    "accountPaused": "Din konto er sat på pause. Kontakt din Team Owner.",
+    "resetPasswordTitle": "Nulstil adgangskode",
+    "resetPasswordSubtitle": "Indtast din e-mail, så sender vi et nulstillingslink",
+    "sendResetEmail": "Send nulstillings-e-mail",
+    "resetEmailSent": "Et link til at nulstille din adgangskode er sendt til din e-mail. Tjek din indbakke og følg linket for at sætte en ny adgangskode.",
+    "backToLogin": "Tilbage til login"
   },
   "team": {
     "createTitle": "Opret dit team",
