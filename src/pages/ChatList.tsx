@@ -35,8 +35,6 @@ import {
   chevronDown,
   chevronUp,
   searchOutline,
-  mailUnread,
-  mail,
   gridOutline,
 } from 'ionicons/icons';
 import { hapticMedium } from '../utils/haptics';
@@ -51,8 +49,6 @@ import {
   unarchiveChat,
   muteChat,
   unmuteChat,
-  markChatUnread,
-  clearMarkedUnread,
   type ChatWithDetails,
 } from '../services/chat';
 import { ChatSearchModal, MuteOptions } from '../components/chat';
@@ -259,15 +255,6 @@ const ChatList: React.FC = () => {
     loadChats();
   };
 
-  const handleMarkUnread = async (chat: ChatWithDetails) => {
-    if (chat.unreadCount > 0) {
-      await clearMarkedUnread(chat.id);
-    } else {
-      await markChatUnread(chat.id);
-    }
-    loadChats();
-  };
-
   const renderChatItem = (chat: ChatWithDetails, index: number) => {
     const avatar = getChatAvatar(chat);
     const displayName = getChatDisplayName(chat);
@@ -330,39 +317,18 @@ const ChatList: React.FC = () => {
           </IonLabel>
         </IonItem>
 
-        <IonItemOptions side="end">
-          <IonItemOption
-            color={chat.isPinned ? 'medium' : 'primary'}
-            onClick={() => handlePin(chat)}
-          >
-            <IonIcon slot="icon-only" icon={chat.isPinned ? arrowUndo : pin} />
+        <IonItemOptions side="end" className="chat-swipe-options">
+          <IonItemOption className="swipe-btn swipe-pin" onClick={() => handlePin(chat)}>
+            <IonIcon icon={chat.isPinned ? arrowUndo : pin} />
+            <span>{chat.isPinned ? t('actions.unpin') : t('actions.pin')}</span>
           </IonItemOption>
-          <IonItemOption
-            color={chat.isMuted ? 'success' : 'medium'}
-            onClick={() => handleMute(chat)}
-          >
-            <IonIcon
-              slot="icon-only"
-              icon={chat.isMuted ? volumeHigh : volumeMute}
-            />
+          <IonItemOption className="swipe-btn swipe-mute" onClick={() => handleMute(chat)}>
+            <IonIcon icon={chat.isMuted ? volumeHigh : volumeMute} />
+            <span>{chat.isMuted ? t('actions.unmute') : t('actions.mute')}</span>
           </IonItemOption>
-          <IonItemOption
-            color="tertiary"
-            onClick={() => handleMarkUnread(chat)}
-          >
-            <IonIcon
-              slot="icon-only"
-              icon={chat.unreadCount > 0 ? mail : mailUnread}
-            />
-          </IonItemOption>
-          <IonItemOption
-            color={chat.isArchived ? 'success' : 'warning'}
-            onClick={() => handleArchive(chat)}
-          >
-            <IonIcon
-              slot="icon-only"
-              icon={chat.isArchived ? arrowUndo : archive}
-            />
+          <IonItemOption className="swipe-btn swipe-archive" onClick={() => handleArchive(chat)}>
+            <IonIcon icon={chat.isArchived ? arrowUndo : archive} />
+            <span>{chat.isArchived ? t('actions.unarchive') : t('actions.archive')}</span>
           </IonItemOption>
         </IonItemOptions>
       </IonItemSliding>
@@ -663,9 +629,45 @@ const ChatList: React.FC = () => {
             bottom: calc(16px + env(safe-area-inset-bottom, 0px));
           }
 
-          ion-item-option {
-            --padding-start: 1rem;
-            --padding-end: 1rem;
+          /* Swipe action buttons */
+          .chat-swipe-options {
+            border: none;
+          }
+
+          .swipe-btn {
+            --background: transparent;
+            --color: hsl(var(--foreground));
+            --padding-start: 0;
+            --padding-end: 0;
+            width: 4.5rem;
+            font-size: 0.65rem;
+            font-weight: 600;
+            font-family: inherit;
+          }
+
+          .swipe-btn ion-icon {
+            font-size: 1.25rem;
+            margin-bottom: 0.2rem;
+          }
+
+          .swipe-btn span {
+            display: block;
+            line-height: 1.2;
+          }
+
+          .swipe-pin {
+            --background: hsl(var(--primary) / 0.15);
+            --color: hsl(var(--primary));
+          }
+
+          .swipe-mute {
+            --background: hsl(var(--muted) / 0.3);
+            --color: hsl(var(--muted-foreground));
+          }
+
+          .swipe-archive {
+            --background: hsl(45 80% 50% / 0.15);
+            --color: hsl(45 80% 65%);
           }
         `}</style>
       </IonContent>

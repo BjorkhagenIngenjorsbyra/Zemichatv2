@@ -142,6 +142,9 @@ const ChatView: React.FC = () => {
   const [showEmojiGifPanel, setShowEmojiGifPanel] = useState(false);
   const [showAttachmentSheet, setShowAttachmentSheet] = useState(false);
 
+  // Track keyboard height so emoji panel can match it
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
+
   // Poll creator
   const [showPollCreator, setShowPollCreator] = useState(false);
 
@@ -161,11 +164,17 @@ const ChatView: React.FC = () => {
 
   // --- Keyboard handling (native) ---
   // Capacitor Keyboard plugin with resize: 'body' handles viewport resizing.
-  // We only scroll to bottom when keyboard opens so the latest messages stay visible.
+  // We capture keyboard height so the emoji panel can match it, and close
+  // the emoji panel when the keyboard opens (user tapped the input).
   useEffect(() => {
     if (!Capacitor.isNativePlatform()) return;
 
-    const showListener = Keyboard.addListener('keyboardWillShow', () => {
+    const showListener = Keyboard.addListener('keyboardWillShow', (info) => {
+      if (info.keyboardHeight) {
+        setKeyboardHeight(info.keyboardHeight);
+      }
+      // If emoji panel is open and user taps the textarea, close the panel
+      setShowEmojiGifPanel(false);
       setTimeout(() => contentRef.current?.scrollToBottom(200), 100);
     });
 
@@ -714,6 +723,18 @@ const ChatView: React.FC = () => {
     mediaPickerRef.current?.showPreview(file);
   };
 
+  // Toggle emoji panel: dismiss keyboard first so the panel replaces it
+  const handleToggleEmojiPanel = useCallback(() => {
+    setShowEmojiGifPanel((prev) => {
+      const willOpen = !prev;
+      if (willOpen && Capacitor.isNativePlatform()) {
+        inputRef.current?.blur();
+        Keyboard.hide();
+      }
+      return willOpen;
+    });
+  }, []);
+
   const handleTyping = () => {
     if (chatId && profile?.id && profile?.display_name) {
       sendTyping(chatId, profile.id, profile.display_name);
@@ -975,7 +996,7 @@ const ChatView: React.FC = () => {
           onSend={handleSend}
           onVoiceRecord={handleVoiceRecord}
           onCameraCapture={handleCameraCapture}
-          onToggleEmojiPanel={() => setShowEmojiGifPanel((prev) => !prev)}
+          onToggleEmojiPanel={handleToggleEmojiPanel}
           onToggleAttachmentSheet={() => setShowAttachmentSheet((prev) => !prev)}
           isEmojiPanelOpen={showEmojiGifPanel}
           isSending={isSending}
@@ -1105,6 +1126,7 @@ const ChatView: React.FC = () => {
         onClose={() => setShowEmojiGifPanel(false)}
         onEmojiInsert={handleEmojiInsert}
         onGifSelect={handleGifSelect}
+        keyboardHeight={keyboardHeight}
       />
 
       {/* Attachment sheet */}

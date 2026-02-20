@@ -144,8 +144,12 @@ const Settings: React.FC = () => {
     }
 
     const filename = `zemichat-data-${profile?.zemi_number || 'export'}-${new Date().toISOString().slice(0, 10)}.json`;
-    downloadJSON(data, filename);
-    setExportSuccess(true);
+    try {
+      await downloadJSON(data, filename);
+      setExportSuccess(true);
+    } catch (err) {
+      setExportError(err instanceof Error ? err.message : t('settings.exportDataError'));
+    }
     setIsExporting(false);
   };
 

@@ -11,6 +11,8 @@ interface EmojiGifPanelProps {
   onClose: () => void;
   onEmojiInsert: (emoji: string) => void;
   onGifSelect: (url: string, width: number, height: number) => void | Promise<void>;
+  /** Height of the native keyboard in px — panel matches it so it replaces the keyboard */
+  keyboardHeight?: number;
 }
 
 type TabType = 'emoji' | 'gif';
@@ -28,12 +30,16 @@ const QUICK_CATEGORIES = [
   { label: 'Wow', query: 'wow' },
 ];
 
+const DEFAULT_PANEL_HEIGHT = 280;
+
 const EmojiGifPanel: React.FC<EmojiGifPanelProps> = ({
   isOpen,
   onClose,
   onEmojiInsert,
   onGifSelect,
+  keyboardHeight,
 }) => {
+  const panelHeight = keyboardHeight && keyboardHeight > 200 ? keyboardHeight : DEFAULT_PANEL_HEIGHT;
   const { t, i18n } = useTranslation();
   const [activeTab, setActiveTab] = useState<TabType>('emoji');
 
@@ -122,7 +128,7 @@ const EmojiGifPanel: React.FC<EmojiGifPanelProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="emoji-gif-panel">
+    <div className="emoji-gif-panel" style={{ height: `${panelHeight}px` }}>
       {/* Tab bar */}
       <div className="egp-tabs">
         <button
@@ -150,7 +156,7 @@ const EmojiGifPanel: React.FC<EmojiGifPanelProps> = ({
             theme={Theme.DARK}
             searchPlaceholder={t('common.search')}
             width="100%"
-            height={300}
+            height="100%"
             previewConfig={{ showPreview: false }}
           />
         </div>
@@ -219,7 +225,6 @@ const EmojiGifPanel: React.FC<EmojiGifPanelProps> = ({
           background: hsl(var(--card));
           border-top: 1px solid hsl(var(--border));
           border-radius: 1rem 1rem 0 0;
-          height: 50vh;
           display: flex;
           flex-direction: column;
           box-shadow: 0 -4px 20px hsl(0 0% 0% / 0.3);

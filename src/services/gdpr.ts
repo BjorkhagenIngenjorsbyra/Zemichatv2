@@ -1,3 +1,6 @@
+import { Capacitor } from '@capacitor/core';
+import { Filesystem, Directory, Encoding } from '@capacitor/filesystem';
+import { Share } from '@capacitor/share';
 import { supabase } from './supabase';
 
 /**
@@ -61,18 +64,35 @@ export async function updateUserProfile(displayName: string | null): Promise<{ e
 
 /**
  * Download a JSON object as a file.
+ * On native (Capacitor): writes to cache dir and opens the system share sheet.
+ * On web: uses the classic blob-URL download approach.
  */
-export function downloadJSON(data: unknown, filename: string): void {
+export async function downloadJSON(data: unknown, filename: string): Promise<void> {
   const json = JSON.stringify(data, null, 2);
-  const blob = new Blob([json], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
 
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = filename;
-  document.body.appendChild(a);
-  a.click();
+  if (Capacitor.isNativePlatform()) {
+    const result = await Filesystem.writeFile({
+      path: filename,
+      data: json,
+      directory: Directory.Cache,
+      encoding: Encoding.UTF8,
+    });
 
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
+    await Share.share({
+      title: filename,
+      url: result.uri,
+    });
+  } else {
+    const blob = new Blob([json], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
 }

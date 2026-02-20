@@ -1,12 +1,17 @@
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useLocation } from 'react-router-dom';
 import { useSubscription } from '../../contexts/SubscriptionContext';
 
 const TrialBanner: React.FC = () => {
   const { t } = useTranslation();
   const { status, isLoading, showPaywall } = useSubscription();
+  const location = useLocation();
 
-  const isVisible = !isLoading && status?.isTrialActive && !!status.trialEndsAt;
+  // Hide banner in chat view — screen real-estate is too precious there
+  const isChatView = /^\/chat\/[^/]+$/.test(location.pathname);
+
+  const isVisible = !isLoading && status?.isTrialActive && !!status.trialEndsAt && !isChatView;
 
   // Override --ion-safe-area-top so Ionic headers push down below the banner
   useEffect(() => {
