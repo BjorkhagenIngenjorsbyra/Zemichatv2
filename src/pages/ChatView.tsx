@@ -1028,6 +1028,10 @@ const ChatView: React.FC = () => {
         />
 
         <style>{`
+          ion-footer {
+            padding-bottom: env(safe-area-inset-bottom, 0px);
+          }
+
           .reply-preview {
             display: flex;
             align-items: center;

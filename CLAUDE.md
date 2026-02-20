@@ -13,8 +13,32 @@ Zemichat är en familjevänlig chattapp med unik transparensmodell där Team Own
 
 **Dokumentation:**
 - [PRD](./docs/PRD.md) – Komplett produktspecifikation
-- [Schema](./docs/SCHEMA.md) – Databasschema (skapas)
-- [RLS Policies](./docs/RLS.md) – Säkerhetspolicies (skapas)
+- [Schema](./docs/SCHEMA.md) – Databasschema
+- [RLS Policies](./docs/RLS.md) – Säkerhetspolicies
+
+---
+
+## Arbetsflöde
+
+### 1. Planera först
+För alla uppgifter med 3+ steg eller arkitekturella beslut:
+- Skriv plan i `tasks/todo.md` med checkbara items
+- Stäm av planen med Erik innan implementation börjar
+- Markera items som klara allt eftersom
+- Om något går snett: STOPPA, uppdatera planen, och börja om
+
+### 2. Verifiera innan klart
+Markera aldrig en uppgift som klar utan att bevisa att den fungerar:
+- Kör relevanta tester
+- Diffla dina ändringar – rör du bara det som behövs?
+- Fråga dig: "Skulle en senior utvecklare godkänna detta?"
+- Kontrollera att inga andra delar gått sönder
+
+### 3. Lär av misstag
+Efter VARJE korrigering från Erik:
+- Uppdatera `tasks/lessons.md` med mönstret
+- Skriv en regel som förhindrar samma misstag
+- Läs lessons vid sessionens start för relevanta projekt
 
 ---
 
@@ -23,24 +47,33 @@ Zemichat är en familjevänlig chattapp med unik transparensmodell där Team Own
 ### 1. Produktion från start
 Skriv alltid produktionskvalitet. Ingen "quick fix" eller "TODO: fixa senare". Om något behöver förenklas, dokumentera varför och skapa en issue.
 
-### 2. Tester före implementation
+### 2. Minimal påverkan
+- Gör varje ändring så liten och fokuserad som möjligt
+- Rör bara filer som är nödvändiga för uppgiften
+- Hitta grundorsaken – inga temporära fixar
+- Undvik att introducera nya buggar genom att ändra orelaterad kod
+- Om en fix känns hackig: pausa och fråga "finns det en elegantare lösning?"
+
+### 3. Tester före implementation
 ```
 1. Skriv testspecifikation (vad ska testas)
 2. Skriv själva testet (förväntas faila)
 3. Implementera funktionen
 4. Kör testet (ska passa)
 5. Refaktorera om nödvändigt
-6. Kör alla tester igen
+6. Kör ALLA tester igen
+7. Diffla mot main – ser ändringarna rimliga ut?
 ```
 
-### 3. Självständigt arbete
+### 4. Självständigt arbete
 Claude ska arbeta autonomt i långa sessioner. Vid osäkerhet:
 - Läs PRD:en först
 - Sök i befintlig kodbas
+- Kolla `tasks/lessons.md` för tidigare lärdomar
 - Fatta beslut baserat på etablerade mönster
 - Dokumentera beslutet i commit-meddelande
 
-### 4. Ingen gissning
+### 5. Ingen gissning
 Om något är oklart i PRD:en – stoppa och fråga. Gissa aldrig på:
 - Säkerhetslogik (RLS, behörigheter)
 - Affärslogik (prenumerationer, roller)
@@ -350,4 +383,4 @@ Om beslutet påverkar:
 
 ---
 
-*Senast uppdaterad: 2025-02-04*
+*Senast uppdaterad: 2025-02-20*

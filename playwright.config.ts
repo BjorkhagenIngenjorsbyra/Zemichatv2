@@ -30,8 +30,23 @@ export default defineConfig({
         browserName: 'chromium',
         storageState: OWNER_STATE,
       },
-      testIgnore: /auth\.setup\.ts/,
+      testIgnore: [/auth\.setup\.ts/, /two-user-.*/],
       dependencies: ['setup'],
+    },
+    // Two-user tests — each test manages its own auth via browser contexts
+    {
+      name: 'two-user',
+      testMatch: /two-user-.*/,
+      timeout: 120_000,
+      use: {
+        browserName: 'chromium',
+        launchOptions: {
+          args: [
+            '--use-fake-ui-for-media-stream',
+            '--use-fake-device-for-media-stream',
+          ],
+        },
+      },
     },
   ],
   webServer: {

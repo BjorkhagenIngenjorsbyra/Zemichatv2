@@ -11,6 +11,7 @@
     "test.e2e:cypress": "cypress run",
     "test.unit": "vitest",
     "test.rls": "npx supabase db reset && vitest run --config vitest.config.rls.ts",
+    "test.e2e:pw": "npx playwright test --project=two-user",
     "lint": "eslint"
   },
   "dependencies": {

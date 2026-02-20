@@ -226,7 +226,7 @@ const ChatInputToolbar: React.FC<ChatInputToolbarProps> = ({
           display: flex;
           align-items: flex-end;
           gap: 0.35rem;
-          padding: 0.5rem 0.75rem calc(0.5rem + env(safe-area-inset-bottom, 0px));
+          padding: 0.5rem 0.75rem;
           background: hsl(var(--background));
           border-top: 1px solid hsl(var(--border));
         }

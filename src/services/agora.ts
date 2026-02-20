@@ -63,6 +63,33 @@ export async function getAgoraToken(
 }
 
 // ============================================================
+// PERMISSION PRE-CHECK
+// ============================================================
+
+/**
+ * Pre-check microphone (and optionally camera) permission by requesting
+ * a test MediaStream. This surfaces permission errors with a clear error
+ * before Agora tries to create tracks (which gives cryptic failures on
+ * Android webviews).
+ */
+export async function requestMediaPermissions(
+  withVideo: boolean
+): Promise<{ granted: boolean; error?: Error }> {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({
+      audio: true,
+      video: withVideo,
+    });
+    // Immediately release the test stream
+    stream.getTracks().forEach((t) => t.stop());
+    return { granted: true };
+  } catch (err) {
+    const error = err instanceof Error ? err : new Error(String(err));
+    return { granted: false, error };
+  }
+}
+
+// ============================================================
 // TRACK MANAGEMENT
 // ============================================================
 

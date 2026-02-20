@@ -20,6 +20,7 @@ import { SignalType, CallStatus } from '../types/database';
 import {
   createAgoraClient,
   getAgoraToken,
+  requestMediaPermissions,
   createLocalTracks,
   createScreenShareTrack,
   joinChannel,
@@ -106,12 +107,32 @@ export function CallProvider({ children }: CallProviderProps) {
   /** Map server/SDK errors to user-friendly i18n keys */
   const mapCallError = useCallback((err: Error | null, step?: string): string => {
     const msg = err?.message?.toLowerCase() || '';
-    if (step) console.error(`[Call] ${step} failed:`, err?.message || err);
+    const name = err?.name?.toLowerCase() || '';
+    if (step) console.error(`[Call] ${step} failed:`, { message: err?.message, name: err?.name, error: err });
+
+    // Agora service / configuration errors
     if (msg.includes('not configured') || msg.includes('agora')) return 'call.serviceUnavailable';
+    // Agora SDK specific error codes
+    if (msg.includes('operation_aborted') || msg.includes('web_security_restrict')) return 'call.serviceUnavailable';
+    if (msg.includes('invalid_operation') || msg.includes('unexpected_response')) return 'call.serviceUnavailable';
+
+    // Network / fetch errors
+    if (msg.includes('failed to fetch') || msg.includes('networkerror') || msg.includes('network error')) return 'call.serviceUnavailable';
+    if (msg.includes('timeout') || msg.includes('timed out')) return 'call.serviceUnavailable';
+
+    // Permission / authorization errors
     if (msg.includes('permission denied') || msg.includes('permission_denied')) return 'call.permissionDenied';
     if (msg.includes('not a member')) return 'call.permissionDenied';
-    if (msg.includes('notallowederror') || msg.includes('permission') || msg.includes('microphone')) return 'call.microphoneError';
-    if (msg.includes('notfounderror') || msg.includes('no audio') || msg.includes('device')) return 'call.microphoneError';
+
+    // Microphone / camera permission errors (NotAllowedError from getUserMedia)
+    if (name === 'notallowederror' || msg.includes('notallowederror')) return 'call.microphoneError';
+    if (msg.includes('permission') || msg.includes('microphone') || msg.includes('camera')) return 'call.microphoneError';
+
+    // Device not found errors (NotFoundError from getUserMedia)
+    if (name === 'notfounderror' || msg.includes('notfounderror')) return 'call.microphoneError';
+    if (msg.includes('no audio') || msg.includes('device')) return 'call.microphoneError';
+    if (name === 'notreadableerror' || msg.includes('notreadableerror')) return 'call.microphoneError';
+
     return 'call.error';
   }, []);
 
@@ -323,10 +344,18 @@ export function CallProvider({ children }: CallProviderProps) {
         });
       });
 
+      // Pre-check media permissions before Agora creates tracks
+      const withVideo = callType === CallType.VIDEO;
+      const permResult = await requestMediaPermissions(withVideo);
+      if (!permResult.granted) {
+        setCallError(mapCallError(permResult.error || new Error('Media permission denied'), 'requestMediaPermissions'));
+        setActiveCall((prev) => prev ? { ...prev, state: CallState.ENDED } : prev);
+        setTimeout(() => cleanupCall(), 2500);
+        return;
+      }
+
       // Create local tracks
-      const { audioTrack, videoTrack, error: trackError } = await createLocalTracks(
-        callType === CallType.VIDEO
-      );
+      const { audioTrack, videoTrack, error: trackError } = await createLocalTracks(withVideo);
       if (trackError) {
         setCallError(mapCallError(trackError, 'createLocalTracks'));
         setActiveCall((prev) => prev ? { ...prev, state: CallState.ENDED } : prev);
@@ -458,9 +487,16 @@ export function CallProvider({ children }: CallProviderProps) {
         });
       });
 
-      const { audioTrack, videoTrack, error: trackError } = await createLocalTracks(
-        incomingCall.callType === CallType.VIDEO
-      );
+      // Pre-check media permissions before Agora creates tracks
+      const answerWithVideo = incomingCall.callType === CallType.VIDEO;
+      const answerPermResult = await requestMediaPermissions(answerWithVideo);
+      if (!answerPermResult.granted) {
+        setCallError(mapCallError(answerPermResult.error || new Error('Media permission denied'), 'answerCall requestMediaPermissions'));
+        await cleanupCall();
+        return;
+      }
+
+      const { audioTrack, videoTrack, error: trackError } = await createLocalTracks(answerWithVideo);
       if (trackError) {
         setCallError(mapCallError(trackError, 'answerCall createLocalTracks'));
         await cleanupCall();
