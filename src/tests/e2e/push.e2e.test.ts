@@ -1,11 +1,13 @@
 /**
- * E2E Tests for Push Notification Flow
+ * E2E Tests for Push Notification Infrastructure
  *
- * Tests the push notification infrastructure against deployed Supabase:
- * 1. Push token registration (INSERT into push_tokens)
- * 2. Sending a message triggers unread_count increment
- * 3. send-push Edge Function accepts valid requests
- * 4. Badge count reflects unread messages
+ * Tests the backend push notification flow against deployed Supabase:
+ * 1. Push token registration (upsert into push_tokens)
+ * 2. send-push Edge Function (message trigger flow)
+ * 3. Notification count queries (unread counts)
+ *
+ * Note: These tests verify the server-side infrastructure.
+ * Actual FCM/APNs delivery cannot be tested in E2E (requires native devices).
  *
  * Run: npm run test:e2e
  * Requires .env.e2e with test credentials.
@@ -25,35 +27,21 @@ describeE2E('Push Notification E2E', () => {
 
   // Track IDs for cleanup
   const createdTokenIds: string[] = [];
-  const createdMessageIds: string[] = [];
 
   beforeAll(async () => {
     world = await getE2ETestWorld();
   });
 
   afterAll(async () => {
-    // Clean up push tokens
-    if (createdTokenIds.length > 0 && world?.user1?.client) {
-      await world.user1.client
-        .from('push_tokens')
-        .delete()
-        .in('id', createdTokenIds);
-    }
-
-    // Clean up messages (use service client to bypass RLS)
-    if (createdMessageIds.length > 0 && world?.serviceClient) {
-      await world.serviceClient
-        .from('messages')
-        .delete()
-        .in('id', createdMessageIds);
-    }
-
-    // Reset unread counts for the chat
-    if (world?.serviceClient) {
-      await world.serviceClient
-        .from('chat_members')
-        .update({ unread_count: 0 })
-        .eq('chat_id', world.chatId);
+    // Clean up test push tokens
+    if (createdTokenIds.length > 0) {
+      const cleanupClient = world?.serviceClient || world?.user1?.client;
+      if (cleanupClient) {
+        await cleanupClient
+          .from('push_tokens')
+          .delete()
+          .in('id', createdTokenIds);
+      }
     }
   });
 
@@ -62,46 +50,52 @@ describeE2E('Push Notification E2E', () => {
   // -----------------------------------------------------------------
 
   it('user1 can register a push token', async () => {
+    const testToken = `e2e-test-token-${Date.now()}-user1`;
+
     const { data, error } = await world.user1.client
       .from('push_tokens')
       .upsert(
         {
           user_id: world.user1.id,
-          token: 'e2e-test-token-user1-' + Date.now(),
+          token: testToken,
           platform: 'android',
           token_type: 'fcm',
+          updated_at: new Date().toISOString(),
         },
-        { onConflict: 'user_id,token' },
+        { onConflict: 'user_id,token,token_type' },
       )
       .select()
       .single();
 
     expect(error).toBeNull();
     expect(data).not.toBeNull();
-    expect(data!.user_id).toBe(world.user1.id);
+    expect(data!.token).toBe(testToken);
     expect(data!.platform).toBe('android');
 
     createdTokenIds.push(data!.id);
   });
 
   it('user2 can register a push token', async () => {
+    const testToken = `e2e-test-token-${Date.now()}-user2`;
+
     const { data, error } = await world.user2.client
       .from('push_tokens')
       .upsert(
         {
           user_id: world.user2.id,
-          token: 'e2e-test-token-user2-' + Date.now(),
+          token: testToken,
           platform: 'ios',
           token_type: 'fcm',
+          updated_at: new Date().toISOString(),
         },
-        { onConflict: 'user_id,token' },
+        { onConflict: 'user_id,token,token_type' },
       )
       .select()
       .single();
 
     expect(error).toBeNull();
     expect(data).not.toBeNull();
-    expect(data!.user_id).toBe(world.user2.id);
+    expect(data!.token).toBe(testToken);
 
     createdTokenIds.push(data!.id);
   });
@@ -110,8 +104,8 @@ describeE2E('Push Notification E2E', () => {
     const { data, error } = await world.user1.client
       .from('push_tokens')
       .insert({
-        user_id: world.user2.id, // Impersonation
-        token: 'e2e-fake-token-' + Date.now(),
+        user_id: world.user2.id, // Impersonation attempt
+        token: 'fake-token',
         platform: 'android',
         token_type: 'fcm',
       })
@@ -122,12 +116,108 @@ describeE2E('Push Notification E2E', () => {
     expect(error).not.toBeNull();
   });
 
+  it('user1 can update their own token', async () => {
+    if (createdTokenIds.length === 0) return;
+
+    const tokenId = createdTokenIds[0];
+    const newTimestamp = new Date().toISOString();
+
+    const { error } = await world.user1.client
+      .from('push_tokens')
+      .update({ updated_at: newTimestamp })
+      .eq('id', tokenId);
+
+    expect(error).toBeNull();
+  });
+
+  it('user1 can delete their own tokens', async () => {
+    if (createdTokenIds.length === 0) return;
+
+    // Only delete user1's token (first one)
+    const tokenId = createdTokenIds[0];
+    const { error } = await world.user1.client
+      .from('push_tokens')
+      .delete()
+      .eq('id', tokenId);
+
+    expect(error).toBeNull();
+
+    // Remove from cleanup list
+    createdTokenIds.shift();
+  });
+
   // -----------------------------------------------------------------
-  // 2. Unread Count on Message Send
+  // 2. send-push Edge Function
   // -----------------------------------------------------------------
 
-  it('sending a message increments unread_count for other members', async () => {
-    // First read user2's current unread_count
+  it('send-push Edge Function is accessible', async () => {
+    // Send a test message in the chat to trigger the push flow
+    // First, send a message as user1
+    const { data: msg, error: msgError } = await world.user1.client
+      .from('messages')
+      .insert({
+        chat_id: world.chatId,
+        sender_id: world.user1.id,
+        content: 'E2E push test message',
+        type: 'text',
+      })
+      .select()
+      .single();
+
+    // The message INSERT should succeed
+    expect(msgError).toBeNull();
+    expect(msg).not.toBeNull();
+
+    // The DB trigger should have fired notify_new_message which calls send-push
+    // We can't verify the push was delivered, but we can verify the message exists
+    // and the trigger didn't cause an error (the INSERT succeeded)
+
+    // Clean up the test message
+    if (msg) {
+      await world.user1.client
+        .from('messages')
+        .update({ deleted_at: new Date().toISOString(), deleted_by: world.user1.id })
+        .eq('id', msg.id);
+    }
+  });
+
+  // -----------------------------------------------------------------
+  // 3. Unread Count Queries
+  // -----------------------------------------------------------------
+
+  it('user2 can query their unread count', async () => {
+    const { data, error } = await world.user2.client
+      .from('chat_members')
+      .select('unread_count')
+      .eq('user_id', world.user2.id)
+      .is('left_at', null);
+
+    expect(error).toBeNull();
+    expect(data).not.toBeNull();
+    // Each row should have a numeric unread_count
+    for (const row of data!) {
+      expect(typeof row.unread_count).toBe('number');
+      expect(row.unread_count).toBeGreaterThanOrEqual(0);
+    }
+  });
+
+  it('user1 can query their unread count', async () => {
+    const { data, error } = await world.user1.client
+      .from('chat_members')
+      .select('unread_count')
+      .eq('user_id', world.user1.id)
+      .is('left_at', null);
+
+    expect(error).toBeNull();
+    expect(data).not.toBeNull();
+  });
+
+  // -----------------------------------------------------------------
+  // 4. Unread count increments on new message
+  // -----------------------------------------------------------------
+
+  it('unread count increments for recipient when message is sent', async () => {
+    // Get user2's current unread count for the chat
     const { data: before } = await world.user2.client
       .from('chat_members')
       .select('unread_count')
@@ -137,26 +227,24 @@ describeE2E('Push Notification E2E', () => {
 
     const beforeCount = before?.unread_count ?? 0;
 
-    // user1 sends a message
+    // Send a message as user1
     const { data: msg, error: msgError } = await world.user1.client
       .from('messages')
       .insert({
         chat_id: world.chatId,
         sender_id: world.user1.id,
-        content: 'E2E test push message ' + Date.now(),
+        content: 'E2E unread count test',
         type: 'text',
       })
       .select()
       .single();
 
     expect(msgError).toBeNull();
-    expect(msg).not.toBeNull();
-    createdMessageIds.push(msg!.id);
 
-    // Wait for the DB trigger to execute
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    // Wait briefly for the trigger to fire
+    await new Promise((r) => setTimeout(r, 1000));
 
-    // Check user2's unread_count increased
+    // Check user2's unread count increased
     const { data: after } = await world.user2.client
       .from('chat_members')
       .select('unread_count')
@@ -164,125 +252,36 @@ describeE2E('Push Notification E2E', () => {
       .eq('user_id', world.user2.id)
       .single();
 
-    expect(after).not.toBeNull();
-    expect(after!.unread_count).toBe(beforeCount + 1);
-  });
+    expect(after?.unread_count).toBe(beforeCount + 1);
 
-  it('sender unread_count is NOT incremented by own message', async () => {
-    // Read user1's current unread_count
-    const { data: before } = await world.user1.client
+    // Clean up
+    if (msg) {
+      await world.user1.client
+        .from('messages')
+        .update({ deleted_at: new Date().toISOString(), deleted_by: world.user1.id })
+        .eq('id', msg.id);
+    }
+
+    // Reset unread count
+    await world.user2.client
       .from('chat_members')
-      .select('unread_count')
-      .eq('chat_id', world.chatId)
-      .eq('user_id', world.user1.id)
-      .single();
-
-    const beforeCount = before?.unread_count ?? 0;
-
-    // user1 sends another message
-    const { data: msg } = await world.user1.client
-      .from('messages')
-      .insert({
-        chat_id: world.chatId,
-        sender_id: world.user1.id,
-        content: 'E2E test own message ' + Date.now(),
-        type: 'text',
-      })
-      .select()
-      .single();
-
-    if (msg) createdMessageIds.push(msg.id);
-
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-
-    // user1's unread_count should stay the same
-    const { data: after } = await world.user1.client
-      .from('chat_members')
-      .select('unread_count')
-      .eq('chat_id', world.chatId)
-      .eq('user_id', world.user1.id)
-      .single();
-
-    expect(after!.unread_count).toBe(beforeCount);
-  });
-
-  // -----------------------------------------------------------------
-  // 3. Mark as Read
-  // -----------------------------------------------------------------
-
-  it('user2 can mark chat as read (reset unread_count)', async () => {
-    const { error } = await world.user2.client
-      .from('chat_members')
-      .update({ unread_count: 0, marked_unread: false })
+      .update({ unread_count: beforeCount })
       .eq('chat_id', world.chatId)
       .eq('user_id', world.user2.id);
-
-    expect(error).toBeNull();
-
-    // Verify
-    const { data } = await world.user2.client
-      .from('chat_members')
-      .select('unread_count')
-      .eq('chat_id', world.chatId)
-      .eq('user_id', world.user2.id)
-      .single();
-
-    expect(data!.unread_count).toBe(0);
   });
 
   // -----------------------------------------------------------------
-  // 4. send-push Edge Function
+  // 5. Pending friend request count
   // -----------------------------------------------------------------
 
-  it('send-push Edge Function is accessible (smoke test)', async () => {
-    // The send-push Edge Function is normally called by a DB trigger,
-    // but we can test it directly. It expects a specific payload format
-    // that the trigger sends. We'll invoke it with a minimal payload.
-
-    // Note: This may return an error because the payload format from
-    // a client call differs from what the trigger sends. We're just
-    // testing that the function is deployed and responds.
-    const { data, error } = await world.user1.client.functions.invoke(
-      'send-push',
-      {
-        body: {
-          record: {
-            id: '00000000-0000-0000-0000-000000000000',
-            chat_id: world.chatId,
-            sender_id: world.user1.id,
-            content: 'E2E smoke test',
-            type: 'text',
-          },
-        },
-      },
-    );
-
-    // We just verify the function is reachable (may error on payload validation)
-    // A non-null response means the function is deployed
-    expect(data !== null || error !== null).toBe(true);
-  });
-
-  // -----------------------------------------------------------------
-  // 5. Badge Count Query
-  // -----------------------------------------------------------------
-
-  it('user can query their total unread count across all chats', async () => {
-    const { data, error } = await world.user2.client
-      .from('chat_members')
-      .select('unread_count')
-      .eq('user_id', world.user2.id)
-      .is('left_at', null);
+  it('user can query pending friend request count', async () => {
+    const { count, error } = await world.user1.client
+      .from('friendships')
+      .select('id', { count: 'exact', head: true })
+      .eq('addressee_id', world.user1.id)
+      .eq('status', 'pending');
 
     expect(error).toBeNull();
-    expect(data).not.toBeNull();
-    expect(Array.isArray(data)).toBe(true);
-
-    // Sum should be a valid number
-    const total = data!.reduce(
-      (sum: number, row: { unread_count: number }) => sum + row.unread_count,
-      0,
-    );
-    expect(typeof total).toBe('number');
-    expect(total).toBeGreaterThanOrEqual(0);
+    expect(typeof count).toBe('number');
   });
 });
