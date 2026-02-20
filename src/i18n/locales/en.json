@@ -481,6 +481,7 @@
     "noAnswer": "No answer",
     "unavailable": "Unavailable",
     "error": "Something went wrong. Please try again later.",
+    "microphoneError": "Could not access the microphone. Please check browser permissions.",
     "permissionDenied": "You don't have permission to make calls",
     "serviceUnavailable": "Calling is not available yet",
     "speakerOn": "Speaker on",

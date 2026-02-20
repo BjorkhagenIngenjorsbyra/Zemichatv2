@@ -104,11 +104,14 @@ export function CallProvider({ children }: CallProviderProps) {
   const clearCallError = useCallback(() => setCallError(null), []);
 
   /** Map server/SDK errors to user-friendly i18n keys */
-  const mapCallError = useCallback((err: Error | null): string => {
+  const mapCallError = useCallback((err: Error | null, step?: string): string => {
     const msg = err?.message?.toLowerCase() || '';
+    if (step) console.error(`[Call] ${step} failed:`, err?.message || err);
     if (msg.includes('not configured') || msg.includes('agora')) return 'call.serviceUnavailable';
-    if (msg.includes('permission denied')) return 'call.permissionDenied';
+    if (msg.includes('permission denied') || msg.includes('permission_denied')) return 'call.permissionDenied';
     if (msg.includes('not a member')) return 'call.permissionDenied';
+    if (msg.includes('notallowederror') || msg.includes('permission') || msg.includes('microphone')) return 'call.microphoneError';
+    if (msg.includes('notfounderror') || msg.includes('no audio') || msg.includes('device')) return 'call.microphoneError';
     return 'call.error';
   }, []);
 
@@ -208,7 +211,8 @@ export function CallProvider({ children }: CallProviderProps) {
     // 3. Create call log
     const { callLog, error: logError } = await createCallLog(chatId, callType);
     if (logError || !callLog) {
-      setCallError('call.error');
+      console.error('[Call] createCallLog failed:', logError?.message || 'no callLog returned');
+      setCallError(mapCallError(logError, 'createCallLog'));
       return;
     }
 
@@ -267,7 +271,7 @@ export function CallProvider({ children }: CallProviderProps) {
       // Get Agora token
       const { token, error: tokenError } = await getAgoraToken(chatId, callType);
       if (tokenError || !token) {
-        setCallError(mapCallError(tokenError));
+        setCallError(mapCallError(tokenError, 'getAgoraToken'));
         setActiveCall((prev) => prev ? { ...prev, state: CallState.ENDED } : prev);
         setTimeout(() => cleanupCall(), 2500);
         return;
@@ -324,7 +328,7 @@ export function CallProvider({ children }: CallProviderProps) {
         callType === CallType.VIDEO
       );
       if (trackError) {
-        setCallError('call.error');
+        setCallError(mapCallError(trackError, 'createLocalTracks'));
         setActiveCall((prev) => prev ? { ...prev, state: CallState.ENDED } : prev);
         setTimeout(() => cleanupCall(), 2500);
         return;
@@ -336,7 +340,7 @@ export function CallProvider({ children }: CallProviderProps) {
       // Join channel
       const { error: joinError } = await joinChannel(client, token.appId, token.token, token.channel, token.uid);
       if (joinError) {
-        setCallError('call.error');
+        setCallError(mapCallError(joinError, 'joinChannel'));
         setActiveCall((prev) => prev ? { ...prev, state: CallState.ENDED } : prev);
         setTimeout(() => cleanupCall(), 2500);
         return;
@@ -353,12 +357,12 @@ export function CallProvider({ children }: CallProviderProps) {
       // Push notification for background/killed app
       sendCallPush(chatId, callLog.id, callType, 'ring');
     } catch (err) {
-      console.error('Call setup failed:', err);
-      setCallError('call.error');
+      const error = err instanceof Error ? err : new Error(String(err));
+      setCallError(mapCallError(error, 'initiateCall catch'));
       setActiveCall((prev) => prev ? { ...prev, state: CallState.ENDED } : prev);
       setTimeout(() => cleanupCall(), 2500);
     }
-  }, [profile, cleanupCall]);
+  }, [profile, cleanupCall, mapCallError]);
 
   const answerCall = useCallback(async () => {
     if (!incomingCall || !profile) return;
@@ -409,7 +413,7 @@ export function CallProvider({ children }: CallProviderProps) {
         incomingCall.callType
       );
       if (tokenError || !token) {
-        setCallError('call.error');
+        setCallError(mapCallError(tokenError, 'answerCall getAgoraToken'));
         await cleanupCall();
         return;
       }
@@ -458,7 +462,7 @@ export function CallProvider({ children }: CallProviderProps) {
         incomingCall.callType === CallType.VIDEO
       );
       if (trackError) {
-        setCallError('call.error');
+        setCallError(mapCallError(trackError, 'answerCall createLocalTracks'));
         await cleanupCall();
         return;
       }
@@ -468,7 +472,7 @@ export function CallProvider({ children }: CallProviderProps) {
 
       const { error: joinError } = await joinChannel(client, token.appId, token.token, token.channel, token.uid);
       if (joinError) {
-        setCallError('call.error');
+        setCallError(mapCallError(joinError, 'answerCall joinChannel'));
         await cleanupCall();
         return;
       }
@@ -491,12 +495,12 @@ export function CallProvider({ children }: CallProviderProps) {
         setCallDuration((prev) => prev + 1);
       }, 1000);
     } catch (err) {
-      console.error('Answer call failed:', err);
-      setCallError('call.error');
+      const error = err instanceof Error ? err : new Error(String(err));
+      setCallError(mapCallError(error, 'answerCall catch'));
       reportCallEnded(incomingCall.callLogId, 'failed');
       await cleanupCall();
     }
-  }, [incomingCall, profile, cleanupCall]);
+  }, [incomingCall, profile, cleanupCall, mapCallError]);
 
   const declineCall = useCallback(async () => {
     if (!incomingCall) return;

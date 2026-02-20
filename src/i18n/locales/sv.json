@@ -481,6 +481,7 @@
     "noAnswer": "Inget svar",
     "unavailable": "Inte tillgänglig",
     "error": "Något gick fel. Försök igen senare.",
+    "microphoneError": "Kunde inte komma åt mikrofonen. Kontrollera att du har gett webbläsaren tillåtelse.",
     "permissionDenied": "Du har inte behörighet att ringa",
     "serviceUnavailable": "Samtalsfunktionen är inte tillgänglig ännu",
     "speakerOn": "Högtalare på",

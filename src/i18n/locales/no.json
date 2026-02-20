@@ -481,6 +481,7 @@
     "noAnswer": "Ingen svar",
     "unavailable": "Ikke tilgjengelig",
     "error": "Noe gikk galt. Prøv igjen senere.",
+    "microphoneError": "Kunne ikke få tilgang til mikrofonen. Sjekk nettlesertillatelsene.",
     "permissionDenied": "Du har ikke tillatelse til å ringe",
     "serviceUnavailable": "Ringefunksjonen er ikke tilgjengelig ennå",
     "speakerOn": "Høyttaler på",

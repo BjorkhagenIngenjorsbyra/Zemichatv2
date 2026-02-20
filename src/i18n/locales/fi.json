@@ -481,6 +481,7 @@
     "noAnswer": "Ei vastausta",
     "unavailable": "Ei tavoitettavissa",
     "error": "Jokin meni pieleen. Yritä myöhemmin uudelleen.",
+    "microphoneError": "Mikrofonia ei voitu käyttää. Tarkista selaimen käyttöoikeudet.",
     "permissionDenied": "Sinulla ei ole lupaa soittaa",
     "serviceUnavailable": "Puhelutoiminto ei ole vielä käytettävissä",
     "speakerOn": "Kaiutin päällä",
