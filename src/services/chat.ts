@@ -370,7 +370,7 @@ export async function markChatAsRead(chatId: string): Promise<{ error: Error | n
 
   const { error } = await supabase
     .from('chat_members')
-    .update({ unread_count: 0, last_read_at: new Date().toISOString() } as never)
+    .update({ unread_count: 0, marked_unread: false, last_read_at: new Date().toISOString() } as never)
     .eq('chat_id', chatId)
     .eq('user_id', user.id);
 

@@ -16,7 +16,7 @@ export async function getUnreadChatCount(): Promise<UnreadChatResult> {
 
   const { data, error } = await supabase
     .from('chat_members')
-    .select('unread_count, marked_unread')
+    .select('unread_count')
     .eq('user_id', user.id)
     .is('left_at', null);
 
@@ -26,9 +26,8 @@ export async function getUnreadChatCount(): Promise<UnreadChatResult> {
   let total = 0;
 
   for (const row of data) {
-    const unread = (row as { unread_count: number; marked_unread: boolean }).unread_count;
-    const markedUnread = (row as { unread_count: number; marked_unread: boolean }).marked_unread;
-    if (unread > 0 || markedUnread) {
+    const unread = (row as { unread_count: number }).unread_count;
+    if (unread > 0) {
       count++;
     }
     total += unread;
