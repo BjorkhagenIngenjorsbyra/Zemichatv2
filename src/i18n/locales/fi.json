@@ -491,7 +491,10 @@
     "participantCount": "{{count}} osallistujaa",
     "waitingForOthers": "Odotetaan muita...",
     "maxParticipants": "Osallistujia ei voi enää lisätä",
-    "callingGroup": "Soitetaan ryhmälle..."
+    "callingGroup": "Soitetaan ryhmälle...",
+    "reconnecting": "Yhdistetään uudelleen...",
+    "connectionLost": "Yhteys katkesi",
+    "videoTimeWarning": "Videopuhelu päättyy 5 minuutissa"
   },
   "onboarding": {
     "skip": "Ohita",

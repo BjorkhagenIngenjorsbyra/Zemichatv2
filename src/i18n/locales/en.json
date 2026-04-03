@@ -491,7 +491,10 @@
     "participantCount": "{{count}} participants",
     "waitingForOthers": "Waiting for others...",
     "maxParticipants": "No more participants can be added",
-    "callingGroup": "Calling group..."
+    "callingGroup": "Calling group...",
+    "reconnecting": "Reconnecting...",
+    "connectionLost": "Connection lost",
+    "videoTimeWarning": "Video call will end in 5 minutes"
   },
   "onboarding": {
     "skip": "Skip",

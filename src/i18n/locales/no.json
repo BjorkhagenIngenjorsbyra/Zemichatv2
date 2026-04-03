@@ -491,7 +491,10 @@
     "participantCount": "{{count}} deltakere",
     "waitingForOthers": "Venter på andre...",
     "maxParticipants": "Ingen flere deltakere kan legges til",
-    "callingGroup": "Ringer gruppe..."
+    "callingGroup": "Ringer gruppe...",
+    "reconnecting": "Kobler til igjen...",
+    "connectionLost": "Tilkoblingen ble brutt",
+    "videoTimeWarning": "Videosamtalen avsluttes om 5 minutter"
   },
   "onboarding": {
     "skip": "Hopp over",
