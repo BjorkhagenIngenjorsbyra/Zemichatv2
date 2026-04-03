@@ -598,7 +598,9 @@ export function CallProvider({ children }: CallProviderProps) {
     const newEnabled = !activeCall?.isVideoEnabled;
 
     if (newEnabled && !videoTrackRef.current) {
-      const { videoTrack } = await createLocalTracks(true);
+      const { audioTrack: leakedAudio, videoTrack } = await createLocalTracks(true);
+      // Close the leaked audio track — we already have one
+      if (leakedAudio) leakedAudio.close();
       if (videoTrack) {
         videoTrackRef.current = videoTrack;
         await publishTracks(clientRef.current, null, videoTrack);
@@ -792,12 +794,29 @@ export function CallProvider({ children }: CallProviderProps) {
   // AUTO END CALL WHEN ALL LEAVE
   // ============================================================
 
+  const autoEndTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   useEffect(() => {
     if (!activeCall || activeCall.state !== CallState.CONNECTED) return;
 
     if (remoteUsers.size === 0 && activeCall.connectedAt) {
-      endCall();
+      // Debounce: wait 3 seconds before ending — avoids premature end
+      // when remote user briefly disconnects (e.g. toggling video)
+      autoEndTimerRef.current = setTimeout(() => {
+        endCall();
+      }, 3000);
+    } else if (autoEndTimerRef.current) {
+      // Remote user came back — cancel auto-end
+      clearTimeout(autoEndTimerRef.current);
+      autoEndTimerRef.current = null;
     }
+
+    return () => {
+      if (autoEndTimerRef.current) {
+        clearTimeout(autoEndTimerRef.current);
+        autoEndTimerRef.current = null;
+      }
+    };
   }, [activeCall, remoteUsers.size, endCall]);
 
   // ============================================================
@@ -822,6 +841,9 @@ export function CallProvider({ children }: CallProviderProps) {
     isAgoraReady,
     callDuration,
     callError,
+    localVideoTrack: videoTrackRef.current,
+    screenShareTrack: screenTrackRef.current,
+    remoteUsers,
     initiateCall,
     answerCall,
     declineCall,
@@ -854,5 +876,6 @@ export function useCallContext(): CallContextValue {
 }
 
 export function useRemoteUsers() {
-  return new Map();
+  const { remoteUsers } = useCallContext();
+  return remoteUsers;
 }

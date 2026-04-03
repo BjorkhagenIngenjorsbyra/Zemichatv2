@@ -1,20 +1,25 @@
 import { useCallContext } from '../../contexts/CallContext';
+import { useAuthContext } from '../../contexts/AuthContext';
 import { useTranslation } from 'react-i18next';
 import { CallType, CallState } from '../../types/call';
-import type { ICameraVideoTrack, ILocalVideoTrack, IRemoteVideoTrack } from '../../services/agora';
-import { useState } from 'react';
+import { useMemo } from 'react';
 import CallHeader from './CallHeader';
 import CallControls from './CallControls';
 import VideoGrid from './VideoGrid';
 
 const CallView: React.FC = () => {
   const { t } = useTranslation();
-  const { activeCall, callError, isAgoraReady } = useCallContext();
+  const { activeCall, callError, localVideoTrack, screenShareTrack, remoteUsers } = useCallContext();
+  const { profile } = useAuthContext();
 
-  // Placeholder tracks – in a real implementation, these come from CallContext
-  const [localVideoTrack] = useState<ICameraVideoTrack | null>(null);
-  const [screenShareTrack] = useState<ILocalVideoTrack | null>(null);
-  const [remoteVideoTracks] = useState<Map<string, IRemoteVideoTrack>>(new Map());
+  // Build remote video tracks map from remoteUsers (only includes users with video)
+  const remoteVideoTracks = useMemo(() => {
+    const map = new Map<string, import('../../services/agora').IRemoteVideoTrack>();
+    remoteUsers.forEach((tracks, uid) => {
+      if (tracks.video) map.set(uid, tracks.video);
+    });
+    return map;
+  }, [remoteUsers]);
 
   if (!activeCall || activeCall.isMinimized) return null;
 
@@ -22,9 +27,10 @@ const CallView: React.FC = () => {
   const isConnected = activeCall.state === CallState.CONNECTED;
   const isEnded = activeCall.state === CallState.ENDED;
 
-  // Find the OTHER participant(s) (not self)
+  // Find the OTHER participant(s) — filter by current user, not initiator
+  const currentUserId = profile?.id || '';
   const otherParticipants = activeCall.participants.filter(
-    (p) => p.id !== activeCall.initiatorId
+    (p) => p.id !== currentUserId
   );
   const isGroupCall = activeCall.participants.length > 2;
 
@@ -58,7 +64,7 @@ const CallView: React.FC = () => {
             participants={activeCall.participants}
             localVideoTrack={localVideoTrack}
             remoteVideoTracks={remoteVideoTracks}
-            localUserId={activeCall.initiatorId}
+            localUserId={currentUserId}
             screenShareTrack={activeCall.isScreenSharing ? screenShareTrack : null}
           />
         ) : (

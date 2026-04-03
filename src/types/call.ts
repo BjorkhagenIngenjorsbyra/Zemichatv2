@@ -125,6 +125,15 @@ export interface CallContextActions {
   clearCallError: () => void;
 }
 
-export interface CallContextValue extends CallContextState, CallContextActions {
+export interface CallContextTracks {
+  localVideoTrack: import('../services/agora').ICameraVideoTrack | null;
+  screenShareTrack: import('../services/agora').ILocalVideoTrack | null;
+  remoteUsers: Map<string, {
+    audio?: import('../services/agora').IRemoteAudioTrack;
+    video?: import('../services/agora').IRemoteVideoTrack;
+  }>;
+}
+
+export interface CallContextValue extends CallContextState, CallContextActions, CallContextTracks {
   callError: string | null;
 }
