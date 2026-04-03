@@ -15,6 +15,8 @@ import {
   type CallParticipant,
   CallState,
   CallType,
+  VIDEO_CALL_MAX_DURATION_SECONDS,
+  VIDEO_CALL_WARNING_SECONDS,
 } from '../types/call';
 import { SignalType, CallStatus } from '../types/database';
 import {
@@ -342,6 +344,21 @@ export function CallProvider({ children }: CallProviderProps) {
           if (!prev) return prev;
           return { ...prev, participants: prev.participants.filter((p) => p.id !== String(user.uid)) };
         });
+      });
+
+      // Reconnection handling — Agora SDK auto-reconnects, we track state
+      client.on('connection-state-change', (curState: string, prevState: string) => {
+        console.log(`[Call] Agora connection: ${prevState} → ${curState}`);
+        if (curState === 'RECONNECTING') {
+          setCallError('call.reconnecting');
+        } else if (curState === 'CONNECTED' && prevState === 'RECONNECTING') {
+          setCallError(null); // Reconnected successfully
+        } else if (curState === 'DISCONNECTED' && prevState === 'RECONNECTING') {
+          // Failed to reconnect — end the call
+          setCallError('call.connectionLost');
+          setActiveCall((prev) => prev ? { ...prev, state: CallState.ENDED } : prev);
+          setTimeout(() => cleanupCall(), 2500);
+        }
       });
 
       // Pre-check media permissions before Agora creates tracks
@@ -818,6 +835,22 @@ export function CallProvider({ children }: CallProviderProps) {
       }
     };
   }, [activeCall, remoteUsers.size, endCall]);
+
+  // ============================================================
+  // VIDEO CALL MAX DURATION
+  // ============================================================
+
+  useEffect(() => {
+    if (!activeCall || activeCall.state !== CallState.CONNECTED) return;
+    if (activeCall.callType !== CallType.VIDEO) return;
+
+    if (callDuration >= VIDEO_CALL_MAX_DURATION_SECONDS) {
+      endCall();
+    } else if (callDuration >= VIDEO_CALL_WARNING_SECONDS && callDuration < VIDEO_CALL_WARNING_SECONDS + 1) {
+      // Show warning once at the 55-minute mark
+      setCallError('call.videoTimeWarning');
+    }
+  }, [activeCall, callDuration, endCall]);
 
   // ============================================================
   // CLEANUP ON UNMOUNT
