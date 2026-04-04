@@ -27,15 +27,28 @@ workflows:
           app-store-connect fetch-signing-files "com.zemichat.app" --type IOS_APP_STORE --create
           keychain initialize
           keychain add-certificates
+
+          # Patch project to use our team and automatic signing
+          cd ios/App
+          /usr/libexec/PlistBuddy -c "Set :objects:$(xcodebuild -project App.xcodeproj -scheme App -showBuildSettings 2>/dev/null | grep -m1 'DEVELOPMENT_TEAM' | awk '{print $3}'):buildSettings:DEVELOPMENT_TEAM VVMHR5Z32V" App.xcodeproj/project.pbxproj 2>/dev/null || true
+
+          # Use sed to set DEVELOPMENT_TEAM everywhere in project
+          sed -i '' 's/DEVELOPMENT_TEAM = "";/DEVELOPMENT_TEAM = VVMHR5Z32V;/g' App.xcodeproj/project.pbxproj
+          sed -i '' 's/DEVELOPMENT_TEAM = .*;/DEVELOPMENT_TEAM = VVMHR5Z32V;/g' App.xcodeproj/project.pbxproj
+
+          # Set provisioning profile from the fetched one
+          PROFILE_NAME=$(find "$HOME/Library/MobileDevice/Provisioning Profiles" -name "*.mobileprovision" -exec /usr/libexec/PlistBuddy -c 'Print :Name' /dev/stdin \; 2>/dev/null | head -1)
+          echo "Using profile: $PROFILE_NAME"
+
+          if [ -n "$PROFILE_NAME" ]; then
+            sed -i '' "s/PROVISIONING_PROFILE_SPECIFIER = \"\";/PROVISIONING_PROFILE_SPECIFIER = \"$PROFILE_NAME\";/g" App.xcodeproj/project.pbxproj
+            sed -i '' "s/PROVISIONING_PROFILE_SPECIFIER = .*;/PROVISIONING_PROFILE_SPECIFIER = \"$PROFILE_NAME\";/g" App.xcodeproj/project.pbxproj
+          fi
+
+          cd "$CM_BUILD_DIR"
           xcode-project use-profiles
       - name: Build IPA
         script: |
-          # Set team ID in the Xcode project
-          cd ios/App
-          sed -i '' 's/DEVELOPMENT_TEAM = "";/DEVELOPMENT_TEAM = VVMHR5Z32V;/g' App.xcodeproj/project.pbxproj
-          sed -i '' 's/CODE_SIGN_STYLE = Automatic;/CODE_SIGN_STYLE = Manual;/g' App.xcodeproj/project.pbxproj
-          cd "$CM_BUILD_DIR"
-
           xcode-project build-ipa \
             --project "$XCODE_PROJECT" \
             --scheme "$XCODE_SCHEME"
