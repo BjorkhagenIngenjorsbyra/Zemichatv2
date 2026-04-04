@@ -4,7 +4,7 @@ workflows:
     max_build_duration: 60
     instance_type: mac_mini_m2
     integrations:
-      app_store_connect: Bjorkhagen Ingenjorsbyra
+      app_store_connect: Bjorkhagen Admin
     environment:
       vars:
         XCODE_PROJECT: "ios/App/App.xcodeproj"
