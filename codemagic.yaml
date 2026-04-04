@@ -6,10 +6,14 @@ workflows:
     integrations:
       app_store_connect: Bjorkhagen Ingenjorsbyra
     environment:
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: com.zemichat.app
       vars:
         XCODE_PROJECT: "ios/App/App.xcodeproj"
         XCODE_SCHEME: "App"
         APP_STORE_CONNECT_APP_ID: "6758961616"
+        BUNDLE_ID: "com.zemichat.app"
       node: 22
     scripts:
       - name: Install dependencies
@@ -18,80 +22,54 @@ workflows:
       - name: Build web assets
         script: |
           npm run build
-      - name: Add iOS platform
+      - name: Sync iOS platform
         script: |
           npx cap add ios || true
           npx cap sync ios
       - name: Set up code signing
         script: |
-          app-store-connect fetch-signing-files "com.zemichat.app" --type IOS_APP_STORE --create
+          # Fetch signing files from App Store Connect (creates cert + profile if needed)
+          app-store-connect fetch-signing-files "$BUNDLE_ID" --type IOS_APP_STORE --create
+
+          # Set up keychain with fetched certificates
           keychain initialize
           keychain add-certificates
 
-          # Patch project to use our team and automatic signing
+          # Patch DEVELOPMENT_TEAM in the Xcode project (Capacitor generates it empty)
           cd ios/App
-          /usr/libexec/PlistBuddy -c "Set :objects:$(xcodebuild -project App.xcodeproj -scheme App -showBuildSettings 2>/dev/null | grep -m1 'DEVELOPMENT_TEAM' | awk '{print $3}'):buildSettings:DEVELOPMENT_TEAM VVMHR5Z32V" App.xcodeproj/project.pbxproj 2>/dev/null || true
-
-          # Use sed to set DEVELOPMENT_TEAM everywhere in project
           sed -i '' 's/DEVELOPMENT_TEAM = "";/DEVELOPMENT_TEAM = VVMHR5Z32V;/g' App.xcodeproj/project.pbxproj
-          sed -i '' 's/DEVELOPMENT_TEAM = .*;/DEVELOPMENT_TEAM = VVMHR5Z32V;/g' App.xcodeproj/project.pbxproj
-
-          # Set provisioning profile from the fetched one
-          PROFILE_NAME=$(find "$HOME/Library/MobileDevice/Provisioning Profiles" -name "*.mobileprovision" -exec /usr/libexec/PlistBuddy -c 'Print :Name' /dev/stdin \; 2>/dev/null | head -1)
-          echo "Using profile: $PROFILE_NAME"
-
-          if [ -n "$PROFILE_NAME" ]; then
-            sed -i '' "s/PROVISIONING_PROFILE_SPECIFIER = \"\";/PROVISIONING_PROFILE_SPECIFIER = \"$PROFILE_NAME\";/g" App.xcodeproj/project.pbxproj
-            sed -i '' "s/PROVISIONING_PROFILE_SPECIFIER = .*;/PROVISIONING_PROFILE_SPECIFIER = \"$PROFILE_NAME\";/g" App.xcodeproj/project.pbxproj
-          fi
-
           cd "$CM_BUILD_DIR"
+
+          # Apply fetched profiles to Xcode project and generate export_options.plist
+          # This is the KEY step: use-profiles sets CODE_SIGN_STYLE, CODE_SIGN_IDENTITY,
+          # PROVISIONING_PROFILE_SPECIFIER, and DEVELOPMENT_TEAM on all targets,
+          # AND generates $HOME/export_options.plist with the correct signingCertificate
+          # (Apple Distribution) and signingStyle (manual) matching the installed cert.
           xcode-project use-profiles
       - name: Build IPA
         script: |
-          # Find the provisioning profile name
-          PROFILE_NAME=$(cd "$HOME/Library/MobileDevice/Provisioning Profiles" && for f in *.mobileprovision; do /usr/libexec/PlistBuddy -c 'Print :Name' /dev/stdin < "$f" 2>/dev/null; done | head -1)
-          PROFILE_UUID=$(cd "$HOME/Library/MobileDevice/Provisioning Profiles" && ls *.mobileprovision | head -1 | sed 's/.mobileprovision//')
-          echo "Profile name: $PROFILE_NAME"
-          echo "Profile UUID: $PROFILE_UUID"
-
-          # List available signing identities
+          # Debug: show what signing identities and profiles are available
+          echo "=== Signing identities ==="
           security find-identity -v -p codesigning
+          echo "=== Provisioning profiles ==="
+          ls -la "$HOME/Library/MobileDevice/Provisioning Profiles/" || true
+          echo "=== Generated export options ==="
+          cat "$HOME/export_options.plist"
+          echo "=== Project signing settings ==="
+          xcodebuild -project "$XCODE_PROJECT" -scheme "$XCODE_SCHEME" -showBuildSettings 2>/dev/null | grep -E "(CODE_SIGN|PROVISIONING|DEVELOPMENT_TEAM)" || true
 
-          # Get the signing identity hash
-          CERT_SHA=$(security find-identity -v -p codesigning | grep "Apple Distribution" | head -1 | awk '{print $2}')
-          echo "Using certificate: $CERT_SHA"
-
-          # Build archive with cert hash (avoids iOS Distribution vs Apple Distribution mismatch)
-          xcodebuild archive \
-            -project "$XCODE_PROJECT" \
-            -scheme "$XCODE_SCHEME" \
-            -sdk iphoneos \
-            -configuration Release \
-            -archivePath "$CM_BUILD_DIR/build/ios/App.xcarchive" \
-            COMPILER_INDEX_STORE_ENABLE=NO \
-            DEVELOPMENT_TEAM=VVMHR5Z32V \
-            CODE_SIGN_STYLE=Manual \
-            CODE_SIGN_IDENTITY="$CERT_SHA" \
-            PROVISIONING_PROFILE_SPECIFIER="$PROFILE_NAME" \
-            -allowProvisioningUpdates
-
-          # Save API key to file for xcodebuild auth
-          KEY_FILE="$CM_BUILD_DIR/build/ios/AuthKey.p8"
-          echo "$APP_STORE_CONNECT_PRIVATE_KEY" > "$KEY_FILE"
-
-          # Export with automatic signing + API key auth
-          xcodebuild -exportArchive \
-            -archivePath "$CM_BUILD_DIR/build/ios/App.xcarchive" \
-            -exportPath "$CM_BUILD_DIR/build/ios/ipa" \
-            -exportOptionsPlist "$CM_BUILD_DIR/ExportOptions.plist" \
-            -allowProvisioningUpdates \
-            -authenticationKeyPath "$KEY_FILE" \
-            -authenticationKeyID "$APP_STORE_CONNECT_KEY_IDENTIFIER" \
-            -authenticationKeyIssuerID "$APP_STORE_CONNECT_ISSUER_ID"
+          # Use Codemagic's xcode-project build-ipa which handles both archive + export
+          # in one step, using the export_options.plist generated by use-profiles.
+          # This avoids the "iOS Distribution" vs "Apple Distribution" mismatch because
+          # the generated plist explicitly names the correct certificate.
+          xcode-project build-ipa \
+            --project "$XCODE_PROJECT" \
+            --scheme "$XCODE_SCHEME" \
+            --archive-flags="-sdk iphoneos COMPILER_INDEX_STORE_ENABLE=NO" \
+            --ipa-directory "$CM_BUILD_DIR/build/ios/ipa"
     artifacts:
       - build/ios/ipa/*.ipa
-      - build/ios/App.xcarchive/**/*.log
+      - build/ios/xcarchive/*.xcarchive/**/*.log
       - /tmp/xcodebuild_logs/*.log
     publishing:
       app_store_connect:
