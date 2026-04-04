@@ -59,7 +59,7 @@ workflows:
             COMPILER_INDEX_STORE_ENABLE=NO \
             DEVELOPMENT_TEAM=VVMHR5Z32V \
             CODE_SIGN_STYLE=Manual \
-            CODE_SIGN_IDENTITY="iPhone Distribution"
+            CODE_SIGN_IDENTITY="Apple Distribution"
 
           # Export IPA
           xcodebuild -exportArchive \
