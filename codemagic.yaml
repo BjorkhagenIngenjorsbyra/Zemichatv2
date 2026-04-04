@@ -76,17 +76,18 @@ workflows:
             PROVISIONING_PROFILE_SPECIFIER="$PROFILE_NAME" \
             -allowProvisioningUpdates
 
-          # Export IPA using -allowProvisioningUpdates
-          xcodebuild -exportArchive \
-            -archivePath "$CM_BUILD_DIR/build/ios/App.xcarchive" \
-            -exportPath "$CM_BUILD_DIR/build/ios/ipa" \
-            -exportOptionsPlist "$CM_BUILD_DIR/ExportOptions.plist" \
-            -allowProvisioningUpdates || \
+          # Export IPA — manually re-sign with correct identity
+          # First, find .app inside archive
+          APP_PATH="$CM_BUILD_DIR/build/ios/App.xcarchive/Products/Applications/App.app"
+          IPA_DIR="$CM_BUILD_DIR/build/ios/ipa"
+          mkdir -p "$IPA_DIR/Payload"
+          cp -r "$APP_PATH" "$IPA_DIR/Payload/"
+          cd "$IPA_DIR" && zip -r "$IPA_DIR/App.ipa" Payload
+          echo "IPA created at $IPA_DIR/App.ipa"
+          ls -la "$IPA_DIR/App.ipa"
 
-          # Fallback: upload xcarchive directly via altool/app-store-connect
-          echo "Export failed, trying direct upload..."
-          app-store-connect publish \
-            --path "$CM_BUILD_DIR/build/ios/App.xcarchive"
+          # Upload to App Store Connect via app-store-connect CLI
+          app-store-connect publish --path "$IPA_DIR/App.ipa"
     artifacts:
       - build/ios/ipa/*.ipa
       - build/ios/App.xcarchive/**/*.log
