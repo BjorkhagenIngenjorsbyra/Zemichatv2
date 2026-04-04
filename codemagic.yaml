@@ -6,6 +6,7 @@ workflows:
     integrations:
       app_store_connect: Bjorkhagen Ingenjorsbyra
     environment:
+      xcode: 16.2
       vars:
         XCODE_PROJECT: "ios/App/App.xcodeproj"
         XCODE_SCHEME: "App"
@@ -76,28 +77,28 @@ workflows:
             PROVISIONING_PROFILE_SPECIFIER="$PROFILE_NAME" \
             -allowProvisioningUpdates
 
-          # Embed provisioning profile into .app
-          APP_PATH="$CM_BUILD_DIR/build/ios/App.xcarchive/Products/Applications/App.app"
-          PROFILE_FILE=$(ls "$HOME/Library/MobileDevice/Provisioning Profiles"/*.mobileprovision 2>/dev/null | head -1)
-          echo "Embedding profile: $PROFILE_FILE"
-          cp "$PROFILE_FILE" "$APP_PATH/embedded.mobileprovision"
+          # Try standard export first (should work with Xcode 16)
+          xcodebuild -exportArchive \
+            -archivePath "$CM_BUILD_DIR/build/ios/App.xcarchive" \
+            -exportPath "$CM_BUILD_DIR/build/ios/ipa" \
+            -exportOptionsPlist "$CM_BUILD_DIR/ExportOptions.plist" \
+            -allowProvisioningUpdates || {
 
-          # Re-sign the app with the profile embedded
-          /usr/bin/codesign --force --sign "$CERT_SHA" --entitlements "$CM_BUILD_DIR/build/ios/App.xcarchive/Products/Applications/App.app/../../../*.xcent" "$APP_PATH" 2>/dev/null || \
-          /usr/bin/codesign --force --sign "$CERT_SHA" "$APP_PATH"
+            echo "Standard export failed, trying manual IPA creation..."
+            APP_PATH="$CM_BUILD_DIR/build/ios/App.xcarchive/Products/Applications/App.app"
+            PROFILE_FILE=$(ls "$HOME/Library/MobileDevice/Provisioning Profiles"/*.mobileprovision 2>/dev/null | head -1)
 
-          # Create IPA from archive
-          IPA_DIR="$CM_BUILD_DIR/build/ios/ipa"
-          mkdir -p "$IPA_DIR/Payload"
-          cp -r "$APP_PATH" "$IPA_DIR/Payload/"
-          cd "$IPA_DIR" && zip -r "$IPA_DIR/App.ipa" Payload
-          echo "IPA created at $IPA_DIR/App.ipa"
+            # Copy profile into .app THEN create IPA (no re-signing)
+            cp "$PROFILE_FILE" "$APP_PATH/embedded.mobileprovision"
 
-          # Verify embedded.mobileprovision
-          ls -la "$IPA_DIR/Payload/App.app/embedded.mobileprovision"
+            IPA_DIR="$CM_BUILD_DIR/build/ios/ipa"
+            mkdir -p "$IPA_DIR/Payload"
+            cp -r "$APP_PATH" "$IPA_DIR/Payload/"
+            cd "$IPA_DIR" && zip -r -y "$IPA_DIR/App.ipa" Payload
 
-          # Upload to App Store Connect
-          app-store-connect publish --path "$IPA_DIR/App.ipa"
+            ls -la "$IPA_DIR/Payload/App.app/embedded.mobileprovision"
+            app-store-connect publish --path "$IPA_DIR/App.ipa"
+          }
     artifacts:
       - build/ios/ipa/*.ipa
       - build/ios/App.xcarchive/**/*.log
