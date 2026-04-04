@@ -24,7 +24,10 @@ workflows:
           npx cap sync ios
       - name: Install CocoaPods
         script: |
-          cd ios/App && pod install
+          ls -la ios/App/Podfile || echo "No Podfile in ios/App"
+          ls -la ios/App/ || echo "No ios/App directory"
+          find ios -name "Podfile" 2>/dev/null
+          cd ios/App && pod install --repo-update
       - name: Set up code signing
         script: |
           app-store-connect fetch-signing-files "com.zemichat.app" --type IOS_APP_STORE --create
