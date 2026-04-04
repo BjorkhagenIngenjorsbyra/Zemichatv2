@@ -10,7 +10,7 @@ workflows:
         XCODE_WORKSPACE: "ios/App/App.xcworkspace"
         XCODE_SCHEME: "App"
         APP_STORE_CONNECT_APP_ID: "6758961616"
-      node: 20
+      node: 22
     scripts:
       - name: Install dependencies
         script: |
