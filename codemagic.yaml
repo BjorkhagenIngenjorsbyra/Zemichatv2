@@ -49,11 +49,23 @@ workflows:
           xcode-project use-profiles
       - name: Build IPA
         script: |
-          xcode-project build-ipa \
-            --project "$XCODE_PROJECT" \
-            --scheme "$XCODE_SCHEME"
+          # Build archive using xcodebuild directly (xcode-project overrides CODE_SIGN_STYLE)
+          xcodebuild archive \
+            -project "$XCODE_PROJECT" \
+            -scheme "$XCODE_SCHEME" \
+            -sdk iphoneos \
+            -configuration Release \
+            -archivePath "$CM_BUILD_DIR/build/ios/App.xcarchive" \
+            COMPILER_INDEX_STORE_ENABLE=NO
+
+          # Export IPA
+          xcodebuild -exportArchive \
+            -archivePath "$CM_BUILD_DIR/build/ios/App.xcarchive" \
+            -exportPath "$CM_BUILD_DIR/build/ios/ipa" \
+            -exportOptionsPlist "$CM_BUILD_DIR/ExportOptions.plist"
     artifacts:
       - build/ios/ipa/*.ipa
+      - build/ios/App.xcarchive/**/*.log
       - /tmp/xcodebuild_logs/*.log
     publishing:
       app_store_connect:
