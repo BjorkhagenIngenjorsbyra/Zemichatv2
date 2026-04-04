@@ -23,6 +23,26 @@ workflows:
         script: |
           npx cap add ios || true
           npx cap sync ios
+      - name: Patch iOS Info.plist
+        script: |
+          # Add required privacy usage descriptions
+          PLIST="ios/App/App/Info.plist"
+          /usr/libexec/PlistBuddy -c "Add :NSPhotoLibraryUsageDescription string 'ZemiChat behöver åtkomst till ditt fotobibliotek för att skicka bilder i chattar'" "$PLIST" 2>/dev/null || \
+          /usr/libexec/PlistBuddy -c "Set :NSPhotoLibraryUsageDescription 'ZemiChat behöver åtkomst till ditt fotobibliotek för att skicka bilder i chattar'" "$PLIST"
+
+          /usr/libexec/PlistBuddy -c "Add :NSLocationWhenInUseUsageDescription string 'ZemiChat behöver din plats för att dela den med vänner i chattar'" "$PLIST" 2>/dev/null || \
+          /usr/libexec/PlistBuddy -c "Set :NSLocationWhenInUseUsageDescription 'ZemiChat behöver din plats för att dela den med vänner i chattar'" "$PLIST"
+
+          /usr/libexec/PlistBuddy -c "Add :NSLocationAlwaysAndWhenInUseUsageDescription string 'ZemiChat behöver din plats för att dela den med vänner i chattar'" "$PLIST" 2>/dev/null || \
+          /usr/libexec/PlistBuddy -c "Set :NSLocationAlwaysAndWhenInUseUsageDescription 'ZemiChat behöver din plats för att dela den med vänner i chattar'" "$PLIST"
+
+          /usr/libexec/PlistBuddy -c "Add :NSCameraUsageDescription string 'ZemiChat behöver kameran för att ta bilder och videosamtal'" "$PLIST" 2>/dev/null || \
+          /usr/libexec/PlistBuddy -c "Set :NSCameraUsageDescription 'ZemiChat behöver kameran för att ta bilder och videosamtal'" "$PLIST"
+
+          /usr/libexec/PlistBuddy -c "Add :NSMicrophoneUsageDescription string 'ZemiChat behöver mikrofonen för röstmeddelanden och samtal'" "$PLIST" 2>/dev/null || \
+          /usr/libexec/PlistBuddy -c "Set :NSMicrophoneUsageDescription 'ZemiChat behöver mikrofonen för röstmeddelanden och samtal'" "$PLIST"
+
+          echo "Info.plist updated with privacy descriptions"
       - name: Set up code signing
         script: |
           # Generate RSA private key for certificate creation
