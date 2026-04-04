@@ -89,6 +89,10 @@ lint/tmp/
 # Android Profiling
 *.hprof
 
+# Local Android SDK (installed on build machine)
+Android/
+.knownPackages
+
 # Cordova plugins for Capacitor
 capacitor-cordova-android-plugins
 
