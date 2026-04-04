@@ -26,7 +26,7 @@ workflows:
       - name: Set up code signing
         script: |
           # Fetch signing files from App Store Connect (creates cert + profile if needed)
-          app-store-connect fetch-signing-files "$BUNDLE_ID" --type IOS_APP_STORE --create
+          app-store-connect fetch-signing-files "$BUNDLE_ID" --type IOS_APP_STORE --create --verbose
 
           # Set up keychain with fetched certificates
           keychain initialize
