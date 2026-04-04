@@ -76,17 +76,27 @@ workflows:
             PROVISIONING_PROFILE_SPECIFIER="$PROFILE_NAME" \
             -allowProvisioningUpdates
 
-          # Export IPA — manually re-sign with correct identity
-          # First, find .app inside archive
+          # Embed provisioning profile into .app
           APP_PATH="$CM_BUILD_DIR/build/ios/App.xcarchive/Products/Applications/App.app"
+          PROFILE_FILE=$(ls "$HOME/Library/MobileDevice/Provisioning Profiles"/*.mobileprovision 2>/dev/null | head -1)
+          echo "Embedding profile: $PROFILE_FILE"
+          cp "$PROFILE_FILE" "$APP_PATH/embedded.mobileprovision"
+
+          # Re-sign the app with the profile embedded
+          /usr/bin/codesign --force --sign "$CERT_SHA" --entitlements "$CM_BUILD_DIR/build/ios/App.xcarchive/Products/Applications/App.app/../../../*.xcent" "$APP_PATH" 2>/dev/null || \
+          /usr/bin/codesign --force --sign "$CERT_SHA" "$APP_PATH"
+
+          # Create IPA from archive
           IPA_DIR="$CM_BUILD_DIR/build/ios/ipa"
           mkdir -p "$IPA_DIR/Payload"
           cp -r "$APP_PATH" "$IPA_DIR/Payload/"
           cd "$IPA_DIR" && zip -r "$IPA_DIR/App.ipa" Payload
           echo "IPA created at $IPA_DIR/App.ipa"
-          ls -la "$IPA_DIR/App.ipa"
 
-          # Upload to App Store Connect via app-store-connect CLI
+          # Verify embedded.mobileprovision
+          ls -la "$IPA_DIR/Payload/App.app/embedded.mobileprovision"
+
+          # Upload to App Store Connect
           app-store-connect publish --path "$IPA_DIR/App.ipa"
     artifacts:
       - build/ios/ipa/*.ipa
