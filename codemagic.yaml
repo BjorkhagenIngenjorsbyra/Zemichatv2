@@ -76,13 +76,17 @@ workflows:
             PROVISIONING_PROFILE_SPECIFIER="$PROFILE_NAME" \
             -allowProvisioningUpdates
 
-          # Export with automatic signing - Xcode handles provisioning
+          # Save API key to file for xcodebuild auth
+          KEY_FILE="$CM_BUILD_DIR/build/ios/AuthKey.p8"
+          echo "$APP_STORE_CONNECT_PRIVATE_KEY" > "$KEY_FILE"
+
+          # Export with automatic signing + API key auth
           xcodebuild -exportArchive \
             -archivePath "$CM_BUILD_DIR/build/ios/App.xcarchive" \
             -exportPath "$CM_BUILD_DIR/build/ios/ipa" \
             -exportOptionsPlist "$CM_BUILD_DIR/ExportOptions.plist" \
             -allowProvisioningUpdates \
-            -authenticationKeyPath "$APP_STORE_CONNECT_PRIVATE_KEY" \
+            -authenticationKeyPath "$KEY_FILE" \
             -authenticationKeyID "$APP_STORE_CONNECT_KEY_IDENTIFIER" \
             -authenticationKeyIssuerID "$APP_STORE_CONNECT_ISSUER_ID"
     artifacts:
