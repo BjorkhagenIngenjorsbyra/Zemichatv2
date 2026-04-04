@@ -30,10 +30,15 @@ workflows:
           xcode-project use-profiles
       - name: Build IPA
         script: |
+          # Set team ID in the Xcode project
+          cd ios/App
+          sed -i '' 's/DEVELOPMENT_TEAM = "";/DEVELOPMENT_TEAM = VVMHR5Z32V;/g' App.xcodeproj/project.pbxproj
+          sed -i '' 's/CODE_SIGN_STYLE = Automatic;/CODE_SIGN_STYLE = Manual;/g' App.xcodeproj/project.pbxproj
+          cd "$CM_BUILD_DIR"
+
           xcode-project build-ipa \
             --project "$XCODE_PROJECT" \
-            --scheme "$XCODE_SCHEME" \
-            --force-code-sign
+            --scheme "$XCODE_SCHEME"
     artifacts:
       - build/ios/ipa/*.ipa
       - /tmp/xcodebuild_logs/*.log
