@@ -7,7 +7,7 @@ workflows:
       app_store_connect: Bjorkhagen Ingenjorsbyra
     environment:
       vars:
-        XCODE_WORKSPACE: "ios/App/App.xcworkspace"
+        XCODE_PROJECT: "ios/App/App.xcodeproj"
         XCODE_SCHEME: "App"
         APP_STORE_CONNECT_APP_ID: "6758961616"
       node: 22
@@ -22,12 +22,6 @@ workflows:
         script: |
           npx cap add ios || true
           npx cap sync ios
-      - name: Install CocoaPods
-        script: |
-          ls -la ios/App/Podfile || echo "No Podfile in ios/App"
-          ls -la ios/App/ || echo "No ios/App directory"
-          find ios -name "Podfile" 2>/dev/null
-          cd ios/App && pod install --repo-update
       - name: Set up code signing
         script: |
           app-store-connect fetch-signing-files "com.zemichat.app" --type IOS_APP_STORE --create
@@ -37,7 +31,7 @@ workflows:
       - name: Build IPA
         script: |
           xcode-project build-ipa \
-            --workspace "$XCODE_WORKSPACE" \
+            --project "$XCODE_PROJECT" \
             --scheme "$XCODE_SCHEME"
     artifacts:
       - build/ios/ipa/*.ipa
