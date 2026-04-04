@@ -76,11 +76,17 @@ workflows:
             PROVISIONING_PROFILE_SPECIFIER="$PROFILE_NAME" \
             -allowProvisioningUpdates
 
-          # Export IPA
+          # Export IPA using -allowProvisioningUpdates
           xcodebuild -exportArchive \
             -archivePath "$CM_BUILD_DIR/build/ios/App.xcarchive" \
             -exportPath "$CM_BUILD_DIR/build/ios/ipa" \
-            -exportOptionsPlist "$CM_BUILD_DIR/ExportOptions.plist"
+            -exportOptionsPlist "$CM_BUILD_DIR/ExportOptions.plist" \
+            -allowProvisioningUpdates || \
+
+          # Fallback: upload xcarchive directly via altool/app-store-connect
+          echo "Export failed, trying direct upload..."
+          app-store-connect publish \
+            --path "$CM_BUILD_DIR/build/ios/App.xcarchive"
     artifacts:
       - build/ios/ipa/*.ipa
       - build/ios/App.xcarchive/**/*.log
