@@ -58,7 +58,11 @@ workflows:
           # List available signing identities
           security find-identity -v -p codesigning
 
-          # Build archive with explicit team and signing
+          # Get the signing identity hash
+          CERT_SHA=$(security find-identity -v -p codesigning | grep "Apple Distribution" | head -1 | awk '{print $2}')
+          echo "Using certificate: $CERT_SHA"
+
+          # Build archive with cert hash (avoids iOS Distribution vs Apple Distribution mismatch)
           xcodebuild archive \
             -project "$XCODE_PROJECT" \
             -scheme "$XCODE_SCHEME" \
@@ -68,10 +72,8 @@ workflows:
             COMPILER_INDEX_STORE_ENABLE=NO \
             DEVELOPMENT_TEAM=VVMHR5Z32V \
             CODE_SIGN_STYLE=Manual \
-            CODE_SIGN_IDENTITY="Apple Distribution" \
+            CODE_SIGN_IDENTITY="$CERT_SHA" \
             PROVISIONING_PROFILE_SPECIFIER="$PROFILE_NAME" \
-            CODE_SIGNING_REQUIRED=YES \
-            CODE_SIGNING_ALLOWED=YES \
             -allowProvisioningUpdates
 
           # Export IPA
