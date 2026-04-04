@@ -6,7 +6,6 @@ workflows:
     integrations:
       app_store_connect: Bjorkhagen Ingenjorsbyra
     environment:
-      xcode: 16.2
       vars:
         XCODE_PROJECT: "ios/App/App.xcodeproj"
         XCODE_SCHEME: "App"
@@ -77,28 +76,15 @@ workflows:
             PROVISIONING_PROFILE_SPECIFIER="$PROFILE_NAME" \
             -allowProvisioningUpdates
 
-          # Try standard export first (should work with Xcode 16)
+          # Export with automatic signing - Xcode handles provisioning
           xcodebuild -exportArchive \
             -archivePath "$CM_BUILD_DIR/build/ios/App.xcarchive" \
             -exportPath "$CM_BUILD_DIR/build/ios/ipa" \
             -exportOptionsPlist "$CM_BUILD_DIR/ExportOptions.plist" \
-            -allowProvisioningUpdates || {
-
-            echo "Standard export failed, trying manual IPA creation..."
-            APP_PATH="$CM_BUILD_DIR/build/ios/App.xcarchive/Products/Applications/App.app"
-            PROFILE_FILE=$(ls "$HOME/Library/MobileDevice/Provisioning Profiles"/*.mobileprovision 2>/dev/null | head -1)
-
-            # Copy profile into .app THEN create IPA (no re-signing)
-            cp "$PROFILE_FILE" "$APP_PATH/embedded.mobileprovision"
-
-            IPA_DIR="$CM_BUILD_DIR/build/ios/ipa"
-            mkdir -p "$IPA_DIR/Payload"
-            cp -r "$APP_PATH" "$IPA_DIR/Payload/"
-            cd "$IPA_DIR" && zip -r -y "$IPA_DIR/App.ipa" Payload
-
-            ls -la "$IPA_DIR/Payload/App.app/embedded.mobileprovision"
-            app-store-connect publish --path "$IPA_DIR/App.ipa"
-          }
+            -allowProvisioningUpdates \
+            -authenticationKeyPath "$APP_STORE_CONNECT_PRIVATE_KEY" \
+            -authenticationKeyID "$APP_STORE_CONNECT_KEY_IDENTIFIER" \
+            -authenticationKeyIssuerID "$APP_STORE_CONNECT_ISSUER_ID"
     artifacts:
       - build/ios/ipa/*.ipa
       - build/ios/App.xcarchive/**/*.log
