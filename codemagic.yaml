@@ -25,8 +25,15 @@ workflows:
           npx cap sync ios
       - name: Set up code signing
         script: |
+          # Generate a new private key for certificate creation
+          openssl req -nodes -newkey rsa:2048 -keyout /tmp/cert_key.pem -out /tmp/cert_csr.pem -subj "/CN=ZemiChat Distribution/O=Bjorkhagen Ingenjorsbyra AB"
+
           # Fetch signing files from App Store Connect (creates cert + profile if needed)
-          app-store-connect fetch-signing-files "$BUNDLE_ID" --type IOS_APP_STORE --create --verbose
+          app-store-connect fetch-signing-files "$BUNDLE_ID" \
+            --type IOS_APP_STORE \
+            --create \
+            --certificate-key /tmp/cert_key.pem \
+            --verbose
 
           # Set up keychain with fetched certificates
           keychain initialize
