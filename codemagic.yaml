@@ -49,14 +49,17 @@ workflows:
           xcode-project use-profiles
       - name: Build IPA
         script: |
-          # Build archive using xcodebuild directly (xcode-project overrides CODE_SIGN_STYLE)
+          # Build archive with explicit team and signing
           xcodebuild archive \
             -project "$XCODE_PROJECT" \
             -scheme "$XCODE_SCHEME" \
             -sdk iphoneos \
             -configuration Release \
             -archivePath "$CM_BUILD_DIR/build/ios/App.xcarchive" \
-            COMPILER_INDEX_STORE_ENABLE=NO
+            COMPILER_INDEX_STORE_ENABLE=NO \
+            DEVELOPMENT_TEAM=VVMHR5Z32V \
+            CODE_SIGN_STYLE=Manual \
+            CODE_SIGN_IDENTITY="iPhone Distribution"
 
           # Export IPA
           xcodebuild -exportArchive \
