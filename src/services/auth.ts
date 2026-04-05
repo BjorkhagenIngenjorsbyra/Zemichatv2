@@ -1,5 +1,6 @@
 import { supabase } from './supabase';
 import type { AuthError, User as SupabaseUser, Session } from '@supabase/supabase-js';
+import { trackEvent } from './analytics';
 
 export interface AuthResult {
   user: SupabaseUser | null;
@@ -37,6 +38,10 @@ export async function signUp({ email, password, displayName }: SignUpData): Prom
       },
     },
   });
+
+  if (data.user && !error) {
+    trackEvent('signup', { method: 'email' });
+  }
 
   return {
     user: data.user,
@@ -79,6 +84,10 @@ export async function signIn({ email, password }: SignInData): Promise<AuthResul
         error: { message: 'Account is paused', name: 'AuthApiError', status: 403 } as AuthError,
       };
     }
+  }
+
+  if (data.user && !error) {
+    trackEvent('login', { method: 'email' });
   }
 
   return {
@@ -127,6 +136,10 @@ export async function signInAsTexter({ zemiNumber, password }: TexterSignInData)
         error: { message: 'Account is paused', name: 'AuthApiError', status: 403 } as AuthError,
       };
     }
+  }
+
+  if (data.user && !error) {
+    trackEvent('login', { method: 'zemi_number' });
   }
 
   return {
