@@ -1,5 +1,6 @@
 import { supabase } from './supabase';
 import { sendMessage } from './message';
+import { trackEvent } from './analytics';
 import {
   type CallLog,
   type CallSignal,
@@ -54,6 +55,7 @@ export async function createCallLog(
       return { callLog: null, error: new Error(error.message) };
     }
 
+    trackEvent('call_started', { type: callType, chat_id: chatId });
     return { callLog: data as unknown as CallLog, error: null };
   } catch (err) {
     return {

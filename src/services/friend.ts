@@ -1,4 +1,5 @@
 import { supabase } from './supabase';
+import { trackEvent } from './analytics';
 import {
   type Friendship,
   type User,
@@ -307,6 +308,7 @@ export async function sendFriendRequest(
       return { friendship: null, error: new Error(error.message) };
     }
 
+    trackEvent('friend_request_sent');
     return { friendship: friendship as unknown as Friendship, error: null };
   } catch (err) {
     return {

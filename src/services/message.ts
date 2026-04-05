@@ -1,6 +1,7 @@
 import { supabase } from './supabase';
 import { MessageType, type Message, type User } from '../types/database';
 import type { RealtimeChannel } from '@supabase/supabase-js';
+import { trackEvent } from './analytics';
 
 export interface MessageWithSender extends Message {
   sender: User;
@@ -127,6 +128,7 @@ export async function sendMessage({
       return { message: null, error: new Error(error.message) };
     }
 
+    trackEvent('message_sent', { type, chat_id: chatId });
     return { message: data as unknown as Message, error: null };
   } catch (err) {
     return {
