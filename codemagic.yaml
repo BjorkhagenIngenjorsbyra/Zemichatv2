@@ -58,16 +58,27 @@ workflows:
           openssl genrsa -out /tmp/cert_key.pem 2048
           export CERTIFICATE_PRIVATE_KEY=$(cat /tmp/cert_key.pem)
 
-          # Revoke existing distribution certificates so we can create a fresh one
-          # matching our new private key
-          app-store-connect certificates list \
-            --type DISTRIBUTION \
-            --state ISSUED 2>/dev/null | grep -o '[A-Z0-9]\{10,\}' | while read CERT_ID; do
-            echo "Revoking certificate $CERT_ID"
-            app-store-connect certificates revoke "$CERT_ID" 2>/dev/null || true
-          done
+          # List and revoke ALL existing distribution certificates
+          # so we can create a fresh one matching our new private key
+          echo "Listing existing distribution certificates..."
+          app-store-connect certificates list --type DISTRIBUTION --state ISSUED --json 2>/dev/null > /tmp/certs.json || true
+          cat /tmp/certs.json || true
 
-          # Fetch signing files from App Store Connect (creates cert + profile if needed)
+          # Extract cert IDs and revoke each one
+          python3 -c "
+          import json, subprocess, sys
+          try:
+            certs = json.load(open('/tmp/certs.json'))
+            for cert in certs:
+              cid = cert.get('id', '')
+              if cid:
+                print(f'Revoking cert {cid}...')
+                subprocess.run(['app-store-connect', 'certificates', 'revoke', cid], check=False)
+          except Exception as e:
+            print(f'Cert cleanup skipped: {e}')
+          " || true
+
+          # Fetch signing files from App Store Connect (creates cert + profile with our key)
           app-store-connect fetch-signing-files "$BUNDLE_ID" \
             --type IOS_APP_STORE \
             --create \
