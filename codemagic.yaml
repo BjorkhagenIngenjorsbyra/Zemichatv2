@@ -58,25 +58,20 @@ workflows:
           openssl genrsa -out /tmp/cert_key.pem 2048
           export CERTIFICATE_PRIVATE_KEY=$(cat /tmp/cert_key.pem)
 
-          # List and revoke ALL existing distribution certificates
-          # so we can create a fresh one matching our new private key
-          echo "Listing existing distribution certificates..."
-          app-store-connect certificates list --type DISTRIBUTION --state ISSUED --json 2>/dev/null > /tmp/certs.json || true
-          cat /tmp/certs.json || true
+          # Revoke existing distribution certificates before fetching new ones.
+          # Uses the same App Store Connect auth from the 'integrations' block.
+          echo "Revoking stale distribution certificates..."
+          app-store-connect certificates list \
+            --type DISTRIBUTION \
+            --state ISSUED 2>&1 | tee /tmp/cert_list.txt || true
 
-          # Extract cert IDs and revoke each one
-          python3 -c "
-          import json, subprocess, sys
-          try:
-            certs = json.load(open('/tmp/certs.json'))
-            for cert in certs:
-              cid = cert.get('id', '')
-              if cid:
-                print(f'Revoking cert {cid}...')
-                subprocess.run(['app-store-connect', 'certificates', 'revoke', cid], check=False)
-          except Exception as e:
-            print(f'Cert cleanup skipped: {e}')
-          " || true
+          # Parse cert IDs from the table output (format: "CERT_ID  CERT_NAME  ...")
+          # The ID is the first column, typically 10+ alphanum chars
+          grep -Eo '^[A-Za-z0-9]{8,}' /tmp/cert_list.txt | while read CERT_ID; do
+            echo "Attempting to revoke certificate: $CERT_ID"
+            app-store-connect certificates revoke "$CERT_ID" 2>&1 || true
+          done
+          echo "Certificate cleanup done."
 
           # Fetch signing files from App Store Connect (creates cert + profile with our key)
           app-store-connect fetch-signing-files "$BUNDLE_ID" \
