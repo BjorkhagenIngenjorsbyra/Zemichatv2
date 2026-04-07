@@ -23,6 +23,12 @@ workflows:
         script: |
           npx cap add ios || true
           npx cap sync ios
+      - name: Bump iOS build number
+        script: |
+          # Set CFBundleVersion to Codemagic build number (auto-incrementing)
+          PLIST="ios/App/App/Info.plist"
+          /usr/libexec/PlistBuddy -c "Set :CFBundleVersion $BUILD_NUMBER" "$PLIST"
+          echo "Set CFBundleVersion to $BUILD_NUMBER"
       - name: Patch iOS Info.plist
         script: |
           # Add required privacy usage descriptions
