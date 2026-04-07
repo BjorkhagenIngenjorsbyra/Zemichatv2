@@ -18,7 +18,8 @@ input:-webkit-autofill:active {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  min-height: 100%;
+  min-height: 100vh;
+  min-height: 100dvh;
   max-width: 400px;
   margin: 0 auto;
   padding: 2rem;
