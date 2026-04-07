@@ -282,14 +282,14 @@ const App: React.FC = () => (
               <LegalPage type="terms" />
             </Route>
 
-            {/* Default redirect */}
+            {/* Default redirect — show Welcome page for new users */}
             <Route exact path="/">
-              <Redirect to="/login" />
+              <Redirect to="/welcome" />
             </Route>
 
             {/* Catch-all redirect */}
             <Route>
-              <Redirect to="/login" />
+              <Redirect to="/welcome" />
             </Route>
           </Switch>
         </IonRouterOutlet>

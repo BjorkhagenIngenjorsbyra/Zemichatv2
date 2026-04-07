@@ -13,7 +13,7 @@ const Welcome: React.FC = () => {
       <IonContent className="ion-padding" fullscreen>
         <div className="welcome-container">
           <div className="welcome-hero">
-            <div className="welcome-logo">💬</div>
+            <img src="/favicon-192.png" alt="ZemiChat" className="welcome-logo-img" />
             <h1 className="welcome-title">{t('common.appName')}</h1>
             <p className="welcome-tagline">{t('welcome.description')}</p>
           </div>
@@ -49,7 +49,8 @@ const Welcome: React.FC = () => {
             display: flex;
             flex-direction: column;
             justify-content: center;
-            min-height: 100%;
+            min-height: 100vh;
+            min-height: 100dvh;
             max-width: 400px;
             margin: 0 auto;
             padding: 2rem;
@@ -65,9 +66,22 @@ const Welcome: React.FC = () => {
             padding-bottom: 2rem;
           }
 
-          .welcome-logo {
-            font-size: 4rem;
+          .welcome-logo-img {
+            width: 96px;
+            height: 96px;
             margin-bottom: 1.5rem;
+            border-radius: 1.25rem;
+          }
+
+          @media (min-width: 768px) {
+            .welcome-container {
+              max-width: 480px;
+              padding: 3rem;
+            }
+            .welcome-logo-img {
+              width: 128px;
+              height: 128px;
+            }
           }
 
           .welcome-title {

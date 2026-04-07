@@ -290,3 +290,25 @@ ion-item.auth-item,
   letter-spacing: 0.05em;
   text-transform: uppercase;
 }
+
+/* ── iPad / Tablet responsive ── */
+@media (min-width: 768px) {
+  .auth-container {
+    max-width: 480px;
+    padding: 3rem;
+  }
+
+  .auth-logo {
+    width: 112px;
+    height: 112px;
+    margin-bottom: 1.5rem;
+  }
+
+  .auth-title {
+    font-size: 3rem;
+  }
+
+  .auth-subtitle {
+    font-size: 1.125rem;
+  }
+}

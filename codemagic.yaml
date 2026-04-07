@@ -36,6 +36,9 @@ workflows:
           /usr/libexec/PlistBuddy -c "Add :NSLocationAlwaysAndWhenInUseUsageDescription string 'ZemiChat behöver din plats för att dela den med vänner i chattar'" "$PLIST" 2>/dev/null || \
           /usr/libexec/PlistBuddy -c "Set :NSLocationAlwaysAndWhenInUseUsageDescription 'ZemiChat behöver din plats för att dela den med vänner i chattar'" "$PLIST"
 
+          /usr/libexec/PlistBuddy -c "Add :NSPhotoLibraryAddUsageDescription string 'ZemiChat behöver åtkomst för att spara bilder från chattar'" "$PLIST" 2>/dev/null || \
+          /usr/libexec/PlistBuddy -c "Set :NSPhotoLibraryAddUsageDescription 'ZemiChat behöver åtkomst för att spara bilder från chattar'" "$PLIST"
+
           /usr/libexec/PlistBuddy -c "Add :NSCameraUsageDescription string 'ZemiChat behöver kameran för att ta bilder och videosamtal'" "$PLIST" 2>/dev/null || \
           /usr/libexec/PlistBuddy -c "Set :NSCameraUsageDescription 'ZemiChat behöver kameran för att ta bilder och videosamtal'" "$PLIST"
 
