@@ -295,7 +295,7 @@ const EmojiGifPanel: React.FC<EmojiGifPanelProps> = ({
           --epr-text-color: hsl(var(--foreground)) !important;
           border: none !important;
           border-radius: 0 !important;
-          font-family: 'Outfit', system-ui, sans-serif !important;
+          font-family: 'Nunito', system-ui, sans-serif !important;
         }
 
         /* GIF tab */

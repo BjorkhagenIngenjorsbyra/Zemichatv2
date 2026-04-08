@@ -14,6 +14,7 @@ import {
   IonRefresherContent,
   IonInfiniteScroll,
   IonInfiniteScrollContent,
+  IonButton,
   RefresherEventDetail,
 } from '@ionic/react';
 import { add } from 'ionicons/icons';
@@ -172,6 +173,13 @@ const Wall: React.FC = () => {
             <EmptyStateIllustration type="no-posts" />
             <h2>{t('wall.noPosts')}</h2>
             <p>{t('wall.noPostsHint')}</p>
+            <IonButton
+              className="empty-state-cta"
+              onClick={() => setShowNewPost(true)}
+              style={{ marginTop: '1rem' }}
+            >
+              {t('wall.createPost', 'Skapa inlägg')}
+            </IonButton>
           </div>
         ) : (
           visiblePosts.map((post) => (

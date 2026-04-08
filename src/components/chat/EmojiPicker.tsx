@@ -90,7 +90,7 @@ const EmojiPicker: React.FC<EmojiPickerProps> = ({ onSelect, onClose }) => {
           --epr-text-color: #f3f4f6 !important;
           border: none !important;
           border-radius: 0 !important;
-          font-family: 'Outfit', system-ui, sans-serif !important;
+          font-family: 'Nunito', system-ui, sans-serif !important;
         }
       `}</style>
     </div>

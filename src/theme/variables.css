@@ -1,5 +1,5 @@
-/* Typography - Outfit font - must be first */
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@200;300;400;500;600;700;800;900&display=swap');
+/* Typography - Nunito font (rounded, child-friendly, great readability) */
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;500;600;700;800;900&display=swap');
 
 /**
  * Zemichat Design System - CSS Variables
@@ -77,7 +77,7 @@
 }
 
 * {
-  font-family: 'Outfit', 'Manrope', 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  font-family: 'Nunito', 'Outfit', system-ui, -apple-system, sans-serif;
 }
 
 /* Base dark theme */
