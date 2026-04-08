@@ -55,6 +55,7 @@ import {
 } from '../services/chat';
 import { ChatSearchModal, MuteOptions } from '../components/chat';
 import { SkeletonLoader, EmptyStateIllustration } from '../components/common';
+import GroupAvatar from '../components/common/GroupAvatar';
 
 const ChatList: React.FC = () => {
   const { t } = useTranslation();
@@ -290,7 +291,15 @@ const ChatList: React.FC = () => {
           onTouchMove={handleLongPressEnd}
         >
           <IonAvatar slot="start" className="chat-avatar">
-            {avatar ? (
+            {chat.is_group && !avatar ? (
+              <GroupAvatar
+                members={chat.members
+                  .filter((m) => m.user_id !== profile?.id)
+                  .map((m) => m.user)
+                  .filter(Boolean) as Array<{ display_name?: string | null; zemi_number?: string | null; avatar_url?: string | null }>}
+                size={48}
+              />
+            ) : avatar ? (
               <img src={avatar} alt={displayName} />
             ) : (
               <div className="avatar-placeholder" style={{ background: avatarGradient }}>{initial}</div>

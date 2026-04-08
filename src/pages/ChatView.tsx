@@ -48,6 +48,7 @@ import {
 import { uploadImage, uploadVoice, uploadDocument } from '../services/storage';
 import { createPoll } from '../services/poll';
 import { hapticLight } from '../utils/haptics';
+import { playSendSound, playReceiveSound } from '../services/soundEffects';
 import { SkeletonLoader } from '../components/common';
 import { MessageType, type Message, type User } from '../types/database';
 
@@ -321,6 +322,7 @@ const ChatView: React.FC = () => {
         loadReactionsRef.current([newMessage.id]);
 
         if (newMessage.sender_id !== profile?.id) {
+          playReceiveSound();
           if (isNearBottomRef.current) {
             insertReadReceipts([newMessage.id]);
           }
@@ -415,6 +417,7 @@ const ChatView: React.FC = () => {
     } else {
       setReplyTo(null);
       hapticLight();
+      playSendSound();
       if (message) {
         setLastSentId(message.id);
         setTimeout(() => setLastSentId(null), 400);
