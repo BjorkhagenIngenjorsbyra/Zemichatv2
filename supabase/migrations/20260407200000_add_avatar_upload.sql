@@ -69,4 +69,4 @@ BEGIN
 END;
 $$;
 
-GRANT EXECUTE ON FUNCTION update_user_profile TO authenticated;
+GRANT EXECUTE ON FUNCTION update_user_profile(TEXT, TEXT) TO authenticated;
