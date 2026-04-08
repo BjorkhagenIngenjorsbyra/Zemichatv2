@@ -84,8 +84,8 @@ const EmojiPicker: React.FC<EmojiPickerProps> = ({ onSelect, onClose }) => {
           --epr-bg-color: rgb(20, 24, 36) !important;
           --epr-category-label-bg-color: rgb(20, 24, 36) !important;
           --epr-search-input-bg-color: rgb(35, 40, 60) !important;
-          --epr-hover-bg-color: rgba(124, 58, 237, 0.2) !important;
-          --epr-active-skin-tone-indicator-border-color: rgb(124, 58, 237) !important;
+          --epr-hover-bg-color: hsl(var(--primary) / 0.2) !important;
+          --epr-active-skin-tone-indicator-border-color: hsl(var(--primary)) !important;
           --epr-search-input-text-color: #f3f4f6 !important;
           --epr-text-color: #f3f4f6 !important;
           border: none !important;

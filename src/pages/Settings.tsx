@@ -40,6 +40,7 @@ import { supabase } from '../services/supabase';
 import { uploadAvatar } from '../services/storage';
 import { getDisplayName, getInitial, getAvatarColor } from '../utils/userDisplay';
 import { hapticLight } from '../utils/haptics';
+import { useTheme, type ThemeName } from '../contexts/ThemeContext';
 import { useAuthContext } from '../contexts/AuthContext';
 import { useSubscription } from '../contexts/SubscriptionContext';
 import { getTeamMembers } from '../services/members';
@@ -49,9 +50,28 @@ import { UserRole, PlanType, type ReferralStats } from '../types/database';
 import { SOSButton } from '../components/sos';
 import { supportedLanguages, changeLanguage, getCurrentLanguage } from '../i18n';
 
+const THEME_LABELS: Record<ThemeName, string> = {
+  dark: 'Mörkt',
+  light: 'Ljust',
+  ocean: 'Hav',
+  sunset: 'Solnedgång',
+  forest: 'Skog',
+  candy: 'Candy',
+};
+
+const THEME_PREVIEW_COLORS: Record<ThemeName, string> = {
+  dark: '#7c3aed',
+  light: '#7c4dff',
+  ocean: '#06b6d4',
+  sunset: '#f59e0b',
+  forest: '#22c55e',
+  candy: '#ec4899',
+};
+
 const Settings: React.FC = () => {
   const { t } = useTranslation();
   const history = useHistory();
+  const { theme: currentTheme, setTheme } = useTheme();
   const { profile, signOut, refreshProfile } = useAuthContext();
   const { currentPlan, isTrialActive, isTrialExpired, trialDaysLeft, status, showPaywall } = useSubscription();
 
@@ -504,6 +524,26 @@ const Settings: React.FC = () => {
             </div>
           </div>
 
+          {/* Theme Chooser */}
+          <div className="section">
+            <h3 className="section-title">{t('settings.theme', 'Tema')}</h3>
+            <div className="theme-grid">
+              {(Object.keys(THEME_LABELS) as ThemeName[]).map((themeName) => (
+                <button
+                  key={themeName}
+                  className={`theme-option ${currentTheme === themeName ? 'active' : ''}`}
+                  onClick={() => { hapticLight(); setTheme(themeName); }}
+                >
+                  <div
+                    className="theme-swatch"
+                    style={{ background: THEME_PREVIEW_COLORS[themeName] }}
+                  />
+                  <span className="theme-label">{THEME_LABELS[themeName]}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
           {/* Wall Visibility - Owner and Super only */}
           {(isOwner || isSuper) && (
             <div className="section">
@@ -950,6 +990,45 @@ const Settings: React.FC = () => {
 
           .language-name {
             font-size: 0.85rem;
+            color: hsl(var(--foreground));
+            font-weight: 500;
+          }
+
+          .theme-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.75rem;
+          }
+
+          .theme-option {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.375rem;
+            padding: 0.75rem 0.5rem;
+            border-radius: 12px;
+            border: 2px solid transparent;
+            background: hsl(var(--card));
+            cursor: pointer;
+            transition: border-color 0.2s, transform 0.15s;
+          }
+
+          .theme-option:active {
+            transform: scale(0.95);
+          }
+
+          .theme-option.active {
+            border-color: hsl(var(--primary));
+          }
+
+          .theme-swatch {
+            width: 2rem;
+            height: 2rem;
+            border-radius: 50%;
+          }
+
+          .theme-label {
+            font-size: 0.75rem;
             color: hsl(var(--foreground));
             font-weight: 500;
           }

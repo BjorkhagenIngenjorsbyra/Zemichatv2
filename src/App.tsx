@@ -7,6 +7,7 @@ import { Capacitor } from '@capacitor/core';
 
 /* Auth */
 import { AuthProvider } from './contexts/AuthContext';
+import { ThemeProvider } from './contexts/ThemeContext';
 import { useAuthContext } from './contexts/AuthContext';
 import { CallProvider } from './contexts/CallContext';
 import { SubscriptionProvider } from './contexts/SubscriptionContext';
@@ -159,6 +160,7 @@ const BlockingPaywall: React.FC = () => {
 
 const App: React.FC = () => (
   <IonApp>
+    <ThemeProvider>
     <AuthProvider>
       <SubscriptionProvider>
         <NotificationProvider>
@@ -318,6 +320,7 @@ const App: React.FC = () => (
         </NotificationProvider>
     </SubscriptionProvider>
   </AuthProvider>
+    </ThemeProvider>
 </IonApp>
 );
 

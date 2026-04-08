@@ -289,8 +289,8 @@ const EmojiGifPanel: React.FC<EmojiGifPanelProps> = ({
           --epr-bg-color: hsl(var(--card)) !important;
           --epr-category-label-bg-color: hsl(var(--card)) !important;
           --epr-search-input-bg-color: hsl(var(--muted) / 0.3) !important;
-          --epr-hover-bg-color: rgba(124, 58, 237, 0.2) !important;
-          --epr-active-skin-tone-indicator-border-color: rgb(124, 58, 237) !important;
+          --epr-hover-bg-color: hsl(var(--primary) / 0.2) !important;
+          --epr-active-skin-tone-indicator-border-color: hsl(var(--primary)) !important;
           --epr-search-input-text-color: hsl(var(--foreground)) !important;
           --epr-text-color: hsl(var(--foreground)) !important;
           border: none !important;
