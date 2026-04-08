@@ -37,6 +37,7 @@
     "password": "Passord",
     "confirmPassword": "Bekreft passord",
     "yourName": "Ditt navn",
+    "nameRequired": "Skriv inn navnet ditt",
     "passwordMinLength": "Passord (minst 8 tegn)",
     "passwordsNotMatch": "Passordene stemmer ikke",
     "passwordTooShort": "Passordet må være minst {{min}} tegn",
@@ -392,7 +393,7 @@
     "oneTimePurchase": "engangskjøp",
     "planStart": "Start",
     "planPlus": "Plus",
-    "planPlusRinga": "Plus Ringa",
+    "planPlusRinga": "Plus med samtaler",
     "subscribe": "Abonner på {{plan}}",
     "restorePurchases": "Gjenopprett kjøp",
     "termsText": "Betaling belastes din App Store- eller Google Play-konto. Abonnementet fornyes automatisk med mindre det avbrytes minst 24 timer før periodens slutt.",
@@ -633,8 +634,8 @@
   },
   "trial": {
     "banner": "Prøveperiode: {{days}} dager igjen",
-    "bannerLastDay": "Prøveperioden slutter i dag",
-    "bannerUnlocked": "Prøveperiode: {{days}} dager igjen – alle funksjoner er opplåst!"
+    "bannerLastDay": "Siste dag — oppgrader for å beholde samtaler og bilder",
+    "bannerUnlocked": "{{days}} dagers prøveperiode igjen — trykk for å se planer"
   },
   "memberLimit": {
     "title": "Teamet er for stort",

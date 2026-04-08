@@ -37,6 +37,7 @@
     "password": "Password",
     "confirmPassword": "Confirm password",
     "yourName": "Your name",
+    "nameRequired": "Please enter your name",
     "passwordMinLength": "Password (at least 8 characters)",
     "passwordsNotMatch": "Passwords do not match",
     "passwordTooShort": "Password must be at least {{min}} characters",
@@ -392,7 +393,7 @@
     "oneTimePurchase": "one-time purchase",
     "planStart": "Start",
     "planPlus": "Plus",
-    "planPlusRinga": "Plus Ringa",
+    "planPlusRinga": "Plus with calls",
     "subscribe": "Subscribe to {{plan}}",
     "restorePurchases": "Restore Purchases",
     "termsText": "Payment will be charged to your App Store or Google Play account. Subscription automatically renews unless cancelled at least 24 hours before the end of the current period.",
@@ -633,8 +634,8 @@
   },
   "trial": {
     "banner": "Trial: {{days}} days left",
-    "bannerLastDay": "Trial ends today",
-    "bannerUnlocked": "Trial: {{days}} days left – all features are unlocked!"
+    "bannerLastDay": "Last day — upgrade to keep calls and photos",
+    "bannerUnlocked": "{{days}} days left in trial — tap to see plans"
   },
   "memberLimit": {
     "title": "Team is too large",

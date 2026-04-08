@@ -37,6 +37,7 @@
     "password": "Salasana",
     "confirmPassword": "Vahvista salasana",
     "yourName": "Nimesi",
+    "nameRequired": "Syötä nimesi",
     "passwordMinLength": "Salasana (vähintään 8 merkkiä)",
     "passwordsNotMatch": "Salasanat eivät täsmää",
     "passwordTooShort": "Salasanan on oltava vähintään {{min}} merkkiä",
@@ -392,7 +393,7 @@
     "oneTimePurchase": "kertaostos",
     "planStart": "Start",
     "planPlus": "Plus",
-    "planPlusRinga": "Plus Ringa",
+    "planPlusRinga": "Plus puheluilla",
     "subscribe": "Tilaa {{plan}}",
     "restorePurchases": "Palauta ostokset",
     "termsText": "Maksu veloitetaan App Store- tai Google Play -tililtäsi. Tilaus uusiutuu automaattisesti, ellei sitä peruuteta vähintään 24 tuntia ennen jakson päättymistä.",
@@ -633,8 +634,8 @@
   },
   "trial": {
     "banner": "Kokeilujakso: {{days}} päivää jäljellä",
-    "bannerLastDay": "Kokeilujakso päättyy tänään",
-    "bannerUnlocked": "Kokeilujakso: {{days}} päivää jäljellä – kaikki ominaisuudet ovat käytössä!"
+    "bannerLastDay": "Viimeinen päivä — päivitä säilyttääksesi puhelut ja kuvat",
+    "bannerUnlocked": "{{days}} päivää kokeilujaksoa jäljellä — napauta nähdäksesi paketit"
   },
   "memberLimit": {
     "title": "Tiimi on liian suuri",
