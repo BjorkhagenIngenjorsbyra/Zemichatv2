@@ -381,7 +381,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
         }
 
         .message-bubble.other {
-          background: #2d2a4a;
+          background: hsl(var(--bubble-received, var(--card)));
           color: hsl(var(--foreground));
           border-bottom-left-radius: 0.25rem;
         }

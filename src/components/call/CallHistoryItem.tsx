@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { IonItem, IonAvatar, IonLabel, IonIcon } from '@ionic/react';
+import { getDisplayName, getInitial, getAvatarColor } from '../../utils/userDisplay';
 import {
   callOutline,
   videocamOutline,
@@ -47,7 +48,7 @@ const CallHistoryItem: React.FC<CallHistoryItemProps> = ({
   const other = isOutgoing
     ? entry.otherParticipant || entry.initiator
     : entry.initiator;
-  const displayName = other?.display_name || t('dashboard.unnamed');
+  const displayName = getDisplayName(other);
   const avatarUrl = other?.avatar_url;
 
   return (
@@ -61,8 +62,8 @@ const CallHistoryItem: React.FC<CallHistoryItemProps> = ({
         {avatarUrl ? (
           <img src={avatarUrl} alt={displayName} />
         ) : (
-          <div className="call-avatar-placeholder">
-            {displayName.charAt(0).toUpperCase()}
+          <div className="call-avatar-placeholder" style={{ background: getAvatarColor(other) }}>
+            {getInitial(other)}
           </div>
         )}
       </IonAvatar>
