@@ -319,6 +319,9 @@ const ChatList: React.FC = () => {
               </div>
               {chat.lastMessage && (
                 <span className="chat-time">
+                  {chat.lastMessage.sender_id === profile?.id && (
+                    <span className="list-read-status">✓</span>
+                  )}
                   {formatLastMessageTime(chat.lastMessage.created_at)}
                 </span>
               )}
@@ -669,6 +672,13 @@ const ChatList: React.FC = () => {
           .last-message-unread {
             color: hsl(var(--foreground));
             font-weight: 500;
+          }
+
+          .list-read-status {
+            font-size: 0.7rem;
+            color: hsl(var(--muted-foreground));
+            margin-right: 2px;
+            font-weight: 600;
           }
 
           .typing-preview {
