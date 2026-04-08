@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation } from 'react-router-dom';
 import { useSubscription } from '../../contexts/SubscriptionContext';
@@ -7,11 +7,18 @@ const TrialBanner: React.FC = () => {
   const { t } = useTranslation();
   const { status, isLoading, showPaywall } = useSubscription();
   const location = useLocation();
+  const [dismissed, setDismissed] = useState(() => localStorage.getItem('trial-banner-dismissed') === 'true');
 
-  // Hide banner in chat view — screen real-estate is too precious there
-  const isChatView = /^\/chat\/[^/]+$/.test(location.pathname);
+  // Only show banner on main tabs (not in chat view, dashboard, or sub-pages)
+  const isMainTab = ['/chats', '/wall', '/friends', '/calls', '/settings'].includes(location.pathname);
 
-  const isVisible = !isLoading && status?.isTrialActive && !!status.trialEndsAt && !isChatView;
+  const daysLeft = status?.trialEndsAt
+    ? Math.ceil((new Date(status.trialEndsAt).getTime() - Date.now()) / 86_400_000)
+    : 99;
+
+  // Show banner only on main tabs, and always if 3 days or fewer remain
+  const isVisible = !isLoading && status?.isTrialActive && !!status.trialEndsAt && isMainTab
+    && (!dismissed || daysLeft <= 3);
 
   // Override --ion-safe-area-top so Ionic headers push down below the banner
   useEffect(() => {
@@ -28,18 +35,25 @@ const TrialBanner: React.FC = () => {
 
   if (!isVisible) return null;
 
-  const daysLeft = Math.ceil(
-    (new Date(status!.trialEndsAt!).getTime() - Date.now()) / 86_400_000
-  );
-
   return (
     <>
-      <div className="trial-countdown-banner" onClick={() => showPaywall()}>
-        <span className="trial-countdown-text">
+      <div className="trial-countdown-banner">
+        <span className="trial-countdown-text" onClick={() => showPaywall()}>
           {daysLeft <= 0
             ? t('trial.bannerLastDay')
             : t('trial.bannerUnlocked', { days: daysLeft })}
         </span>
+        <button
+          className="trial-dismiss-btn"
+          onClick={(e) => {
+            e.stopPropagation();
+            setDismissed(true);
+            localStorage.setItem('trial-banner-dismissed', 'true');
+          }}
+          aria-label="Stäng"
+        >
+          ✕
+        </button>
       </div>
 
       <style>{`
@@ -63,6 +77,17 @@ const TrialBanner: React.FC = () => {
           font-size: 0.75rem;
           font-weight: 600;
           color: hsl(var(--primary));
+          cursor: pointer;
+        }
+
+        .trial-dismiss-btn {
+          background: none;
+          border: none;
+          color: hsl(var(--primary) / 0.6);
+          font-size: 0.75rem;
+          padding: 0 8px;
+          cursor: pointer;
+          line-height: 1;
         }
 
         @keyframes trial-slide-down {

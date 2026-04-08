@@ -231,7 +231,7 @@ export const ChatSearchModal: React.FC<ChatSearchModalProps> = ({
             padding: 0.5rem 1rem;
             font-size: 0.75rem;
             color: hsl(var(--muted-foreground));
-            text-transform: uppercase;
+            letter-spacing: 0.02em;
             letter-spacing: 0.05em;
           }
 

@@ -37,6 +37,7 @@
     "password": "Lösenord",
     "confirmPassword": "Bekräfta lösenord",
     "yourName": "Ditt namn",
+    "nameRequired": "Ange ditt namn",
     "passwordMinLength": "Lösenord (minst 8 tecken)",
     "passwordsNotMatch": "Lösenorden matchar inte",
     "passwordTooShort": "Lösenordet måste vara minst {{min}} tecken",
@@ -98,10 +99,10 @@
     "paused": "Pausad"
   },
   "roles": {
-    "owner": "Owner",
+    "owner": "Ägare",
     "super": "Super",
     "texter": "Texter",
-    "teamOwner": "Team Owner"
+    "teamOwner": "Teamägare"
   },
   "texter": {
     "createTitle": "Skapa Texter",
@@ -392,7 +393,7 @@
     "oneTimePurchase": "engångsköp",
     "planStart": "Start",
     "planPlus": "Plus",
-    "planPlusRinga": "Plus Ringa",
+    "planPlusRinga": "Plus med samtal",
     "subscribe": "Prenumerera på {{plan}}",
     "restorePurchases": "Återställ köp",
     "termsText": "Betalning debiteras ditt App Store- eller Google Play-konto. Prenumerationen förnyas automatiskt om den inte avbryts minst 24 timmar före periodens slut.",
@@ -430,7 +431,7 @@
     "privacyPolicy": "Integritetspolicy",
     "termsOfService": "Användarvillkor",
     "profileSaved": "Profilen har uppdaterats",
-    "teamDashboard": "Team Dashboard",
+    "teamDashboard": "Teamöversikt",
     "teamDashboardDescription": "Hantera Texters, godkännanden och insyn",
     "language": "Språk",
     "myPlan": "Min plan",
@@ -563,8 +564,8 @@
     "strong": "Starkt"
   },
   "support": {
-    "title": "Feedback & Support",
-    "settingsButton": "Feedback & Support",
+    "title": "Feedback och support",
+    "settingsButton": "Feedback och support",
     "faqTitle": "Vanliga frågor",
     "faq": {
       "inviteFamily": {
@@ -633,8 +634,8 @@
   },
   "trial": {
     "banner": "Provperiod: {{days}} dagar kvar",
-    "bannerLastDay": "Provperioden slutar idag",
-    "bannerUnlocked": "Provperiod: {{days}} dagar kvar – alla funktioner är upplåsta!"
+    "bannerLastDay": "Sista dagen — uppgradera för att behålla samtal och bilder",
+    "bannerUnlocked": "{{days}} dagars provperiod kvar — tryck för att se planer"
   },
   "memberLimit": {
     "title": "Teamet är för stort",
@@ -744,9 +745,9 @@
   },
   "presence": {
     "online": "Online",
-    "lastSeenMinutes": "Senast sedd {{count}} min sedan",
-    "lastSeenHours": "Senast sedd {{count}}h sedan",
-    "lastSeenDays": "Senast sedd {{count}}d sedan"
+    "lastSeenMinutes": "Sedd {{count}} min sedan",
+    "lastSeenHours": "Sedd {{count}}h sedan",
+    "lastSeenDays": "Sedd {{count}}d sedan"
   },
   "chatInfo": {
     "title": "Chattinfo",

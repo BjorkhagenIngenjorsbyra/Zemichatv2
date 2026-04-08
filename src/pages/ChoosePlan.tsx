@@ -221,7 +221,7 @@ const ChoosePlan: React.FC = () => {
             border-radius: 9999px;
             font-size: 0.625rem;
             font-weight: 600;
-            text-transform: uppercase;
+            letter-spacing: 0.02em;
             white-space: nowrap;
           }
 

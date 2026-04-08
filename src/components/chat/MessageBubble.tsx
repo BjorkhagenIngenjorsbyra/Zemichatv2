@@ -2,6 +2,7 @@ import { useState, useRef, useCallback, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSwipeable } from 'react-swipeable';
 import { hapticLight, hapticMedium } from '../../utils/haptics';
+import { getDisplayName } from '../../utils/userDisplay';
 import { type MessageWithSender } from '../../services/message';
 import { type GroupedReaction } from '../../services/reaction';
 import ImageMessage from './ImageMessage';
@@ -303,7 +304,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
         )}
 
         {showSenderName && !isOwn && (
-          <span className="sender-name">{message.sender?.display_name}</span>
+          <span className="sender-name">{getDisplayName(message.sender)}</span>
         )}
 
         {message.forwarded_from_id && (
@@ -453,6 +454,10 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
           font-size: 0.65rem;
           font-weight: 600;
           letter-spacing: -1px;
+        }
+
+        .read-status {
+          transition: color 0.3s ease, opacity 0.3s ease;
         }
 
         .read-status.sent {

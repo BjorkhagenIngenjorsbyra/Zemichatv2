@@ -35,7 +35,11 @@ import {
   newspaperOutline,
 } from 'ionicons/icons';
 import { Capacitor } from '@capacitor/core';
+import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
 import { supabase } from '../services/supabase';
+import { uploadAvatar } from '../services/storage';
+import { getDisplayName, getInitial, getAvatarColor } from '../utils/userDisplay';
+import { hapticLight } from '../utils/haptics';
 import { useAuthContext } from '../contexts/AuthContext';
 import { useSubscription } from '../contexts/SubscriptionContext';
 import { getTeamMembers } from '../services/members';
@@ -71,6 +75,57 @@ const Settings: React.FC = () => {
   const [isSavingProfile, setIsSavingProfile] = useState(false);
   const [profileSaved, setProfileSaved] = useState(false);
   const [profileError, setProfileError] = useState<string | null>(null);
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+
+  const handleAvatarUpload = async () => {
+    try {
+      setIsUploadingAvatar(true);
+      if (Capacitor.isNativePlatform()) {
+        const photo = await Camera.getPhoto({
+          quality: 80,
+          allowEditing: true,
+          resultType: CameraResultType.Uri,
+          source: CameraSource.Prompt,
+          width: 400,
+          height: 400,
+        });
+        if (photo.webPath) {
+          const response = await fetch(photo.webPath);
+          const blob = await response.blob();
+          const file = new File([blob], 'avatar.jpg', { type: 'image/jpeg' });
+          const result = await uploadAvatar(file);
+          if (result.error) {
+            setProfileError(result.error.message);
+          } else {
+            await refreshProfile();
+          }
+        }
+      } else {
+        // Web fallback: file input
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = 'image/*';
+        input.onchange = async (e) => {
+          const file = (e.target as HTMLInputElement).files?.[0];
+          if (file) {
+            const result = await uploadAvatar(file);
+            if (result.error) {
+              setProfileError(result.error.message);
+            } else {
+              await refreshProfile();
+            }
+          }
+          setIsUploadingAvatar(false);
+        };
+        input.click();
+        return; // setIsUploadingAvatar(false) handled in onchange
+      }
+    } catch {
+      // User cancelled
+    } finally {
+      setIsUploadingAvatar(false);
+    }
+  };
 
   // Language
   const [currentLang, setCurrentLang] = useState(getCurrentLanguage());
@@ -118,6 +173,7 @@ const Settings: React.FC = () => {
 
   const handleWallToggle = async (checked: boolean) => {
     if (!profile) return;
+    hapticLight();
     setWallEnabled(checked);
     const { error } = await supabase
       .from('users')
@@ -376,6 +432,18 @@ const Settings: React.FC = () => {
           <div className="section">
             <h3 className="section-title">{t('settings.profile')}</h3>
             <div className="profile-card" data-testid="profile-card">
+              <div className="profile-avatar-section" onClick={handleAvatarUpload} style={{ cursor: 'pointer' }}>
+                {profile?.avatar_url ? (
+                  <img src={profile.avatar_url} alt="" className="profile-avatar-img" />
+                ) : (
+                  <div className="profile-avatar-placeholder" style={{ background: getAvatarColor(profile) }}>
+                    {getInitial(profile)}
+                  </div>
+                )}
+                <span className="profile-avatar-hint">
+                  {isUploadingAvatar ? t('common.loading', 'Laddar...') : t('settings.changePhoto', 'Byt foto')}
+                </span>
+              </div>
               <div className="profile-row">
                 <span className="profile-label">{t('texter.name')}</span>
                 {isEditingProfile ? (
@@ -661,12 +729,11 @@ const Settings: React.FC = () => {
           }
 
           .section-title {
-            font-size: 0.875rem;
+            font-size: 0.8125rem;
             font-weight: 600;
             color: hsl(var(--muted-foreground));
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            margin: 0 0 1rem 0;
+            letter-spacing: 0.02em;
+            margin: 1.5rem 0 0.5rem 0;
           }
 
           .profile-card, .card {
@@ -674,6 +741,39 @@ const Settings: React.FC = () => {
             border: 1px solid hsl(var(--border));
             border-radius: 1rem;
             padding: 1rem;
+          }
+
+          .profile-avatar-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 0.75rem 0 1rem;
+            gap: 0.5rem;
+          }
+
+          .profile-avatar-img {
+            width: 72px;
+            height: 72px;
+            border-radius: 50%;
+            object-fit: cover;
+          }
+
+          .profile-avatar-placeholder {
+            width: 72px;
+            height: 72px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.75rem;
+            font-weight: 700;
+          }
+
+          .profile-avatar-hint {
+            font-size: 0.75rem;
+            color: hsl(var(--primary));
+            font-weight: 500;
           }
 
           .profile-row {
@@ -785,8 +885,8 @@ const Settings: React.FC = () => {
           }
 
           .plan-badge.plan-pro {
-            background: hsl(var(--secondary) / 0.15);
-            color: hsl(var(--secondary));
+            background: hsl(var(--primary) / 0.15);
+            color: hsl(var(--primary));
           }
 
           .plan-status-text {
@@ -1044,8 +1144,7 @@ const Settings: React.FC = () => {
           .referral-code-label {
             font-size: 0.8rem;
             color: hsl(var(--muted-foreground));
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
+            letter-spacing: 0.02em;
           }
 
           .referral-code-row {

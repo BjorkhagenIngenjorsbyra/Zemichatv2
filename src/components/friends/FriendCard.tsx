@@ -1,5 +1,6 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+import { getDisplayName, getInitial, getAvatarColor } from '../../utils/userDisplay';
 import {
   IonItem,
   IonLabel,
@@ -50,14 +51,14 @@ export const FriendCard: React.FC<FriendCardProps> = ({
           {user.avatar_url ? (
             <img src={user.avatar_url} alt={user.display_name || ''} />
           ) : (
-            <div className="avatar-placeholder">
-              {(nickname || user.display_name)?.charAt(0)?.toUpperCase() || '?'}
+            <div className="avatar-placeholder" style={{ background: getAvatarColor(user) }}>
+              {nickname?.charAt(0)?.toUpperCase() || getInitial(user)}
             </div>
           )}
         </IonAvatar>
         <IonLabel>
           <h2 className="friend-name">
-            {nickname || user.display_name || t('dashboard.unnamed')}
+            {nickname || getDisplayName(user)}
             <IonIcon
               icon={isUserOnline(user.last_seen_at) ? ellipse : ellipseOutline}
               className={`status-dot ${isUserOnline(user.last_seen_at) ? 'active' : 'inactive'}`}

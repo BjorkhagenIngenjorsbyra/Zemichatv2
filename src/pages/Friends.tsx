@@ -14,6 +14,7 @@ import {
   IonIcon,
   IonFab,
   IonFabButton,
+  IonButton,
   IonRefresher,
   IonRefresherContent,
   IonAlert,
@@ -192,6 +193,13 @@ const Friends: React.FC = () => {
                 <EmptyStateIllustration type="no-friends" />
                 <h2>{t('friends.noFriends')}</h2>
                 <p>{t('friends.addFriendsHint')}</p>
+                <IonButton
+                  className="empty-state-cta"
+                  routerLink="/add-friend"
+                  style={{ marginTop: '1rem' }}
+                >
+                  {t('friends.addFriend', 'Lägg till vän')}
+                </IonButton>
               </div>
             ) : (
               <>
@@ -484,8 +492,7 @@ const Friends: React.FC = () => {
             font-size: 0.875rem;
             font-weight: 600;
             color: hsl(var(--foreground) / 0.7);
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
+            letter-spacing: 0.02em;
             margin: 0 0 0.75rem 0.5rem;
           }
 
@@ -542,12 +549,18 @@ const Friends: React.FC = () => {
             bottom: calc(16px + env(safe-area-inset-bottom, 0px));
           }
 
+          .safe-fab ion-fab-button {
+            --background: hsl(var(--primary));
+            --color: hsl(var(--primary-foreground));
+            --box-shadow: 0 4px 16px hsl(var(--primary) / 0.4);
+          }
+
           .friends-action-sheet .action-sheet-button {
-            color: hsl(260 30% 55%) !important;
+            color: hsl(var(--muted-foreground)) !important;
           }
 
           .friends-action-sheet .action-sheet-button.action-sheet-cancel {
-            color: hsl(260 20% 45%) !important;
+            color: hsl(var(--primary)) !important;
             font-weight: 600;
           }
         `}</style>

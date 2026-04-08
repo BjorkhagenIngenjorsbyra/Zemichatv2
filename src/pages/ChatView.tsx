@@ -1082,7 +1082,7 @@ const ChatView: React.FC = () => {
             font-size: 0.7rem;
             font-weight: 600;
             color: hsl(var(--primary));
-            text-transform: uppercase;
+            letter-spacing: 0.02em;
           }
 
           .edit-text {

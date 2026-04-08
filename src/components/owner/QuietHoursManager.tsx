@@ -281,7 +281,7 @@ export const QuietHoursManager: React.FC<QuietHoursManagerProps> = ({
           font-size: 0.875rem;
           font-weight: 600;
           color: #e5e7eb;
-          text-transform: uppercase;
+          letter-spacing: 0.02em;
           letter-spacing: 0.05em;
           margin: 0;
         }

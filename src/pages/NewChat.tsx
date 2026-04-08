@@ -270,7 +270,7 @@ const NewChat: React.FC = () => {
             font-size: 0.875rem;
             font-weight: 600;
             color: hsl(var(--muted-foreground));
-            text-transform: uppercase;
+            letter-spacing: 0.02em;
             letter-spacing: 0.05em;
             margin: 0 0 1rem 0.5rem;
           }

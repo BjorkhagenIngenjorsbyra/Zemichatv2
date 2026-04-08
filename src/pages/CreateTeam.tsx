@@ -355,7 +355,7 @@ const CreateTeam: React.FC = () => {
               }}
               type="button"
             >
-              {t('settings.logout')}
+              {t('auth.logout')}
             </button>
           </form>
         </div>

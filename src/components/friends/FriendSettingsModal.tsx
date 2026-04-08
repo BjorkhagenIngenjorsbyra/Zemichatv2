@@ -211,7 +211,7 @@ export const FriendSettingsModal: React.FC<FriendSettingsModalProps> = ({
           font-weight: 600;
           color: hsl(var(--foreground) / 0.7);
           margin-bottom: 0.5rem;
-          text-transform: uppercase;
+          letter-spacing: 0.02em;
           letter-spacing: 0.03em;
         }
 

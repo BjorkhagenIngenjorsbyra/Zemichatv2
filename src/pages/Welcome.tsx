@@ -21,7 +21,7 @@ const Welcome: React.FC = () => {
           <div className="welcome-actions">
             <IonButton
               expand="block"
-              routerLink="/signup"
+              routerLink="/onboarding"
               className="welcome-primary-button glow-primary"
             >
               {t('welcome.createAccount')}

@@ -30,6 +30,11 @@ const Signup: React.FC = () => {
     e.preventDefault();
     setError(null);
 
+    if (!displayName.trim()) {
+      setError(t('auth.nameRequired', 'Ange ditt namn'));
+      return;
+    }
+
     if (password !== confirmPassword) {
       setError(t('auth.passwordsNotMatch'));
       return;

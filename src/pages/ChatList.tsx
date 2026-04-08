@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useHistory } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { getDisplayName, getInitial } from '../utils/userDisplay';
 import {
   IonPage,
   IonContent,
@@ -137,13 +138,13 @@ const ChatList: React.FC = () => {
     // For 1-on-1 chats, show the other person's name
     if (!chat.is_group && chat.members.length > 0) {
       const otherMember = chat.members.find((m) => m.user_id !== profile?.id);
-      return otherMember?.user?.display_name || t('dashboard.unnamed');
+      return getDisplayName(otherMember?.user);
     }
 
     // For unnamed groups, list member names
     const memberNames = chat.members
       .filter((m) => m.user_id !== profile?.id)
-      .map((m) => m.user?.display_name || t('dashboard.unnamed'))
+      .map((m) => getDisplayName(m.user))
       .slice(0, 3);
 
     return memberNames.join(', ') || t('chat.newChat');
@@ -371,6 +372,41 @@ const ChatList: React.FC = () => {
             <EmptyStateIllustration type="no-chats" />
             <h2>{t('chat.noChats')}</h2>
             <p>{t('chat.startChatting')}</p>
+            {profile?.role === UserRole.OWNER ? (
+              <div className="onboarding-steps" style={{ marginTop: '1.5rem', textAlign: 'left', maxWidth: '280px' }}>
+                <p style={{ fontSize: '0.8rem', color: 'hsl(var(--muted-foreground))', marginBottom: '0.75rem', textAlign: 'center' }}>
+                  {t('chat.getStarted', 'Kom igång i 3 steg:')}
+                </p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                  <IonButton
+                    className="empty-state-cta"
+                    routerLink="/dashboard"
+                    expand="block"
+                    size="small"
+                  >
+                    1. {t('chat.addTeamMember', 'Lägg till familjemedlem')}
+                  </IonButton>
+                  <IonButton
+                    className="empty-state-cta"
+                    routerLink="/add-friend"
+                    expand="block"
+                    size="small"
+                    fill="outline"
+                    style={{ '--border-color': 'hsl(var(--primary) / 0.5)', '--color': 'hsl(var(--primary))' }}
+                  >
+                    2. {t('chat.addFriend', 'Lägg till vänner')}
+                  </IonButton>
+                </div>
+              </div>
+            ) : (
+              <IonButton
+                className="empty-state-cta"
+                onClick={openNewChat}
+                style={{ marginTop: '1rem' }}
+              >
+                {t('chat.newChat')}
+              </IonButton>
+            )}
           </div>
         ) : (
           <>
@@ -478,7 +514,7 @@ const ChatList: React.FC = () => {
             font-size: 0.75rem;
             font-weight: 600;
             color: hsl(var(--muted-foreground));
-            text-transform: uppercase;
+            letter-spacing: 0.02em;
             letter-spacing: 0.05em;
           }
 

@@ -367,7 +367,7 @@ const ChatInfo: React.FC = () => {
           .section-title {
             font-size: 0.8rem;
             font-weight: 600;
-            text-transform: uppercase;
+            letter-spacing: 0.02em;
             letter-spacing: 0.05em;
             color: hsl(var(--foreground) / 0.6);
             margin: 0 0 0.75rem 0;

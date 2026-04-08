@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { getDisplayName } from '../utils/userDisplay';
 import {
   IonPage,
   IonContent,
@@ -132,10 +133,10 @@ const OwnerOversight: React.FC = () => {
     }
 
     const msg = chat.lastMessage;
-    const senderName =
-      msg.sender_id === chat.texter.id
-        ? chat.texter.display_name || chat.texter.zemi_number
-        : chat.otherMembers.find((m) => m.id === msg.sender_id)?.display_name || '?';
+    const sender = msg.sender_id === chat.texter.id
+      ? chat.texter
+      : chat.otherMembers.find((m) => m.id === msg.sender_id);
+    const senderName = getDisplayName(sender);
 
     let content = '';
     switch (msg.type) {
@@ -162,6 +163,10 @@ const OwnerOversight: React.FC = () => {
       content = t('oversight.deletedMessage');
     }
 
+    // For 1-on-1 chats, skip the sender prefix (it duplicates the chat name)
+    if (chat.otherMembers.length <= 1) {
+      return content;
+    }
     return `${senderName}: ${content}`;
   };
 

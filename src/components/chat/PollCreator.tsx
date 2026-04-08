@@ -210,7 +210,7 @@ const PollCreator: React.FC<PollCreatorProps> = ({ isOpen, onClose, onCreate }) 
           font-size: 0.8rem;
           font-weight: 600;
           color: hsl(var(--muted-foreground));
-          text-transform: uppercase;
+          letter-spacing: 0.02em;
           letter-spacing: 0.05em;
           margin-bottom: 0.5rem;
         }

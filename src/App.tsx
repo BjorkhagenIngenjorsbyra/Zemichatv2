@@ -61,6 +61,7 @@ import Welcome from './pages/Welcome';
 import SuperInvite from './pages/SuperInvite';
 import SuperTour from './pages/SuperTour';
 import TexterTour from './pages/TexterTour';
+import OwnerOnboarding from './pages/OwnerOnboarding';
 import InviteSuper from './pages/InviteSuper';
 
 /* Legal */
@@ -171,6 +172,9 @@ const App: React.FC = () => (
             {/* Public routes - redirect to chats if authenticated */}
             <PublicRoute exact path="/welcome">
               <Welcome />
+            </PublicRoute>
+            <PublicRoute exact path="/onboarding">
+              <OwnerOnboarding />
             </PublicRoute>
             <PublicRoute exact path="/invite/:token">
               <SuperInvite />

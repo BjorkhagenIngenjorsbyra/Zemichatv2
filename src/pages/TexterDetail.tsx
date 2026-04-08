@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, useHistory } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { hapticLight } from '../utils/haptics';
 import {
   IonPage,
   IonContent,
@@ -84,6 +85,7 @@ const TexterDetail: React.FC = () => {
   const handleToggle = async (field: keyof TexterSettings, value: boolean) => {
     if (!userId || !settings) return;
 
+    hapticLight();
     setIsSaving(true);
 
     // Optimistic update
@@ -475,7 +477,7 @@ const TexterDetail: React.FC = () => {
             font-size: 0.875rem;
             font-weight: 600;
             color: #e5e7eb;
-            text-transform: uppercase;
+            letter-spacing: 0.02em;
             letter-spacing: 0.05em;
             margin: 0 0 1rem 0;
           }

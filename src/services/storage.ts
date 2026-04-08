@@ -316,6 +316,80 @@ export async function uploadVideo(
   }
 }
 
+const AVATAR_BUCKET = 'avatars';
+
+/**
+ * Upload a profile avatar image.
+ * Stores in avatars bucket at: {userId}/avatar.{ext}
+ * Overwrites previous avatar.
+ */
+export async function uploadAvatar(
+  file: File
+): Promise<{ url: string | null; error: Error | null }> {
+  try {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return { url: null, error: new Error('Not authenticated') };
+    }
+
+    if (!file.type.startsWith('image/')) {
+      return { url: null, error: new Error('File must be an image') };
+    }
+
+    const ext = file.name.split('.').pop() || 'jpg';
+    const filePath = `${user.id}/avatar.${ext}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from(AVATAR_BUCKET)
+      .upload(filePath, file, {
+        contentType: file.type,
+        cacheControl: '60',
+        upsert: true,
+      });
+
+    if (uploadError) {
+      // Fallback: try chat-media bucket if avatars bucket doesn't exist
+      const { error: fallbackError } = await supabase.storage
+        .from(BUCKET_NAME)
+        .upload(`avatars/${filePath}`, file, {
+          contentType: file.type,
+          cacheControl: '60',
+          upsert: true,
+        });
+
+      if (fallbackError) {
+        return { url: null, error: new Error(fallbackError.message) };
+      }
+
+      const { data: urlData } = supabase.storage
+        .from(BUCKET_NAME)
+        .getPublicUrl(`avatars/${filePath}`);
+
+      // Update user profile
+      await supabase.rpc('update_user_profile' as never, { new_avatar_url: urlData.publicUrl } as never);
+
+      return { url: urlData.publicUrl, error: null };
+    }
+
+    const { data: urlData } = supabase.storage
+      .from(AVATAR_BUCKET)
+      .getPublicUrl(filePath);
+
+    // Update user profile
+    await supabase.rpc('update_user_profile' as never, { new_avatar_url: urlData.publicUrl } as never);
+
+    return { url: urlData.publicUrl, error: null };
+  } catch (err) {
+    return {
+      url: null,
+      error: err instanceof Error ? err : new Error('Unknown error'),
+    };
+  }
+}
+
 /**
  * Get a signed URL for accessing a private file.
  * Useful when the bucket is private.

@@ -267,7 +267,7 @@ const Paywall: React.FC<PaywallProps> = ({ blocking = false }) => {
             border-radius: 9999px;
             font-size: 0.625rem;
             font-weight: 600;
-            text-transform: uppercase;
+            letter-spacing: 0.02em;
           }
 
           .plan-card h3 {

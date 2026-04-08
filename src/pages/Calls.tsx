@@ -92,6 +92,7 @@ const Calls: React.FC = () => {
           <div className="empty-state-calls">
             <EmptyStateIllustration type="no-friends" />
             <h2>{activeTab === 'missed' ? t('calls.noMissedCalls') : t('calls.noCalls')}</h2>
+            <p className="empty-state-hint">{t('calls.emptyHint', 'Öppna en chatt och tryck på telefonikonen för att ringa')}</p>
           </div>
         ) : (
           <IonList className="calls-list">
@@ -123,9 +124,27 @@ const Calls: React.FC = () => {
             color: hsl(var(--foreground) / 0.7);
           }
 
+          .empty-state-hint {
+            margin: 0.75rem 0 0;
+            font-size: 0.9rem;
+            color: hsl(var(--muted-foreground));
+            max-width: 250px;
+            line-height: 1.4;
+          }
+
           .calls-list {
             background: transparent;
             padding: 0;
+          }
+
+          ion-segment {
+            --background: transparent;
+          }
+
+          ion-segment-button {
+            --color: hsl(var(--muted-foreground));
+            --color-checked: hsl(var(--primary));
+            --indicator-color: hsl(var(--primary));
           }
         `}</style>
       </IonContent>

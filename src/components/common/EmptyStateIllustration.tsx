@@ -12,9 +12,10 @@ const NoChats: React.FC = () => (
     {/* Tail */}
     <path d="M36 76 L30 88 L48 76" fill="hsl(var(--primary))" opacity="0.1" />
     <path d="M36 76 L30 88 L48 76" stroke="hsl(var(--primary))" strokeWidth="2" fill="none" strokeLinejoin="round" />
-    {/* Plus inside bubble */}
-    <line x1="60" y1="40" x2="60" y2="60" stroke="hsl(var(--primary))" strokeWidth="2.5" strokeLinecap="round" />
-    <line x1="50" y1="50" x2="70" y2="50" stroke="hsl(var(--primary))" strokeWidth="2.5" strokeLinecap="round" />
+    {/* Dots inside bubble (typing indicator style) */}
+    <circle cx="48" cy="50" r="3" fill="hsl(var(--primary))" opacity="0.5" />
+    <circle cx="60" cy="50" r="3" fill="hsl(var(--primary))" opacity="0.7" />
+    <circle cx="72" cy="50" r="3" fill="hsl(var(--primary))" opacity="0.5" />
   </svg>
 );
 
