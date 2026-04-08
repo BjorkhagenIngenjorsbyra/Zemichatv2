@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useHistory } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { getInitial, getAvatarColor } from '../utils/userDisplay';
 import {
   IonPage,
   IonContent,
@@ -233,8 +234,8 @@ const Dashboard: React.FC = () => {
                         {member.avatar_url ? (
                           <img src={member.avatar_url} alt={member.display_name || 'Avatar'} />
                         ) : (
-                          <div className="avatar-placeholder small">
-                            {member.display_name?.charAt(0)?.toUpperCase() || '?'}
+                          <div className="avatar-placeholder small" style={{ background: getAvatarColor(member) }}>
+                            {getInitial(member)}
                           </div>
                         )}
                       </IonAvatar>
