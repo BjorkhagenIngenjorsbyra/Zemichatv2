@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useHistory } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { getDisplayName, getInitial } from '../utils/userDisplay';
+import { getDisplayName, getInitial, getAvatarColor } from '../utils/userDisplay';
 import {
   IonPage,
   IonContent,
@@ -260,6 +260,8 @@ const ChatList: React.FC = () => {
     const avatar = getChatAvatar(chat);
     const displayName = getChatDisplayName(chat);
     const initial = getAvatarInitial(chat);
+    const otherUser = !chat.is_group ? chat.members.find((m) => m.user_id !== profile?.id)?.user : null;
+    const avatarGradient = getAvatarColor(otherUser);
     const lastMessagePreview = getLastMessagePreview(chat);
 
     return (
@@ -286,7 +288,7 @@ const ChatList: React.FC = () => {
             {avatar ? (
               <img src={avatar} alt={displayName} />
             ) : (
-              <div className="avatar-placeholder">{initial}</div>
+              <div className="avatar-placeholder" style={{ background: avatarGradient }}>{initial}</div>
             )}
           </IonAvatar>
 
@@ -341,7 +343,9 @@ const ChatList: React.FC = () => {
       <IonHeader>
         <IonToolbar>
           <IonTitle onClick={handleHeaderClick} style={{ cursor: 'pointer' }}>
-            {t('dashboard.chats')}
+            {profile?.display_name
+              ? t('chat.greeting', { name: profile.display_name.split(' ')[0] })
+              : t('dashboard.chats')}
           </IonTitle>
           <IonButtons slot="end">
             {profile?.role === UserRole.OWNER && (
@@ -547,13 +551,14 @@ const ChatList: React.FC = () => {
 
           .chat-item {
             --background: hsl(var(--card));
-            --border-color: hsl(var(--border));
+            --border-color: transparent;
             --padding-start: 1rem;
             --padding-end: 1rem;
             --inner-padding-end: 0;
             margin-bottom: 0.5rem;
             border-radius: 1rem;
             overflow: hidden;
+            box-shadow: 0 1px 3px hsl(var(--foreground) / 0.05);
           }
 
           .chat-item::part(native) {

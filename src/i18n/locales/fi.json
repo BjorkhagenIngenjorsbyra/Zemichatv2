@@ -134,6 +134,7 @@
     "newChat": "Uusi keskustelu",
     "typeMessage": "Kirjoita viesti...",
     "send": "Lähetä",
+    "greeting": "Hei {{name}}!",
     "noChats": "Ei keskusteluja vielä",
     "startChatting": "Aloita keskustelu ystäviesi kanssa",
     "selectFriend": "Valitse ystävä keskustellaksesi",

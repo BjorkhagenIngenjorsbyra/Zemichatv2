@@ -134,6 +134,7 @@
     "newChat": "New chat",
     "typeMessage": "Type a message...",
     "send": "Send",
+    "greeting": "Hi {{name}}!",
     "noChats": "No chats yet",
     "startChatting": "Start chatting with your friends",
     "selectFriend": "Select a friend to chat with",

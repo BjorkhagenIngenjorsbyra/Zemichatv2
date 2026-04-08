@@ -134,6 +134,7 @@
     "newChat": "Ny chatt",
     "typeMessage": "Skriv ett meddelande...",
     "send": "Skicka",
+    "greeting": "Hej {{name}}!",
     "noChats": "Inga chattar än",
     "startChatting": "Börja chatta med dina vänner",
     "selectFriend": "Välj en vän att chatta med",
