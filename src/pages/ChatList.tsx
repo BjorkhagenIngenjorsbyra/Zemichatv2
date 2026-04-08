@@ -41,6 +41,7 @@ import {
 import { hapticMedium } from '../utils/haptics';
 import { getChatMessages, type MessageWithSender } from '../services/message';
 import { useAuthContext } from '../contexts/AuthContext';
+import { useTypingList } from '../hooks/useTypingList';
 import { UserRole } from '../types/database';
 import {
   getMyChats,
@@ -61,6 +62,10 @@ const ChatList: React.FC = () => {
   const { profile } = useAuthContext();
   const [chats, setChats] = useState<ChatWithDetails[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const typingMap = useTypingList(
+    chats.map((c) => c.id),
+    profile?.id || ''
+  );
   const [showArchived, setShowArchived] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
   const contentRef = useRef<HTMLIonContentElement>(null);
@@ -310,7 +315,16 @@ const ChatList: React.FC = () => {
               )}
             </div>
             <div className="chat-preview">
+              {typingMap.has(chat.id) ? (
+                <p className="last-message typing-preview">
+                  <span className="typing-dots-inline">
+                    <span /><span /><span />
+                  </span>
+                  {' '}{typingMap.get(chat.id)} {t('chat.typing', 'skriver...')}
+                </p>
+              ) : (
               <p className={`last-message${chat.unreadCount > 0 ? ' last-message-unread' : ''}`}>{lastMessagePreview}</p>
+              )}
               {chat.unreadCount > 0 && (
                 <IonBadge color={chat.isMuted ? 'medium' : 'primary'} className="unread-badge">
                   {chat.unreadCount}
@@ -646,6 +660,34 @@ const ChatList: React.FC = () => {
           .last-message-unread {
             color: hsl(var(--foreground));
             font-weight: 500;
+          }
+
+          .typing-preview {
+            color: hsl(var(--primary)) !important;
+            font-style: italic;
+          }
+
+          .typing-dots-inline {
+            display: inline-flex;
+            gap: 2px;
+            vertical-align: middle;
+            margin-right: 2px;
+          }
+
+          .typing-dots-inline span {
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+            background: hsl(var(--primary));
+            animation: typing-bounce 1.4s infinite ease-in-out;
+          }
+
+          .typing-dots-inline span:nth-child(2) { animation-delay: 0.2s; }
+          .typing-dots-inline span:nth-child(3) { animation-delay: 0.4s; }
+
+          @keyframes typing-bounce {
+            0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+            30% { transform: translateY(-2px); opacity: 1; }
           }
 
           .unread-badge {

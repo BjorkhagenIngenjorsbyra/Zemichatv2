@@ -332,20 +332,24 @@ ion-router-outlet {
   --ion-page-transition-duration: 250ms;
 }
 
-/* New message slide-in animation */
+/* New message slide-in animation with pop */
 @keyframes msg-slide-in {
-  from {
+  0% {
     opacity: 0;
-    transform: translateY(8px);
+    transform: translateY(8px) scale(0.95);
   }
-  to {
+  60% {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateY(-2px) scale(1.02);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
   }
 }
 
 .message-bubble-wrapper {
-  animation: msg-slide-in 200ms ease-out;
+  animation: msg-slide-in 300ms ease-out;
 }
 
 /* Send button bounce */
