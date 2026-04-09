@@ -11,6 +11,8 @@ workflows:
         XCODE_SCHEME: "App"
         APP_STORE_CONNECT_APP_ID: "6758961616"
         BUNDLE_ID: "com.zemichat.app"
+        VITE_REVENUECAT_IOS_KEY: "appl_BMmHxKRyBZvHYClLGUzqyDFeARS"
+        VITE_REVENUECAT_ANDROID_KEY: "goog_upSLMZaWWtXyJRFGpqTLuNMwNcO"
       node: 22
     scripts:
       - name: Install dependencies
@@ -134,6 +136,8 @@ workflows:
         - zemichat_keystore
       vars:
         PACKAGE_NAME: "com.zemichat.app"
+        VITE_REVENUECAT_IOS_KEY: "appl_BMmHxKRyBZvHYClLGUzqyDFeARS"
+        VITE_REVENUECAT_ANDROID_KEY: "goog_upSLMZaWWtXyJRFGpqTLuNMwNcO"
       node: 20
       java: 17
     scripts:
