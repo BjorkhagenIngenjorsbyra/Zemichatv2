@@ -137,7 +137,7 @@ workflows:
         PACKAGE_NAME: "com.zemichat.app"
         VITE_REVENUECAT_IOS_KEY: "appl_BMmHxKRyBZvHYClLGUzqyDFeARS"
         VITE_REVENUECAT_ANDROID_KEY: "goog_upSLMZaWWtXyJRFGpqTLuNMwNcO"
-      node: 20
+      node: 22
       java: 17
     scripts:
       - name: Install dependencies
