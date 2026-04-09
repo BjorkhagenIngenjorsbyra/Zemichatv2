@@ -149,6 +149,14 @@ workflows:
       - name: Sync Android
         script: |
           npx cap sync android
+      - name: Set up Android signing
+        script: |
+          # Create keystore.properties from Codemagic env vars
+          echo "storeFile=$CM_KEYSTORE_PATH" > android/keystore.properties
+          echo "storePassword=$CM_KEYSTORE_PASSWORD" >> android/keystore.properties
+          echo "keyAlias=$CM_KEY_ALIAS" >> android/keystore.properties
+          echo "keyPassword=$CM_KEY_PASSWORD" >> android/keystore.properties
+          echo "keystore.properties created with CM_KEYSTORE_PATH=$CM_KEYSTORE_PATH"
       - name: Build AAB
         script: |
           cd android
