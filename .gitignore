@@ -46,6 +46,8 @@ android/keystore.properties
 *.png
 !assets/store/*.png
 !assets/store/screenshots/*.png
+!assets/icon-only.png
+!assets/icon/*.png
 !public/favicon-192.png
 !public/favicon-512.png
 

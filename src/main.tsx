@@ -3,6 +3,30 @@ import { createRoot } from 'react-dom/client';
 import App from './App';
 import i18n, { detectDeviceLanguage, initI18n } from './i18n';
 
+function renderFallback(message: string) {
+  const container = document.getElementById('root');
+  if (container) {
+    container.innerHTML =
+      '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;padding:1rem;font-family:-apple-system,sans-serif;text-align:center;color:#0a0d17;background:#fff;">' +
+      '<h2 style="margin:0 0 0.5rem">ZemiChat</h2>' +
+      '<p style="margin:0;color:#666;font-size:0.95rem;">' +
+      message +
+      '</p></div>';
+  }
+}
+
+// Catch any uncaught error during module evaluation or async bootstrap so
+// the user never sees a blank white screen on iOS/Android.
+window.addEventListener('error', (e) => {
+  console.error('Global error:', e.error || e.message);
+  if (!document.getElementById('root')?.hasChildNodes()) {
+    renderFallback('Could not start. Please restart the app.');
+  }
+});
+window.addEventListener('unhandledrejection', (e) => {
+  console.error('Unhandled rejection:', e.reason);
+});
+
 async function bootstrap() {
   try {
     await detectDeviceLanguage();
@@ -32,9 +56,5 @@ async function bootstrap() {
 
 bootstrap().catch((e) => {
   console.error('Bootstrap failed:', e);
-  // Render a minimal error UI so the screen is never blank
-  const container = document.getElementById('root');
-  if (container) {
-    container.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;font-family:sans-serif;"><p>Failed to load app. Please restart.</p></div>';
-  }
+  renderFallback('Failed to load app. Please restart.');
 });

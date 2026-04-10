@@ -100,10 +100,13 @@ import './theme/variables.css';
 
 setupIonicReact();
 
+// Apply native status bar styling. Wrap each call individually so a single
+// platform mismatch (e.g. setBackgroundColor is Android-only and rejects on
+// iOS) cannot bring down module evaluation and produce a blank screen.
 if (Capacitor.isNativePlatform()) {
-  StatusBar.setOverlaysWebView({ overlay: false });
-  StatusBar.setBackgroundColor({ color: '#0a0d17' });
-  StatusBar.setStyle({ style: Style.Dark });
+  StatusBar.setOverlaysWebView({ overlay: false }).catch(() => {});
+  StatusBar.setBackgroundColor({ color: '#0a0d17' }).catch(() => {});
+  StatusBar.setStyle({ style: Style.Dark }).catch(() => {});
 }
 
 /**
