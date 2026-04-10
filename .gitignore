@@ -45,7 +45,7 @@ android/keystore.properties
 # Screenshots
 *.png
 !assets/store/*.png
-!assets/store/screenshots/*.png
+!assets/store/screenshots/**/*.png
 !assets/icon-only.png
 !assets/icon/*.png
 !public/favicon-192.png
