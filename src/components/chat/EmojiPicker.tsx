@@ -37,7 +37,7 @@ const EmojiPicker: React.FC<EmojiPickerProps> = ({ onSelect, onClose }) => {
       >
         <ReactEmojiPicker
           onEmojiClick={handleSelect}
-          theme={Theme.DARK}
+          theme={Theme.AUTO}
           searchPlaceholder="Sök emoji..."
           width="100%"
           height={350}

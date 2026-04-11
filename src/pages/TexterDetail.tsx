@@ -476,9 +476,10 @@ const TexterDetail: React.FC = () => {
           .section-title {
             font-size: 0.875rem;
             font-weight: 600;
-            color: #e5e7eb;
-            letter-spacing: 0.02em;
+            color: hsl(var(--foreground));
             letter-spacing: 0.05em;
+            text-transform: uppercase;
+            opacity: 0.7;
             margin: 0 0 1rem 0;
           }
 
@@ -494,7 +495,12 @@ const TexterDetail: React.FC = () => {
             --border-color: hsl(var(--border));
             --padding-start: 1rem;
             --padding-end: 1rem;
-            --color: #d1d5db;
+            --color: hsl(var(--foreground));
+          }
+
+          .action-item ion-label,
+          .toggle-item ion-label {
+            color: hsl(var(--foreground));
           }
 
           .action-icon, .toggle-icon {
@@ -508,7 +514,7 @@ const TexterDetail: React.FC = () => {
           }
 
           .action-item p {
-            color: #9ca3af;
+            color: hsl(var(--muted-foreground));
             font-size: 0.875rem;
           }
 

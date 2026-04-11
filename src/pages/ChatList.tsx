@@ -749,38 +749,37 @@ const ChatList: React.FC = () => {
 
           .swipe-btn {
             --background: transparent;
-            --color: hsl(var(--foreground));
+            --color: #ffffff;
             --padding-start: 0;
             --padding-end: 0;
             width: 4.5rem;
-            font-size: 0.65rem;
+            font-size: 0.7rem;
             font-weight: 600;
             font-family: inherit;
           }
 
           .swipe-btn ion-icon {
-            font-size: 1.25rem;
-            margin-bottom: 0.2rem;
+            font-size: 1.4rem;
+            margin-bottom: 0.25rem;
+            color: #ffffff;
           }
 
           .swipe-btn span {
             display: block;
             line-height: 1.2;
+            color: #ffffff;
           }
 
           .swipe-pin {
-            --background: hsl(var(--primary) / 0.15);
-            --color: hsl(var(--primary));
+            --background: hsl(var(--primary));
           }
 
           .swipe-mute {
-            --background: hsl(var(--muted) / 0.3);
-            --color: hsl(var(--muted-foreground));
+            --background: hsl(220 10% 55%);
           }
 
           .swipe-archive {
-            --background: hsl(45 80% 50% / 0.15);
-            --color: hsl(45 80% 65%);
+            --background: hsl(38 92% 50%);
           }
         `}</style>
       </IonContent>

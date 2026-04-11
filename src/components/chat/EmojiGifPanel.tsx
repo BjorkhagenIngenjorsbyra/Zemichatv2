@@ -153,7 +153,7 @@ const EmojiGifPanel: React.FC<EmojiGifPanelProps> = ({
         <div className="egp-emoji-container">
           <ReactEmojiPicker
             onEmojiClick={handleEmojiClick}
-            theme={Theme.DARK}
+            theme={Theme.AUTO}
             searchPlaceholder={t('common.search')}
             width="100%"
             height="100%"
