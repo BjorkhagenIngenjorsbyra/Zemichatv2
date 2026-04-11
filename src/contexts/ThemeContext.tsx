@@ -140,6 +140,14 @@ function applyTheme(name: ThemeName) {
   root.style.setProperty('--popover-foreground', colors.cardForeground);
   root.style.setProperty('--accent', colors.secondary);
   root.style.setProperty('--accent-foreground', colors.primaryForeground);
+
+  // Mirror the active theme onto the Ionic-only aliases used by ion-* CSS
+  // overrides in theme/variables.css. We can't write
+  // `--background: hsl(var(--background))` on Ionic elements (circular
+  // ref), so we expose a parallel set of vars and let Ionic read those.
+  root.style.setProperty('--ion-app-bg', colors.background);
+  root.style.setProperty('--ion-app-fg', colors.foreground);
+  root.style.setProperty('--ion-app-border', colors.border);
 }
 
 export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) => {

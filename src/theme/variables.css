@@ -63,19 +63,45 @@
   --sidebar-width-mobile: 18rem;
   --sidebar-width-icon: 3rem;
 
-  /* Ionic variable overrides — bind Ionic's component defaults to the
-     same shadcn variables the rest of the app uses, so IonModal /
-     IonItem / IonSearchbar / IonAccordion etc. follow the light theme
-     instead of falling back to a hardcoded dark navy. The header
-     toolbar still uses the dark accent via its own component styles. */
-  --ion-background-color: hsl(0, 0%, 100%);
+  /* Ionic variable overrides — bind Ionic's component defaults to a
+     theme-aware Ionic-only alias so IonModal / IonItem / IonSearchbar /
+     IonAccordion etc. follow the active app theme. The aliases are
+     redefined under each theme class so dark/sunset/etc themes get
+     proper dark backgrounds for Ionic components too.
+
+     Don't use --background here directly — shadcn already owns that
+     name and a circular reference (`--background: hsl(var(--background))`
+     inside an Ionic element scope) silently resolves to empty. */
+  --ion-app-bg: 0 0% 100%;
+  --ion-app-fg: 220 50% 7%;
+  --ion-app-border: 220 14% 90%;
+
+  --ion-background-color: hsl(var(--ion-app-bg));
   --ion-background-color-rgb: 255, 255, 255;
-  --ion-text-color: hsl(220, 50%, 7%);
+  --ion-text-color: hsl(var(--ion-app-fg));
   --ion-text-color-rgb: 10, 13, 23;
-  --ion-toolbar-background: hsl(0, 0%, 100%);
-  --ion-item-background: hsl(0, 0%, 100%);
-  --ion-card-background: hsl(0, 0%, 100%);
-  --ion-overlay-background-color: hsl(0, 0%, 100%);
+  --ion-toolbar-background: hsl(var(--ion-app-bg));
+  --ion-item-background: hsl(var(--ion-app-bg));
+  --ion-card-background: hsl(var(--ion-app-bg));
+  --ion-overlay-background-color: hsl(var(--ion-app-bg));
+}
+
+/* Dark theme — when shadcn .dark class is active, point Ionic aliases
+   at the dark navy palette so headers/toolbars/modals/cards look right
+   instead of being painted white over a dark page. */
+.dark, .theme-dark, [data-theme="dark"] {
+  --ion-app-bg: 220 50% 7%;
+  --ion-app-fg: 210 40% 98%;
+  --ion-app-border: 220 30% 20%;
+
+  --ion-background-color: hsl(var(--ion-app-bg));
+  --ion-background-color-rgb: 10, 13, 23;
+  --ion-text-color: hsl(var(--ion-app-fg));
+  --ion-text-color-rgb: 243, 244, 246;
+  --ion-toolbar-background: hsl(var(--ion-app-bg));
+  --ion-item-background: hsl(220 39% 11%);
+  --ion-card-background: hsl(220 39% 11%);
+  --ion-overlay-background-color: hsl(var(--ion-app-bg));
 }
 
 * {
@@ -150,18 +176,18 @@ ion-page {
   background: hsl(var(--background));
 }
 
-/* Use literal colors here, NOT hsl(var(--background)). The shadcn
-   --background custom property is also called --background, so writing
-   `--background: hsl(var(--background))` on an Ionic element creates a
-   circular reference: Ionic resolves --background to itself and ends
-   up with an empty value, which paints the toolbar transparent. */
+/* Use the Ionic-only --ion-app-bg alias here, NOT hsl(var(--background)).
+   The shadcn --background custom property is also called --background,
+   so writing `--background: hsl(var(--background))` on an Ionic element
+   creates a circular reference that resolves to empty. The alias is
+   redefined per theme above so dark mode also works. */
 ion-header {
-  --background: #ffffff;
+  --background: hsl(var(--ion-app-bg));
 }
 
 ion-toolbar {
-  --background: #ffffff;
-  --color: #0a0d17;
+  --background: hsl(var(--ion-app-bg));
+  --color: hsl(var(--ion-app-fg));
 }
 
 ion-input {
@@ -190,9 +216,9 @@ ion-input input::placeholder {
   opacity: 1 !important;
 }
 
-/* See note above on circular var refs — hardcode white here too. */
+/* See note above on circular var refs — use the Ionic-only alias. */
 ion-modal {
-  --background: #ffffff;
+  --background: hsl(var(--ion-app-bg));
   --backdrop-opacity: 0.6;
 }
 
@@ -202,17 +228,17 @@ ion-modal::part(backdrop) {
 }
 
 ion-modal::part(content) {
-  background: #ffffff !important;
+  background: hsl(var(--ion-app-bg)) !important;
   box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.15);
 }
 
 ion-modal ion-content {
-  --background: #ffffff;
-  --color: #0a0d17;
+  --background: hsl(var(--ion-app-bg));
+  --color: hsl(var(--ion-app-fg));
 }
 
 ion-modal ion-header {
-  --background: #ffffff;
+  --background: hsl(var(--ion-app-bg));
 }
 
 ion-modal ion-header::after {
@@ -221,9 +247,9 @@ ion-modal ion-header::after {
 }
 
 ion-modal ion-toolbar {
-  --background: #ffffff;
-  --color: #0a0d17;
-  --border-color: #e5e7eb;
+  --background: hsl(var(--ion-app-bg));
+  --color: hsl(var(--ion-app-fg));
+  --border-color: hsl(var(--ion-app-border));
 }
 
 ion-button {
