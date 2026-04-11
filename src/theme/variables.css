@@ -166,14 +166,14 @@ html, body {
   box-shadow: 0 6px 16px rgba(167, 139, 250, 0.4);
 }
 
-/* Ionic overrides for dark theme */
+/* Ionic overrides — use --ion-app-bg alias to avoid circular ref. */
 ion-content {
-  --background: hsl(var(--background));
-  --color: hsl(var(--foreground));
+  --background: hsl(var(--ion-app-bg));
+  --color: hsl(var(--ion-app-fg));
 }
 
 ion-page {
-  background: hsl(var(--background));
+  background: hsl(var(--ion-app-bg));
 }
 
 /* Use the Ionic-only --ion-app-bg alias here, NOT hsl(var(--background)).
@@ -471,14 +471,15 @@ ion-button {
   --border-radius: 12px;
 }
 
-/* Smoother IonContent scroll */
+/* Smoother IonContent scroll. Use --ion-app-bg alias to avoid the
+   shadcn --background circular reference described at the top of file. */
 ion-content {
-  --background: hsl(var(--background));
+  --background: hsl(var(--ion-app-bg));
 }
 
-/* Better header styling */
+/* Better header styling — same alias to avoid circular ref. */
 ion-toolbar {
-  --background: hsl(var(--background));
+  --background: hsl(var(--ion-app-bg));
   --border-width: 0;
   --border-color: transparent;
 }

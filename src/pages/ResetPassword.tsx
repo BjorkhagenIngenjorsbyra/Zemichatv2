@@ -128,9 +128,19 @@ const ResetPassword: React.FC = () => {
               </div>
             </div>
           ) : !isReady ? (
-            <div className="auth-form" style={{ textAlign: 'center', padding: '2rem 0' }}>
+            <div
+              className="auth-form"
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: '2rem 0',
+                gap: '1rem',
+              }}
+            >
               <IonSpinner name="crescent" />
-              <p style={{ marginTop: '1rem', color: 'hsl(var(--muted-foreground))' }}>
+              <p style={{ margin: 0, color: 'hsl(var(--muted-foreground))', textAlign: 'center' }}>
                 {t('auth.verifyingResetLink')}
               </p>
             </div>
