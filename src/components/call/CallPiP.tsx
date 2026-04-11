@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { IonButton, IonIcon } from '@ionic/react';
 import { expand, call as callIcon } from 'ionicons/icons';
 import { useCallContext } from '../../contexts/CallContext';
-import { CallType, CallState } from '../../types/call';
+import { CallState } from '../../types/call';
 
 const CallPiP: React.FC = () => {
   const { t } = useTranslation();
@@ -20,7 +20,6 @@ const CallPiP: React.FC = () => {
   };
 
   const isConnected = activeCall.state === CallState.CONNECTED;
-  const isVideo = activeCall.callType === CallType.VIDEO;
 
   // Get other participant(s) for display
   const otherParticipants = activeCall.participants.slice(1);
@@ -28,7 +27,7 @@ const CallPiP: React.FC = () => {
     ? otherParticipants[0].displayName
     : t('call.call');
 
-  const handleTouchStart = (e: React.TouchEvent) => {
+  const handleTouchStart = () => {
     setIsDragging(true);
   };
 

@@ -79,7 +79,7 @@ export const CreateTexterModal: React.FC<CreateTexterModalProps> = ({
 
     setIsLoading(true);
 
-    const { user: newTexter, zemiNumber, error: createError } = await createTexter({
+    const { zemiNumber, error: createError } = await createTexter({
       displayName: displayName.trim(),
       password,
       teamId,
