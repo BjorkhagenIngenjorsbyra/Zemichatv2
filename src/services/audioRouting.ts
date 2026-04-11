@@ -8,7 +8,7 @@ import AgoraRTC from 'agora-rtc-sdk-ng';
  * - Native: Uses Agora SDK's setPlaybackDevice or native routing.
  * - Web: Uses setSinkId() if available (best-effort).
  */
-export async function setAudioRoute(speakerOn: boolean): Promise<void> {
+export async function setAudioRoute(_speakerOn: boolean): Promise<void> {
   if (Capacitor.isNativePlatform()) {
     // On native (Android/iOS), Agora SDK provides audio routing control
     try {

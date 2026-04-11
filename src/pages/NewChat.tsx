@@ -20,7 +20,7 @@ import {
   IonCheckbox,
   IonFooter,
 } from '@ionic/react';
-import { personOutline, personAddOutline, checkmarkCircle } from 'ionicons/icons';
+import { personOutline, personAddOutline } from 'ionicons/icons';
 import { getMyFriends, type FriendWithUser } from '../services/friend';
 import { createChat } from '../services/chat';
 import { getAvatarColor, getInitial } from '../utils/userDisplay';

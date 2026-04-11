@@ -38,7 +38,7 @@ import { Capacitor } from '@capacitor/core';
 import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
 import { supabase } from '../services/supabase';
 import { uploadAvatar } from '../services/storage';
-import { getDisplayName, getInitial, getAvatarColor } from '../utils/userDisplay';
+import { getInitial, getAvatarColor } from '../utils/userDisplay';
 import { hapticLight } from '../utils/haptics';
 import { useTheme, type ThemeName } from '../contexts/ThemeContext';
 import { useAuthContext } from '../contexts/AuthContext';

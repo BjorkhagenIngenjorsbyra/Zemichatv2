@@ -1,5 +1,5 @@
 import { supabase } from './supabase';
-import { type Chat, type ChatMember, type Message, type User } from '../types/database';
+import { type Chat, type Message, type User } from '../types/database';
 
 export interface TexterChatOverview {
   chat: Chat;

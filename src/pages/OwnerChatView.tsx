@@ -11,7 +11,6 @@ import {
   IonBackButton,
   IonSpinner,
   IonIcon,
-  IonBadge,
   IonRefresher,
   IonRefresherContent,
   RefresherEventDetail,

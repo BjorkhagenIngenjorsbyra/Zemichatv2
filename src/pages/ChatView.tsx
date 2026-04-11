@@ -14,7 +14,7 @@ import {
   IonButton,
   IonToast,
 } from '@ionic/react';
-import { searchOutline, arrowDown, chevronForwardOutline } from 'ionicons/icons';
+import { searchOutline, arrowDown } from 'ionicons/icons';
 import { Keyboard } from '@capacitor/keyboard';
 import { Capacitor } from '@capacitor/core';
 import { useAuthContext } from '../contexts/AuthContext';
@@ -74,7 +74,6 @@ import {
   MessageContextMenu,
   ForwardPicker,
   PollCreator,
-  PollMessage,
 } from '../components/chat';
 import type { ReadStatus } from '../components/chat/MessageBubble';
 import { SOSButton } from '../components/sos';
@@ -114,8 +113,9 @@ const ChatView: React.FC = () => {
   // Texter call permissions
   const [texterSettings, setTexterSettings] = useState<TexterSettings | null>(null);
 
-  // Auto-scroll + "new messages" button
-  const [isNearBottom, setIsNearBottom] = useState(true);
+  // Auto-scroll + "new messages" button (state not read directly,
+  // ref is what other code reads — kept in sync via the setter)
+  const [, setIsNearBottom] = useState(true);
   const isNearBottomRef = useRef(true);
   const [newMessageCount, setNewMessageCount] = useState(0);
 

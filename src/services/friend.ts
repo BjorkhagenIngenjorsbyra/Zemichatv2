@@ -3,7 +3,6 @@ import { trackEvent } from './analytics';
 import {
   type Friendship,
   type User,
-  type DeniedFriendRequest,
   FriendshipStatus,
   UserRole,
 } from '../types/database';
