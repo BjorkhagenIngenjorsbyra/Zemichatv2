@@ -42,10 +42,13 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
   isJustSent = false,
   galleryUrls,
   onReply,
-  onReact,
+  // onReact and userId are unused inside the bubble itself — they're
+  // forwarded to the context menu by the parent. Keep in the interface
+  // so the contract is documented.
+  onReact: _onReact,
   onToggleReaction,
   onContextMenu,
-  userId,
+  userId: _userId,
   userRole,
 }) => {
   const { t } = useTranslation();

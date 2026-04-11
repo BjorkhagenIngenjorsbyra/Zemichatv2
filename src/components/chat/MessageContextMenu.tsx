@@ -30,7 +30,9 @@ interface MessageContextMenuProps {
 const MessageContextMenu: React.FC<MessageContextMenuProps> = ({
   isOpen,
   message,
-  isOwn,
+  // isOwn is part of the public contract but not currently used in
+  // the menu UI — kept so callers can keep passing it.
+  isOwn: _isOwn,
   userId,
   onClose,
   onReply,
