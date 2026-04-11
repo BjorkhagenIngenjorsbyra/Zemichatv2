@@ -28,11 +28,13 @@ import {
 import { getOversightMessages } from '../services/oversight';
 import { getChat, type ChatWithDetails } from '../services/chat';
 import { MessageType, type Message, type User } from '../types/database';
+import { useAuthContext } from '../contexts/AuthContext';
 
 const OwnerChatView: React.FC = () => {
   const { t } = useTranslation();
   const history = useHistory();
   const { chatId } = useParams<{ chatId: string }>();
+  const { profile } = useAuthContext();
   const [chat, setChat] = useState<ChatWithDetails | null>(null);
   const [messages, setMessages] = useState<(Message & { sender?: User })[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -76,8 +78,12 @@ const OwnerChatView: React.FC = () => {
     if (!chat) return '';
     if (chat.name) return chat.name;
 
-    // For 1-on-1 chats, show both participants
-    const names = chat.members.map((m) => m.user?.display_name || m.user?.zemi_number || '?');
+    // For 1-on-1 chats, show both participants. Replace the Owner's
+    // own row with "Du" so the title reads naturally.
+    const names = chat.members.map((m) => {
+      if (m.user?.id === profile?.id) return t('common.you', 'Du');
+      return m.user?.display_name || m.user?.zemi_number || '?';
+    });
     return names.join(' & ');
   };
 
@@ -247,8 +253,13 @@ const OwnerChatView: React.FC = () => {
           <div className="messages-container">
             {messages.map((message, index) => {
               const showDivider = shouldShowDateDivider(message, index);
-              const senderName =
-                message.sender?.display_name || message.sender?.zemi_number || '?';
+              // For the Owner viewing the chat, label their own messages
+              // as "Du" so the conversation reads naturally instead of
+              // "ZEMI-XXX-XXX: Hej älskling".
+              const isSelf = message.sender?.id === profile?.id;
+              const senderName = isSelf
+                ? t('common.you', 'Du')
+                : message.sender?.display_name || message.sender?.zemi_number || '?';
 
               return (
                 <div key={message.id}>

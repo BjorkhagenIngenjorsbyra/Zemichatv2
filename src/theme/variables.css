@@ -150,13 +150,18 @@ ion-page {
   background: hsl(var(--background));
 }
 
+/* Use literal colors here, NOT hsl(var(--background)). The shadcn
+   --background custom property is also called --background, so writing
+   `--background: hsl(var(--background))` on an Ionic element creates a
+   circular reference: Ionic resolves --background to itself and ends
+   up with an empty value, which paints the toolbar transparent. */
 ion-header {
-  --background: hsl(var(--background));
+  --background: #ffffff;
 }
 
 ion-toolbar {
-  --background: hsl(var(--background));
-  --color: hsl(var(--foreground));
+  --background: #ffffff;
+  --color: #0a0d17;
 }
 
 ion-input {
@@ -185,8 +190,9 @@ ion-input input::placeholder {
   opacity: 1 !important;
 }
 
+/* See note above on circular var refs — hardcode white here too. */
 ion-modal {
-  --background: hsl(var(--background));
+  --background: #ffffff;
   --backdrop-opacity: 0.6;
 }
 
@@ -196,17 +202,17 @@ ion-modal::part(backdrop) {
 }
 
 ion-modal::part(content) {
-  background: hsl(var(--background)) !important;
+  background: #ffffff !important;
   box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.15);
 }
 
 ion-modal ion-content {
-  --background: hsl(var(--background));
-  --color: hsl(var(--foreground));
+  --background: #ffffff;
+  --color: #0a0d17;
 }
 
 ion-modal ion-header {
-  --background: hsl(var(--background));
+  --background: #ffffff;
 }
 
 ion-modal ion-header::after {
@@ -215,9 +221,9 @@ ion-modal ion-header::after {
 }
 
 ion-modal ion-toolbar {
-  --background: hsl(var(--background));
-  --color: hsl(var(--foreground));
-  --border-color: hsl(var(--border));
+  --background: #ffffff;
+  --color: #0a0d17;
+  --border-color: #e5e7eb;
 }
 
 ion-button {
