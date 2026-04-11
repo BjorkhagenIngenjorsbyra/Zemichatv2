@@ -410,12 +410,12 @@ export async function canScreenShare(
       return { canShare: true, error: null };
     }
 
-    // Check Texter settings
+    // Check Texter settings (maybeSingle: row may not exist)
     const { data: settings, error: settingsError } = await supabase
       .from('texter_settings')
       .select('can_screen_share')
       .eq('user_id', userId)
-      .single();
+      .maybeSingle();
 
     if (settingsError || !settings) {
       // Default to allowed if no settings exist

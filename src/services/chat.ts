@@ -299,14 +299,18 @@ export async function getChat(
   chatId: string
 ): Promise<{ chat: ChatWithDetails | null; error: Error | null }> {
   try {
+    // Use maybeSingle: chatId may not exist (404) or user may not have access
     const { data: chatData, error: chatError } = await supabase
       .from('chats')
       .select('*')
       .eq('id', chatId)
-      .single();
+      .maybeSingle();
 
     if (chatError) {
       return { chat: null, error: new Error(chatError.message) };
+    }
+    if (!chatData) {
+      return { chat: null, error: null };
     }
 
     const { data: members, error: membersError } = await supabase
@@ -322,11 +326,12 @@ export async function getChat(
       return { chat: null, error: new Error(membersError.message) };
     }
 
+    // Use maybeSingle: current user may not be a member of this chat
     const { data: currentMember } = await supabase
       .from('chat_members')
       .select('unread_count, is_pinned, is_archived, is_muted, marked_unread')
       .eq('chat_id', chatId)
-      .single();
+      .maybeSingle();
 
     const typedCurrentMember = currentMember as unknown as {
       unread_count: number;

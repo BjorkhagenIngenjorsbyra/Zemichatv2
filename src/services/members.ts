@@ -86,17 +86,18 @@ export async function getTeamMembers(): Promise<{ members: User[]; error: Error 
 export async function getTexterSettings(
   userId: string
 ): Promise<{ settings: TexterSettings | null; error: Error | null }> {
+  // Use maybeSingle: a Texter may not have a settings row yet (defaults apply)
   const { data, error } = await supabase
     .from('texter_settings')
     .select('*')
     .eq('user_id', userId)
-    .single();
+    .maybeSingle();
 
   if (error) {
     return { settings: null, error: new Error(error.message) };
   }
 
-  return { settings: data as unknown as TexterSettings, error: null };
+  return { settings: data as unknown as TexterSettings | null, error: null };
 }
 
 /**

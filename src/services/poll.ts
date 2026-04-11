@@ -63,14 +63,18 @@ export async function createPoll(data: CreatePollData): Promise<{ poll: Poll | n
  * Get a poll with its options and votes.
  */
 export async function getPoll(pollId: string): Promise<{ poll: PollWithOptions | null; error: Error | null }> {
+  // Use maybeSingle: poll may not exist
   const { data: pollData, error: pollError } = await supabase
     .from('polls')
     .select('*')
     .eq('id', pollId)
-    .single();
+    .maybeSingle();
 
   if (pollError) {
     return { poll: null, error: new Error(pollError.message) };
+  }
+  if (!pollData) {
+    return { poll: null, error: null };
   }
 
   const poll = pollData as unknown as Poll;
@@ -109,14 +113,18 @@ export async function getPoll(pollId: string): Promise<{ poll: PollWithOptions |
  * Get a poll by its message ID.
  */
 export async function getPollByMessageId(messageId: string): Promise<{ poll: PollWithOptions | null; error: Error | null }> {
+  // Use maybeSingle: most messages don't have polls; null is the common case
   const { data: pollData, error: pollError } = await supabase
     .from('polls')
     .select('*')
     .eq('message_id', messageId)
-    .single();
+    .maybeSingle();
 
   if (pollError) {
     return { poll: null, error: null }; // Not found is not an error
+  }
+  if (!pollData) {
+    return { poll: null, error: null };
   }
 
   return getPoll((pollData as unknown as Poll).id);
