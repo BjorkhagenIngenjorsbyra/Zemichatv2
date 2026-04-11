@@ -272,6 +272,7 @@
     "myFriends": "Omat ystävät",
     "requests": "Pyynnöt",
     "noFriends": "Ei ystäviä vielä",
+    "noneInCategory": "Ei vielä ystäviä tässä kategoriassa",
     "addFriendsHint": "Etsi käyttäjiä heidän Zemi-numerollaan lisätäksesi heidät",
     "addFriend": "Lisää ystävä",
     "noRequests": "Ei odottavia pyyntöjä",

@@ -272,6 +272,7 @@
     "myFriends": "My Friends",
     "requests": "Requests",
     "noFriends": "No friends yet",
+    "noneInCategory": "No friends in this category yet",
     "addFriendsHint": "Search for users by their Zemi number to add them",
     "addFriend": "Add Friend",
     "noRequests": "No pending requests",

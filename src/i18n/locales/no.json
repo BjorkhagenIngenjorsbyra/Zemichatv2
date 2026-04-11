@@ -272,6 +272,7 @@
     "myFriends": "Mine venner",
     "requests": "Forespørsler",
     "noFriends": "Ingen venner ennå",
+    "noneInCategory": "Ingen venner i denne kategorien ennå",
     "addFriendsHint": "Søk etter brukere med deres Zemi-nummer for å legge dem til",
     "addFriend": "Legg til venn",
     "noRequests": "Ingen ventende forespørsler",

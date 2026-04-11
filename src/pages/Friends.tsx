@@ -223,40 +223,52 @@ const Friends: React.FC = () => {
                   ))}
                 </div>
 
-                <IonList className="friends-list" data-testid="friends-list">
-                  {friends
-                    .filter((friend) => {
-                      if (activeCategory === 'all') return true;
-                      const settings = friendSettingsMap.get(friend.user.id);
-                      return settings?.categories?.includes(activeCategory) ?? false;
-                    })
-                    .map((friend) => {
-                      const settings = friendSettingsMap.get(friend.user.id);
-                      return (
-                        <FriendCard
-                          key={friend.id}
-                          user={friend.user}
-                          friendshipId={friend.id}
-                          nickname={settings?.nickname}
-                          showRealName={settings?.show_real_name}
-                          categories={settings?.categories}
-                          onUnfriend={() =>
-                            setUnfriendTarget({
-                              id: friend.id,
-                              name: friend.user.display_name || t('dashboard.unnamed'),
-                            })
-                          }
-                          onClick={() =>
-                            setActionTarget({
-                              userId: friend.user.id,
-                              name: friend.user.display_name || t('dashboard.unnamed'),
-                              user: friend.user,
-                            })
-                          }
-                        />
-                      );
-                    })}
-                </IonList>
+                {(() => {
+                  const filteredFriends = friends.filter((friend) => {
+                    if (activeCategory === 'all') return true;
+                    const settings = friendSettingsMap.get(friend.user.id);
+                    return settings?.categories?.includes(activeCategory) ?? false;
+                  });
+
+                  if (filteredFriends.length === 0) {
+                    return (
+                      <div className="category-empty">
+                        <p>{t('friends.noneInCategory', 'Inga vänner i den här kategorin än')}</p>
+                      </div>
+                    );
+                  }
+
+                  return (
+                    <IonList className="friends-list" data-testid="friends-list">
+                      {filteredFriends.map((friend) => {
+                        const settings = friendSettingsMap.get(friend.user.id);
+                        return (
+                          <FriendCard
+                            key={friend.id}
+                            user={friend.user}
+                            friendshipId={friend.id}
+                            nickname={settings?.nickname}
+                            showRealName={settings?.show_real_name}
+                            categories={settings?.categories}
+                            onUnfriend={() =>
+                              setUnfriendTarget({
+                                id: friend.id,
+                                name: friend.user.display_name || t('dashboard.unnamed'),
+                              })
+                            }
+                            onClick={() =>
+                              setActionTarget({
+                                userId: friend.user.id,
+                                name: friend.user.display_name || t('dashboard.unnamed'),
+                                user: friend.user,
+                              })
+                            }
+                          />
+                        );
+                      })}
+                    </IonList>
+                  );
+                })()}
               </>
             )}
           </div>
@@ -473,6 +485,13 @@ const Friends: React.FC = () => {
             text-align: center;
             padding: 3rem;
             height: calc(100% - 100px);
+          }
+
+          .category-empty {
+            text-align: center;
+            padding: 2rem 1rem;
+            color: hsl(var(--muted-foreground));
+            font-size: 0.9rem;
           }
 
           .empty-icon {
