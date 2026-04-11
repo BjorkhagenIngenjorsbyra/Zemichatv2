@@ -42,11 +42,25 @@ export function startRingtone(): void {
     // Immediate first vibration
     Haptics.impact({ style: ImpactStyle.Heavy }).catch(() => {});
   } else if (typeof navigator !== 'undefined' && navigator.vibrate) {
-    // Web: use Vibration API with pattern [vibrate, pause, vibrate, long pause]
+    // Web: use Vibration API with pattern [vibrate, pause, vibrate, long pause].
+    // Browsers (Chrome, Safari) require a prior user gesture before they
+    // accept navigator.vibrate() — without one, they log a noisy error to
+    // the console even though the call is silently no-op'd. Check
+    // userActivation if available so we don't pollute logs on first load.
+    const ua = (navigator as Navigator & { userActivation?: { hasBeenActive: boolean } }).userActivation;
+    if (ua && !ua.hasBeenActive) {
+      // No user gesture yet — skip vibration. The audio element fall-back
+      // (above) is enough to alert the user.
+      return;
+    }
     webVibrating = true;
     const vibrateLoop = () => {
       if (!webVibrating) return;
-      navigator.vibrate([800, 400, 800, 2000]);
+      try {
+        navigator.vibrate([800, 400, 800, 2000]);
+      } catch {
+        /* Some browsers throw on blocked vibrate; treat as no-op. */
+      }
       // Total cycle: 4000ms — schedule next
       vibrationInterval = setTimeout(vibrateLoop, 4000) as unknown as ReturnType<typeof setInterval>;
     };

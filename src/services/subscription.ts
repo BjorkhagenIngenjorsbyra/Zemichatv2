@@ -140,18 +140,21 @@ export async function getManualSubscription(userId?: string): Promise<{
       targetUserId = user.id;
     }
 
+    // Use maybeSingle() instead of single() so the REST API doesn't return
+    // a 406 (and log a noisy console error) when the user has no manual
+    // subscription row, which is the common case.
     const { data, error } = await supabase
       .from('manual_subscriptions')
       .select('*')
       .eq('user_id', targetUserId)
-      .single();
+      .maybeSingle();
 
     if (error) {
-      if (error.code === 'PGRST116') {
-        // No row found - not an error, just no manual subscription
-        return { subscription: null, error: null };
-      }
       return { subscription: null, error: new Error(error.message) };
+    }
+    if (!data) {
+      // No manual subscription set for this user
+      return { subscription: null, error: null };
     }
 
     const subscription = data as ManualSubscription;
