@@ -1,5 +1,5 @@
 import { supabase } from './supabase';
-import { type QuickMessage, UserRole } from '../types/database';
+import { type QuickMessage } from '../types/database';
 
 // ============================================================
 // Quick Messages Service

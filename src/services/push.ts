@@ -182,10 +182,9 @@ function registerListeners(): void {
     console.error('Push registration failed:', error);
   });
 
-  // Notification received while app is in foreground
-  PushNotifications.addListener('pushNotificationReceived', (notification) => {
-    // Foreground notification received — handled by Realtime
-  });
+  // Notification received while app is in foreground —
+  // handled by Realtime, no work needed here
+  PushNotifications.addListener('pushNotificationReceived', () => {});
 
   // User tapped on a notification
   PushNotifications.addListener('pushNotificationActionPerformed', (action) => {

@@ -550,7 +550,9 @@ export async function purchasePackage(pkg: RevenueCatPackage): Promise<{
       };
     }
 
-    const { customerInfo } = await Purchases.purchasePackage({ aPackage: pkg as never });
+    // We don't read customerInfo directly — getSubscriptionStatus() below
+    // re-fetches the latest entitlements via Supabase webhook sync
+    await Purchases.purchasePackage({ aPackage: pkg as never });
 
     // Get updated status
     const { status } = await getSubscriptionStatus();
