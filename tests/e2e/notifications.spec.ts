@@ -429,7 +429,7 @@ test.describe('Suite 2: NotificationContext Integration & Wall', () => {
       // Supabase client stores channels internally
       // We check for the channel names our NotificationContext creates
       const allChannels: string[] = [];
-      // @ts-ignore — accessing internal Supabase state
+      // Accessing internal Supabase state via the window-exposed instance
       const sb = (window as unknown as Record<string, unknown>).__supabase;
       if (sb && typeof sb === 'object' && 'realtime' in (sb as Record<string, unknown>)) {
         const rt = (sb as Record<string, unknown>).realtime;
