@@ -16,7 +16,7 @@ import {
   IonContent,
   IonButtons,
 } from '@ionic/react';
-import { timeOutline, checkmark } from 'ionicons/icons';
+import { timeOutline } from 'ionicons/icons';
 import { getTexterSettings, updateTexterSettings } from '../../services/members';
 import { type TexterSettings } from '../../types/database';
 
@@ -42,7 +42,7 @@ export const QuietHoursManager: React.FC<QuietHoursManagerProps> = ({
   userId,
 }) => {
   const { t } = useTranslation();
-  const [settings, setSettings] = useState<TexterSettings | null>(null);
+  const [, setSettings] = useState<TexterSettings | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [isEnabled, setIsEnabled] = useState(false);

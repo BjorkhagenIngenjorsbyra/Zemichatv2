@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useHistory } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { getDisplayName, getInitial, getAvatarColor } from '../utils/userDisplay';
+import { getDisplayName, getAvatarColor } from '../utils/userDisplay';
 import {
   IonPage,
   IonContent,

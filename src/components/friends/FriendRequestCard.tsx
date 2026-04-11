@@ -7,7 +7,6 @@ import {
   IonButton,
   IonIcon,
   IonBadge,
-  IonText,
 } from '@ionic/react';
 import { checkmark, close, timeOutline } from 'ionicons/icons';
 import { type User, UserRole } from '../../types/database';

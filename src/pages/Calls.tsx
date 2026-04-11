@@ -16,10 +16,7 @@ import {
   RefresherEventDetail,
 } from '@ionic/react';
 import { useAuthContext } from '../contexts/AuthContext';
-import { useCallContext } from '../contexts/CallContext';
 import { getCallHistory, type CallHistoryEntry } from '../services/callHistory';
-import { createChat } from '../services/chat';
-import { CallType } from '../types/call';
 import { SkeletonLoader, EmptyStateIllustration } from '../components/common';
 import CallHistoryItem from '../components/call/CallHistoryItem';
 
@@ -29,7 +26,6 @@ const Calls: React.FC = () => {
   const { t } = useTranslation();
   const history = useHistory();
   const { profile } = useAuthContext();
-  const { initiateCall } = useCallContext();
   const [activeTab, setActiveTab] = useState<TabValue>('all');
   const [calls, setCalls] = useState<CallHistoryEntry[]>([]);
   const [isLoading, setIsLoading] = useState(true);

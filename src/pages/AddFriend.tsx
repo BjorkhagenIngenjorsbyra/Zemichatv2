@@ -1,5 +1,4 @@
 import { useState, useCallback } from 'react';
-import { useHistory } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
   IonPage,
@@ -35,7 +34,6 @@ import { type User } from '../types/database';
 
 const AddFriend: React.FC = () => {
   const { t } = useTranslation();
-  const history = useHistory();
   const { profile } = useAuthContext();
   const [zemiNumber, setZemiNumber] = useState('');
   const [isSearching, setIsSearching] = useState(false);

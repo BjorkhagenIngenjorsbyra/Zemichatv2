@@ -14,7 +14,7 @@ import {
 import { close, checkmarkCircle, sparkles } from 'ionicons/icons';
 import { useSubscription } from '../../contexts/SubscriptionContext';
 import { PlanType } from '../../types/database';
-import { PLAN_FEATURES, PLAN_PRICING, type RevenueCatPackage } from '../../types/subscription';
+import { PLAN_FEATURES, PLAN_PRICING } from '../../types/subscription';
 
 type PlanId = 'plus' | 'plus_ringa';
 
