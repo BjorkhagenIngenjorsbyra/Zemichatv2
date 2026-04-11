@@ -800,14 +800,21 @@ const ChatList: React.FC = () => {
         }}
         className="chat-preview-popover"
       >
-        {previewChat && (
+        {previewChat && (() => {
+          const previewOther = !previewChat.is_group
+            ? previewChat.members.find((m) => m.user_id !== profile?.id)?.user
+            : null;
+          return (
           <div className="chat-preview-content">
             <div className="preview-header-row">
               <div className="preview-avatar">
                 {getChatAvatar(previewChat) ? (
                   <img src={getChatAvatar(previewChat)!} alt="" />
                 ) : (
-                  <div className="avatar-placeholder-small">
+                  <div
+                    className="avatar-placeholder-small"
+                    style={{ background: getAvatarColor(previewOther) }}
+                  >
                     {getAvatarInitial(previewChat)}
                   </div>
                 )}
@@ -851,7 +858,8 @@ const ChatList: React.FC = () => {
               {t('common.open') || 'Open'}
             </button>
           </div>
-        )}
+          );
+        })()}
       </IonPopover>
 
       <MuteOptions
