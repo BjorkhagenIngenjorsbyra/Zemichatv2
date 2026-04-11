@@ -63,17 +63,19 @@
   --sidebar-width-mobile: 18rem;
   --sidebar-width-icon: 3rem;
 
-  /* Ionic variable overrides – force dark theme regardless of
-     device prefers-color-scheme. Without these, Ionic components
-     (modals, action sheets, alerts, etc.) fall back to white. */
-  --ion-background-color: hsl(220, 50%, 7%);
-  --ion-background-color-rgb: 10, 13, 23;
-  --ion-text-color: hsl(210, 40%, 98%);
-  --ion-text-color-rgb: 243, 244, 246;
-  --ion-toolbar-background: hsl(220, 50%, 7%);
-  --ion-item-background: hsl(220, 39%, 11%);
-  --ion-card-background: hsl(220, 39%, 11%);
-  --ion-overlay-background-color: hsl(220, 50%, 7%);
+  /* Ionic variable overrides — bind Ionic's component defaults to the
+     same shadcn variables the rest of the app uses, so IonModal /
+     IonItem / IonSearchbar / IonAccordion etc. follow the light theme
+     instead of falling back to a hardcoded dark navy. The header
+     toolbar still uses the dark accent via its own component styles. */
+  --ion-background-color: hsl(0, 0%, 100%);
+  --ion-background-color-rgb: 255, 255, 255;
+  --ion-text-color: hsl(220, 50%, 7%);
+  --ion-text-color-rgb: 10, 13, 23;
+  --ion-toolbar-background: hsl(0, 0%, 100%);
+  --ion-item-background: hsl(0, 0%, 100%);
+  --ion-card-background: hsl(0, 0%, 100%);
+  --ion-overlay-background-color: hsl(0, 0%, 100%);
 }
 
 * {
@@ -184,30 +186,32 @@ ion-input input::placeholder {
 }
 
 ion-modal {
-  --background: hsl(220, 50%, 7%);
-  --backdrop-opacity: 0.7;
+  --background: hsl(var(--background));
+  --backdrop-opacity: 0.5;
 }
 
 ion-modal::part(backdrop) {
   background: #000 !important;
-  opacity: 0.7 !important;
+  opacity: 0.5 !important;
 }
 
 ion-modal::part(content) {
-  background: hsl(220, 50%, 7%) !important;
+  background: hsl(var(--background)) !important;
 }
 
 ion-modal ion-content {
-  --background: hsl(220, 50%, 7%);
+  --background: hsl(var(--background));
+  --color: hsl(var(--foreground));
 }
 
 ion-modal ion-header {
-  --background: hsl(220, 50%, 7%);
+  --background: hsl(var(--background));
 }
 
 ion-modal ion-toolbar {
-  --background: hsl(220, 39%, 11%);
-  --color: hsl(210, 40%, 98%);
+  --background: hsl(var(--background));
+  --color: hsl(var(--foreground));
+  --border-color: hsl(var(--border));
 }
 
 ion-button {
