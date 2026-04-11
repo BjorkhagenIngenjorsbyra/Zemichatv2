@@ -42,7 +42,7 @@ async function bootstrap() {
 
   // Expose i18n on window for E2E tests (dev only)
   if (import.meta.env.DEV) {
-    (window as any).__i18n = i18n;
+    (window as unknown as { __i18n: typeof i18n }).__i18n = i18n;
   }
 
   const container = document.getElementById('root');

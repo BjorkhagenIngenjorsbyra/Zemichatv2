@@ -45,6 +45,8 @@ export async function trackEvent(
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // analytics_events isn't in the generated Database types
     await (supabase.from as any)('analytics_events').insert({
       event_type: eventType,
       user_id: user.id,
@@ -69,6 +71,8 @@ export async function trackTeamEvent(
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // analytics_events isn't in the generated Database types
     await (supabase.from as any)('analytics_events').insert({
       event_type: eventType,
       user_id: user.id,
