@@ -30,6 +30,7 @@ import {
   getFriendshipStatus,
 } from '../services/friend';
 import { ZemiNumberInput, isValidZemiNumber } from '../components/friends';
+import { getAvatarColor, getInitial } from '../utils/userDisplay';
 import { type User } from '../types/database';
 
 const AddFriend: React.FC = () => {
@@ -205,8 +206,11 @@ const AddFriend: React.FC = () => {
                       alt={searchResult.display_name || ''}
                     />
                   ) : (
-                    <div className="avatar-placeholder">
-                      {searchResult.display_name?.charAt(0)?.toUpperCase() || '?'}
+                    <div
+                      className="avatar-placeholder"
+                      style={{ background: getAvatarColor(searchResult) }}
+                    >
+                      {getInitial(searchResult)}
                     </div>
                   )}
                 </IonAvatar>
