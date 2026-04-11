@@ -236,8 +236,7 @@ const ImageMessage: React.FC<ImageMessageProps> = ({
         // Fallback: copy URL
         await navigator.clipboard?.writeText(url);
       }
-    } catch (err) {
-      // User cancelled share or not supported
+    } catch {
       // User cancelled share or not supported
     }
   }, [currentUrl, metadata?.fileName]);
