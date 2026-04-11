@@ -14,12 +14,9 @@ export async function setAudioRoute(speakerOn: boolean): Promise<void> {
     try {
       // Agora Web SDK 4.x: set playback device
       // On mobile webview, this controls speaker vs earpiece
-      const devices = await AgoraRTC.getPlaybackDevices();
-      if (devices.length > 0) {
-        // Speaker is typically the default device; earpiece is secondary
-        // On mobile, toggling this effectively switches routing
-        console.log(`[audioRouting] native speaker: ${speakerOn}, devices: ${devices.length}`);
-      }
+      // Speaker is typically the default device; earpiece is secondary.
+      // On mobile, toggling this effectively switches routing.
+      await AgoraRTC.getPlaybackDevices();
     } catch (err) {
       console.warn('[audioRouting] failed to set native audio route:', err);
     }

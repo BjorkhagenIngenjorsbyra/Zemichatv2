@@ -348,7 +348,10 @@ export function CallProvider({ children }: CallProviderProps) {
 
       // Reconnection handling — Agora SDK auto-reconnects, we track state
       client.on('connection-state-change', (curState: string, prevState: string) => {
-        console.log(`[Call] Agora connection: ${prevState} → ${curState}`);
+        if (import.meta.env.DEV) {
+          // eslint-disable-next-line no-console
+          console.log(`[Call] Agora connection: ${prevState} → ${curState}`);
+        }
         if (curState === 'RECONNECTING') {
           setCallError('call.reconnecting');
         } else if (curState === 'CONNECTED' && prevState === 'RECONNECTING') {

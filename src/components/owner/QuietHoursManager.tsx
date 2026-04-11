@@ -280,15 +280,16 @@ export const QuietHoursManager: React.FC<QuietHoursManagerProps> = ({
         .section-title {
           font-size: 0.875rem;
           font-weight: 600;
-          color: #e5e7eb;
-          letter-spacing: 0.02em;
+          color: hsl(var(--foreground));
           letter-spacing: 0.05em;
+          text-transform: uppercase;
+          opacity: 0.7;
           margin: 0;
         }
 
         .manager-description {
           font-size: 0.85rem;
-          color: #9ca3af;
+          color: hsl(var(--muted-foreground));
           margin: 0 0 1rem 0;
         }
 
@@ -305,7 +306,7 @@ export const QuietHoursManager: React.FC<QuietHoursManagerProps> = ({
           --background: transparent;
           --border-color: hsl(var(--border));
           --padding-start: 1rem;
-          --color: #d1d5db;
+          --color: hsl(var(--foreground));
         }
 
         .toggle-icon {

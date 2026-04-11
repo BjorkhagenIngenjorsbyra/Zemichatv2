@@ -268,26 +268,27 @@ export async function sendFriendRequest(
       return { friendship: null, error: new Error('Not authenticated') };
     }
 
-    // Check if friendship already exists
+    // Check if friendship already exists. Use maybeSingle() so the API
+    // returns null instead of a 406 when there's no existing row.
     const { data: existing } = await supabase
       .from('friendships')
       .select('*')
       .or(
         `and(requester_id.eq.${user.id},addressee_id.eq.${addresseeId}),and(requester_id.eq.${addresseeId},addressee_id.eq.${user.id})`
       )
-      .single();
+      .maybeSingle();
 
     if (existing) {
       return { friendship: null, error: new Error('Friendship already exists') };
     }
 
-    // Check if user is denied
+    // Check if user is denied. Same maybeSingle() pattern.
     const { data: denied } = await supabase
       .from('denied_friend_requests')
       .select('*')
       .eq('texter_id', addresseeId)
       .eq('denied_user_id', user.id)
-      .single();
+      .maybeSingle();
 
     if (denied) {
       return { friendship: null, error: new Error('Cannot send request to this user') };
@@ -508,12 +509,12 @@ export async function getAllTexterPendingRequests(): Promise<{
       };
     }
 
-    // Get current user's team_id
+    // Get current user's team_id (maybeSingle for missing-row safety)
     const { data: ownerUser, error: ownerError } = await supabase
       .from('users')
       .select('team_id, role')
       .eq('id', user.id)
-      .single();
+      .maybeSingle();
 
     if (ownerError || !ownerUser) {
       return {
@@ -796,14 +797,14 @@ export async function getFriendshipStatus(
       return { status: 'none', friendship: null, error: new Error('Not authenticated') };
     }
 
-    // Check for existing friendship
+    // Check for existing friendship (maybeSingle: row may not exist)
     const { data: friendship } = await supabase
       .from('friendships')
       .select('*')
       .or(
         `and(requester_id.eq.${user.id},addressee_id.eq.${otherUserId}),and(requester_id.eq.${otherUserId},addressee_id.eq.${user.id})`
       )
-      .single();
+      .maybeSingle();
 
     if (friendship) {
       const typedFriendship = friendship as unknown as Friendship;
@@ -821,13 +822,13 @@ export async function getFriendshipStatus(
       }
     }
 
-    // Check if denied
+    // Check if denied (maybeSingle: row may not exist)
     const { data: denied } = await supabase
       .from('denied_friend_requests')
       .select('*')
       .eq('texter_id', otherUserId)
       .eq('denied_user_id', user.id)
-      .single();
+      .maybeSingle();
 
     if (denied) {
       return { status: 'denied', friendship: null, error: null };

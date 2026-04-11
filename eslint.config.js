@@ -23,8 +23,18 @@ export default tseslint.config(
         'warn',
         { allowConstantExport: true },
       ],
-      'no-console': process.env.NODE_ENV === 'production' ? 'warn' : 'off',
-      'no-debugger': process.env.NODE_ENV === 'production' ? 'warn' : 'off',
+      // Allow console.warn and console.error always; only flag console.log
+      // and console.debug so we can keep useful error/warn output.
+      'no-console': ['warn', { allow: ['warn', 'error'] }],
+      'no-debugger': 'warn',
+      // Catch any-types and unused vars early. Underscored args are an opt-out.
+      '@typescript-eslint/no-explicit-any': 'warn',
+      '@typescript-eslint/no-unused-vars': [
+        'warn',
+        { argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
+      ],
+      // Encourage explicit fall-through handling
+      'no-fallthrough': 'error',
     },
   },
 )

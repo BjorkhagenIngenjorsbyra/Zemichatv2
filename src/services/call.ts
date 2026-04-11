@@ -358,11 +358,12 @@ export async function canMakeCall(
     }
 
     // Check Texter settings
+    // Use maybeSingle() so missing rows return null instead of 406
     const { data: settings, error: settingsError } = await supabase
       .from('texter_settings')
       .select('can_voice_call, can_video_call')
       .eq('user_id', userId)
-      .single();
+      .maybeSingle();
 
     if (settingsError || !settings) {
       // Default to allowed if no settings exist
