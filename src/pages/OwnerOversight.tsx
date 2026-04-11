@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { getDisplayName } from '../utils/userDisplay';
+import { getDisplayName, getAvatarColor, getInitial } from '../utils/userDisplay';
 import {
   IonPage,
   IonContent,
@@ -188,13 +188,21 @@ const OwnerOversight: React.FC = () => {
   const getChatDisplayName = (chat: TexterChatOverview): string => {
     if (chat.chat.name) return chat.chat.name;
 
-    // Show the other member's name
+    // Show the Texter's name as primary — this is what the parent is
+    // monitoring. The other party (often the parent themselves) is
+    // shown as a secondary badge below.
+    const texterName = chat.texter.display_name || chat.texter.zemi_number;
+
     if (chat.otherMembers.length === 1) {
-      return chat.otherMembers[0].display_name || chat.otherMembers[0].zemi_number;
+      const other = chat.otherMembers[0].display_name || chat.otherMembers[0].zemi_number;
+      return `${texterName} ↔ ${other}`;
     }
 
-    // Group chat
-    return chat.otherMembers.map((m) => m.display_name || m.zemi_number).join(', ');
+    if (chat.otherMembers.length > 1) {
+      return `${texterName} + ${chat.otherMembers.length} ${t('oversight.others', 'andra')}`;
+    }
+
+    return texterName;
   };
 
   return (
@@ -262,14 +270,17 @@ const OwnerOversight: React.FC = () => {
                   className="chat-item"
                 >
                   <IonAvatar slot="start" className="chat-avatar">
-                    {chat.otherMembers[0]?.avatar_url ? (
+                    {chat.texter?.avatar_url ? (
                       <img
-                        src={chat.otherMembers[0].avatar_url}
-                        alt={getChatDisplayName(chat)}
+                        src={chat.texter.avatar_url}
+                        alt={chat.texter.display_name || chat.texter.zemi_number}
                       />
                     ) : (
-                      <div className="avatar-placeholder">
-                        {getChatDisplayName(chat).charAt(0)?.toUpperCase() || '?'}
+                      <div
+                        className="avatar-placeholder"
+                        style={{ background: getAvatarColor(chat.texter) }}
+                      >
+                        {getInitial(chat.texter)}
                       </div>
                     )}
                   </IonAvatar>

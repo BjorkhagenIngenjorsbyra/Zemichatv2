@@ -23,6 +23,7 @@ import { getChat, type ChatWithDetails } from '../services/chat';
 import { getSharedMedia, updateChatName, leaveChat } from '../services/chatInfo';
 import { usePresence } from '../hooks/usePresence';
 import { type User } from '../types/database';
+import { getAvatarColor, getInitial } from '../utils/userDisplay';
 
 const ChatInfo: React.FC = () => {
   const { t } = useTranslation();
@@ -123,14 +124,20 @@ const ChatInfo: React.FC = () => {
           <div className="info-header">
             <div className="info-avatar">
               {chat?.is_group ? (
-                <div className="avatar-placeholder large">
+                <div
+                  className="avatar-placeholder large"
+                  style={{ background: getAvatarColor({ id: chat.id, display_name: getChatDisplayName() }) }}
+                >
                   {getChatDisplayName().charAt(0)?.toUpperCase() || '?'}
                 </div>
               ) : otherUser?.avatar_url ? (
                 <img src={otherUser.avatar_url} alt={otherUser.display_name || ''} />
               ) : (
-                <div className="avatar-placeholder large">
-                  {(otherUser?.display_name || '?').charAt(0)?.toUpperCase()}
+                <div
+                  className="avatar-placeholder large"
+                  style={{ background: getAvatarColor(otherUser) }}
+                >
+                  {getInitial(otherUser)}
                 </div>
               )}
             </div>

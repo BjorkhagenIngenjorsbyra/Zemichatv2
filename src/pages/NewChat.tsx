@@ -23,6 +23,7 @@ import {
 import { personOutline, personAddOutline, checkmarkCircle } from 'ionicons/icons';
 import { getMyFriends, type FriendWithUser } from '../services/friend';
 import { createChat } from '../services/chat';
+import { getAvatarColor, getInitial } from '../utils/userDisplay';
 import type { User } from '../types/database';
 
 const NewChat: React.FC = () => {
@@ -176,8 +177,11 @@ const NewChat: React.FC = () => {
                       {contact.avatar_url ? (
                         <img src={contact.avatar_url} alt={contact.display_name || ''} />
                       ) : (
-                        <div className="avatar-placeholder">
-                          {contact.display_name?.charAt(0)?.toUpperCase() || '?'}
+                        <div
+                          className="avatar-placeholder"
+                          style={{ background: getAvatarColor(contact) }}
+                        >
+                          {getInitial(contact)}
                         </div>
                       )}
                     </IonAvatar>
@@ -342,7 +346,27 @@ const NewChat: React.FC = () => {
 
           .contact-checkbox {
             --size: 24px;
+            --background: hsl(var(--card));
+            --background-checked: hsl(var(--primary));
+            --border-color: hsl(var(--muted-foreground));
+            --border-color-checked: hsl(var(--primary));
+            --checkmark-color: hsl(var(--primary-foreground));
+            --border-width: 2px;
+            --border-radius: 6px;
             margin-right: 0.5rem;
+          }
+          .contact-checkbox::part(container) {
+            background: hsl(var(--card));
+            border: 2px solid hsl(var(--muted-foreground));
+            border-radius: 6px;
+          }
+          .contact-checkbox.checkbox-checked::part(container) {
+            background: hsl(var(--primary));
+            border-color: hsl(var(--primary));
+          }
+          .contact-checkbox::part(mark) {
+            stroke: hsl(var(--primary-foreground));
+            stroke-width: 3px;
           }
 
           .create-chat-footer {

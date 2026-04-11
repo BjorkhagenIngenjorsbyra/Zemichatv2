@@ -6,6 +6,7 @@
  */
 
 interface UserLike {
+  id?: string | null;
   display_name?: string | null;
   zemi_number?: string | null;
 }
@@ -38,10 +39,13 @@ const AVATAR_COLORS = [
 ];
 
 export const getAvatarColor = (user: UserLike | null | undefined): string => {
-  const name = getDisplayName(user);
+  // Hash by stable identifier (user.id or zemi_number) so the same user
+  // always gets the same color, even if display_name is missing in some
+  // contexts (e.g. /new-chat resolves names differently than chat list).
+  const seed = user?.id || user?.zemi_number || getDisplayName(user);
   let hash = 0;
-  for (let i = 0; i < name.length; i++) {
-    hash = name.charCodeAt(i) + ((hash << 5) - hash);
+  for (let i = 0; i < seed.length; i++) {
+    hash = seed.charCodeAt(i) + ((hash << 5) - hash);
   }
   return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length];
 };

@@ -758,6 +758,9 @@ const Settings: React.FC = () => {
           .settings-container {
             max-width: 600px;
             margin: 0 auto;
+            /* Leave room for the bottom tab bar (~58px) + iPhone safe area
+               so the last section doesn't hide behind the tabbar. */
+            padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px));
           }
 
           .settings-segment {
