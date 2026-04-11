@@ -7,7 +7,9 @@ import { type Message, type User, type Chat } from '../types/database';
 
 export interface SearchResultMessage extends Message {
   sender: User;
-  chat: Chat;
+  chat: Chat & {
+    members?: { user_id: string; user: User }[];
+  };
 }
 
 export interface SearchResult {
@@ -39,7 +41,10 @@ export async function searchInChat(
       .select(`
         *,
         sender:users!messages_sender_id_fkey (*),
-        chat:chats!messages_chat_id_fkey (*)
+        chat:chats!messages_chat_id_fkey (
+          *,
+          members:chat_members (user_id, user:users (*))
+        )
       `)
       .eq('chat_id', chatId)
       .is('deleted_at', null)
@@ -105,7 +110,10 @@ export async function searchGlobal(
       .select(`
         *,
         sender:users!messages_sender_id_fkey (*),
-        chat:chats!messages_chat_id_fkey (*)
+        chat:chats!messages_chat_id_fkey (
+          *,
+          members:chat_members (user_id, user:users (*))
+        )
       `)
       .in('chat_id', chatIds)
       .is('deleted_at', null)
@@ -141,7 +149,10 @@ export async function searchByDateRange(
       .select(`
         *,
         sender:users!messages_sender_id_fkey (*),
-        chat:chats!messages_chat_id_fkey (*)
+        chat:chats!messages_chat_id_fkey (
+          *,
+          members:chat_members (user_id, user:users (*))
+        )
       `)
       .eq('chat_id', chatId)
       .is('deleted_at', null)
@@ -178,7 +189,10 @@ export async function searchBySender(
       .select(`
         *,
         sender:users!messages_sender_id_fkey (*),
-        chat:chats!messages_chat_id_fkey (*)
+        chat:chats!messages_chat_id_fkey (
+          *,
+          members:chat_members (user_id, user:users (*))
+        )
       `)
       .eq('chat_id', chatId)
       .eq('sender_id', senderId)

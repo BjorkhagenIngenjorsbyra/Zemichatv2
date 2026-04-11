@@ -18,6 +18,8 @@ import {
 } from '@ionic/react';
 import { closeOutline } from 'ionicons/icons';
 import { searchInChat, searchGlobal, type SearchResultMessage } from '../../services/search';
+import { useAuthContext } from '../../contexts/AuthContext';
+import { getAvatarColor, getInitial } from '../../utils/userDisplay';
 
 interface ChatSearchModalProps {
   isOpen: boolean;
@@ -34,6 +36,7 @@ export const ChatSearchModal: React.FC<ChatSearchModalProps> = ({
 }) => {
   const { t } = useTranslation();
   const history = useHistory();
+  const { profile } = useAuthContext();
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<SearchResultMessage[]>([]);
   const [isSearching, setIsSearching] = useState(false);
@@ -132,7 +135,14 @@ export const ChatSearchModal: React.FC<ChatSearchModalProps> = ({
   };
 
   const getChatName = (message: SearchResultMessage): string => {
-    return message.chat?.name || t('chat.newChat');
+    // Group chat: use the chat name
+    if (message.chat?.name) return message.chat.name;
+    // 1-on-1 chat: derive from the other member
+    const other = message.chat?.members?.find((m) => m.user_id !== profile?.id);
+    if (other?.user) {
+      return other.user.display_name || other.user.zemi_number || t('chat.newChat');
+    }
+    return t('chat.newChat');
   };
 
   return (
@@ -189,15 +199,20 @@ export const ChatSearchModal: React.FC<ChatSearchModalProps> = ({
                     {result.sender?.avatar_url ? (
                       <img src={result.sender.avatar_url} alt="" />
                     ) : (
-                      <div className="avatar-placeholder">
-                        {result.sender?.display_name?.charAt(0)?.toUpperCase() || '?'}
+                      <div
+                        className="avatar-placeholder"
+                        style={{ background: getAvatarColor(result.sender) }}
+                      >
+                        {getInitial(result.sender)}
                       </div>
                     )}
                   </IonAvatar>
                   <IonLabel>
                     <div className="result-header">
                       <span className="sender-name">
-                        {result.sender?.display_name || t('dashboard.unnamed')}
+                        {result.sender?.id === profile?.id
+                          ? t('common.you', 'Du')
+                          : result.sender?.display_name || result.sender?.zemi_number || t('dashboard.unnamed')}
                       </span>
                       {!chatId && (
                         <span className="chat-name">{getChatName(result)}</span>
