@@ -12,12 +12,17 @@ const SuperTour: React.FC = () => {
   const history = useHistory();
   const { profile } = useAuthContext();
 
-  const displayName = profile?.display_name || '';
+  const displayName = profile?.display_name?.trim() || '';
+  // Use a name-aware translation key when we have one, fall back to a
+  // generic greeting when the user hasn't set a display name yet.
+  const slide1Title = displayName
+    ? t('onboarding.superSlide1Title', { name: displayName })
+    : t('onboarding.superSlide1TitleNoName', 'Välkommen!');
 
   const slides: OnboardingSlide[] = [
     {
       icon: '👋',
-      title: t('onboarding.superSlide1Title', { name: displayName }),
+      title: slide1Title,
       description: t('onboarding.superSlide1Desc'),
       color: '#4F46E5',
       animation: 'bounce',

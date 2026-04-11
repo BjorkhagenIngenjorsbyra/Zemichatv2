@@ -187,16 +187,17 @@ ion-input input::placeholder {
 
 ion-modal {
   --background: hsl(var(--background));
-  --backdrop-opacity: 0.5;
+  --backdrop-opacity: 0.6;
 }
 
 ion-modal::part(backdrop) {
   background: #000 !important;
-  opacity: 0.5 !important;
+  opacity: 0.6 !important;
 }
 
 ion-modal::part(content) {
   background: hsl(var(--background)) !important;
+  box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.15);
 }
 
 ion-modal ion-content {
@@ -206,6 +207,11 @@ ion-modal ion-content {
 
 ion-modal ion-header {
   --background: hsl(var(--background));
+}
+
+ion-modal ion-header::after {
+  /* Hide the bottom shadow gradient that Ionic adds to ion-header */
+  display: none !important;
 }
 
 ion-modal ion-toolbar {

@@ -515,6 +515,8 @@
     "ownerSlide5Desc": "Opret din konto og opsæt dit team",
     "createAccount": "Opret konto",
     "superSlide1Title": "Velkommen, {{name}}!",
+    "superSlide1TitleNoName": "Velkommen!",
+    "texterSlide1TitleNoName": "Hej!",
     "superSlide1Desc": "Du er inviteret som Super i teamet",
     "superSlide2Title": "Dit privatliv",
     "superSlide2Desc": "Dine private chats er beskyttet — Team Owner kan kun se chats hvor Texters deltager",

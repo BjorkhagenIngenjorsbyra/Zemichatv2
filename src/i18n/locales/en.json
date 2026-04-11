@@ -515,6 +515,8 @@
     "ownerSlide5Desc": "Create your account and set up your team",
     "createAccount": "Create Account",
     "superSlide1Title": "Welcome, {{name}}!",
+    "superSlide1TitleNoName": "Welcome!",
+    "texterSlide1TitleNoName": "Hi!",
     "superSlide1Desc": "You've been invited as a Super in the team",
     "superSlide2Title": "Your Privacy",
     "superSlide2Desc": "Your private chats are protected — Team Owner can only see chats where Texters participate",

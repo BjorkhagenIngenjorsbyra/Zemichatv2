@@ -12,12 +12,17 @@ const TexterTour: React.FC = () => {
   const history = useHistory();
   const { profile } = useAuthContext();
 
-  const displayName = profile?.display_name || '';
+  const displayName = profile?.display_name?.trim() || '';
+  // Use a name-aware translation key when we have one, fall back to a
+  // generic greeting when the user hasn't set a display name yet.
+  const slide1Title = displayName
+    ? t('onboarding.texterSlide1Title', { name: displayName })
+    : t('onboarding.texterSlide1TitleNoName', 'Hej!');
 
   const slides: OnboardingSlide[] = [
     {
       icon: '👋',
-      title: t('onboarding.texterSlide1Title', { name: displayName }),
+      title: slide1Title,
       description: t('onboarding.texterSlide1Desc'),
       color: '#F59E0B',
       animation: 'bounce',

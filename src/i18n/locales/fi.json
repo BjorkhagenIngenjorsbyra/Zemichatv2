@@ -515,6 +515,8 @@
     "ownerSlide5Desc": "Luo tilisi ja perusta tiimisi",
     "createAccount": "Luo tili",
     "superSlide1Title": "Tervetuloa, {{name}}!",
+    "superSlide1TitleNoName": "Tervetuloa!",
+    "texterSlide1TitleNoName": "Hei!",
     "superSlide1Desc": "Sinut on kutsuttu Superiksi tiimiin",
     "superSlide2Title": "Yksityisyytesi",
     "superSlide2Desc": "Yksityiset keskustelusi ovat suojattuja — Team Owner näkee vain keskustelut joissa Texterit osallistuvat",

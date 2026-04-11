@@ -515,6 +515,8 @@
     "ownerSlide5Desc": "Skapa ditt konto och sätt upp ditt team",
     "createAccount": "Skapa konto",
     "superSlide1Title": "Välkommen, {{name}}!",
+    "superSlide1TitleNoName": "Välkommen!",
+    "texterSlide1TitleNoName": "Hej!",
     "superSlide1Desc": "Du har blivit inbjuden som Super i teamet",
     "superSlide2Title": "Din integritet",
     "superSlide2Desc": "Dina privata chattar är skyddade — Team Owner kan bara se chattar där Texters deltar",
