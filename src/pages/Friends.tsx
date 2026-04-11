@@ -157,6 +157,7 @@ const Friends: React.FC = () => {
           <IonSegment
             value={activeTab}
             onIonChange={(e) => setActiveTab(e.detail.value as TabValue)}
+            className="friends-segment"
           >
             <IonSegmentButton value="friends">
               <IonIcon icon={peopleOutline} />
@@ -445,6 +446,13 @@ const Friends: React.FC = () => {
         />
 
         <style>{`
+          .friends-segment ion-segment-button {
+            --color: hsl(var(--muted-foreground));
+            --color-checked: hsl(var(--primary));
+            --indicator-color: hsl(var(--primary));
+            min-height: 42px;
+          }
+
           .loading-state {
             display: flex;
             justify-content: center;

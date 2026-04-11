@@ -746,9 +746,15 @@
   },
   "presence": {
     "online": "Online",
-    "lastSeenMinutes": "Sedd {{count}} min sedan",
-    "lastSeenHours": "Sedd {{count}}h sedan",
-    "lastSeenDays": "Sedd {{count}}d sedan"
+    "lastSeenMinutes_one": "Sedd för {{count}} minut sedan",
+    "lastSeenMinutes_other": "Sedd för {{count}} minuter sedan",
+    "lastSeenHours_one": "Sedd för {{count}} timme sedan",
+    "lastSeenHours_other": "Sedd för {{count}} timmar sedan",
+    "lastSeenDays_one": "Sedd för {{count}} dag sedan",
+    "lastSeenDays_other": "Sedd för {{count}} dagar sedan",
+    "lastSeenMinutes": "Sedd för {{count}} min sedan",
+    "lastSeenHours": "Sedd för {{count}} h sedan",
+    "lastSeenDays": "Sedd för {{count}} dagar sedan"
   },
   "chatInfo": {
     "title": "Chattinfo",

@@ -762,6 +762,13 @@ const Settings: React.FC = () => {
 
           .settings-segment {
             margin-bottom: 1.5rem;
+            --background: transparent;
+          }
+          .settings-segment ion-segment-button {
+            --color: hsl(var(--muted-foreground));
+            --color-checked: hsl(var(--primary));
+            --indicator-color: hsl(var(--primary));
+            min-height: 38px;
           }
 
           .section {

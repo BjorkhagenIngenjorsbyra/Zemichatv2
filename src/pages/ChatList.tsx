@@ -649,20 +649,31 @@ const ChatList: React.FC = () => {
             flex-shrink: 0;
           }
 
+          /* Force the IonLabel parent to honour overflow on its children
+             so chat name + preview can ellipsis correctly inside IonItem. */
+          ion-item ion-label {
+            min-width: 0;
+            overflow: hidden;
+          }
+
           .chat-preview {
             display: flex;
             justify-content: space-between;
             align-items: center;
+            min-width: 0;
+            max-width: 100%;
           }
 
           .last-message {
             font-size: 0.875rem;
             color: hsl(var(--muted-foreground));
             margin: 0;
-            flex: 1;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
+            flex: 1 1 0;
+            min-width: 0;
+            max-width: 100%;
+            overflow: hidden !important;
+            text-overflow: ellipsis !important;
+            white-space: nowrap !important;
           }
 
           .chat-name-unread {

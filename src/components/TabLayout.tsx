@@ -108,6 +108,16 @@ const TabLayout: React.FC = () => {
           --padding-start: 0;
           --padding-end: 0;
         }
+        /* Prevent long labels (e.g. "Inställningar") from clipping
+           against the right edge of narrow phone tab bars. */
+        ion-tab-bar ion-tab-button ion-label {
+          font-size: 11px;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          max-width: 100%;
+          padding: 0 2px;
+        }
       `}</style>
     </IonTabs>
   );

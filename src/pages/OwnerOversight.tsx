@@ -307,6 +307,24 @@ const OwnerOversight: React.FC = () => {
         )}
 
         <style>{`
+          /* Override Ionic's default dark searchbar that inherits from
+             --ion-toolbar-background and looks broken on light theme. */
+          ion-toolbar ion-searchbar.sc-ion-searchbar-ios-h,
+          ion-toolbar ion-searchbar.sc-ion-searchbar-md-h,
+          ion-toolbar ion-searchbar {
+            --background: hsl(var(--muted)) !important;
+            --color: hsl(var(--foreground)) !important;
+            --placeholder-color: hsl(var(--muted-foreground)) !important;
+            --icon-color: hsl(var(--muted-foreground)) !important;
+            --clear-button-color: hsl(var(--muted-foreground)) !important;
+            --border-radius: 12px !important;
+            --box-shadow: none !important;
+          }
+          ion-toolbar:has(ion-searchbar) {
+            --background: transparent;
+            --border-color: transparent;
+          }
+
           .loading-state {
             display: flex;
             justify-content: center;

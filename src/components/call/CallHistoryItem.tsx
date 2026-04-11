@@ -101,6 +101,13 @@ const CallHistoryItem: React.FC<CallHistoryItemProps> = ({
           --border-color: hsl(var(--border));
         }
 
+        .call-history-item h2 {
+          color: hsl(var(--foreground));
+          font-weight: 600;
+          font-size: 0.95rem;
+          margin: 0;
+        }
+
         .call-avatar {
           width: 44px;
           height: 44px;
