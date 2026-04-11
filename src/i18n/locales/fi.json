@@ -614,6 +614,7 @@
   "verifyEmail": {
     "title": "Tarkista sähköpostisi!",
     "description": "Lähetimme vahvistuslinkin osoitteeseen {{email}}. Klikkaa linkkiä aktivoidaksesi tilisi.",
+    "descriptionNoEmail": "Lähetimme vahvistuslinkin sähköpostiisi. Klikkaa linkkiä aktivoidaksesi tilisi.",
     "resend": "Etkö saanut sähköpostia? Lähetä uudelleen",
     "resent": "Uusi sähköposti lähetetty!",
     "goToLogin": "Siirry kirjautumiseen"

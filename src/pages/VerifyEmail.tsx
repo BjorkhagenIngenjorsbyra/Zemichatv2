@@ -67,7 +67,9 @@ const VerifyEmail: React.FC = () => {
           <h1 className="verify-title">{t('verifyEmail.title')}</h1>
 
           <p className="verify-text">
-            {t('verifyEmail.description', { email })}
+            {email
+              ? t('verifyEmail.description', { email })
+              : t('verifyEmail.descriptionNoEmail', 'Vi har skickat en bekräftelselänk till din e-post. Klicka på länken för att aktivera ditt konto.')}
           </p>
 
           <div className="resend-section">

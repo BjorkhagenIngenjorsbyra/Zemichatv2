@@ -614,6 +614,7 @@
   "verifyEmail": {
     "title": "Kolla din e-post!",
     "description": "Vi har skickat en bekräftelselänk till {{email}}. Klicka på länken för att aktivera ditt konto.",
+    "descriptionNoEmail": "Vi har skickat en bekräftelselänk till din e-post. Klicka på länken för att aktivera ditt konto.",
     "resend": "Fick du inget mail? Skicka igen",
     "resent": "Nytt mail skickat!",
     "goToLogin": "Gå till inloggning"
