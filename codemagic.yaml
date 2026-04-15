@@ -3,6 +3,13 @@ workflows:
     name: iOS Release Build
     max_build_duration: 60
     instance_type: mac_mini_m2
+    triggering:
+      events:
+        - push
+      branch_patterns:
+        - pattern: master
+          include: true
+          source: true
     integrations:
       app_store_connect: Bjorkhagen Admin
     environment:
@@ -137,6 +144,13 @@ workflows:
   android-release:
     name: Android Release Build
     max_build_duration: 60
+    triggering:
+      events:
+        - push
+      branch_patterns:
+        - pattern: master
+          include: true
+          source: true
     environment:
       android_signing:
         - zemichat_keystore
