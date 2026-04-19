@@ -5,17 +5,22 @@
 # For more details, see
 #   http://developer.android.com/guide/developing/tools/proguard.html
 
-# If your project uses WebView with JS, uncomment the following
-# and specify the fully qualified class name to the JavaScript interface
-# class:
-#-keepclassmembers class fqcn.of.javascript.interface.for.webview {
-#   public *;
-#}
+# --- Capacitor / WebView JS bridge ---
+# Capacitor uses WebView with addJavascriptInterface; ProGuard must
+# keep those classes or the bridge silently breaks (black screen).
+-keepclassmembers class * {
+    @android.webkit.JavascriptInterface <methods>;
+}
 
-# Uncomment this to preserve the line number information for
-# debugging stack traces.
-#-keepattributes SourceFile,LineNumberTable
+-keepattributes JavascriptInterface
 
-# If you keep the line number information, uncomment this to
-# hide the original source file name.
-#-renamesourcefileattribute SourceFile
+# Keep Capacitor bridge and plugin classes
+-keep class com.getcapacitor.** { *; }
+-keep class com.zemichat.app.** { *; }
+
+# Keep Cordova plugin classes (used by some Capacitor plugins)
+-keep class org.apache.cordova.** { *; }
+
+# Preserve line numbers for crash stack traces
+-keepattributes SourceFile,LineNumberTable
+-renamesourcefileattribute SourceFile
