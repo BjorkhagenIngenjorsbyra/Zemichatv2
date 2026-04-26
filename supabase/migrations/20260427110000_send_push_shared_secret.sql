@@ -1,23 +1,26 @@
 -- Audit fix #19: send-push edge function now requires a shared secret in
--- the Authorization header. The DB trigger here reads the secret from a
--- runtime GUC and forwards it as `Authorization: Bearer <secret>`.
+-- the Authorization header. The DB trigger here reads the secret from
+-- Supabase Vault (krypterat, bara SECURITY DEFINER-funktioner kan läsa)
+-- och forwardar det som `Authorization: Bearer <secret>`.
 --
--- DEPLOYMENT — both must be set, otherwise push notifications stop working:
---   1. Edge Function secret (Supabase Dashboard → Edge Functions → Secrets):
+-- DEPLOYMENT — båda måste vara satta annars stoppar push:
+--   1. Edge Function secret (Supabase Dashboard → Edge Functions → Secrets,
+--      eller via `supabase secrets set`):
 --        PG_NET_SHARED_SECRET = <random uuid v4>
---   2. Database setting (run once in the SQL editor against production):
---        ALTER DATABASE postgres
---          SET app.settings.pg_net_shared_secret = '<same uuid>';
+--   2. Vault-secret med EXAKT samma värde och namnet 'pg_net_shared_secret':
+--        SELECT vault.create_secret('<same uuid>', 'pg_net_shared_secret');
+--      Eller uppdatera ett existerande:
+--        UPDATE vault.secrets SET secret = '<new uuid>'
+--          WHERE name = 'pg_net_shared_secret';
 --
--- The two values MUST match. Generate with `uuidgen` or `gen_random_uuid()`.
--- The 5-minute message-window check inside the edge function is kept as a
--- defense-in-depth layer.
+-- Värdena MÅSTE matcha. 5-minuters message-window-checken i edge-funktionen
+-- behålls som defense-in-depth.
 
 CREATE OR REPLACE FUNCTION notify_new_message()
 RETURNS trigger
 LANGUAGE plpgsql
 SECURITY DEFINER
-SET search_path = public, net
+SET search_path = public, net, vault
 AS $$
 DECLARE
   edge_function_url text;
@@ -31,18 +34,21 @@ BEGIN
     RETURN NEW;
   END IF;
 
-  -- Use custom setting if available (local dev), otherwise hardcoded production URL.
+  -- Använd custom setting om satt (local dev), annars hardkodad produktions-URL.
   edge_function_url := COALESCE(
     current_setting('app.settings.edge_function_url', true),
     'https://qrrorlxocpxvqcfdipbq.supabase.co/functions/v1/send-push'
   );
 
-  -- Shared secret for the edge function. NULL/empty means the operator has
-  -- not finished the migration yet — bail out rather than firing an
-  -- unauthenticated request.
-  shared_secret := current_setting('app.settings.pg_net_shared_secret', true);
+  -- Hämta shared secret från Vault. NULL/saknad rad betyder att operatören
+  -- inte slutfört deploy än — bail out istället för att skicka utan auth.
+  SELECT decrypted_secret INTO shared_secret
+  FROM vault.decrypted_secrets
+  WHERE name = 'pg_net_shared_secret'
+  LIMIT 1;
+
   IF shared_secret IS NULL OR shared_secret = '' THEN
-    RAISE WARNING 'notify_new_message: app.settings.pg_net_shared_secret not set, skipping push';
+    RAISE WARNING 'notify_new_message: vault secret pg_net_shared_secret not set, skipping push';
     RETURN NEW;
   END IF;
 
