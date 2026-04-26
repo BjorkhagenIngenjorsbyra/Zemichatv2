@@ -313,19 +313,33 @@ const ChatView: React.FC = () => {
           return [...prev, newMessage];
         });
 
-        if (isNearBottomRef.current) {
-          scrollToBottomRef.current();
-        } else {
-          setNewMessageCount((n) => n + 1);
-        }
+        // Mät scroll-position FÄRSKT istället för cached ref. När användaren
+        // skriver i textarea triggas ingen scroll-event, så cached ref kan
+        // vara stale och nya meddelanden scrollas inte fram.
+        const computeNearBottom = async (): Promise<boolean> => {
+          const el = contentRef.current;
+          if (!el) return true;
+          const scrollEl = await el.getScrollElement();
+          const dist = scrollEl.scrollHeight - scrollEl.scrollTop - scrollEl.clientHeight;
+          return dist < 500;
+        };
+
+        computeNearBottom().then((near) => {
+          isNearBottomRef.current = near;
+          if (near) {
+            scrollToBottomRef.current();
+            if (newMessage.sender_id !== profile?.id) {
+              insertReadReceipts([newMessage.id]);
+            }
+          } else {
+            setNewMessageCount((n) => n + 1);
+          }
+        });
 
         loadReactionsRef.current([newMessage.id]);
 
         if (newMessage.sender_id !== profile?.id) {
           playReceiveSound();
-          if (isNearBottomRef.current) {
-            insertReadReceipts([newMessage.id]);
-          }
           markChatAsRead(chatId).then(() => refreshCounts());
         }
       },

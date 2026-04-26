@@ -32,8 +32,8 @@ export enum SignalType {
 /** Maximum duration for video calls in seconds (60 minutes) */
 export const VIDEO_CALL_MAX_DURATION_SECONDS = 60 * 60;
 
-/** Maximum number of participants in a group call */
-export const MAX_GROUP_CALL_PARTICIPANTS = 4;
+/** Maximum number of participants in a group call (Agora-tier-cap). */
+export const MAX_GROUP_CALL_PARTICIPANTS = 6;
 
 /** Warning time before video call ends in seconds (at 55 minutes) */
 export const VIDEO_CALL_WARNING_SECONDS = 55 * 60;

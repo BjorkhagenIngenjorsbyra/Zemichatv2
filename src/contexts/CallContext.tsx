@@ -17,6 +17,7 @@ import {
   CallType,
   VIDEO_CALL_MAX_DURATION_SECONDS,
   VIDEO_CALL_WARNING_SECONDS,
+  MAX_GROUP_CALL_PARTICIPANTS,
 } from '../types/call';
 import { SignalType, CallStatus } from '../types/database';
 import {
@@ -231,6 +232,12 @@ export function CallProvider({ children }: CallProviderProps) {
 
     // 2. Fetch other participant(s) info
     const otherMembers = await fetchOtherMembers(chatId, profile.id);
+
+    // 2b. Cap-kontroll: Agora gratis-tier tål bara så många deltagare.
+    if (1 + otherMembers.length > MAX_GROUP_CALL_PARTICIPANTS) {
+      setCallError('call.groupFull');
+      return;
+    }
 
     // 3. Create call log
     const { callLog, error: logError } = await createCallLog(chatId, callType);
@@ -568,6 +575,9 @@ export function CallProvider({ children }: CallProviderProps) {
     dismissNativeCallNotification();
     reportCallEnded(incomingCall.callLogId, 'declinedElsewhere');
     await updateCallStatus(incomingCall.callLogId, CallStatus.DECLINED);
+    // Skicka DECLINE-signal så att initiator får besked att samtalet
+    // avvisades — annars ringer det vidare för dem tills timeout.
+    await sendCallSignal(incomingCall.chatId, incomingCall.callLogId, SignalType.DECLINE);
     await deleteCallSignals(incomingCall.callLogId);
     setIncomingCall(null);
   }, [incomingCall]);
@@ -701,6 +711,19 @@ export function CallProvider({ children }: CallProviderProps) {
     if (!profile) return;
 
     const unsubscribe = subscribeToCallSignals(async (signal, caller) => {
+      // DECLINE-signal — vi är initiator och mottagaren har tackat nej.
+      // Stoppa det utgående samtalet och visa "Avvisat".
+      if (signal.signal_type === SignalType.DECLINE && activeCall && activeCall.callLogId === signal.call_log_id) {
+        if (ringTimeoutRef.current) {
+          clearTimeout(ringTimeoutRef.current);
+          ringTimeoutRef.current = null;
+        }
+        setActiveCall((prev) => prev ? { ...prev, state: CallState.ENDED } : prev);
+        setCallError('call.declined');
+        setTimeout(() => cleanupCall(), 2500);
+        return;
+      }
+
       if (activeCall) return;
 
       // Look up call type from the call log (signal itself doesn't carry it)
