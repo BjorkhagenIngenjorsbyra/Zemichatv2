@@ -9,6 +9,7 @@ import {
 } from '../services/push';
 import type { User } from '../types/database';
 import { startPresenceUpdates, stopPresenceUpdates } from '../services/presence';
+import { clearMediaUrlCache } from '../services/storage';
 
 export interface AuthState {
   isLoading: boolean;
@@ -136,6 +137,8 @@ export function useAuth(): AuthState {
   const signOut = useCallback(async () => {
     // Cleanup push notifications before signing out
     await cleanupPushNotifications();
+    // Drop signed-URL cache so the next user doesn't reuse stale URLs.
+    clearMediaUrlCache();
     await authSignOut();
     setAuthUser(null);
     setSession(null);

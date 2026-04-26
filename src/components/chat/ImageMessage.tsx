@@ -1,14 +1,17 @@
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { IonSpinner, IonModal, IonIcon } from '@ionic/react';
 import { chevronBack, chevronForward, close, download, shareSocial } from 'ionicons/icons';
 import { Capacitor } from '@capacitor/core';
+import { useSignedMediaUrl } from '../../hooks/useSignedMediaUrl';
+import { resolveMediaUrl } from '../../services/storage';
 
 interface ImageMessageProps {
+  /** Storage path (preferred) or legacy public URL. */
   mediaUrl: string | null;
   mediaMetadata?: Record<string, unknown> | null;
   caption?: string | null;
-  /** All image URLs in the chat for gallery navigation */
+  /** All image paths/URLs in the chat for gallery navigation */
   galleryUrls?: string[];
 }
 
@@ -25,6 +28,11 @@ const ImageMessage: React.FC<ImageMessageProps> = ({
 
   // Gallery state
   const [galleryIndex, setGalleryIndex] = useState(0);
+
+  // Resolve thumbnail (in-bubble) and current fullscreen image to signed URLs.
+  // Storage path -> signed URL with 1h TTL (audit fix #18).
+  const thumbUrl = useSignedMediaUrl(mediaUrl);
+  const [resolvedGalleryUrl, setResolvedGalleryUrl] = useState<string | null>(null);
 
   // Pinch-to-zoom state
   const [scale, setScale] = useState(1);
@@ -77,9 +85,26 @@ const ImageMessage: React.FC<ImageMessageProps> = ({
     setTranslate({ x: 0, y: 0 });
   };
 
-  const currentUrl = galleryUrls && galleryUrls.length > 0
+  const currentRawUrl = galleryUrls && galleryUrls.length > 0
     ? galleryUrls[galleryIndex]
     : mediaUrl;
+
+  // Resolve the active gallery item to a signed URL whenever it changes.
+  useEffect(() => {
+    if (!isFullscreen || !currentRawUrl) {
+      setResolvedGalleryUrl(null);
+      return;
+    }
+    let cancelled = false;
+    resolveMediaUrl(currentRawUrl).then((url) => {
+      if (!cancelled) setResolvedGalleryUrl(url);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [currentRawUrl, isFullscreen]);
+
+  const currentUrl = resolvedGalleryUrl;
 
   const hasGallery = galleryUrls && galleryUrls.length > 1;
 
@@ -292,14 +317,23 @@ const ImageMessage: React.FC<ImageMessageProps> = ({
           <div className="image-error">
             <span>Failed to load image</span>
           </div>
-        ) : (
+        ) : thumbUrl ? (
           <img
-            src={mediaUrl}
+            src={thumbUrl}
             alt={metadata?.fileName || 'Image'}
             className={`message-image ${isLoading ? 'hidden' : ''}`}
             onLoad={handleLoad}
             onError={handleError}
           />
+        ) : (
+          <div
+            className="image-loading"
+            style={{
+              aspectRatio: aspectRatio || 1,
+            }}
+          >
+            <IonSpinner name="crescent" />
+          </div>
         )}
 
         {caption && <p className="image-caption">{caption}</p>}
