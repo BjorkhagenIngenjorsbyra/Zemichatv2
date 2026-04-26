@@ -274,11 +274,15 @@ export async function getSubscriptionStatus(): Promise<{
       willRenew: rcWillRenew,
     };
 
-    // Sync with database only if RevenueCat succeeded with a paid plan
-    if (rcSuccess && rcPlan !== PlanType.FREE) {
-      await syncSubscriptionToDatabase(status);
-    }
-
+    // NOTE: Database sync is handled server-side by the revenuecat-webhook
+    // edge function (audit fix #20). Clients no longer write to teams.plan.
+    // The RC client reading is kept ONLY for fast UI updates after a purchase
+    // — the authoritative subscription state lives in the webhook-updated DB.
+    //
+    // We additionally guard against jailbroken devices spoofing customerInfo:
+    // the RC reading must agree with what the DB says, otherwise we trust
+    // the DB (server is the source of truth).
+    void rcSuccess; // suppress unused-warn; keeping the var for readability
     return { status, error: null };
   } catch (err) {
     return {
@@ -409,35 +413,10 @@ export async function getSubscriptionStatusForUser(userId: string): Promise<{
   }
 }
 
-/**
- * Sync RevenueCat subscription status to Supabase.
- */
-async function syncSubscriptionToDatabase(status: SubscriptionStatus): Promise<void> {
-  try {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-
-    // Get user's team
-    const { data: userData } = await supabase
-      .from('users')
-      .select('team_id')
-      .eq('id', user.id)
-      .single();
-
-    if (!userData) return;
-
-    // Update team's plan
-    await supabase
-      .from('teams')
-      .update({
-        plan: status.plan,
-        trial_ends_at: status.trialEndsAt?.toISOString() || null,
-      } as never)
-      .eq('id', (userData as { team_id: string }).team_id);
-  } catch (err) {
-    console.error('Failed to sync subscription to database:', err);
-  }
-}
+// syncSubscriptionToDatabase has been removed — subscription state is now
+// only written by the revenuecat-webhook edge function (audit fix #20).
+// RLS + a BEFORE UPDATE trigger on teams now actively reject client-side
+// changes to teams.plan and teams.trial_ends_at.
 
 // ============================================================
 // OFFERINGS & PACKAGES
@@ -612,9 +591,16 @@ export async function restorePurchases(): Promise<{
 
 /**
  * Start a free trial (Pro features for 10 days).
- * Optionally set the chosen plan type at the same time.
+ *
+ * Audit fix #20: clients can no longer UPDATE teams.plan/trial_ends_at
+ * directly. We call a SECURITY DEFINER RPC `start_team_trial_for_owner`
+ * which the database has authority to write. The Owner can only call it
+ * once per team (idempotent if a trial is already running).
+ *
+ * `planType` is intentionally ignored — the Pro/Plus split is now decided
+ * by which entitlement the user actually purchases through RevenueCat.
  */
-export async function startFreeTrial(planType?: PlanType): Promise<{
+export async function startFreeTrial(_planType?: PlanType): Promise<{
   success: boolean;
   trialEndsAt: Date | null;
   error: Error | null;
@@ -625,37 +611,15 @@ export async function startFreeTrial(planType?: PlanType): Promise<{
       return { success: false, trialEndsAt: null, error: new Error('Not authenticated') };
     }
 
-    // Get user's team
-    const { data: userData } = await supabase
-      .from('users')
-      .select('team_id')
-      .eq('id', user.id)
-      .single();
+    const { data, error } = await supabase.rpc('start_team_trial_for_owner' as never, {
+      trial_days: TRIAL_DURATION_DAYS,
+    } as never);
 
-    if (!userData) {
-      return { success: false, trialEndsAt: null, error: new Error('User not found') };
+    if (error) {
+      return { success: false, trialEndsAt: null, error: new Error(error.message) };
     }
 
-    const trialEndsAt = new Date();
-    trialEndsAt.setDate(trialEndsAt.getDate() + TRIAL_DURATION_DAYS);
-
-    // Update team with trial (and optionally the chosen plan)
-    const updateData: Record<string, unknown> = {
-      trial_ends_at: trialEndsAt.toISOString(),
-    };
-    if (planType) {
-      updateData.plan = planType;
-    }
-
-    const { error: updateError } = await supabase
-      .from('teams')
-      .update(updateData as never)
-      .eq('id', (userData as { team_id: string }).team_id);
-
-    if (updateError) {
-      return { success: false, trialEndsAt: null, error: new Error(updateError.message) };
-    }
-
+    const trialEndsAt = data ? new Date(data as unknown as string) : null;
     return { success: true, trialEndsAt, error: null };
   } catch (err) {
     return {
