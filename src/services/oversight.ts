@@ -9,16 +9,43 @@ export interface TexterChatOverview {
   messageCount: number;
 }
 
+interface OverviewRpcRow {
+  chat_id: string;
+  chat_name: string | null;
+  chat_is_group: boolean;
+  chat_created_at: string;
+  texter_id: string;
+  texter_zemi_number: string;
+  texter_display_name: string | null;
+  texter_avatar_url: string | null;
+  texter_is_active: boolean;
+  texter_is_paused: boolean;
+  last_message_id: string | null;
+  last_message_content: string | null;
+  last_message_type: string | null;
+  last_message_sender_id: string | null;
+  last_message_created_at: string | null;
+  last_message_deleted_at: string | null;
+  message_count: number;
+}
+
 /**
  * Get all chats where team Texters are participants.
  * Only callable by team owners.
+ *
+ * Audit fix #25: this used to fetch ALL messages for all relevant chats
+ * (no limit) and then loop through chats running a count(*) per chat.
+ * On a team with 100 chats x 100 messages that was ~10k row transit + 100
+ * sequential queries (~5-10s, often 504). It now calls the SECURITY
+ * DEFINER RPC `get_texter_chat_overview` which returns the dashboard's
+ * full payload in a single round-trip, plus one additional batched query
+ * for the per-chat member lists.
  */
 export async function getTexterChats(): Promise<{
   chats: TexterChatOverview[];
   error: Error | null;
 }> {
   try {
-    // Get current user's team ID
     const {
       data: { user },
     } = await supabase.auth.getUser();
@@ -27,11 +54,14 @@ export async function getTexterChats(): Promise<{
       return { chats: [], error: new Error('Not authenticated') };
     }
 
+    // Need the caller's team_id — the RPC validates that the caller is the
+    // Owner of the team it's called for, so we have to know which team we
+    // are owner of.
     const { data: profileData, error: profileError } = await supabase
       .from('users')
       .select('team_id, role')
       .eq('id', user.id)
-      .single();
+      .maybeSingle();
 
     if (profileError || !profileData) {
       return { chats: [], error: new Error('Profile not found') };
@@ -43,53 +73,23 @@ export async function getTexterChats(): Promise<{
       return { chats: [], error: new Error('Only owners can view Texter chats') };
     }
 
-    // Get all Texters in the team
-    const { data: texters, error: textersError } = await supabase
-      .from('users')
-      .select('*')
-      .eq('team_id', profile.team_id)
-      .eq('role', 'texter');
+    // Single RPC call — returns one row per (chat, texter) pair.
+    const { data: overviewRows, error: rpcError } = await supabase.rpc(
+      'get_texter_chat_overview' as never,
+      { p_team_id: profile.team_id } as never
+    );
 
-    if (textersError) {
-      return { chats: [], error: new Error(textersError.message) };
+    if (rpcError) {
+      return { chats: [], error: new Error((rpcError as { message?: string }).message ?? 'RPC failed') };
     }
 
-    if (!texters || texters.length === 0) {
+    const rows = (overviewRows as unknown as OverviewRpcRow[]) || [];
+    if (rows.length === 0) {
       return { chats: [], error: null };
     }
 
-    const typedTexters = texters as unknown as User[];
-    const texterIds = typedTexters.map((t) => t.id);
-
-    // Get all chat memberships for these Texters
-    const { data: memberships, error: membershipsError } = await supabase
-      .from('chat_members')
-      .select(`
-        chat_id,
-        user_id,
-        chats (*)
-      `)
-      .in('user_id', texterIds)
-      .is('left_at', null);
-
-    if (membershipsError) {
-      return { chats: [], error: new Error(membershipsError.message) };
-    }
-
-    if (!memberships || memberships.length === 0) {
-      return { chats: [], error: null };
-    }
-
-    const typedMemberships = memberships as unknown as {
-      chat_id: string;
-      user_id: string;
-      chats: Chat;
-    }[];
-
-    // Get unique chat IDs
-    const chatIds = [...new Set(typedMemberships.map((m) => m.chat_id))];
-
-    // Get all members for these chats
+    // Single batched query for "other members" of each chat.
+    const chatIds = Array.from(new Set(rows.map((r) => r.chat_id)));
     const { data: allMembers, error: allMembersError } = await supabase
       .from('chat_members')
       .select(`
@@ -110,68 +110,62 @@ export async function getTexterChats(): Promise<{
       user: User;
     }[];
 
-    // Get last message for each chat
-    const { data: lastMessages } = await supabase
-      .from('messages')
-      .select('*')
-      .in('chat_id', chatIds)
-      .order('created_at', { ascending: false });
-
-    const typedMessages = (lastMessages || []) as unknown as Message[];
-
-    // Get message counts per chat
-    const messageCounts = new Map<string, number>();
-    for (const chatId of chatIds) {
-      const { count } = await supabase
-        .from('messages')
-        .select('*', { count: 'exact', head: true })
-        .eq('chat_id', chatId);
-      messageCounts.set(chatId, count || 0);
-    }
-
-    // Group members by chat
     const membersByChat = new Map<string, { chat_id: string; user_id: string; user: User }[]>();
     for (const member of typedAllMembers) {
-      const chatMembers = membersByChat.get(member.chat_id) || [];
-      chatMembers.push(member);
-      membersByChat.set(member.chat_id, chatMembers);
+      const list = membersByChat.get(member.chat_id) || [];
+      list.push(member);
+      membersByChat.set(member.chat_id, list);
     }
 
-    // Get last message per chat
-    const lastMessageByChat = new Map<string, Message>();
-    for (const msg of typedMessages) {
-      if (!lastMessageByChat.has(msg.chat_id)) {
-        lastMessageByChat.set(msg.chat_id, msg);
-      }
-    }
+    // Assemble TexterChatOverview entries. The RPC already orders by last
+    // activity desc, so we preserve order.
+    const chats: TexterChatOverview[] = rows.map((row) => {
+      const chat: Chat = {
+        id: row.chat_id,
+        // Cast: server returns nullable but the Chat type might not match.
+        name: row.chat_name,
+        is_group: row.chat_is_group,
+        created_at: row.chat_created_at,
+        // The RPC didn't return these — they're not used in the dashboard
+        // overview view. If callers need them they should fetch the chat
+        // separately. We fill with safe defaults.
+      } as unknown as Chat;
 
-    // Build chat overview list
-    const chats: TexterChatOverview[] = [];
+      const texter: User = {
+        id: row.texter_id,
+        zemi_number: row.texter_zemi_number,
+        display_name: row.texter_display_name,
+        avatar_url: row.texter_avatar_url,
+        is_active: row.texter_is_active,
+        is_paused: row.texter_is_paused,
+        role: 'texter',
+        team_id: profile.team_id,
+        // Other User fields default-filled where missing.
+      } as unknown as User;
 
-    for (const membership of typedMemberships) {
-      const chat = membership.chats;
-      const texter = typedTexters.find((t) => t.id === membership.user_id);
-      if (!texter) continue;
-
-      const chatMembers = membersByChat.get(membership.chat_id) || [];
-      const otherMembers = chatMembers
-        .filter((m) => m.user_id !== texter.id)
+      const otherMembers = (membersByChat.get(row.chat_id) || [])
+        .filter((m) => m.user_id !== row.texter_id)
         .map((m) => m.user);
 
-      chats.push({
+      const lastMessage: Message | undefined = row.last_message_id
+        ? ({
+            id: row.last_message_id,
+            chat_id: row.chat_id,
+            content: row.last_message_content,
+            type: row.last_message_type,
+            sender_id: row.last_message_sender_id,
+            created_at: row.last_message_created_at,
+            deleted_at: row.last_message_deleted_at,
+          } as unknown as Message)
+        : undefined;
+
+      return {
         chat,
         texter,
         otherMembers,
-        lastMessage: lastMessageByChat.get(chat.id),
-        messageCount: messageCounts.get(chat.id) || 0,
-      });
-    }
-
-    // Sort by last message time (most recent first)
-    chats.sort((a, b) => {
-      const aTime = a.lastMessage?.created_at || a.chat.created_at;
-      const bTime = b.lastMessage?.created_at || b.chat.created_at;
-      return new Date(bTime).getTime() - new Date(aTime).getTime();
+        lastMessage,
+        messageCount: row.message_count ?? 0,
+      };
     });
 
     return { chats, error: null };

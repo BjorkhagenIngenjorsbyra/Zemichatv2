@@ -220,6 +220,18 @@ function getNotificationBody(messageType: string, content: string): string {
 // Main Handler
 // ============================================================
 
+/**
+ * Constant-time string compare. Avoids timing oracles on the shared secret.
+ */
+function safeCompare(a: string, b: string): boolean {
+  if (a.length !== b.length) return false;
+  let mismatch = 0;
+  for (let i = 0; i < a.length; i++) {
+    mismatch |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  }
+  return mismatch === 0;
+}
+
 serve(async (req) => {
   // No CORS needed — this is triggered internally by pg_net
   if (req.method !== 'POST') {
@@ -227,7 +239,35 @@ serve(async (req) => {
   }
 
   try {
-    // Parse payload (sent by pg_net trigger — no auth header)
+    // Authenticate the caller. The DB push trigger (notify_new_message) sends
+    // a fixed Bearer token sourced from the PG_NET_SHARED_SECRET env var.
+    // Without this header — or with a wrong value — the request is rejected.
+    // See audit fix #19. The env var must be set in:
+    //   1. Supabase Dashboard → Project Settings → Edge Functions secrets
+    //      (key: PG_NET_SHARED_SECRET)
+    //   2. The DB GUC `app.settings.pg_net_shared_secret` so the trigger
+    //      includes it (set by migration 20260427110000_*).
+    const expectedSecret = Deno.env.get('PG_NET_SHARED_SECRET') ?? '';
+    if (!expectedSecret) {
+      console.error('PG_NET_SHARED_SECRET not configured');
+      return new Response(JSON.stringify({ error: 'Server misconfigured' }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
+    const authHeader = req.headers.get('Authorization') ?? '';
+    const presented = authHeader.startsWith('Bearer ')
+      ? authHeader.slice('Bearer '.length)
+      : '';
+    if (!presented || !safeCompare(presented, expectedSecret)) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
+    // Parse payload
     const payload: RequestPayload = await req.json();
     const { message_id, chat_id, sender_id, message_type, content } = payload;
 

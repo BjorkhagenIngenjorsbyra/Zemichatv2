@@ -10,6 +10,11 @@ export interface MediaMetadata {
 }
 
 export interface UploadResult {
+  /**
+   * Storage path inside the chat-media bucket. Persist this in
+   * messages.media_url — the bucket is private, so only paths are stored.
+   * Use resolveMediaUrl(path) to get a short-lived signed URL when rendering.
+   */
   url: string;
   path: string;
   metadata: MediaMetadata;
@@ -24,6 +29,9 @@ export interface UploadError {
 }
 
 const BUCKET_NAME = 'chat-media';
+const SIGNED_URL_TTL_SECONDS = 3600; // 1 hour
+// Re-issue a new signed URL slightly before expiry to avoid races.
+const SIGNED_URL_REFRESH_MARGIN_MS = 5 * 60 * 1000; // 5 minutes
 
 /**
  * Generate a unique file path for storage.
@@ -61,6 +69,7 @@ async function getImageDimensions(
 
 /**
  * Upload an image file to chat-media storage.
+ * Returns the storage PATH (not a URL) — the bucket is private.
  */
 export async function uploadImage(
   file: File,
@@ -101,10 +110,6 @@ export async function uploadImage(
       return { url: null, path: null, metadata: null, error: new Error(uploadError.message) };
     }
 
-    const { data: urlData } = supabase.storage
-      .from(BUCKET_NAME)
-      .getPublicUrl(filePath);
-
     const metadata: MediaMetadata = {
       width: dimensions.width,
       height: dimensions.height,
@@ -114,7 +119,8 @@ export async function uploadImage(
     };
 
     return {
-      url: urlData.publicUrl,
+      // Persist path as media_url — clients resolve to signed URL on demand.
+      url: filePath,
       path: filePath,
       metadata,
       error: null,
@@ -172,10 +178,6 @@ export async function uploadVoice(
       return { url: null, path: null, metadata: null, error: new Error(uploadError.message) };
     }
 
-    const { data: urlData } = supabase.storage
-      .from(BUCKET_NAME)
-      .getPublicUrl(filePath);
-
     const metadata: MediaMetadata = {
       duration,
       size: blob.size,
@@ -184,7 +186,7 @@ export async function uploadVoice(
     };
 
     return {
-      url: urlData.publicUrl,
+      url: filePath,
       path: filePath,
       metadata,
       error: null,
@@ -228,10 +230,6 @@ export async function uploadDocument(
       return { url: null, path: null, metadata: null, error: new Error(uploadError.message) };
     }
 
-    const { data: urlData } = supabase.storage
-      .from(BUCKET_NAME)
-      .getPublicUrl(filePath);
-
     const metadata: MediaMetadata = {
       size: file.size,
       mimeType: file.type,
@@ -239,7 +237,7 @@ export async function uploadDocument(
     };
 
     return {
-      url: urlData.publicUrl,
+      url: filePath,
       path: filePath,
       metadata,
       error: null,
@@ -289,10 +287,6 @@ export async function uploadVideo(
       return { url: null, path: null, metadata: null, error: new Error(uploadError.message) };
     }
 
-    const { data: urlData } = supabase.storage
-      .from(BUCKET_NAME)
-      .getPublicUrl(filePath);
-
     const metadata: MediaMetadata = {
       duration,
       size: file.size,
@@ -301,7 +295,7 @@ export async function uploadVideo(
     };
 
     return {
-      url: urlData.publicUrl,
+      url: filePath,
       path: filePath,
       metadata,
       error: null,
@@ -351,7 +345,10 @@ export async function uploadAvatar(
       });
 
     if (uploadError) {
-      // Fallback: try chat-media bucket if avatars bucket doesn't exist
+      // Fallback: try chat-media bucket if avatars bucket doesn't exist.
+      // chat-media is private — we store the path and resolve to a signed
+      // URL here so the existing avatar consumer (which expects a URL string)
+      // still works.
       const { error: fallbackError } = await supabase.storage
         .from(BUCKET_NAME)
         .upload(`avatars/${filePath}`, file, {
@@ -364,14 +361,18 @@ export async function uploadAvatar(
         return { url: null, error: new Error(fallbackError.message) };
       }
 
-      const { data: urlData } = supabase.storage
+      const { data: signedData, error: signedErr } = await supabase.storage
         .from(BUCKET_NAME)
-        .getPublicUrl(`avatars/${filePath}`);
+        .createSignedUrl(`avatars/${filePath}`, SIGNED_URL_TTL_SECONDS);
 
-      // Update user profile
-      await supabase.rpc('update_user_profile' as never, { new_avatar_url: urlData.publicUrl } as never);
+      if (signedErr || !signedData) {
+        return { url: null, error: new Error(signedErr?.message || 'Failed to sign avatar URL') };
+      }
 
-      return { url: urlData.publicUrl, error: null };
+      // Update user profile with the signed URL (will need refresh client-side).
+      await supabase.rpc('update_user_profile' as never, { new_avatar_url: signedData.signedUrl } as never);
+
+      return { url: signedData.signedUrl, error: null };
     }
 
     const { data: urlData } = supabase.storage
@@ -396,7 +397,7 @@ export async function uploadAvatar(
  */
 export async function getSignedUrl(
   path: string,
-  expiresIn = 3600
+  expiresIn = SIGNED_URL_TTL_SECONDS
 ): Promise<{ url: string | null; error: Error | null }> {
   try {
     const { data, error } = await supabase.storage
@@ -437,4 +438,108 @@ export async function deleteFile(
       error: err instanceof Error ? err : new Error('Unknown error'),
     };
   }
+}
+
+// ============================================================
+// Signed URL resolution for chat media
+// ============================================================
+//
+// chat-media is a PRIVATE bucket. messages.media_url stores the storage
+// path; UI components must resolve to a short-lived signed URL before
+// rendering. resolveMediaUrl() caches signed URLs in-memory so a single
+// chat view doesn't generate N requests when the same path is referenced
+// multiple times (gallery + bubble + quoted message).
+
+interface CachedSignedUrl {
+  url: string;
+  expiresAt: number;
+}
+
+const signedUrlCache = new Map<string, CachedSignedUrl>();
+const inflightSigning = new Map<string, Promise<string | null>>();
+
+/**
+ * Detect whether a value is a fully-qualified URL or a storage path.
+ * Old messages from before #18 was fixed may still have public URLs in
+ * media_url — we pass those through unchanged.
+ */
+function isAbsoluteUrl(value: string): boolean {
+  return /^(https?:|data:|blob:)/i.test(value);
+}
+
+/**
+ * Resolve a chat-media storage path to a signed URL.
+ *
+ * Accepts:
+ *   - storage paths like "userId/chatId/123_pic.jpg" (preferred)
+ *   - legacy absolute URLs (returned as-is)
+ *   - null/empty (returned as null)
+ *
+ * Caches signed URLs until 5 minutes before expiry to avoid round-trips.
+ */
+export async function resolveMediaUrl(
+  pathOrUrl: string | null | undefined
+): Promise<string | null> {
+  if (!pathOrUrl) return null;
+  if (isAbsoluteUrl(pathOrUrl)) return pathOrUrl;
+
+  const cached = signedUrlCache.get(pathOrUrl);
+  if (cached && cached.expiresAt - Date.now() > SIGNED_URL_REFRESH_MARGIN_MS) {
+    return cached.url;
+  }
+
+  // Coalesce concurrent requests for the same path.
+  const inflight = inflightSigning.get(pathOrUrl);
+  if (inflight) return inflight;
+
+  const promise = (async () => {
+    const { url, error } = await getSignedUrl(pathOrUrl, SIGNED_URL_TTL_SECONDS);
+    if (error || !url) {
+      return null;
+    }
+    signedUrlCache.set(pathOrUrl, {
+      url,
+      expiresAt: Date.now() + SIGNED_URL_TTL_SECONDS * 1000,
+    });
+    return url;
+  })();
+
+  inflightSigning.set(pathOrUrl, promise);
+  try {
+    return await promise;
+  } finally {
+    inflightSigning.delete(pathOrUrl);
+  }
+}
+
+/**
+ * Resolve multiple chat-media paths in a single batch.
+ * Returns a map of path -> signed URL. Failed entries are omitted.
+ */
+export async function resolveMediaUrls(
+  pathsOrUrls: (string | null | undefined)[]
+): Promise<Map<string, string>> {
+  const result = new Map<string, string>();
+  const unique = Array.from(
+    new Set(pathsOrUrls.filter((v): v is string => !!v))
+  );
+
+  await Promise.all(
+    unique.map(async (key) => {
+      const resolved = await resolveMediaUrl(key);
+      if (resolved) {
+        result.set(key, resolved);
+      }
+    })
+  );
+
+  return result;
+}
+
+/**
+ * Clear the signed URL cache. Use when a user signs out, or when the
+ * media might have been changed/deleted.
+ */
+export function clearMediaUrlCache(): void {
+  signedUrlCache.clear();
 }

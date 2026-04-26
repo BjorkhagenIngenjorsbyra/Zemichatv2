@@ -459,10 +459,8 @@ export async function uploadWallImage(
       return { url: null, metadata: null, error: new Error(uploadError.message) };
     }
 
-    const { data: urlData } = supabase.storage
-      .from(BUCKET_NAME)
-      .getPublicUrl(filePath);
-
+    // chat-media is private — store the path and resolve to a signed URL on
+    // demand via resolveMediaUrl(). See audit fix #18.
     const metadata: MediaMetadata = {
       width,
       height,
@@ -471,7 +469,7 @@ export async function uploadWallImage(
       fileName: file.name,
     };
 
-    return { url: urlData.publicUrl, metadata, error: null };
+    return { url: filePath, metadata, error: null };
   } catch (err) {
     return {
       url: null,

@@ -23,6 +23,7 @@ import {
   type WallPostWithAuthor,
   type WallGroupedReaction,
 } from '../../services/wall';
+import { useSignedMediaUrl } from '../../hooks/useSignedMediaUrl';
 import WallComments from './WallComments';
 
 interface WallPostCardProps {
@@ -50,6 +51,9 @@ const WallPostCard: React.FC<WallPostCardProps> = ({
   const isAuthor = post.author_id === profile?.id;
   const isDeleted = !!post.deleted_at;
   const canDelete = !isDeleted && (isAuthor || isOwner);
+
+  // chat-media is private — resolve storage path to signed URL (audit fix #18).
+  const resolvedImageUrl = useSignedMediaUrl(post.media_url);
 
   const formatTime = (dateStr: string): string => {
     const date = new Date(dateStr);
@@ -172,9 +176,9 @@ const WallPostCard: React.FC<WallPostCardProps> = ({
       )}
 
       {/* Image */}
-      {post.media_url && (
+      {post.media_url && resolvedImageUrl && (
         <div className="post-image-container" onClick={() => setShowFullImage(true)}>
-          <img src={post.media_url} alt="" className="post-image" />
+          <img src={resolvedImageUrl} alt="" className="post-image" />
         </div>
       )}
 
@@ -239,7 +243,7 @@ const WallPostCard: React.FC<WallPostCardProps> = ({
       {/* Fullscreen image modal */}
       <IonModal isOpen={showFullImage} onDidDismiss={() => setShowFullImage(false)}>
         <div className="fullscreen-image-wrapper" onClick={() => setShowFullImage(false)}>
-          <img src={post.media_url || ''} alt="" className="fullscreen-image" />
+          <img src={resolvedImageUrl || ''} alt="" className="fullscreen-image" />
         </div>
       </IonModal>
 

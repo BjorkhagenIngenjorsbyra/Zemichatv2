@@ -1,8 +1,10 @@
 import { useState, useRef, useEffect } from 'react';
 import { IonIcon } from '@ionic/react';
 import { play, pause } from 'ionicons/icons';
+import { useSignedMediaUrl } from '../../hooks/useSignedMediaUrl';
 
 interface VoiceMessageProps {
+  /** Storage path (preferred) or legacy public URL. */
   mediaUrl: string | null;
   mediaMetadata?: Record<string, unknown> | null;
 }
@@ -16,6 +18,8 @@ const VoiceMessage: React.FC<VoiceMessageProps> = ({
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [playbackRate, setPlaybackRate] = useState(1);
+  // chat-media is a private bucket — resolve path to signed URL (audit fix #18).
+  const resolvedUrl = useSignedMediaUrl(mediaUrl);
 
   const metadata = mediaMetadata as {
     duration?: number;
@@ -112,7 +116,7 @@ const VoiceMessage: React.FC<VoiceMessageProps> = ({
 
   return (
     <div className="voice-message">
-      <audio ref={audioRef} src={mediaUrl} preload="metadata" />
+      <audio ref={audioRef} src={resolvedUrl || undefined} preload="metadata" />
 
       <button
         className="play-button"

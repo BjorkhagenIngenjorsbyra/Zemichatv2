@@ -35,6 +35,7 @@ import TabLayout from './components/TabLayout';
 
 /* Pages */
 import Login from './pages/Login';
+import SOSOnlyView from './pages/SOSOnlyView';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 import PasswordChanged from './pages/PasswordChanged';
@@ -215,6 +216,13 @@ const App: React.FC = () => (
             </PrivateRoute>
             <PrivateRoute exact path="/mfa-verify" requireProfile={false}>
               <MFAVerify />
+            </PrivateRoute>
+
+            {/* SOS-only screen for paused/deactivated Texters (audit fix #23).
+                allowSosOnly opts this route into being reachable from
+                that locked-down state. */}
+            <PrivateRoute exact path="/sos-only" requireProfile={true} allowSosOnly>
+              <SOSOnlyView />
             </PrivateRoute>
 
             {/* Onboarding tours - need auth and profile */}

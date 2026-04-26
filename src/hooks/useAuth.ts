@@ -9,6 +9,7 @@ import {
 } from '../services/push';
 import type { User } from '../types/database';
 import { startPresenceUpdates, stopPresenceUpdates } from '../services/presence';
+import { clearMediaUrlCache } from '../services/storage';
 
 export interface AuthState {
   isLoading: boolean;
@@ -18,6 +19,12 @@ export interface AuthState {
   profile: User | null;
   hasProfile: boolean;
   pushPermission: PermissionStatus;
+  /**
+   * True for paused/deactivated Texters who are still allowed a session
+   * so SOS works. Audit fix #23. The router redirects every non-SOS route
+   * back to /sos-only when this is set.
+   */
+  sosOnly: boolean;
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
   initializePush: () => Promise<void>;
@@ -136,6 +143,8 @@ export function useAuth(): AuthState {
   const signOut = useCallback(async () => {
     // Cleanup push notifications before signing out
     await cleanupPushNotifications();
+    // Drop signed-URL cache so the next user doesn't reuse stale URLs.
+    clearMediaUrlCache();
     await authSignOut();
     setAuthUser(null);
     setSession(null);
@@ -148,6 +157,14 @@ export function useAuth(): AuthState {
     setPushPermission(permissionStatus);
   }, []);
 
+  // Audit fix #23: paused/deactivated Texters keep their session so SOS
+  // still works, but the UI must lock down to a single screen.
+  const sosOnly = !!(
+    profile &&
+    profile.role === 'texter' &&
+    (profile.is_active === false || profile.is_paused === true)
+  );
+
   return {
     isLoading,
     isAuthenticated: !!authUser,
@@ -156,6 +173,7 @@ export function useAuth(): AuthState {
     profile,
     hasProfile,
     pushPermission,
+    sosOnly,
     signOut,
     refreshProfile,
     initializePush,

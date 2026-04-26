@@ -2,6 +2,7 @@ import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { getCorsHeaders, corsPreflightResponse } from '../_shared/cors.ts';
 import { checkRateLimit, rateLimitResponse } from '../_shared/rate-limit.ts';
+import { escapeHtml } from '../_shared/escape-html.ts';
 
 const VALID_TYPES = ['bug', 'suggestion', 'support'] as const;
 const MAX_SUBJECT_LENGTH = 200;
@@ -97,12 +98,21 @@ serve(async (req) => {
 
     const typeLabel = type === 'bug' ? 'Bug Report' : type === 'suggestion' ? 'Suggestion' : 'Support';
 
+    // Every interpolated value originates from the authenticated user — escape
+    // before placing in HTML so the support inbox isn't a stored-XSS vector
+    // for whoever opens these mails (audit fix #22). Newlines in the
+    // description are converted to <br/> AFTER escaping.
+    const safeEmail = escapeHtml(email);
+    const safeUserId = escapeHtml(user.id);
+    const safeSubject = escapeHtml(subject);
+    const safeDescription = escapeHtml(description).replace(/\n/g, '<br/>');
+
     const htmlEmail = `
 <h2>Zemichat ${typeLabel}</h2>
-<p><strong>From:</strong> ${email} (User: ${user.id})</p>
-<p><strong>Subject:</strong> ${subject}</p>
+<p><strong>From:</strong> ${safeEmail} (User: ${safeUserId})</p>
+<p><strong>Subject:</strong> ${safeSubject}</p>
 <hr/>
-<p>${description.replace(/\n/g, '<br/>')}</p>
+<p>${safeDescription}</p>
 `.trim();
 
     const resendResponse = await fetch('https://api.resend.com/emails', {
@@ -115,7 +125,9 @@ serve(async (req) => {
         from: 'Zemichat Support <noreply@zemichat.com>',
         to: 'support@zemichat.com',
         reply_to: email,
-        subject: `[${typeLabel}] ${subject}`,
+        // Strip CR/LF to defuse SMTP header injection if the user pasted
+        // a newline-laden subject.
+        subject: `[${typeLabel}] ${subject.replace(/[\r\n]+/g, ' ')}`,
         html: htmlEmail,
       }),
     });

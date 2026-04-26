@@ -2,6 +2,7 @@ import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { getCorsHeaders, corsPreflightResponse } from '../_shared/cors.ts';
 import { checkRateLimit, rateLimitResponse } from '../_shared/rate-limit.ts';
+import { escapeHtml, isAllowedInviteLink } from '../_shared/escape-html.ts';
 
 interface RequestBody {
   email: string;
@@ -101,6 +102,16 @@ serve(async (req) => {
       });
     }
 
+    // Validate inviteLink belongs to our app — stops Owner-controlled URLs
+    // from being used to phish through the trusted Zemichat email template
+    // (audit fix #22).
+    if (!isAllowedInviteLink(inviteLink)) {
+      return new Response(JSON.stringify({ error: 'Invalid invitation link' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
     // Use service role client to fetch invitation details
     const { data: invitation, error: invError } = await serviceClient
       .from('team_invitations')
@@ -127,6 +138,16 @@ serve(async (req) => {
     const inviterName = invitation.users?.display_name || 'Someone';
     const recipientName = invitation.display_name || '';
 
+    // Escape every user-controlled value before placing in HTML — names can
+    // contain characters that would otherwise break out of the attribute /
+    // text context (audit fix #22). inviteLink already passed
+    // isAllowedInviteLink so its origin is fixed; we still escape the
+    // characters that could close an attribute.
+    const safeRecipientName = escapeHtml(recipientName);
+    const safeInviterName = escapeHtml(inviterName);
+    const safeTeamName = escapeHtml(teamName);
+    const safeInviteLink = escapeHtml(inviteLink);
+
     // Build HTML email
     const htmlEmail = `
 <!DOCTYPE html>
@@ -150,17 +171,17 @@ serve(async (req) => {
           <tr>
             <td style="padding:0 32px 32px;">
               <p style="color:#F3F4F6;font-size:18px;font-weight:600;margin:0 0 8px;">
-                ${recipientName ? `Hi ${recipientName}!` : 'Hi!'}
+                ${safeRecipientName ? `Hi ${safeRecipientName}!` : 'Hi!'}
               </p>
               <p style="color:#9CA3AF;font-size:15px;line-height:1.6;margin:0 0 24px;">
-                <strong style="color:#F3F4F6;">${inviterName}</strong> has invited you to join
-                <strong style="color:#F3F4F6;">${teamName}</strong> on Zemichat.
+                <strong style="color:#F3F4F6;">${safeInviterName}</strong> has invited you to join
+                <strong style="color:#F3F4F6;">${safeTeamName}</strong> on Zemichat.
               </p>
               <!-- CTA Button -->
               <table width="100%" cellpadding="0" cellspacing="0">
                 <tr>
                   <td align="center">
-                    <a href="${inviteLink}" style="display:inline-block;background-color:#7C3AED;color:#ffffff;font-size:16px;font-weight:700;text-decoration:none;padding:14px 32px;border-radius:9999px;">
+                    <a href="${safeInviteLink}" style="display:inline-block;background-color:#7C3AED;color:#ffffff;font-size:16px;font-weight:700;text-decoration:none;padding:14px 32px;border-radius:9999px;">
                       Accept Invitation
                     </a>
                   </td>
@@ -168,7 +189,7 @@ serve(async (req) => {
               </table>
               <p style="color:#6B7280;font-size:13px;line-height:1.5;margin:24px 0 0;text-align:center;">
                 Or copy this link into your browser:<br>
-                <a href="${inviteLink}" style="color:#A78BFA;word-break:break-all;">${inviteLink}</a>
+                <a href="${safeInviteLink}" style="color:#A78BFA;word-break:break-all;">${safeInviteLink}</a>
               </p>
             </td>
           </tr>
@@ -197,7 +218,10 @@ serve(async (req) => {
       body: JSON.stringify({
         from: 'Zemichat <noreply@zemichat.com>',
         to: email,
-        subject: `${inviterName} invited you to join ${teamName} on Zemichat`,
+        // Subject is plain text in the SMTP envelope — no HTML escaping
+        // needed, but we strip control characters / newlines to prevent
+        // header injection.
+        subject: `${inviterName.replace(/[\r\n]+/g, ' ')} invited you to join ${teamName.replace(/[\r\n]+/g, ' ')} on Zemichat`,
         html: htmlEmail,
       }),
     });

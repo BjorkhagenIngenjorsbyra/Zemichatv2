@@ -28,6 +28,18 @@ import { getOversightMessages } from '../services/oversight';
 import { getChat, type ChatWithDetails } from '../services/chat';
 import { MessageType, type Message, type User } from '../types/database';
 import { useAuthContext } from '../contexts/AuthContext';
+import { useSignedMediaUrl } from '../hooks/useSignedMediaUrl';
+
+/**
+ * Inline-render an image whose `mediaUrl` is a chat-media storage path.
+ * The bucket is private, so we resolve to a signed URL on demand
+ * (audit fix #18).
+ */
+const OversightImage: React.FC<{ mediaUrl: string }> = ({ mediaUrl }) => {
+  const url = useSignedMediaUrl(mediaUrl);
+  if (!url) return null;
+  return <img src={url} alt="Image" className="message-image" />;
+};
 
 const OwnerChatView: React.FC = () => {
   const { t } = useTranslation();
@@ -154,9 +166,7 @@ const OwnerChatView: React.FC = () => {
         case MessageType.IMAGE:
           return (
             <div className="message-media">
-              {message.media_url && (
-                <img src={message.media_url} alt="Image" className="message-image" />
-              )}
+              {message.media_url && <OversightImage mediaUrl={message.media_url} />}
               {message.content && <p className="message-caption">{message.content}</p>}
             </div>
           );

@@ -5,6 +5,7 @@ import { hapticLight, hapticMedium } from '../../utils/haptics';
 import { getDisplayName } from '../../utils/userDisplay';
 import { type MessageWithSender } from '../../services/message';
 import { type GroupedReaction } from '../../services/reaction';
+import { useSignedMediaUrl } from '../../hooks/useSignedMediaUrl';
 import ImageMessage from './ImageMessage';
 import VoiceMessage from './VoiceMessage';
 import QuotedMessage from './QuotedMessage';
@@ -140,6 +141,11 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
     });
   };
 
+  // Resolve media path to signed URL once per render (audit fix #18).
+  // Only matters for video/document/gif — image and voice resolve inside
+  // their own components.
+  const resolvedMediaUrl = useSignedMediaUrl(message.media_url);
+
   const renderContent = () => {
     switch (message.type) {
       case 'image':
@@ -162,7 +168,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
         return (
           <div className="video-message">
             <video
-              src={message.media_url || undefined}
+              src={resolvedMediaUrl || undefined}
               controls
               className="message-video"
               playsInline
@@ -174,7 +180,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
         return (
           <div className="document-message">
             <a
-              href={message.media_url || '#'}
+              href={resolvedMediaUrl || '#'}
               target="_blank"
               rel="noopener noreferrer"
               className="document-link"
@@ -202,10 +208,12 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
         return <PollMessage messageId={message.id} isOwn={isOwn} />;
       case 'gif': {
         const gifMeta = message.media_metadata as { width?: number; height?: number } | null;
+        // GIFs from Tenor/Giphy are absolute URLs and pass through unchanged
+        // via resolveMediaUrl(). Storage paths get signed.
         return (
           <div className="gif-message">
             <img
-              src={message.media_url || ''}
+              src={resolvedMediaUrl || ''}
               alt="GIF"
               className="message-gif"
               loading="lazy"

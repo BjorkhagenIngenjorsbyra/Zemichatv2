@@ -24,6 +24,21 @@ import { getSharedMedia, updateChatName, leaveChat } from '../services/chatInfo'
 import { usePresence } from '../hooks/usePresence';
 import { type User } from '../types/database';
 import { getAvatarColor, getInitial } from '../utils/userDisplay';
+import { useSignedMediaUrl } from '../hooks/useSignedMediaUrl';
+
+/**
+ * Thumbnail that resolves a chat-media storage path to a signed URL.
+ * chat-media is private (audit fix #18).
+ */
+const SharedMediaThumb: React.FC<{ path: string }> = ({ path }) => {
+  const url = useSignedMediaUrl(path);
+  if (!url) return <div className="media-thumb media-thumb-loading" />;
+  return (
+    <div className="media-thumb">
+      <img src={url} alt="" loading="lazy" />
+    </div>
+  );
+};
 
 const ChatInfo: React.FC = () => {
   const { t } = useTranslation();
@@ -231,9 +246,7 @@ const ChatInfo: React.FC = () => {
             ) : (
               <div className="media-grid">
                 {sharedMedia.map((url, index) => (
-                  <div key={index} className="media-thumb">
-                    <img src={url} alt="" loading="lazy" />
-                  </div>
+                  <SharedMediaThumb key={index} path={url} />
                 ))}
               </div>
             )}
