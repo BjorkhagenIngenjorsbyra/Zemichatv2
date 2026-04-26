@@ -55,7 +55,7 @@ const TexterLogin: React.FC = () => {
 
     setIsLoading(true);
 
-    const { error: signInError } = await signInAsTexter({
+    const { error: signInError, sosOnly } = await signInAsTexter({
       zemiNumber: zemiNumber.trim(),
       password,
     });
@@ -69,6 +69,13 @@ const TexterLogin: React.FC = () => {
         setError(signInError.message);
       }
       setIsLoading(false);
+      return;
+    }
+
+    // Audit fix #23: paused/deactivated Texters land in SOS-only mode so
+    // the SOS button still works in an emergency.
+    if (sosOnly) {
+      history.replace('/sos-only');
       return;
     }
 
