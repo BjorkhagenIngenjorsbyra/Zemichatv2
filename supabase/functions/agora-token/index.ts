@@ -286,16 +286,22 @@ serve(async (req) => {
         .from('texter_settings')
         .select('can_voice_call, can_video_call')
         .eq('user_id', user.id)
-        .single();
+        .maybeSingle();
 
-      if (settingsError || !settings) {
+      if (settingsError) {
+        console.error('texter_settings query failed:', settingsError);
         return new Response(
-          JSON.stringify({ error: 'Call permission denied' }),
-          { status: 403, headers: { ...cors, 'Content-Type': 'application/json' } }
+          JSON.stringify({ error: 'Settings lookup failed' }),
+          { status: 500, headers: { ...cors, 'Content-Type': 'application/json' } }
         );
       }
 
-      const canCall = callType === 'video' ? settings.can_video_call : settings.can_voice_call;
+      // Saknad rad i texter_settings = nya texters defaults (allt tillåtet).
+      // Owner som vill stänga av samtal måste explicit skapa raden med false.
+      const canCall = settings
+        ? (callType === 'video' ? settings.can_video_call : settings.can_voice_call)
+        : true;
+
       if (!canCall) {
         return new Response(
           JSON.stringify({ error: 'Call permission denied' }),

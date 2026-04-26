@@ -40,6 +40,7 @@ import {
 } from '../services/agora';
 import {
   createCallLog,
+  deleteCallLog,
   updateCallStatus,
   endCallLog,
   sendCallSignal,
@@ -294,6 +295,9 @@ export function CallProvider({ children }: CallProviderProps) {
       // Get Agora token
       const { token, error: tokenError } = await getAgoraToken(chatId, callType);
       if (tokenError || !token) {
+        // Initieringen failade innan samtalet kunde nå mottagaren — ta bort
+        // den preliminära call_log:en så det inte loggas som "missat samtal".
+        await deleteCallLog(callLog.id);
         setCallError(mapCallError(tokenError, 'getAgoraToken'));
         setActiveCall((prev) => prev ? { ...prev, state: CallState.ENDED } : prev);
         setTimeout(() => cleanupCall(), 2500);

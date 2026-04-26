@@ -66,6 +66,30 @@ export async function createCallLog(
 }
 
 /**
+ * Delete a call log. Används när initieringen failade och vi inte vill
+ * att ett vilseledande "missat samtal" ska finnas kvar hos mottagaren.
+ */
+export async function deleteCallLog(
+  callLogId: string
+): Promise<{ error: Error | null }> {
+  try {
+    const { error } = await supabase
+      .from('call_logs')
+      .delete()
+      .eq('id', callLogId);
+
+    if (error) {
+      return { error: new Error(error.message) };
+    }
+    return { error: null };
+  } catch (err) {
+    return {
+      error: err instanceof Error ? err : new Error('Unknown error'),
+    };
+  }
+}
+
+/**
  * Update the call log status.
  */
 export async function updateCallStatus(
