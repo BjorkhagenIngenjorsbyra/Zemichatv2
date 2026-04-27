@@ -13,9 +13,15 @@ const ALLOWED_ORIGINS = [
   'http://localhost:8100',
   'http://127.0.0.1:5173',
   'http://127.0.0.1:8100',
-  // Capacitor (native apps)
+  // Capacitor 5+ default Android scheme is `https://localhost`; iOS keeps
+  // `capacitor://localhost`. Older Android builds used `http://localhost`.
+  // Without these, the WebView fetch is blocked by CORS even though the
+  // Edge Function returns a 200, surfacing as "Failed to send a request to
+  // the Edge Function" in supabase-js.
+  'https://localhost',
   'capacitor://localhost',
   'http://localhost',
+  'ionic://localhost',
 ];
 
 export function getCorsHeaders(req: Request): Record<string, string> {
