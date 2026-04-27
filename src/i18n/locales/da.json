@@ -784,5 +784,50 @@
     "texterRestricted": "Du kan kun dele din position med din teamejer",
     "loading": "Indlæser...",
     "openInMaps": "Åbn i kort"
+  },
+  "report": {
+    "reportMessage": "Rapportér besked",
+    "reportChat": "Rapportér chat",
+    "reportUser": "Rapportér bruger",
+    "title": "Rapportér",
+    "categoryLabel": "Hvorfor rapporterer du?",
+    "descriptionLabel": "Fortæl mere (valgfrit)",
+    "descriptionPlaceholder": "Tilføj kontekst der hjælper os med gennemgangen...",
+    "submit": "Send rapport",
+    "submitting": "Sender...",
+    "success": "Tak — vi har modtaget din rapport.",
+    "errorGeneric": "Noget gik galt. Prøv igen.",
+    "cancel": "Annullér",
+    "categories": {
+      "inappropriate": "Upassende indhold",
+      "harassment": "Chikane eller mobning",
+      "spam": "Spam",
+      "self_harm": "Selvskade",
+      "illegal": "Ulovligt indhold",
+      "other": "Andet"
+    },
+    "team": {
+      "title": "Teamets rapporter",
+      "empty": "Ingen rapporter for dit team endnu.",
+      "filterAll": "Alle",
+      "filterPending": "Afventer",
+      "filterEscalated": "Eskaleret",
+      "openSupport": "Kontakt Zemi support",
+      "markReviewed": "Markér som gennemgået",
+      "markResolved": "Løs",
+      "markDismissed": "Afvis",
+      "reporter": "Rapportør",
+      "target": "Mål",
+      "category": "Kategori",
+      "status": "Status",
+      "description": "Beskrivelse"
+    },
+    "status": {
+      "pending": "Afventer",
+      "reviewed": "Gennemgået",
+      "escalated": "Eskaleret",
+      "resolved": "Løst",
+      "dismissed": "Afvist"
+    }
   }
 }

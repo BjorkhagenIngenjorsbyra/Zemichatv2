@@ -25,6 +25,7 @@ import { usePresence } from '../hooks/usePresence';
 import { type User } from '../types/database';
 import { getAvatarColor, getInitial } from '../utils/userDisplay';
 import { useSignedMediaUrl } from '../hooks/useSignedMediaUrl';
+import ReportButton from '../components/ReportButton';
 
 /**
  * Thumbnail that resolves a chat-media storage path to a signed URL.
@@ -259,6 +260,23 @@ const ChatInfo: React.FC = () => {
                 <IonIcon icon={logOutOutline} />
                 {t('chatInfo.leaveGroup')}
               </button>
+            </div>
+          )}
+
+          {/* Report section — visible to all members. Apple/Google
+              App Review require a report path for any UGC. */}
+          {chat && (
+            <div className="info-section" style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              {chat.is_group ? (
+                <ReportButton target={{ kind: 'chat', chatId: chat.id }} variant="button" />
+              ) : (
+                <>
+                  <ReportButton target={{ kind: 'chat', chatId: chat.id }} variant="button" />
+                  {otherUser && (
+                    <ReportButton target={{ kind: 'user', userId: otherUser.id }} variant="button" />
+                  )}
+                </>
+              )}
             </div>
           )}
         </div>

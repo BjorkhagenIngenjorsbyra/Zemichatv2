@@ -784,5 +784,50 @@
     "texterRestricted": "You can only share your location with your team owner",
     "loading": "Loading...",
     "openInMaps": "Open in maps"
+  },
+  "report": {
+    "reportMessage": "Report message",
+    "reportChat": "Report chat",
+    "reportUser": "Report user",
+    "title": "Report",
+    "categoryLabel": "Why are you reporting?",
+    "descriptionLabel": "Tell us more (optional)",
+    "descriptionPlaceholder": "Add context that helps us review...",
+    "submit": "Send report",
+    "submitting": "Sending...",
+    "success": "Thanks — we've received your report.",
+    "errorGeneric": "Something went wrong. Please try again.",
+    "cancel": "Cancel",
+    "categories": {
+      "inappropriate": "Inappropriate content",
+      "harassment": "Harassment or bullying",
+      "spam": "Spam",
+      "self_harm": "Self-harm",
+      "illegal": "Illegal content",
+      "other": "Other"
+    },
+    "team": {
+      "title": "Team reports",
+      "empty": "No reports for your team yet.",
+      "filterAll": "All",
+      "filterPending": "Pending",
+      "filterEscalated": "Escalated",
+      "openSupport": "Contact Zemi support",
+      "markReviewed": "Mark as reviewed",
+      "markResolved": "Resolve",
+      "markDismissed": "Dismiss",
+      "reporter": "Reporter",
+      "target": "Target",
+      "category": "Category",
+      "status": "Status",
+      "description": "Description"
+    },
+    "status": {
+      "pending": "Pending",
+      "reviewed": "Reviewed",
+      "escalated": "Escalated",
+      "resolved": "Resolved",
+      "dismissed": "Dismissed"
+    }
   }
 }
