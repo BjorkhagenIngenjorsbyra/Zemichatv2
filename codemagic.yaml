@@ -125,6 +125,26 @@ workflows:
         auth: integration
         submit_to_testflight: true
         submit_to_app_store: false
+      scripts:
+        - name: Notify Telegram (iOS TestFlight)
+          script: |
+            VERSION_NAME=$(git describe --tags --always 2>/dev/null || echo "unknown")
+            COMMITS=$(git log -10 --pretty=format:'• %s' --no-merges | head -8)
+            MSG=$(cat <<EOF
+            📱 *Zemichat iOS — ny build i TestFlight*
+
+            Build: \`$BUILD_NUMBER\` ($VERSION_NAME)
+
+            *Förändringar:*
+            $COMMITS
+
+            Öppna i TestFlight: https://testflight.apple.com/join/zemichat
+            EOF
+            )
+            curl -s -X POST "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/sendMessage" \
+              -d "chat_id=$TELEGRAM_CHAT_ID" \
+              -d "parse_mode=Markdown" \
+              --data-urlencode "text=$MSG" || true
 
   android-release:
     name: Android Release Build
@@ -174,6 +194,27 @@ workflows:
         script: |
           cd android
           ./gradlew bundleRelease
+      - name: Notify Telegram (Android Play Internal)
+        script: |
+          VERSION_NAME=$(grep "versionName" android/app/build.gradle | head -1 | awk -F'"' '{print $2}')
+          VERSION_CODE=$(grep "versionCode" android/app/build.gradle | head -1 | awk '{print $2}')
+          COMMITS=$(git log -10 --pretty=format:'• %s' --no-merges | head -8)
+          MSG=$(cat <<EOF
+          🟢 *Zemichat Android — ny build i Play Internal Testing*
+
+          Version: \`$VERSION_NAME\` (versionCode $VERSION_CODE)
+
+          *Förändringar:*
+          $COMMITS
+
+          📲 Uppdatera i Play Store: https://play.google.com/store/apps/details?id=com.zemichat.app
+          (vidarebefordra till testare)
+          EOF
+          )
+          curl -s -X POST "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/sendMessage" \
+            -d "chat_id=$TELEGRAM_CHAT_ID" \
+            -d "parse_mode=Markdown" \
+            --data-urlencode "text=$MSG" || true
     artifacts:
       - android/app/build/outputs/**/*.aab
     # publishing:
