@@ -42,6 +42,23 @@ export enum ReportStatus {
   PENDING = 'pending',
   REVIEWED = 'reviewed',
   ESCALATED = 'escalated',
+  RESOLVED = 'resolved',
+  DISMISSED = 'dismissed',
+}
+
+export enum ReportCategory {
+  INAPPROPRIATE = 'inappropriate',
+  HARASSMENT = 'harassment',
+  SPAM = 'spam',
+  SELF_HARM = 'self_harm',
+  ILLEGAL = 'illegal',
+  OTHER = 'other',
+}
+
+export enum ReportTargetType {
+  MESSAGE = 'message',
+  CHAT = 'chat',
+  USER = 'user',
 }
 
 export enum CallType {
@@ -243,9 +260,15 @@ export interface Report {
   reporter_id: string;
   reported_user_id: string | null;
   reported_message_id: string | null;
+  reported_chat_id: string | null;
+  /** Generated column: 'message' | 'chat' | 'user' depending on which FK is set. */
+  target_type: ReportTargetType | null;
   reason: string | null;
+  category: ReportCategory | null;
+  description: string | null;
   status: ReportStatus;
   reviewed_by: string | null;
+  reviewed_at: string | null;
   escalated_at: string | null;
   created_at: string;
 }
@@ -580,6 +603,7 @@ export interface Database {
       friendship_status: FriendshipStatus;
       message_type: MessageType;
       report_status: ReportStatus;
+      report_category: ReportCategory;
       call_type: CallType;
       call_status: CallStatus;
       signal_type: SignalType;
