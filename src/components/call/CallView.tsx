@@ -41,7 +41,11 @@ const CallView: React.FC = () => {
   const initial = displayName.charAt(0).toUpperCase();
 
   const getStatusText = (): string => {
-    if (callError) return t(callError);
+    if (callError) {
+      // "raw:..." sentinel from mapCallError unknown-error path — render as-is.
+      if (callError.startsWith('raw:')) return callError.slice(4);
+      return t(callError);
+    }
     switch (activeCall.state) {
       case CallState.RINGING:
         return isGroupCall ? t('call.waitingForOthers') : t('call.ringing');

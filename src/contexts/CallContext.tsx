@@ -137,7 +137,10 @@ export function CallProvider({ children }: CallProviderProps) {
     if (msg.includes('no audio') || msg.includes('device')) return 'call.microphoneError';
     if (name === 'notreadableerror' || msg.includes('notreadableerror')) return 'call.microphoneError';
 
-    return 'call.error';
+    // Unknown — surface the raw message so we can diagnose. Prefix with
+    // "raw:" so CallView knows to render it literally instead of via i18n.
+    const rawMsg = (err?.message || err?.name || 'unknown').slice(0, 160);
+    return `raw:${step ? step + ': ' : ''}${rawMsg}`;
   }, []);
 
   // ============================================================

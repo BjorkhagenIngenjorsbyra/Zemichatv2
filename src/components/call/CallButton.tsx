@@ -74,7 +74,7 @@ const CallButton: React.FC<CallButtonProps> = ({ chatId, type, disabled = false,
       <IonToast
         isOpen={showToast}
         onDidDismiss={handleToastDismiss}
-        message={callError ? t(callError) : ''}
+        message={callError ? (callError.startsWith('raw:') ? callError.slice(4) : t(callError)) : ''}
         duration={3000}
         position="top"
         color="danger"
