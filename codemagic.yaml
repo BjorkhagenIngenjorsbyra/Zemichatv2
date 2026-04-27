@@ -197,27 +197,31 @@ workflows:
     artifacts:
       - android/app/build/outputs/**/*.aab
     publishing:
-      google_play:
-        credentials: $GCLOUD_SERVICE_ACCOUNT_CREDENTIALS
-        track: internal
-        submit_as_draft: false
-        in_app_update_priority: 0
+      # google_play auto-publish kräver att service account-credentials
+      # laddas upp via Codemagic UI (Codemagic Integrations) — API:n
+      # accepterar inte JSON med private_key korrekt. Erik måste konfigurera
+      # via dashboard. Tills dess: AAB byggs men måste laddas upp manuellt
+      # till Play Console.
+      # google_play:
+      #   credentials: $GCLOUD_SERVICE_ACCOUNT_CREDENTIALS
+      #   track: internal
+      #   submit_as_draft: false
+      #   in_app_update_priority: 0
       scripts:
-        - name: Notify Telegram (Android Play Internal)
+        - name: Notify Telegram (Android build klar)
           script: |
             VERSION_NAME=$(grep "versionName" android/app/build.gradle | head -1 | awk -F'"' '{print $2}')
             VERSION_CODE=$(grep "versionCode" android/app/build.gradle | head -1 | awk '{print $2}')
             COMMITS=$(git log -10 --pretty=format:'• %s' --no-merges | head -8)
             MSG=$(cat <<EOF
-            🟢 *Zemichat Android — ny build i Play Internal Testing*
+            🟢 *Zemichat Android — AAB byggd*
 
             Version: \`$VERSION_NAME\` (versionCode $VERSION_CODE)
 
             *Förändringar:*
             $COMMITS
 
-            📲 Uppdatera i Play Store: https://play.google.com/store/apps/details?id=com.zemichat.app
-            (vidarebefordra till testare)
+            ⚠️ Auto-publish till Play Internal är inte aktiverat — ladda upp AAB:n manuellt i Codemagic-bygget eller Play Console.
             EOF
             )
             curl -s -X POST "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/sendMessage" \
