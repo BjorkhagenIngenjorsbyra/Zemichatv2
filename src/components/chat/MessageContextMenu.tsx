@@ -7,6 +7,7 @@ import {
   createOutline,
   arrowRedoOutline,
   trashOutline,
+  flagOutline,
 } from 'ionicons/icons';
 import { type MessageWithSender, canEditMessage, canDeleteForAll } from '../../services/message';
 import { QUICK_REACTIONS } from '../../services/reaction';
@@ -25,14 +26,14 @@ interface MessageContextMenuProps {
   onDeleteForAll: () => void;
   onReaction: (emoji: string) => void;
   onOpenFullPicker: () => void;
+  /** Optional: opens the report flow for the targeted message. */
+  onReport?: () => void;
 }
 
 const MessageContextMenu: React.FC<MessageContextMenuProps> = ({
   isOpen,
   message,
-  // isOwn is part of the public contract but not currently used in
-  // the menu UI — kept so callers can keep passing it.
-  isOwn: _isOwn,
+  isOwn,
   userId,
   onClose,
   onReply,
@@ -42,6 +43,7 @@ const MessageContextMenu: React.FC<MessageContextMenuProps> = ({
   onDeleteForAll,
   onReaction,
   onOpenFullPicker,
+  onReport,
 }) => {
   const { t } = useTranslation();
   const menuRef = useRef<HTMLDivElement>(null);
@@ -115,6 +117,18 @@ const MessageContextMenu: React.FC<MessageContextMenuProps> = ({
       label: t('contextMenu.deleteForAll'),
       icon: trashOutline,
       action: onDeleteForAll,
+      destructive: true,
+    });
+  }
+
+  // Report is shown for messages from someone else. Reporting your
+  // own message would be a no-op, and Apple/Google App Review only
+  // requires the path to exist for messages you didn't write.
+  if (onReport && !isOwn) {
+    actions.push({
+      label: t('report.reportMessage'),
+      icon: flagOutline,
+      action: onReport,
       destructive: true,
     });
   }

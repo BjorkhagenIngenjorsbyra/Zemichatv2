@@ -784,5 +784,50 @@
     "texterRestricted": "Du kan bare dele posisjonen din med teameieren din",
     "loading": "Laster...",
     "openInMaps": "Åpne i kart"
+  },
+  "report": {
+    "reportMessage": "Rapporter melding",
+    "reportChat": "Rapporter chat",
+    "reportUser": "Rapporter bruker",
+    "title": "Rapporter",
+    "categoryLabel": "Hvorfor rapporterer du?",
+    "descriptionLabel": "Beskriv mer (valgfritt)",
+    "descriptionPlaceholder": "Legg til kontekst som hjelper oss med gjennomgangen...",
+    "submit": "Send rapport",
+    "submitting": "Sender...",
+    "success": "Takk — vi har mottatt rapporten din.",
+    "errorGeneric": "Noe gikk galt. Prøv igjen.",
+    "cancel": "Avbryt",
+    "categories": {
+      "inappropriate": "Upassende innhold",
+      "harassment": "Trakassering eller mobbing",
+      "spam": "Spam",
+      "self_harm": "Selvskading",
+      "illegal": "Ulovlig innhold",
+      "other": "Annet"
+    },
+    "team": {
+      "title": "Teamets rapporter",
+      "empty": "Ingen rapporter for teamet ditt ennå.",
+      "filterAll": "Alle",
+      "filterPending": "Venter",
+      "filterEscalated": "Eskalert",
+      "openSupport": "Kontakt Zemi support",
+      "markReviewed": "Marker som gjennomgått",
+      "markResolved": "Løs",
+      "markDismissed": "Avvis",
+      "reporter": "Rapportør",
+      "target": "Mål",
+      "category": "Kategori",
+      "status": "Status",
+      "description": "Beskrivelse"
+    },
+    "status": {
+      "pending": "Venter",
+      "reviewed": "Gjennomgått",
+      "escalated": "Eskalert",
+      "resolved": "Løst",
+      "dismissed": "Avvist"
+    }
   }
 }

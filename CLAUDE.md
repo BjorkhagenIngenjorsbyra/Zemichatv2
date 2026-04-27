@@ -28,11 +28,11 @@ För alla uppgifter med 3+ steg eller arkitekturella beslut:
 - Om något går snett: STOPPA, uppdatera planen, och börja om
 
 ### 2. Verifiera innan klart
-Markera aldrig en uppgift som klar utan att bevisa att den fungerar:
+Markera en uppgift som klar först när den är bevisat fungerande:
 - Kör relevanta tester
-- Diffla dina ändringar – rör du bara det som behövs?
+- Diffla dina ändringar – håll scopet till det som behövs
 - Fråga dig: "Skulle en senior utvecklare godkänna detta?"
-- Kontrollera att inga andra delar gått sönder
+- Verifiera att övriga delar fortfarande fungerar
 
 ### 3. Lär av misstag
 Efter VARJE korrigering från Erik:
@@ -45,14 +45,14 @@ Efter VARJE korrigering från Erik:
 ## Utvecklingsprinciper
 
 ### 1. Produktion från start
-Skriv alltid produktionskvalitet. Ingen "quick fix" eller "TODO: fixa senare". Om något behöver förenklas, dokumentera varför och skapa en issue.
+Skriv alltid produktionskvalitet. Om scope är för stort för full lösning: leverera en mindre fungerande del och skapa en issue för resten — så att begränsningen är synlig snarare än dold som "TODO".
 
 ### 2. Minimal påverkan
-- Gör varje ändring så liten och fokuserad som möjligt
-- Rör bara filer som är nödvändiga för uppgiften
-- Hitta grundorsaken – inga temporära fixar
-- Undvik att introducera nya buggar genom att ändra orelaterad kod
-- Om en fix känns hackig: pausa och fråga "finns det en elegantare lösning?"
+- Håll varje ändring fokuserad på den specifika uppgiften
+- Rör de filer som är nödvändiga för uppgiften
+- Adressera grundorsaken — bygg lösningar som håller över tid
+- Bevara orelaterad kod intakt för att skydda mot regressionsfel
+- Om en fix känns hackig: pausa och leta en elegantare lösning
 
 ### 3. Tester före implementation
 ```
@@ -73,8 +73,8 @@ Claude ska arbeta autonomt i långa sessioner. Vid osäkerhet:
 - Fatta beslut baserat på etablerade mönster
 - Dokumentera beslutet i commit-meddelande
 
-### 5. Ingen gissning
-Om något är oklart i PRD:en – stoppa och fråga. Gissa aldrig på:
+### 5. Stanna när det är oklart
+Om något är oklart i PRD:en – stanna och fråga Erik. Sök förtydligande på följande områden innan implementation:
 - Säkerhetslogik (RLS, behörigheter)
 - Affärslogik (prenumerationer, roller)
 - Användarflöden som påverkar barn
@@ -85,8 +85,8 @@ Om något är oklart i PRD:en – stoppa och fråga. Gissa aldrig på:
 
 ### TypeScript
 ```typescript
-// Alltid strict mode
-// Alltid explicit types (inga 'any')
+// Strict mode
+// Explicit types på alla parametrar och returvärden
 // Föredra interfaces över types för objekt
 // Använd enums för fasta värden
 
@@ -284,10 +284,10 @@ fix/xxx           # Bugfixes
 
 ## Säkerhetsprinciper
 
-### Aldrig lita på klienten
-- All behörighetskontroll sker i RLS
+### Servern är källan till sanning
+- Behörighetskontroll sker i RLS — klienten ses som icke-betrodd
 - Validera input på server (Supabase Functions om nödvändigt)
-- Exponera aldrig service_role-nyckel
+- Behåll service_role-nyckeln serversida — den lämnar inte edge functions eller backend
 
 ### Transparens är kärnan
 - Team Owner SKA kunna läsa Texters meddelanden
@@ -297,21 +297,21 @@ fix/xxx           # Bugfixes
 ### Rollhierarki
 ```
 Team Owner
-├── Kan läsa ALLA Texters chattar
-├── Kan INTE läsa Supers privata chattar (om ingen Texter deltar)
-├── Kan stänga av funktioner per Texter
-├── Kan stänga av Texters OCH Supers i sitt team
-└── Godkänner alla Texters vänförfrågningar
+├── Läser ALLA Texters chattar (inklusive raderade meddelanden)
+├── Supers privata chattar är skyddade när ingen Texter deltar
+├── Stänger av funktioner per Texter
+├── Stänger av Texters och Supers i sitt team
+└── Godkänner Texters vänförfrågningar
 
 Super
-├── Har privacy från Owner (om ingen Texter deltar)
+├── Har privacy från Owner när ingen Texter deltar i chatten
 ├── Hanterar sina egna vänförfrågningar
-├── Kan avsluta vänskaper (unfriend) men INTE blockera
+├── Avslutar vänskaper (unfriend); blockering finns endast för stängda team-relationer
 └── Kan stängas av av Team Owner
 
 Texter
-├── Owner ser ALLT
-├── Kan avsluta vänskaper men INTE blockera
+├── Owner ser allt
+├── Avslutar vänskaper (unfriend); blockering hanteras via Owner
 ├── Vänförfrågningar kräver Owner-godkännande
 └── Kan stängas av av Team Owner
 ```

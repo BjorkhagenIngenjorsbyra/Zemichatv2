@@ -57,6 +57,7 @@ import OwnerApprovals from './pages/OwnerApprovals';
 import MFASetup from './pages/MFASetup';
 import MFAVerify from './pages/MFAVerify';
 import Support from './pages/Support';
+import TeamReports from './pages/TeamReports';
 
 /* Welcome & Onboarding */
 import Welcome from './pages/Welcome';
@@ -286,6 +287,9 @@ const App: React.FC = () => (
             </PrivateRoute>
             <PrivateRoute exact path="/support">
               <Support />
+            </PrivateRoute>
+            <PrivateRoute exact path="/team-reports">
+              <TeamReports />
             </PrivateRoute>
             <PrivateRoute exact path="/choose-plan">
               <ChoosePlan />
