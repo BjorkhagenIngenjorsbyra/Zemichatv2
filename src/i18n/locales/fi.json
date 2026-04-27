@@ -784,5 +784,50 @@
     "texterRestricted": "Voit jakaa sijaintisi vain tiimin omistajan kanssa",
     "loading": "Ladataan...",
     "openInMaps": "Avaa kartalla"
+  },
+  "report": {
+    "reportMessage": "Ilmoita viestistä",
+    "reportChat": "Ilmoita chatista",
+    "reportUser": "Ilmoita käyttäjästä",
+    "title": "Ilmoita",
+    "categoryLabel": "Miksi teet ilmoituksen?",
+    "descriptionLabel": "Kerro lisää (valinnainen)",
+    "descriptionPlaceholder": "Lisää tietoja, jotka auttavat meitä tarkistamaan...",
+    "submit": "Lähetä ilmoitus",
+    "submitting": "Lähetetään...",
+    "success": "Kiitos — olemme vastaanottaneet ilmoituksesi.",
+    "errorGeneric": "Jotain meni pieleen. Yritä uudelleen.",
+    "cancel": "Peruuta",
+    "categories": {
+      "inappropriate": "Sopimaton sisältö",
+      "harassment": "Häirintä tai kiusaaminen",
+      "spam": "Roskaposti",
+      "self_harm": "Itsensä vahingoittaminen",
+      "illegal": "Laiton sisältö",
+      "other": "Muu"
+    },
+    "team": {
+      "title": "Tiimin ilmoitukset",
+      "empty": "Ei vielä ilmoituksia tiimillesi.",
+      "filterAll": "Kaikki",
+      "filterPending": "Odottaa",
+      "filterEscalated": "Eskaloitu",
+      "openSupport": "Ota yhteyttä Zemi-tukeen",
+      "markReviewed": "Merkitse tarkistetuksi",
+      "markResolved": "Ratkaise",
+      "markDismissed": "Hylkää",
+      "reporter": "Ilmoittaja",
+      "target": "Kohde",
+      "category": "Luokka",
+      "status": "Tila",
+      "description": "Kuvaus"
+    },
+    "status": {
+      "pending": "Odottaa",
+      "reviewed": "Tarkistettu",
+      "escalated": "Eskaloitu",
+      "resolved": "Ratkaistu",
+      "dismissed": "Hylätty"
+    }
   }
 }

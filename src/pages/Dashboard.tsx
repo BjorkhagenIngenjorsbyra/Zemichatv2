@@ -29,6 +29,7 @@ import {
   eyeOutline,
   checkmarkCircleOutline,
   mailOutline,
+  flagOutline,
 } from 'ionicons/icons';
 import { useAuthContext } from '../contexts/AuthContext';
 import { getTeamMembers } from '../services/members';
@@ -192,6 +193,12 @@ const Dashboard: React.FC = () => {
                 <IonLabel>
                   <h3>{t('invite.title')}</h3>
                   <p>{t('dashboard.inviteSuperDescription')}</p>
+                </IonLabel>
+              </IonItem>
+              <IonItem button detail routerLink="/team-reports" className="action-item">
+                <IonIcon icon={flagOutline} slot="start" className="action-icon" />
+                <IonLabel>
+                  <h3>{t('report.team.title')}</h3>
                 </IonLabel>
               </IonItem>
             </IonList>

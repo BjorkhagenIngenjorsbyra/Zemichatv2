@@ -790,5 +790,50 @@
     "texterRestricted": "Du kan bara dela din position med din teamägare",
     "loading": "Laddar...",
     "openInMaps": "Öppna i karta"
+  },
+  "report": {
+    "reportMessage": "Rapportera meddelandet",
+    "reportChat": "Rapportera chatten",
+    "reportUser": "Rapportera användaren",
+    "title": "Rapportera",
+    "categoryLabel": "Varför rapporterar du?",
+    "descriptionLabel": "Beskriv mer (valfritt)",
+    "descriptionPlaceholder": "Lägg till information som hjälper oss att granska...",
+    "submit": "Skicka rapport",
+    "submitting": "Skickar...",
+    "success": "Tack — vi har tagit emot din rapport.",
+    "errorGeneric": "Något gick fel. Försök igen.",
+    "cancel": "Avbryt",
+    "categories": {
+      "inappropriate": "Olämpligt innehåll",
+      "harassment": "Trakasserier eller mobbning",
+      "spam": "Spam",
+      "self_harm": "Självskadebeteende",
+      "illegal": "Olagligt innehåll",
+      "other": "Annat"
+    },
+    "team": {
+      "title": "Teamets rapporter",
+      "empty": "Inga rapporter för ditt team ännu.",
+      "filterAll": "Alla",
+      "filterPending": "Väntande",
+      "filterEscalated": "Eskalerade",
+      "openSupport": "Kontakta Zemi support",
+      "markReviewed": "Markera som granskad",
+      "markResolved": "Lös",
+      "markDismissed": "Avvisa",
+      "reporter": "Rapporterare",
+      "target": "Mål",
+      "category": "Kategori",
+      "status": "Status",
+      "description": "Beskrivning"
+    },
+    "status": {
+      "pending": "Väntande",
+      "reviewed": "Granskad",
+      "escalated": "Eskalerad",
+      "resolved": "Löst",
+      "dismissed": "Avvisad"
+    }
   }
 }

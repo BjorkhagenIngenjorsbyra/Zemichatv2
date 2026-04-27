@@ -84,6 +84,7 @@ import { usePresence } from '../hooks/usePresence';
 import { canShareLocation } from '../services/location';
 import LocationPicker from '../components/chat/LocationPicker';
 import { MAX_GROUP_CALL_PARTICIPANTS } from '../types/call';
+import ReportButton from '../components/ReportButton';
 
 const ChatView: React.FC = () => {
   const { t } = useTranslation();
@@ -131,6 +132,10 @@ const ChatView: React.FC = () => {
 
   // Context menu state
   const [contextMenuTarget, setContextMenuTarget] = useState<MessageWithSender | null>(null);
+
+  // Report flow state — set when the user picks "Report" from the
+  // long-press context menu. Drives the modal in <ReportButton/>.
+  const [reportingMessageId, setReportingMessageId] = useState<string | null>(null);
 
   // Edit mode state
   const [editingMessage, setEditingMessage] = useState<MessageWithSender | null>(null);
@@ -1193,7 +1198,21 @@ const ChatView: React.FC = () => {
         onDeleteForAll={handleDeleteForAll}
         onReaction={handleSelectReaction}
         onOpenFullPicker={handleOpenFullEmojiPicker}
+        onReport={() => {
+          if (contextMenuTarget) {
+            setReportingMessageId(contextMenuTarget.id);
+          }
+          setContextMenuTarget(null);
+        }}
       />
+
+      {reportingMessageId && (
+        <ReportButton
+          target={{ kind: 'message', messageId: reportingMessageId }}
+          forceOpen
+          onClose={() => setReportingMessageId(null)}
+        />
+      )}
 
       <ForwardPicker
         isOpen={showForwardPicker}
