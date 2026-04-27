@@ -194,31 +194,33 @@ workflows:
         script: |
           cd android
           ./gradlew bundleRelease
-      - name: Notify Telegram (Android Play Internal)
-        script: |
-          VERSION_NAME=$(grep "versionName" android/app/build.gradle | head -1 | awk -F'"' '{print $2}')
-          VERSION_CODE=$(grep "versionCode" android/app/build.gradle | head -1 | awk '{print $2}')
-          COMMITS=$(git log -10 --pretty=format:'• %s' --no-merges | head -8)
-          MSG=$(cat <<EOF
-          🟢 *Zemichat Android — ny build i Play Internal Testing*
-
-          Version: \`$VERSION_NAME\` (versionCode $VERSION_CODE)
-
-          *Förändringar:*
-          $COMMITS
-
-          📲 Uppdatera i Play Store: https://play.google.com/store/apps/details?id=com.zemichat.app
-          (vidarebefordra till testare)
-          EOF
-          )
-          curl -s -X POST "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/sendMessage" \
-            -d "chat_id=$TELEGRAM_CHAT_ID" \
-            -d "parse_mode=Markdown" \
-            --data-urlencode "text=$MSG" || true
     artifacts:
       - android/app/build/outputs/**/*.aab
-    # publishing:
-    #   google_play:
-    #     credentials: $GCLOUD_SERVICE_ACCOUNT_CREDENTIALS
-    #     track: internal
-    #     submit_as_draft: true
+    publishing:
+      google_play:
+        credentials: $GCLOUD_SERVICE_ACCOUNT_CREDENTIALS
+        track: internal
+        submit_as_draft: false
+        in_app_update_priority: 0
+      scripts:
+        - name: Notify Telegram (Android Play Internal)
+          script: |
+            VERSION_NAME=$(grep "versionName" android/app/build.gradle | head -1 | awk -F'"' '{print $2}')
+            VERSION_CODE=$(grep "versionCode" android/app/build.gradle | head -1 | awk '{print $2}')
+            COMMITS=$(git log -10 --pretty=format:'• %s' --no-merges | head -8)
+            MSG=$(cat <<EOF
+            🟢 *Zemichat Android — ny build i Play Internal Testing*
+
+            Version: \`$VERSION_NAME\` (versionCode $VERSION_CODE)
+
+            *Förändringar:*
+            $COMMITS
+
+            📲 Uppdatera i Play Store: https://play.google.com/store/apps/details?id=com.zemichat.app
+            (vidarebefordra till testare)
+            EOF
+            )
+            curl -s -X POST "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/sendMessage" \
+              -d "chat_id=$TELEGRAM_CHAT_ID" \
+              -d "parse_mode=Markdown" \
+              --data-urlencode "text=$MSG" || true
