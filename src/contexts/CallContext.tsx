@@ -114,6 +114,18 @@ export function CallProvider({ children }: CallProviderProps) {
     const name = err?.name?.toLowerCase() || '';
     if (step) console.error(`[Call] ${step} failed:`, { message: err?.message, name: err?.name, error: err });
 
+    // getUserMedia DOMException names take priority over message-string
+    // matches. Chromium/WebView's NotAllowedError carries message
+    // "Permission denied", which would otherwise mis-map to the
+    // server-side 'call.permissionDenied' (Texter/plan denial) bucket.
+    if (name === 'notallowederror') return 'call.microphoneError';
+    if (name === 'notfounderror' || name === 'notreadableerror') return 'call.microphoneError';
+    // The mediaPermission step always means OS-level mic/camera, regardless
+    // of what message the browser surfaced.
+    if (step === 'requestMediaPermissions' || step === 'answerCall requestMediaPermissions') {
+      return 'call.microphoneError';
+    }
+
     // Agora service / configuration errors
     if (msg.includes('not configured') || msg.includes('agora')) return 'call.serviceUnavailable';
     // Agora SDK specific error codes
@@ -124,18 +136,17 @@ export function CallProvider({ children }: CallProviderProps) {
     if (msg.includes('failed to fetch') || msg.includes('networkerror') || msg.includes('network error')) return 'call.serviceUnavailable';
     if (msg.includes('timeout') || msg.includes('timed out')) return 'call.serviceUnavailable';
 
-    // Permission / authorization errors
-    if (msg.includes('permission denied') || msg.includes('permission_denied')) return 'call.permissionDenied';
+    // Server-side authorization (Texter call disabled, not a chat member)
     if (msg.includes('not a member')) return 'call.permissionDenied';
+    if (msg.includes('call permission denied')) return 'call.permissionDenied';
 
-    // Microphone / camera permission errors (NotAllowedError from getUserMedia)
-    if (name === 'notallowederror' || msg.includes('notallowederror')) return 'call.microphoneError';
-    if (msg.includes('permission') || msg.includes('microphone') || msg.includes('camera')) return 'call.microphoneError';
-
-    // Device not found errors (NotFoundError from getUserMedia)
-    if (name === 'notfounderror' || msg.includes('notfounderror')) return 'call.microphoneError';
+    // Generic permission/microphone wording from createLocalTracks etc.
+    if (msg.includes('notallowederror') || msg.includes('permission denied') || msg.includes('permission_denied')) {
+      return 'call.microphoneError';
+    }
+    if (msg.includes('microphone') || msg.includes('camera')) return 'call.microphoneError';
+    if (msg.includes('notfounderror') || msg.includes('notreadableerror')) return 'call.microphoneError';
     if (msg.includes('no audio') || msg.includes('device')) return 'call.microphoneError';
-    if (name === 'notreadableerror' || msg.includes('notreadableerror')) return 'call.microphoneError';
 
     // Unknown — surface the raw message so we can diagnose. Prefix with
     // "raw:" so CallView knows to render it literally instead of via i18n.
