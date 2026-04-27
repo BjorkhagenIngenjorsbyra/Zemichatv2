@@ -17,12 +17,10 @@
 -- working until they ship the new enum.
 
 -- ------------------------------------------------------------------
--- 1. Extend the report_status enum.
+-- 1. New enum-värden för report_status ('resolved', 'dismissed') ligger
+--    i 20260427155900_add_report_status_values.sql för att Postgres ska
+--    tillåta dem i denna migrations WITH CHECK-klausuler.
 -- ------------------------------------------------------------------
--- Postgres requires ALTER TYPE ... ADD VALUE outside a transaction
--- block; we use IF NOT EXISTS so the migration is idempotent.
-ALTER TYPE report_status ADD VALUE IF NOT EXISTS 'resolved';
-ALTER TYPE report_status ADD VALUE IF NOT EXISTS 'dismissed';
 
 -- ------------------------------------------------------------------
 -- 2. New report_category enum.
