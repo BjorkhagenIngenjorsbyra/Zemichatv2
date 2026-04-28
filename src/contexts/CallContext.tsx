@@ -126,15 +126,18 @@ export function CallProvider({ children }: CallProviderProps) {
       return 'call.microphoneError';
     }
 
-    // Agora service / configuration errors
-    if (msg.includes('not configured') || msg.includes('agora')) return 'call.serviceUnavailable';
-    // Agora SDK specific error codes
-    if (msg.includes('operation_aborted') || msg.includes('web_security_restrict')) return 'call.serviceUnavailable';
-    if (msg.includes('invalid_operation') || msg.includes('unexpected_response')) return 'call.serviceUnavailable';
-
-    // Network / fetch errors
-    if (msg.includes('failed to fetch') || msg.includes('networkerror') || msg.includes('network error')) return 'call.serviceUnavailable';
-    if (msg.includes('timeout') || msg.includes('timed out')) return 'call.serviceUnavailable';
+    // Agora SDK / service / network failures. We deliberately surface the
+    // raw error code (e.g. "AgoraRTCException CAN_NOT_GET_GATEWAY_SERVER")
+    // instead of the i18n placeholder so on-device diagnostics tell us
+    // exactly what failed without needing logcat. The "raw:" prefix makes
+    // CallView render the string literally.
+    const rawWithStep = `raw:${step ? step + ': ' : ''}${(err?.message || err?.name || 'unknown').slice(0, 200)}`;
+    if (msg.includes('not configured')) return 'call.serviceUnavailable';
+    if (msg.includes('agora')) return rawWithStep;
+    if (msg.includes('operation_aborted') || msg.includes('web_security_restrict')) return rawWithStep;
+    if (msg.includes('invalid_operation') || msg.includes('unexpected_response')) return rawWithStep;
+    if (msg.includes('failed to fetch') || msg.includes('networkerror') || msg.includes('network error')) return rawWithStep;
+    if (msg.includes('timeout') || msg.includes('timed out')) return rawWithStep;
 
     // Server-side authorization (Texter call disabled, not a chat member)
     if (msg.includes('not a member')) return 'call.permissionDenied';
