@@ -1,9 +1,12 @@
 package com.zemichat.app;
 
+import android.util.Log;
 import android.webkit.PermissionRequest;
 
 import com.getcapacitor.Bridge;
 import com.getcapacitor.BridgeWebChromeClient;
+
+import java.util.Arrays;
 
 /**
  * The default Capacitor WebChromeClient does not always propagate getUserMedia
@@ -19,12 +22,16 @@ import com.getcapacitor.BridgeWebChromeClient;
  */
 public class ZemichatWebChromeClient extends BridgeWebChromeClient {
 
+    private static final String TAG = "ZemichatWCC";
+
     public ZemichatWebChromeClient(Bridge bridge) {
         super(bridge);
     }
 
     @Override
     public void onPermissionRequest(final PermissionRequest request) {
-        request.grant(request.getResources());
+        String[] resources = request.getResources();
+        Log.i(TAG, "onPermissionRequest fired, granting: " + Arrays.toString(resources));
+        request.grant(resources);
     }
 }
