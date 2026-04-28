@@ -35,6 +35,7 @@ import {
   newspaperOutline,
 } from 'ionicons/icons';
 import { Capacitor } from '@capacitor/core';
+import { App as CapacitorApp } from '@capacitor/app';
 import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
 import { supabase } from '../services/supabase';
 import { uploadAvatar } from '../services/storage';
@@ -88,6 +89,7 @@ const Settings: React.FC = () => {
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [showDeleteSection, setShowDeleteSection] = useState(false);
   const [activeTab, setActiveTab] = useState<'general' | 'more'>('general');
+  const [appVersion, setAppVersion] = useState<string>('');
 
   // Profile editing
   const [isEditingProfile, setIsEditingProfile] = useState(false);
@@ -178,6 +180,24 @@ const Settings: React.FC = () => {
     loadMemberCount();
     loadReferralStats();
   }, [loadMemberCount, loadReferralStats]);
+
+  useEffect(() => {
+    let cancelled = false;
+    if (Capacitor.isNativePlatform()) {
+      CapacitorApp.getInfo()
+        .then((info) => {
+          if (!cancelled) setAppVersion(`${info.version} (${info.build})`);
+        })
+        .catch(() => {
+          if (!cancelled) setAppVersion('');
+        });
+    } else {
+      setAppVersion('web');
+    }
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     if (profile?.display_name) {
@@ -752,6 +772,10 @@ const Settings: React.FC = () => {
             )}
           </div>
           </>)}
+
+          {appVersion && (
+            <p className="version-footer">Version {appVersion}</p>
+          )}
         </div>
 
         <style>{`
@@ -761,6 +785,16 @@ const Settings: React.FC = () => {
             /* Leave room for the bottom tab bar (~58px) + iPhone safe area
                so the last section doesn't hide behind the tabbar. */
             padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px));
+          }
+
+          .version-footer {
+            text-align: center;
+            font-size: 0.75rem;
+            color: hsl(var(--muted-foreground));
+            margin: 1.5rem 0 0;
+            padding: 0 1rem;
+            opacity: 0.7;
+            letter-spacing: 0.02em;
           }
 
           .settings-segment {
