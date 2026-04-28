@@ -13,6 +13,16 @@ public class MainActivity extends BridgeActivity {
         registerPlugin(ShareTargetPlugin.class);
         registerPlugin(CallNotificationPlugin.class);
         super.onCreate(savedInstanceState);
+
+        // Replace the default Capacitor WebChromeClient with one that
+        // unconditionally grants getUserMedia permission requests. Without
+        // this, voice / video calls fail with NotAllowedError on devices
+        // where the default WebView denies WebRTC capture even after the
+        // user has granted OS-level RECORD_AUDIO / CAMERA permission.
+        getBridge().getWebView().setWebChromeClient(
+            new ZemichatWebChromeClient(getBridge())
+        );
+
         handleCallIntent(getIntent());
     }
 
