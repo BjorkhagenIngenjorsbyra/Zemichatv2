@@ -424,7 +424,13 @@ export function CallProvider({ children }: CallProviderProps) {
       }
 
       // Publish tracks
-      await publishTracks(client, audioTrack, videoTrack);
+      const { error: publishError } = await publishTracks(client, audioTrack, videoTrack);
+      if (publishError) {
+        setCallError(mapCallError(publishError, 'publishTracks'));
+        setActiveCall((prev) => prev ? { ...prev, state: CallState.ENDED } : prev);
+        setTimeout(() => cleanupCall(), 2500);
+        return;
+      }
 
       setIsAgoraReady(true);
 
@@ -561,7 +567,12 @@ export function CallProvider({ children }: CallProviderProps) {
         return;
       }
 
-      await publishTracks(client, audioTrack, videoTrack);
+      const { error: publishError } = await publishTracks(client, audioTrack, videoTrack);
+      if (publishError) {
+        setCallError(mapCallError(publishError, 'answerCall publishTracks'));
+        await cleanupCall();
+        return;
+      }
       await updateCallStatus(incomingCall.callLogId, CallStatus.ANSWERED);
       await deleteCallSignals(incomingCall.callLogId);
 
@@ -859,13 +870,30 @@ export function CallProvider({ children }: CallProviderProps) {
   // ============================================================
 
   const autoEndTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Track if we've ever seen a remote user. Without this, the auto-end
+  // timer fires the first time the call enters CONNECTED if the remote
+  // hasn't published yet, killing the call before media has had time to
+  // start flowing — observed in v1.5.7 where the answerer's UI sets
+  // state=CONNECTED immediately after publishTracks but the publishers
+  // haven't synced yet via Agora's SFU.
+  const hasHadRemoteRef = useRef(false);
 
   useEffect(() => {
-    if (!activeCall || activeCall.state !== CallState.CONNECTED) return;
+    if (remoteUsers.size > 0) hasHadRemoteRef.current = true;
+  }, [remoteUsers.size]);
 
-    if (remoteUsers.size === 0 && activeCall.connectedAt) {
+  useEffect(() => {
+    if (!activeCall) {
+      hasHadRemoteRef.current = false;
+      return;
+    }
+    if (activeCall.state !== CallState.CONNECTED) return;
+
+    if (remoteUsers.size === 0 && activeCall.connectedAt && hasHadRemoteRef.current) {
       // Debounce: wait 3 seconds before ending — avoids premature end
-      // when remote user briefly disconnects (e.g. toggling video)
+      // when remote user briefly disconnects (e.g. toggling video). Only
+      // arms when we've previously had a remote, so it doesn't fire if
+      // the other party just hasn't published yet.
       autoEndTimerRef.current = setTimeout(() => {
         endCall();
       }, 3000);
