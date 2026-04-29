@@ -23,7 +23,6 @@ import { SignalType, CallStatus } from '../types/database';
 import {
   createAgoraClient,
   getAgoraToken,
-  requestMediaPermissions,
   createLocalTracks,
   createScreenShareTrack,
   joinChannel,
@@ -59,7 +58,12 @@ import {
   reportCallEnded,
   registerVoipPushIfNeeded,
 } from '../services/callPush';
-import { startRingtone, stopRingtone } from '../services/ringtone';
+import {
+  startRingtone,
+  stopRingtone,
+  startOutgoingRingback,
+  stopOutgoingRingback,
+} from '../services/ringtone';
 import { setAudioRoute } from '../services/audioRouting';
 import { supabase } from '../services/supabase';
 import { type CallLog } from '../types/database';
@@ -163,6 +167,7 @@ export function CallProvider({ children }: CallProviderProps) {
 
   const cleanupCall = useCallback(async () => {
     stopRingtone();
+    stopOutgoingRingback();
 
     if (durationTimerRef.current) {
       clearInterval(durationTimerRef.current);
@@ -301,6 +306,11 @@ export function CallProvider({ children }: CallProviderProps) {
     };
     setActiveCall(newCall);
 
+    // 5b. Start outgoing ringback tone so the caller hears something
+    // while waiting. The button-tap that got us here counts as a user
+    // gesture, so AudioContext can play immediately.
+    startOutgoingRingback();
+
     // 6. Start 30-second ring timeout
     ringTimeoutRef.current = setTimeout(async () => {
       setActiveCall((prev) => {
@@ -392,17 +402,18 @@ export function CallProvider({ children }: CallProviderProps) {
         }
       });
 
-      // Pre-check media permissions before Agora creates tracks
-      const withVideo = callType === CallType.VIDEO;
-      const permResult = await requestMediaPermissions(withVideo);
-      if (!permResult.granted) {
-        setCallError(mapCallError(permResult.error || new Error('Media permission denied'), 'requestMediaPermissions'));
-        setActiveCall((prev) => prev ? { ...prev, state: CallState.ENDED } : prev);
-        setTimeout(() => cleanupCall(), 2500);
-        return;
-      }
+      // Send RING signal + push immediately so the callee starts ringing
+      // in parallel with our own Agora init. Fire-and-forget — failures
+      // are logged but don't abort the local setup.
+      sendCallSignal(chatId, callLog.id, SignalType.RING).catch((e) =>
+        console.warn('[Call] sendCallSignal failed:', e)
+      );
+      sendCallPush(chatId, callLog.id, callType, 'ring');
 
-      // Create local tracks
+      // Create local tracks (Agora's createMicrophoneAudioTrack triggers
+      // the same getUserMedia permission prompt — no need for a separate
+      // pre-check round-trip).
+      const withVideo = callType === CallType.VIDEO;
       const { audioTrack, videoTrack, error: trackError } = await createLocalTracks(withVideo);
       if (trackError) {
         setCallError(mapCallError(trackError, 'createLocalTracks'));
@@ -433,12 +444,6 @@ export function CallProvider({ children }: CallProviderProps) {
       }
 
       setIsAgoraReady(true);
-
-      // Send ring signal to other participant
-      await sendCallSignal(chatId, callLog.id, SignalType.RING);
-
-      // Push notification for background/killed app
-      sendCallPush(chatId, callLog.id, callType, 'ring');
     } catch (err) {
       const error = err instanceof Error ? err : new Error(String(err));
       setCallError(mapCallError(error, 'initiateCall catch'));
@@ -541,15 +546,10 @@ export function CallProvider({ children }: CallProviderProps) {
         });
       });
 
-      // Pre-check media permissions before Agora creates tracks
+      // Create local tracks. Agora's createMicrophoneAudioTrack does its
+      // own getUserMedia call, so a separate permission pre-check would
+      // just double the prompt latency without any added safety.
       const answerWithVideo = incomingCall.callType === CallType.VIDEO;
-      const answerPermResult = await requestMediaPermissions(answerWithVideo);
-      if (!answerPermResult.granted) {
-        setCallError(mapCallError(answerPermResult.error || new Error('Media permission denied'), 'answerCall requestMediaPermissions'));
-        await cleanupCall();
-        return;
-      }
-
       const { audioTrack, videoTrack, error: trackError } = await createLocalTracks(answerWithVideo);
       if (trackError) {
         setCallError(mapCallError(trackError, 'answerCall createLocalTracks'));
@@ -845,11 +845,12 @@ export function CallProvider({ children }: CallProviderProps) {
     if (!activeCall || activeCall.state !== CallState.RINGING) return;
 
     if (remoteUsers.size > 0) {
-      // Clear ring timeout
+      // Clear ring timeout + stop outgoing ringback — the call is live
       if (ringTimeoutRef.current) {
         clearTimeout(ringTimeoutRef.current);
         ringTimeoutRef.current = null;
       }
+      stopOutgoingRingback();
 
       setActiveCall((prev) => prev ? {
         ...prev,

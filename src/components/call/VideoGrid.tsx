@@ -21,6 +21,13 @@ const VideoGrid: React.FC<VideoGridProps> = ({
   const localParticipant = participants.find((p) => p.id === localUserId);
   const participantCount = participants.length;
 
+  // Agora delivers remote tracks keyed by its own numeric UID, which
+  // doesn't match our Supabase user UUIDs. Instead of fighting the
+  // mapping, we just hand out the available tracks in order — fine for
+  // 1:1 (the only case for v1.5.x), and good enough for small group
+  // calls until a proper agora_uid ↔ user_id mapping is wired up.
+  const remoteTracksList = Array.from(remoteVideoTracks.values());
+
   // Determine grid layout based on participant count
   const getGridClass = (): string => {
     if (screenShareTrack) return 'grid-screen-share';
@@ -54,10 +61,10 @@ const VideoGrid: React.FC<VideoGridProps> = ({
 
       {/* Main video grid */}
       <div className="participants-grid">
-        {remoteParticipants.map((participant) => (
+        {remoteParticipants.map((participant, idx) => (
           <VideoTile
             key={participant.id}
-            videoTrack={remoteVideoTracks.get(participant.id)}
+            videoTrack={remoteTracksList[idx]}
             displayName={participant.displayName}
             avatarUrl={participant.avatarUrl}
             isMuted={!participant.hasAudio}

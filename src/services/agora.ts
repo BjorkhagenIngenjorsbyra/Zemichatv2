@@ -105,7 +105,10 @@ export async function createLocalTracks(
 }> {
   try {
     const audioTrack = await AgoraRTC.createMicrophoneAudioTrack({
-      encoderConfig: 'speech_standard',
+      encoderConfig: 'high_quality',
+      AEC: true,
+      ANS: true,
+      AGC: true,
     });
 
     let videoTrack: ICameraVideoTrack | null = null;
