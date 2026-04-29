@@ -6,6 +6,9 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.media.AudioAttributes;
+import android.media.RingtoneManager;
+import android.net.Uri;
 import android.os.Build;
 
 import androidx.core.app.NotificationCompat;
@@ -24,7 +27,11 @@ import java.util.Map;
  */
 public class ZemichatMessagingService extends FirebaseMessagingService {
 
-    private static final String CHANNEL_ID_CALLS = "incoming_calls";
+    // Bumped to v2 in 1.5.10 so Android picks up the sound + vibration
+    // changes — channel settings are immutable after first creation, so
+    // a new id is the only way to ship updated audio attributes without
+    // an uninstall.
+    private static final String CHANNEL_ID_CALLS = "incoming_calls_v2";
     private static final int CALL_NOTIFICATION_ID = 9001;
 
     @Override
@@ -150,8 +157,24 @@ public class ZemichatMessagingService extends FirebaseMessagingService {
                     NotificationManager.IMPORTANCE_HIGH
             );
             channel.setDescription("Notifications for incoming voice and video calls");
-            channel.setSound(null, null); // IncomingCallActivity handles sound
-            channel.enableVibration(false); // IncomingCallActivity handles vibration
+
+            // Earlier versions silenced the channel and relied on
+            // IncomingCallActivity to play the ringtone. That works on a
+            // locked screen (where setFullScreenIntent actually launches
+            // the activity), but on an unlocked screen Android shows a
+            // heads-up banner instead — and a silenced channel means no
+            // sound. Set the system ringtone with USAGE_NOTIFICATION_RINGTONE
+            // so the heads-up plays a real ring sound. IncomingCallActivity
+            // cancels this notification when it appears, so we never
+            // double-ring.
+            Uri ringtoneUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE);
+            AudioAttributes audioAttrs = new AudioAttributes.Builder()
+                    .setUsage(AudioAttributes.USAGE_NOTIFICATION_RINGTONE)
+                    .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                    .build();
+            channel.setSound(ringtoneUri, audioAttrs);
+            channel.enableVibration(true);
+            channel.setVibrationPattern(new long[]{0, 1000, 500, 1000, 500});
             channel.setBypassDnd(true);
             channel.setLockscreenVisibility(NotificationCompat.VISIBILITY_PUBLIC);
 

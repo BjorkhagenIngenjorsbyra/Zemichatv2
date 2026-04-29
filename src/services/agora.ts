@@ -103,37 +103,62 @@ export async function createLocalTracks(
   videoTrack: ICameraVideoTrack | null;
   error: Error | null;
 }> {
-  try {
-    const audioTrack = await AgoraRTC.createMicrophoneAudioTrack({
-      encoderConfig: 'high_quality',
-      AEC: true,
-      ANS: true,
-      AGC: true,
-    });
-
-    let videoTrack: ICameraVideoTrack | null = null;
-    if (withVideo) {
-      videoTrack = await AgoraRTC.createCameraVideoTrack({
-        encoderConfig: {
-          // 720p max resolution
-          width: { max: 1280 },
-          height: { max: 720 },
-          frameRate: 30,
-          bitrateMin: 600,
-          bitrateMax: 1500,
-        },
-        facingMode: 'user',
+  // One retry with a short backoff. Observed 2026-04-29: a back-to-back
+  // voice→video call sequence sometimes hits createCameraVideoTrack
+  // while the camera is still released-pending from the previous
+  // session. The retry path is also useful for transient mic-busy
+  // failures when push-notification audio overlapped the call.
+  const attempt = async (): Promise<{
+    audioTrack: IMicrophoneAudioTrack | null;
+    videoTrack: ICameraVideoTrack | null;
+    error: Error | null;
+  }> => {
+    try {
+      const audioTrack = await AgoraRTC.createMicrophoneAudioTrack({
+        encoderConfig: 'high_quality',
+        AEC: true,
+        ANS: true,
+        AGC: true,
       });
-    }
 
-    return { audioTrack, videoTrack, error: null };
-  } catch (err) {
-    return {
-      audioTrack: null,
-      videoTrack: null,
-      error: err instanceof Error ? err : new Error('Failed to create local tracks'),
-    };
-  }
+      let videoTrack: ICameraVideoTrack | null = null;
+      if (withVideo) {
+        try {
+          videoTrack = await AgoraRTC.createCameraVideoTrack({
+            encoderConfig: {
+              width: { max: 1280 },
+              height: { max: 720 },
+              frameRate: 30,
+              bitrateMin: 600,
+              bitrateMax: 1500,
+            },
+            facingMode: 'user',
+          });
+        } catch (videoErr) {
+          // Free the audio track we already grabbed so the retry can
+          // start clean, then rethrow.
+          audioTrack.stop();
+          audioTrack.close();
+          throw videoErr;
+        }
+      }
+
+      return { audioTrack, videoTrack, error: null };
+    } catch (err) {
+      return {
+        audioTrack: null,
+        videoTrack: null,
+        error: err instanceof Error ? err : new Error('Failed to create local tracks'),
+      };
+    }
+  };
+
+  const first = await attempt();
+  if (!first.error) return first;
+
+  console.warn('[agora] createLocalTracks failed, retrying after 600ms:', first.error.message);
+  await new Promise<void>((resolve) => setTimeout(resolve, 600));
+  return attempt();
 }
 
 /**

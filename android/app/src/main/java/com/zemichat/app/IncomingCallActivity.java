@@ -85,6 +85,11 @@ public class IncomingCallActivity extends AppCompatActivity {
         // Build UI
         setContentView(buildUI());
 
+        // Cancel the heads-up notification so its system ringtone stops
+        // before our own starts — otherwise we'd double-ring on devices
+        // where the full-screen intent fired alongside the banner.
+        dismissNotification();
+
         // Start ringing and vibrating
         startRinging();
 

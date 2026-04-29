@@ -197,6 +197,14 @@ export function CallProvider({ children }: CallProviderProps) {
     setCallDuration(0);
     setActiveCall(null);
     setIsAgoraReady(false);
+
+    // Give the WebView/Android media stack a moment to release the
+    // mic+camera handles. Without this, a back-to-back voice → video
+    // call (or vice versa) hits createCameraVideoTrack while the OS
+    // still considers the camera busy from the previous session,
+    // observed by Matilda 2026-04-29. 500ms is well below human
+    // perception of latency between hanging up and dialling again.
+    await new Promise<void>((resolve) => setTimeout(resolve, 500));
   }, []);
 
   // ============================================================
