@@ -2,6 +2,10 @@ import React from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App';
 import i18n, { detectDeviceLanguage, initI18n } from './i18n';
+import { initSentry } from './services/sentry';
+
+// Init Sentry first so any error during the rest of bootstrap is reported.
+initSentry();
 
 function renderFallback(message: string) {
   const container = document.getElementById('root');

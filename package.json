@@ -33,6 +33,8 @@
     "@ionic/react": "^8.5.0",
     "@ionic/react-router": "^8.5.0",
     "@revenuecat/purchases-capacitor": "^12.1.1",
+    "@sentry/capacitor": "^3.2.1",
+    "@sentry/react": "^10.43.0",
     "@supabase/supabase-js": "^2.94.1",
     "@types/leaflet": "^1.9.21",
     "@types/react-router": "^5.1.20",
