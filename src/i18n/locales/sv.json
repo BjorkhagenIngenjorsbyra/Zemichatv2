@@ -254,7 +254,8 @@
     "deactivateMessage": "Vill du inaktivera {{name}}? De kommer inte kunna logga in.",
     "reactivateTitle": "Återaktivera Texter?",
     "reactivateMessage": "Vill du återaktivera {{name}}? De kommer kunna logga in igen.",
-    "canAccessWall": "Kan se väggen"
+    "canAccessWall": "Kan se väggen",
+    "pushEnabled": "Push-notiser på"
   },
   "oversight": {
     "title": "Texter-insyn",
@@ -412,6 +413,7 @@
   },
   "settings": {
     "title": "Inställningar",
+    "pushDisabledByTeam": "Push-notiser är avstängda av ditt team. Meddelanden visas i appen men du får inga aviseringar på låsskärmen.",
     "profile": "Profil",
     "exportData": "Ladda ner min data",
     "exportDataDescription": "Exportera all din data som JSON-fil",
@@ -459,6 +461,8 @@
     "missedVideoCall": "Missat videosamtal",
     "declinedVoiceCall": "Avvisat röstsamtal",
     "declinedVideoCall": "Avvisat videosamtal",
+    "failedVoiceCall": "Samtal kunde inte kopplas",
+    "failedVideoCall": "Videosamtal kunde inte kopplas",
     "voiceCallEnded": "Röstsamtal ({{duration}})",
     "videoCallEnded": "Videosamtal ({{duration}})",
     "initiating": "Initierar...",

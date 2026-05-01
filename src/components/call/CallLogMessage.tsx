@@ -1,6 +1,12 @@
 import { useTranslation } from 'react-i18next';
 import { IonButton, IonIcon } from '@ionic/react';
-import { call, videocam, callOutline, videocamOutline } from 'ionicons/icons';
+import {
+  call,
+  videocam,
+  callOutline,
+  videocamOutline,
+  warningOutline,
+} from 'ionicons/icons';
 import { type Message } from '../../types/database';
 
 interface CallLogMessageProps {
@@ -26,7 +32,11 @@ const CallLogMessage: React.FC<CallLogMessageProps> = ({
 
   const content = message.content || '';
   const isVideo = content.includes('video') || metadata?.call_type === 'video';
-  const isMissed = content.includes('missed') || metadata?.call_status === 'missed';
+  const isFailed = content.includes('failed') || metadata?.call_status === 'failed';
+  // Viktigt: kontrollera 'failed' före 'missed' eftersom innehållet vid
+  // failed-status inte innehåller "missed", men metadata-fältet är
+  // ömsesidigt uteslutande så ordningen spelar ingen roll i praktiken.
+  const isMissed = !isFailed && (content.includes('missed') || metadata?.call_status === 'missed');
   const isDeclined = content.includes('declined') || metadata?.call_status === 'declined';
   const isEnded = content.includes('ended') || metadata?.call_status === 'answered';
 
@@ -35,6 +45,9 @@ const CallLogMessage: React.FC<CallLogMessageProps> = ({
   const duration = durationMatch ? durationMatch[1] : null;
 
   const getIcon = () => {
+    if (isFailed) {
+      return warningOutline;
+    }
     if (isMissed || isDeclined) {
       return isVideo ? videocamOutline : callOutline;
     }
@@ -42,6 +55,9 @@ const CallLogMessage: React.FC<CallLogMessageProps> = ({
   };
 
   const getLabel = () => {
+    if (isFailed) {
+      return isVideo ? t('call.failedVideoCall') : t('call.failedVoiceCall');
+    }
     if (isMissed) {
       return isVideo ? t('call.missedVideoCall') : t('call.missedVoiceCall');
     }
@@ -57,6 +73,7 @@ const CallLogMessage: React.FC<CallLogMessageProps> = ({
   };
 
   const getStatusClass = () => {
+    if (isFailed) return 'failed';
     if (isMissed) return 'missed';
     if (isDeclined) return 'declined';
     return 'completed';
@@ -79,7 +96,7 @@ const CallLogMessage: React.FC<CallLogMessageProps> = ({
         {duration && <span className="call-duration">{duration}</span>}
       </div>
 
-      {(isMissed || isDeclined) && onCallBack && (
+      {(isMissed || isDeclined || isFailed) && onCallBack && (
         <IonButton
           className="callback-button"
           fill="clear"
@@ -119,6 +136,17 @@ const CallLogMessage: React.FC<CallLogMessageProps> = ({
         .call-log-message.missed .call-icon,
         .call-log-message.declined .call-icon {
           color: hsl(var(--destructive));
+        }
+
+        /* 'failed' = samtalet kom aldrig fram (token-fail, network etc.).
+           Använd warning-färg (orange) snarare än destructive (röd) — det är
+           inte mottagaren som missade, utan ett tekniskt fel. */
+        .call-log-message.failed .call-icon-container {
+          background: hsl(38 92% 50% / 0.12);
+        }
+
+        .call-log-message.failed .call-icon {
+          color: hsl(38 92% 50%);
         }
 
         .call-log-message.completed .call-icon-container {

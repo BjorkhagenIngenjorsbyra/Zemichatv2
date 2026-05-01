@@ -302,7 +302,7 @@ serve(async (req) => {
       .select('id, sender_id')
       .eq('id', message_id)
       .gte('created_at', fiveMinutesAgo)
-      .single();
+      .maybeSingle();
 
     if (msgError || !message) {
       return new Response(JSON.stringify({ error: 'Invalid or expired message' }), {
@@ -317,12 +317,12 @@ serve(async (req) => {
         .from('users')
         .select('display_name')
         .eq('id', sender_id)
-        .single(),
+        .maybeSingle(),
       supabase
         .from('chats')
         .select('name, is_group')
         .eq('id', chat_id)
-        .single(),
+        .maybeSingle(),
     ]);
 
     const senderName = sender?.display_name || 'Någon';
@@ -376,15 +376,22 @@ serve(async (req) => {
       .map((u) => u.id);
 
     let quietHoursBlockedIds: Set<string> = new Set();
+    let pushDisabledIds: Set<string> = new Set();
 
     if (texterIds.length > 0) {
       const { data: texterSettings } = await supabase
         .from('texter_settings')
-        .select('user_id, quiet_hours_start, quiet_hours_end, quiet_hours_days')
+        .select(
+          'user_id, quiet_hours_start, quiet_hours_end, quiet_hours_days, push_enabled'
+        )
         .in('user_id', texterIds);
 
       if (texterSettings) {
         for (const settings of texterSettings) {
+          if (settings.push_enabled === false) {
+            pushDisabledIds.add(settings.user_id);
+            continue;
+          }
           if (isInQuietHours(settings)) {
             quietHoursBlockedIds.add(settings.user_id);
           }
@@ -395,7 +402,9 @@ serve(async (req) => {
     // Final eligible user IDs
     const eligibleUserIds = activeUsers
       .map((u) => u.id)
-      .filter((id) => !quietHoursBlockedIds.has(id));
+      .filter(
+        (id) => !quietHoursBlockedIds.has(id) && !pushDisabledIds.has(id)
+      );
 
     if (eligibleUserIds.length === 0) {
       return new Response(JSON.stringify({ sent: 0 }), {

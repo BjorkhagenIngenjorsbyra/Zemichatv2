@@ -299,7 +299,7 @@ serve(async (req) => {
     // Filter to active users only
     const { data: activeUsers } = await supabase
       .from('users')
-      .select('id')
+      .select('id, role')
       .in('id', recipientIds)
       .eq('is_active', true);
 
@@ -310,7 +310,34 @@ serve(async (req) => {
       });
     }
 
-    const activeIds = activeUsers.map((u) => u.id);
+    // Honour Owner/Super push_enabled toggle on Texters
+    const texterIds = activeUsers
+      .filter((u) => u.role === 'texter')
+      .map((u) => u.id);
+
+    let pushDisabledIds: Set<string> = new Set();
+    if (texterIds.length > 0) {
+      const { data: ts } = await supabase
+        .from('texter_settings')
+        .select('user_id, push_enabled')
+        .in('user_id', texterIds);
+      if (ts) {
+        for (const row of ts) {
+          if (row.push_enabled === false) pushDisabledIds.add(row.user_id);
+        }
+      }
+    }
+
+    const activeIds = activeUsers
+      .map((u) => u.id)
+      .filter((id) => !pushDisabledIds.has(id));
+
+    if (activeIds.length === 0) {
+      return new Response(JSON.stringify({ sent: 0 }), {
+        status: 200,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
 
     // Get push tokens for recipients (include token_type for routing)
     const { data: tokens } = await supabase
@@ -334,7 +361,7 @@ serve(async (req) => {
         .from('users')
         .select('display_name, avatar_url')
         .eq('id', user.id)
-        .single();
+        .maybeSingle();
 
       callData = {
         type: 'incoming_call',

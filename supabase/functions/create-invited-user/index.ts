@@ -56,7 +56,7 @@ serve(async (req) => {
       .from('team_invitations')
       .select('*')
       .eq('token', token)
-      .single();
+      .maybeSingle();
 
     if (invError || !invitation) {
       return new Response(

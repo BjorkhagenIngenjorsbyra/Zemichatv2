@@ -33,6 +33,7 @@ import {
   copyOutline,
   peopleOutline,
   newspaperOutline,
+  notificationsOffOutline,
 } from 'ionicons/icons';
 import { Capacitor } from '@capacitor/core';
 import { App as CapacitorApp } from '@capacitor/app';
@@ -81,6 +82,7 @@ const Settings: React.FC = () => {
   const isTexter = profile?.role === UserRole.TEXTER;
 
   const [memberCount, setMemberCount] = useState(0);
+  const [pushDisabledByTeam, setPushDisabledByTeam] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
   const [exportSuccess, setExportSuccess] = useState(false);
   const [exportError, setExportError] = useState<string | null>(null);
@@ -210,6 +212,24 @@ const Settings: React.FC = () => {
       setWallEnabled(profile.wall_enabled);
     }
   }, [profile?.wall_enabled]);
+
+  useEffect(() => {
+    if (!isTexter || !profile?.id) return;
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase
+        .from('texter_settings')
+        .select('push_enabled')
+        .eq('user_id', profile.id)
+        .maybeSingle<{ push_enabled: boolean }>();
+      if (!cancelled) {
+        setPushDisabledByTeam(data?.push_enabled === false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [isTexter, profile?.id]);
 
   const handleWallToggle = async (checked: boolean) => {
     if (!profile) return;
@@ -465,6 +485,16 @@ const Settings: React.FC = () => {
           {isTexter && (
             <div className="section">
               <SOSButton />
+            </div>
+          )}
+
+          {/* Push disabled by Owner/Super — info banner */}
+          {isTexter && pushDisabledByTeam && (
+            <div className="section">
+              <div className="push-disabled-banner" data-testid="push-disabled-banner">
+                <IonIcon icon={notificationsOffOutline} />
+                <span>{t('settings.pushDisabledByTeam')}</span>
+              </div>
             </div>
           )}
 
@@ -810,6 +840,22 @@ const Settings: React.FC = () => {
 
           .section {
             margin-bottom: 2rem;
+          }
+
+          .push-disabled-banner {
+            display: flex;
+            align-items: center;
+            gap: 0.625rem;
+            padding: 0.75rem 1rem;
+            border-radius: 0.75rem;
+            background: hsl(var(--muted) / 0.4);
+            color: hsl(var(--muted-foreground));
+            font-size: 0.875rem;
+          }
+
+          .push-disabled-banner ion-icon {
+            font-size: 1.25rem;
+            flex-shrink: 0;
           }
 
           .section-title {

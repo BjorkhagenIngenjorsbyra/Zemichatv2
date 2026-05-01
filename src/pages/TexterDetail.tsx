@@ -33,6 +33,7 @@ import {
   banOutline,
   checkmarkCircleOutline,
   newspaperOutline,
+  notificationsOutline,
 } from 'ionicons/icons';
 import { supabase } from '../services/supabase';
 import {
@@ -63,7 +64,7 @@ const TexterDetail: React.FC = () => {
       .from('users')
       .select('*')
       .eq('id', userId)
-      .single();
+      .maybeSingle();
 
     if (userError || !userData) {
       history.replace('/chats');
@@ -227,6 +228,12 @@ const TexterDetail: React.FC = () => {
           label: t('texterDetail.canAccessWall'),
           icon: newspaperOutline,
           value: settings.can_access_wall,
+        },
+        {
+          field: 'push_enabled' as const,
+          label: t('texterDetail.pushEnabled'),
+          icon: notificationsOutline,
+          value: settings.push_enabled,
         },
       ]
     : [];

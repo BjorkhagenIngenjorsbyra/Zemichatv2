@@ -40,7 +40,7 @@ import {
 } from '../services/agora';
 import {
   createCallLog,
-  deleteCallLog,
+  markCallFailed,
   updateCallStatus,
   endCallLog,
   sendCallSignal,
@@ -337,9 +337,15 @@ export function CallProvider({ children }: CallProviderProps) {
       // Get Agora token
       const { token, error: tokenError } = await getAgoraToken(chatId, callType);
       if (tokenError || !token) {
-        // Initieringen failade innan samtalet kunde nå mottagaren — ta bort
-        // den preliminära call_log:en så det inte loggas som "missat samtal".
-        await deleteCallLog(callLog.id);
+        // Initieringen failade innan samtalet kunde nå mottagaren — markera
+        // call_log:en som 'failed' (separat status från 'missed') och skapa
+        // en system-message i chatten så Owner och deltagare ser att försöket
+        // gjordes men aldrig kopplades.
+        await markCallFailed(callLog.id);
+        await createCallMessage(chatId, {
+          ...callLog,
+          status: CallStatus.FAILED,
+        } as CallLog);
         setCallError(mapCallError(tokenError, 'getAgoraToken'));
         setActiveCall((prev) => prev ? { ...prev, state: CallState.ENDED } : prev);
         setTimeout(() => cleanupCall(), 2500);
@@ -509,6 +515,19 @@ export function CallProvider({ children }: CallProviderProps) {
         incomingCall.callType
       );
       if (tokenError || !token) {
+        // Callee accepterade men token-fetch fail — samtalet bryts innan det
+        // kopplas. Det är inte 'missed' (callee svarade ju) utan 'failed'.
+        // Markera call_log + skapa system-message så båda sidor ser orsaken.
+        await markCallFailed(incomingCall.callLogId);
+        await deleteCallSignals(incomingCall.callLogId);
+        const { data: failedLog } = await supabase
+          .from('call_logs')
+          .select('*')
+          .eq('id', incomingCall.callLogId)
+          .maybeSingle();
+        if (failedLog) {
+          await createCallMessage(incomingCall.chatId, failedLog as unknown as CallLog);
+        }
         setCallError(mapCallError(tokenError, 'answerCall getAgoraToken'));
         await cleanupCall();
         return;
@@ -640,7 +659,7 @@ export function CallProvider({ children }: CallProviderProps) {
       .from('call_logs')
       .select('*')
       .eq('id', activeCall.callLogId)
-      .single();
+      .maybeSingle();
 
     if (data) {
       await createCallMessage(activeCall.chatId, data as unknown as CallLog);
@@ -768,7 +787,7 @@ export function CallProvider({ children }: CallProviderProps) {
         .from('call_logs')
         .select('type')
         .eq('id', signal.call_log_id)
-        .single() as { data: { type: string } | null };
+        .maybeSingle() as { data: { type: string } | null };
       if (log?.type === 'video') {
         detectedCallType = CallType.VIDEO;
       }

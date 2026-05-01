@@ -66,16 +66,20 @@ export async function createCallLog(
 }
 
 /**
- * Delete a call log. Används när initieringen failade och vi inte vill
- * att ett vilseledande "missat samtal" ska finnas kvar hos mottagaren.
+ * Mark a call log as 'failed' — used när samtalet aldrig kom fram till
+ * mottagaren (token-fail, network-fail, agora-init-fail). Skiljer sig från
+ * 'missed' (där callee faktiskt nåddes men inte svarade i tid).
  */
-export async function deleteCallLog(
+export async function markCallFailed(
   callLogId: string
 ): Promise<{ error: Error | null }> {
   try {
     const { error } = await supabase
       .from('call_logs')
-      .delete()
+      .update({
+        status: CallStatus.FAILED,
+        ended_at: new Date().toISOString(),
+      } as never)
       .eq('id', callLogId);
 
     if (error) {
@@ -278,7 +282,7 @@ export function subscribeToCallSignals(
           .from('users')
           .select('*')
           .eq('id', signal.caller_id)
-          .single();
+          .maybeSingle();
 
         if (caller) {
           onSignal(signal, caller as User);
@@ -326,6 +330,9 @@ export async function createCallMessage(
       case CallStatus.DECLINED:
         content = `${callTypeLabel}_call_declined`;
         break;
+      case CallStatus.FAILED:
+        content = `${callTypeLabel}_call_failed`;
+        break;
       default:
         content = `${callTypeLabel}_call`;
     }
@@ -368,7 +375,7 @@ export async function canMakeCall(
       .from('users')
       .select('role')
       .eq('id', userId)
-      .single();
+      .maybeSingle();
 
     if (userError || !userData) {
       return { canCall: false, error: new Error('User not found') };
@@ -421,7 +428,7 @@ export async function canScreenShare(
       .from('users')
       .select('role')
       .eq('id', userId)
-      .single();
+      .maybeSingle();
 
     if (userError || !userData) {
       return { canShare: false, error: new Error('User not found') };

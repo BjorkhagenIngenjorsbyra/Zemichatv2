@@ -117,7 +117,7 @@ serve(async (req) => {
       .from('team_invitations')
       .select('*, teams(name), users!team_invitations_invited_by_fkey(display_name)')
       .eq('id', invitationId)
-      .single();
+      .maybeSingle();
 
     if (invError || !invitation) {
       return new Response(JSON.stringify({ error: 'Invitation not found' }), {

@@ -59,7 +59,7 @@ export async function getTeamMembers(): Promise<{ members: User[]; error: Error 
     .from('users')
     .select('team_id')
     .eq('id', authUser.id)
-    .single();
+    .maybeSingle();
 
   if (!profile) {
     return { members: [], error: new Error('Profile not found') };

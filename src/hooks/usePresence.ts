@@ -27,7 +27,7 @@ export function usePresence(userId: string | null | undefined): PresenceInfo {
         .from('users')
         .select('last_seen_at')
         .eq('id', userId)
-        .single();
+        .maybeSingle();
 
       if (data) {
         setLastSeenAt((data as { last_seen_at: string | null }).last_seen_at);

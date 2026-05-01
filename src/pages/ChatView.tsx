@@ -104,6 +104,7 @@ const ChatView: React.FC = () => {
 
   // Reply state
   const [replyTo, setReplyTo] = useState<MessageWithSender | null>(null);
+  const [highlightedMessageId, setHighlightedMessageId] = useState<string | null>(null);
 
   // Reactions state
   const [reactions, setReactions] = useState<Map<string, GroupedReaction[]>>(new Map());
@@ -513,6 +514,18 @@ const ChatView: React.FC = () => {
     inputRef.current?.focus();
   };
 
+  const handleJumpToMessage = useCallback((messageId: string) => {
+    const el = document.querySelector(
+      `[data-message-id="${messageId}"]`
+    ) as HTMLElement | null;
+    if (!el) return;
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    setHighlightedMessageId(messageId);
+    setTimeout(() => {
+      setHighlightedMessageId((prev) => (prev === messageId ? null : prev));
+    }, 1700);
+  }, []);
+
   const handleContextMenu = (message: MessageWithSender, _rect: DOMRect) => {
     setContextMenuTarget(message);
   };
@@ -839,9 +852,11 @@ const ChatView: React.FC = () => {
                       galleryUrls={galleryUrls}
                       onReply={() => handleReply(message)}
                       onContextMenu={(msg, rect) => handleContextMenu(msg, rect)}
+                      onJumpToMessage={handleJumpToMessage}
                       userId={profile?.id}
                       userRole={profile?.role}
                       onToggleReaction={handleToggleReaction}
+                      isHighlighted={highlightedMessageId === message.id}
                     />
                   </div>
                 </div>
