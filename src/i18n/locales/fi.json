@@ -254,7 +254,8 @@
     "deactivateMessage": "Haluatko poistaa käyttäjän {{name}} käytöstä? He eivät voi kirjautua sisään.",
     "reactivateTitle": "Ota Texter uudelleen käyttöön?",
     "reactivateMessage": "Haluatko ottaa käyttäjän {{name}} uudelleen käyttöön? He voivat kirjautua uudelleen.",
-    "canAccessWall": "Pääsy seinälle"
+    "canAccessWall": "Pääsy seinälle",
+    "pushEnabled": "Push-ilmoitukset päällä"
   },
   "oversight": {
     "title": "Texter-valvonta",
@@ -412,6 +413,7 @@
   },
   "settings": {
     "title": "Asetukset",
+    "pushDisabledByTeam": "Tiimisi on poistanut push-ilmoitukset käytöstä. Viestit saapuvat sovellukseen, mutta lukitusnäytölle ei tule ilmoituksia.",
     "profile": "Profiili",
     "exportData": "Lataa tietoni",
     "exportDataDescription": "Vie kaikki tietosi JSON-tiedostona",

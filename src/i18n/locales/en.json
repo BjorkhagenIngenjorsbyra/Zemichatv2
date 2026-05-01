@@ -254,7 +254,8 @@
     "deactivateMessage": "Do you want to deactivate {{name}}? They won't be able to log in.",
     "reactivateTitle": "Reactivate Texter?",
     "reactivateMessage": "Do you want to reactivate {{name}}? They will be able to log in again.",
-    "canAccessWall": "Can access the wall"
+    "canAccessWall": "Can access the wall",
+    "pushEnabled": "Push notifications on"
   },
   "oversight": {
     "title": "Texter oversight",
@@ -412,6 +413,7 @@
   },
   "settings": {
     "title": "Settings",
+    "pushDisabledByTeam": "Push notifications are disabled by your team. Messages still arrive in the app but no lock-screen alerts.",
     "profile": "Profile",
     "exportData": "Download my data",
     "exportDataDescription": "Export all your data as a JSON file",

@@ -254,7 +254,8 @@
     "deactivateMessage": "Vil du deaktivere {{name}}? De vil ikke kunne logge inn.",
     "reactivateTitle": "Reaktiver Texter?",
     "reactivateMessage": "Vil du reaktivere {{name}}? De vil kunne logge inn igjen.",
-    "canAccessWall": "Kan se veggen"
+    "canAccessWall": "Kan se veggen",
+    "pushEnabled": "Push-varsler på"
   },
   "oversight": {
     "title": "Texter-innsyn",
@@ -412,6 +413,7 @@
   },
   "settings": {
     "title": "Innstillinger",
+    "pushDisabledByTeam": "Push-varsler er slått av av teamet ditt. Meldinger vises i appen, men ingen varsler på låseskjermen.",
     "profile": "Profil",
     "exportData": "Last ned mine data",
     "exportDataDescription": "Eksporter alle dine data som JSON-fil",

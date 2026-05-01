@@ -254,7 +254,8 @@
     "deactivateMessage": "Vil du deaktivere {{name}}? De vil ikke kunne logge ind.",
     "reactivateTitle": "Reaktiver Texter?",
     "reactivateMessage": "Vil du reaktivere {{name}}? De vil kunne logge ind igen.",
-    "canAccessWall": "Kan se væggen"
+    "canAccessWall": "Kan se væggen",
+    "pushEnabled": "Push-notifikationer til"
   },
   "oversight": {
     "title": "Texter-indsigt",
@@ -412,6 +413,7 @@
   },
   "settings": {
     "title": "Indstillinger",
+    "pushDisabledByTeam": "Push-notifikationer er slået fra af dit team. Beskeder vises i appen, men ingen notifikationer på låseskærmen.",
     "profile": "Profil",
     "exportData": "Download mine data",
     "exportDataDescription": "Eksporter alle dine data som JSON-fil",

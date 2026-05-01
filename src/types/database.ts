@@ -132,6 +132,7 @@ export interface TexterSettings {
   can_video_call: boolean;
   can_screen_share: boolean;
   can_access_wall: boolean;
+  push_enabled: boolean;
   quiet_hours_start: string | null;
   quiet_hours_end: string | null;
   quiet_hours_days: number[] | null;
