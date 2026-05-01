@@ -105,7 +105,8 @@
 }
 
 * {
-  font-family: 'Nunito', 'Outfit', system-ui, -apple-system, sans-serif;
+  font-family: 'Nunito', 'Outfit', system-ui, -apple-system, sans-serif,
+    'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji';
 }
 
 /* Typography hierarchy */
