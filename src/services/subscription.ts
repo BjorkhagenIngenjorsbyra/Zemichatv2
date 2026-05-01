@@ -311,7 +311,7 @@ async function getSubscriptionStatusFromDatabase(): Promise<{
       .from('users')
       .select('team_id')
       .eq('id', user.id)
-      .single();
+      .maybeSingle();
 
     if (userError || !userData) {
       return { status: null, error: new Error('User not found') };
@@ -322,7 +322,7 @@ async function getSubscriptionStatusFromDatabase(): Promise<{
       .from('teams')
       .select('plan, trial_ends_at')
       .eq('id', (userData as { team_id: string }).team_id)
-      .single();
+      .maybeSingle();
 
     if (teamError || !teamData) {
       return { status: null, error: new Error('Team not found') };
@@ -374,7 +374,7 @@ export async function getSubscriptionStatusForUser(userId: string): Promise<{
       .from('users')
       .select('team_id')
       .eq('id', userId)
-      .single();
+      .maybeSingle();
 
     if (userError || !userData) {
       return { status: null, error: new Error('User not found') };
@@ -385,7 +385,7 @@ export async function getSubscriptionStatusForUser(userId: string): Promise<{
       .from('teams')
       .select('plan, trial_ends_at')
       .eq('id', (userData as { team_id: string }).team_id)
-      .single();
+      .maybeSingle();
 
     if (teamError || !teamData) {
       return { status: null, error: new Error('Team not found') };

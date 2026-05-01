@@ -640,7 +640,7 @@ export function CallProvider({ children }: CallProviderProps) {
       .from('call_logs')
       .select('*')
       .eq('id', activeCall.callLogId)
-      .single();
+      .maybeSingle();
 
     if (data) {
       await createCallMessage(activeCall.chatId, data as unknown as CallLog);
@@ -768,7 +768,7 @@ export function CallProvider({ children }: CallProviderProps) {
         .from('call_logs')
         .select('type')
         .eq('id', signal.call_log_id)
-        .single() as { data: { type: string } | null };
+        .maybeSingle() as { data: { type: string } | null };
       if (log?.type === 'video') {
         detectedCallType = CallType.VIDEO;
       }

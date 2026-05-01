@@ -302,7 +302,7 @@ serve(async (req) => {
       .select('id, sender_id')
       .eq('id', message_id)
       .gte('created_at', fiveMinutesAgo)
-      .single();
+      .maybeSingle();
 
     if (msgError || !message) {
       return new Response(JSON.stringify({ error: 'Invalid or expired message' }), {
@@ -317,12 +317,12 @@ serve(async (req) => {
         .from('users')
         .select('display_name')
         .eq('id', sender_id)
-        .single(),
+        .maybeSingle(),
       supabase
         .from('chats')
         .select('name, is_group')
         .eq('id', chat_id)
-        .single(),
+        .maybeSingle(),
     ]);
 
     const senderName = sender?.display_name || 'Någon';

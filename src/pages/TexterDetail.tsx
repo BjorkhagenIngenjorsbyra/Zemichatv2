@@ -63,7 +63,7 @@ const TexterDetail: React.FC = () => {
       .from('users')
       .select('*')
       .eq('id', userId)
-      .single();
+      .maybeSingle();
 
     if (userError || !userData) {
       history.replace('/chats');

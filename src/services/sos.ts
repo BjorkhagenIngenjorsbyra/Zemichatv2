@@ -123,7 +123,7 @@ export async function getUnacknowledgedAlerts(): Promise<{
       .from('users')
       .select('team_id, role')
       .eq('id', user.id)
-      .single();
+      .maybeSingle();
 
     if (userError || !currentUser) {
       return { alerts: [], error: new Error('Could not get user info') };
@@ -208,7 +208,7 @@ export async function getAllAlerts(limit = 50): Promise<{
       .from('users')
       .select('team_id, role')
       .eq('id', user.id)
-      .single();
+      .maybeSingle();
 
     if (userError || !currentUser) {
       return { alerts: [], error: new Error('Could not get user info') };

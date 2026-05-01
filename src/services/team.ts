@@ -48,10 +48,14 @@ export async function createTeam({
  * Get the current user's team.
  */
 export async function getMyTeam(): Promise<{ team: Team | null; error: Error | null }> {
-  const { data, error } = await supabase.from('teams').select('*').single();
+  const { data, error } = await supabase.from('teams').select('*').maybeSingle();
 
   if (error) {
     return { team: null, error: new Error(error.message) };
+  }
+
+  if (!data) {
+    return { team: null, error: new Error('No team found') };
   }
 
   return { team: data as unknown as Team, error: null };
@@ -69,10 +73,18 @@ export async function getMyProfile(): Promise<{ user: User | null; error: Error 
     return { user: null, error: new Error('Not authenticated') };
   }
 
-  const { data, error } = await supabase.from('users').select('*').eq('id', authUser.id).single();
+  const { data, error } = await supabase
+    .from('users')
+    .select('*')
+    .eq('id', authUser.id)
+    .maybeSingle();
 
   if (error) {
     return { user: null, error: new Error(error.message) };
+  }
+
+  if (!data) {
+    return { user: null, error: new Error('User profile not found') };
   }
 
   return { user: data as unknown as User, error: null };

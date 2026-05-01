@@ -71,7 +71,7 @@ export async function canShareLocation(chatId: string): Promise<boolean> {
     .from('users')
     .select('role, team_id')
     .eq('id', user.id)
-    .single();
+    .maybeSingle();
 
   if (!profile) return false;
 
@@ -86,7 +86,7 @@ export async function canShareLocation(chatId: string): Promise<boolean> {
     .select('id')
     .eq('team_id', typedProfile.team_id)
     .eq('role', UserRole.OWNER)
-    .single();
+    .maybeSingle();
 
   if (!teamOwner) return false;
 

@@ -165,7 +165,7 @@ export function subscribeToMessages(
             sender:users!messages_sender_id_fkey (*)
           `)
           .eq('id', payload.new.id)
-          .single();
+          .maybeSingle();
 
         if (data) {
           onMessage(data as unknown as MessageWithSender);
@@ -189,7 +189,7 @@ export function subscribeToMessages(
             sender:users!messages_sender_id_fkey (*)
           `)
           .eq('id', payload.new.id)
-          .single();
+          .maybeSingle();
 
         if (data) {
           onUpdate(data as unknown as MessageWithSender);

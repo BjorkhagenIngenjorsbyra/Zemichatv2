@@ -278,7 +278,7 @@ export function subscribeToCallSignals(
           .from('users')
           .select('*')
           .eq('id', signal.caller_id)
-          .single();
+          .maybeSingle();
 
         if (caller) {
           onSignal(signal, caller as User);
@@ -368,7 +368,7 @@ export async function canMakeCall(
       .from('users')
       .select('role')
       .eq('id', userId)
-      .single();
+      .maybeSingle();
 
     if (userError || !userData) {
       return { canCall: false, error: new Error('User not found') };
@@ -421,7 +421,7 @@ export async function canScreenShare(
       .from('users')
       .select('role')
       .eq('id', userId)
-      .single();
+      .maybeSingle();
 
     if (userError || !userData) {
       return { canShare: false, error: new Error('User not found') };

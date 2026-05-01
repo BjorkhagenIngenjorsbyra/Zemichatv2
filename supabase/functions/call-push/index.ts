@@ -334,7 +334,7 @@ serve(async (req) => {
         .from('users')
         .select('display_name, avatar_url')
         .eq('id', user.id)
-        .single();
+        .maybeSingle();
 
       callData = {
         type: 'incoming_call',

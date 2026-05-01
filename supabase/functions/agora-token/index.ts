@@ -72,7 +72,7 @@ serve(async (req) => {
       .eq('chat_id', chatId)
       .eq('user_id', user.id)
       .is('left_at', null)
-      .single();
+      .maybeSingle();
 
     if (membershipError || !membership) {
       return new Response(
@@ -85,7 +85,7 @@ serve(async (req) => {
       .from('users')
       .select('role')
       .eq('id', user.id)
-      .single();
+      .maybeSingle();
 
     if (profileError || !userProfile) {
       return new Response(
