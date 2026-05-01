@@ -461,6 +461,8 @@
     "missedVideoCall": "Ubesvaret videoopkald",
     "declinedVoiceCall": "Afvist taleopkald",
     "declinedVideoCall": "Afvist videoopkald",
+    "failedVoiceCall": "Opkaldet kunne ikke forbindes",
+    "failedVideoCall": "Videoopkaldet kunne ikke forbindes",
     "voiceCallEnded": "Taleopkald ({{duration}})",
     "videoCallEnded": "Videoopkald ({{duration}})",
     "initiating": "Starter...",

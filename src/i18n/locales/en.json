@@ -461,6 +461,8 @@
     "missedVideoCall": "Missed video call",
     "declinedVoiceCall": "Declined voice call",
     "declinedVideoCall": "Declined video call",
+    "failedVoiceCall": "Call could not be connected",
+    "failedVideoCall": "Video call could not be connected",
     "voiceCallEnded": "Voice call ({{duration}})",
     "videoCallEnded": "Video call ({{duration}})",
     "initiating": "Initiating...",

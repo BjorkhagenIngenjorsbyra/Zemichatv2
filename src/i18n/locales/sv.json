@@ -461,6 +461,8 @@
     "missedVideoCall": "Missat videosamtal",
     "declinedVoiceCall": "Avvisat röstsamtal",
     "declinedVideoCall": "Avvisat videosamtal",
+    "failedVoiceCall": "Samtal kunde inte kopplas",
+    "failedVideoCall": "Videosamtal kunde inte kopplas",
     "voiceCallEnded": "Röstsamtal ({{duration}})",
     "videoCallEnded": "Videosamtal ({{duration}})",
     "initiating": "Initierar...",

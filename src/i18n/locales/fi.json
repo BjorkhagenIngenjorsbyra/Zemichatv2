@@ -461,6 +461,8 @@
     "missedVideoCall": "Vastaamaton videopuhelu",
     "declinedVoiceCall": "Hylätty äänipuhelu",
     "declinedVideoCall": "Hylätty videopuhelu",
+    "failedVoiceCall": "Puhelua ei voitu yhdistää",
+    "failedVideoCall": "Videopuhelua ei voitu yhdistää",
     "voiceCallEnded": "Äänipuhelu ({{duration}})",
     "videoCallEnded": "Videopuhelu ({{duration}})",
     "initiating": "Aloitetaan...",

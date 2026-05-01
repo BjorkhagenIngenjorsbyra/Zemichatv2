@@ -461,6 +461,8 @@
     "missedVideoCall": "Ubesvart videosamtale",
     "declinedVoiceCall": "Avvist talesamtale",
     "declinedVideoCall": "Avvist videosamtale",
+    "failedVoiceCall": "Samtalet kunne ikke kobles",
+    "failedVideoCall": "Videosamtalen kunne ikke kobles",
     "voiceCallEnded": "Talesamtale ({{duration}})",
     "videoCallEnded": "Videosamtale ({{duration}})",
     "initiating": "Starter...",

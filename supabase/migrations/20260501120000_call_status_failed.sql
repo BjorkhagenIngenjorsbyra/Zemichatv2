@@ -1,0 +1,14 @@
+-- Add 'failed' to call_status enum.
+--
+-- Background: Tidigare användes 'missed' både för "callee svarade inte i tid"
+-- och för "samtalet kom aldrig fram" (token-fail, network-fail, agora-init-fail).
+-- Det vilseledde Owner och chatten — ett samtal som aldrig nådde mottagaren
+-- visades som missat.
+--
+-- 'failed' separerar de fallen:
+--   missed = callee nåddes (push gick ut, ringsignal triggad) men svarade inte
+--   failed = samtalet kom aldrig fram till callee (init-fel av olika slag)
+--
+-- ALTER TYPE ... ADD VALUE körs utanför explicit transaktionsblock (Postgres
+-- tillåter detta sedan 12), så ingen DROP/recreate behövs.
+ALTER TYPE call_status ADD VALUE IF NOT EXISTS 'failed';

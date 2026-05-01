@@ -70,6 +70,7 @@ export enum CallStatus {
   MISSED = 'missed',
   ANSWERED = 'answered',
   DECLINED = 'declined',
+  FAILED = 'failed',
 }
 
 export enum PlatformType {
