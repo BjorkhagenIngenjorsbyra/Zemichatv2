@@ -29,9 +29,12 @@ interface MessageBubbleProps {
   onReact?: (message: MessageWithSender, rect: DOMRect) => void;
   onToggleReaction?: (messageId: string, emoji: string) => void;
   onContextMenu?: (message: MessageWithSender, rect: DOMRect) => void;
+  onJumpToMessage?: (messageId: string) => void;
   userId?: string;
   /** Current user's role — Owner sees original content of deleted-for-all messages */
   userRole?: string;
+  /** Highlight bubble briefly (e.g. when scrolled to via reply tap) */
+  isHighlighted?: boolean;
 }
 
 const MessageBubble: React.FC<MessageBubbleProps> = ({
@@ -49,8 +52,10 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
   onReact: _onReact,
   onToggleReaction,
   onContextMenu,
+  onJumpToMessage,
   userId: _userId,
   userRole,
+  isHighlighted = false,
 }) => {
   const { t } = useTranslation();
   const [swipeOffset, setSwipeOffset] = useState(0);
@@ -296,8 +301,9 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
 
       <div
         ref={bubbleRef}
-        className={`message-bubble ${isOwn ? 'own' : 'other'} ${isJustSent ? 'message-just-sent' : ''} ${message.type === 'sticker' ? 'sticker-only' : ''}`}
+        className={`message-bubble ${isOwn ? 'own' : 'other'} ${isJustSent ? 'message-just-sent' : ''} ${message.type === 'sticker' ? 'sticker-only' : ''} ${isHighlighted ? 'message-highlighted' : ''}`}
         data-testid={`message-bubble-${message.id}`}
+        data-message-id={message.id}
         onClick={handleTap}
         onTouchStart={handleTouchStart}
         onTouchMove={cancelLongPress}
@@ -326,7 +332,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
           <QuotedMessage
             message={message.reply_to}
             isOwn={isOwn}
-            onClick={() => {}}
+            onClick={() => onJumpToMessage?.(message.reply_to_id as string)}
           />
         )}
 
@@ -395,6 +401,15 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
           background: hsl(var(--bubble-received, var(--card)));
           color: hsl(var(--foreground));
           border-bottom-left-radius: 0.25rem;
+        }
+
+        .message-bubble.message-highlighted {
+          animation: highlight-flash 1.6s ease-out;
+        }
+
+        @keyframes highlight-flash {
+          0%   { box-shadow: 0 0 0 4px hsl(var(--primary) / 0.55); }
+          100% { box-shadow: 0 0 0 0 hsl(var(--primary) / 0); }
         }
 
         .sender-name {
