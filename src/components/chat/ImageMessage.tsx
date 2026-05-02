@@ -31,7 +31,9 @@ const ImageMessage: React.FC<ImageMessageProps> = ({
 
   // Resolve thumbnail (in-bubble) and current fullscreen image to signed URLs.
   // Storage path -> signed URL with 1h TTL (audit fix #18).
-  const thumbUrl = useSignedMediaUrl(mediaUrl);
+  // Thumb requests a 600w/q75 CDN variant — full-size 3-4MB source
+  // never goes down the wire just to fill a 200px bubble (audit #36-17).
+  const thumbUrl = useSignedMediaUrl(mediaUrl, { width: 600, quality: 75 });
   const [resolvedGalleryUrl, setResolvedGalleryUrl] = useState<string | null>(null);
 
   // Pinch-to-zoom state
@@ -90,13 +92,15 @@ const ImageMessage: React.FC<ImageMessageProps> = ({
     : mediaUrl;
 
   // Resolve the active gallery item to a signed URL whenever it changes.
+  // Fullscreen view gets a 1600w variant — large enough for retina but
+  // still avoids shipping the full-resolution source (audit #36-17).
   useEffect(() => {
     if (!isFullscreen || !currentRawUrl) {
       setResolvedGalleryUrl(null);
       return;
     }
     let cancelled = false;
-    resolveMediaUrl(currentRawUrl).then((url) => {
+    resolveMediaUrl(currentRawUrl, { width: 1600, quality: 85 }).then((url) => {
       if (!cancelled) setResolvedGalleryUrl(url);
     });
     return () => {
@@ -322,6 +326,8 @@ const ImageMessage: React.FC<ImageMessageProps> = ({
             src={thumbUrl}
             alt={metadata?.fileName || 'Image'}
             className={`message-image ${isLoading ? 'hidden' : ''}`}
+            loading="lazy"
+            decoding="async"
             onLoad={handleLoad}
             onError={handleError}
           />
@@ -371,6 +377,7 @@ const ImageMessage: React.FC<ImageMessageProps> = ({
             src={currentUrl || ''}
             alt={metadata?.fileName || 'Image'}
             className="fullscreen-image"
+            decoding="async"
             style={{
               transform: `translate(${translate.x}px, ${translate.y}px) scale(${scale})`,
               transition: isPinchingRef.current || isPanningRef.current ? 'none' : 'transform 0.2s ease-out',

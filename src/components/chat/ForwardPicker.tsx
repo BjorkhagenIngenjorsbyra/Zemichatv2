@@ -149,7 +149,7 @@ const ForwardPicker: React.FC<ForwardPickerProps> = ({
                 >
                   <IonAvatar slot="start" className="forward-picker-avatar">
                     {avatarUrl ? (
-                      <img src={avatarUrl} alt="" />
+                      <img src={avatarUrl} alt="" loading="lazy" decoding="async" />
                     ) : (
                       <div className="forward-avatar-placeholder">
                         {initial}

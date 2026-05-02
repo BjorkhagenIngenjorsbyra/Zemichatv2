@@ -53,7 +53,13 @@ const WallPostCard: React.FC<WallPostCardProps> = ({
   const canDelete = !isDeleted && (isAuthor || isOwner);
 
   // chat-media is private — resolve storage path to signed URL (audit fix #18).
-  const resolvedImageUrl = useSignedMediaUrl(post.media_url);
+  // Inline post image gets a 1200w/q80 CDN variant. The fullscreen modal
+  // and inline view both reuse this signed URL — keep transform consistent
+  // so the cache hits (audit fix #36-17).
+  const resolvedImageUrl = useSignedMediaUrl(post.media_url, {
+    width: 1200,
+    quality: 80,
+  });
 
   const formatTime = (dateStr: string): string => {
     const date = new Date(dateStr);
@@ -141,7 +147,7 @@ const WallPostCard: React.FC<WallPostCardProps> = ({
       <div className="post-header">
         <IonAvatar className="post-avatar">
           {post.author?.avatar_url ? (
-            <img src={post.author.avatar_url} alt="" />
+            <img src={post.author.avatar_url} alt="" loading="lazy" decoding="async" />
           ) : (
             <div className="avatar-placeholder">
               {(post.author?.display_name || '?').charAt(0).toUpperCase()}
@@ -178,7 +184,13 @@ const WallPostCard: React.FC<WallPostCardProps> = ({
       {/* Image */}
       {post.media_url && resolvedImageUrl && (
         <div className="post-image-container" onClick={() => setShowFullImage(true)}>
-          <img src={resolvedImageUrl} alt="" className="post-image" />
+          <img
+            src={resolvedImageUrl}
+            alt=""
+            className="post-image"
+            loading="lazy"
+            decoding="async"
+          />
         </div>
       )}
 
@@ -243,7 +255,12 @@ const WallPostCard: React.FC<WallPostCardProps> = ({
       {/* Fullscreen image modal */}
       <IonModal isOpen={showFullImage} onDidDismiss={() => setShowFullImage(false)}>
         <div className="fullscreen-image-wrapper" onClick={() => setShowFullImage(false)}>
-          <img src={resolvedImageUrl || ''} alt="" className="fullscreen-image" />
+          <img
+            src={resolvedImageUrl || ''}
+            alt=""
+            className="fullscreen-image"
+            decoding="async"
+          />
         </div>
       </IonModal>
 

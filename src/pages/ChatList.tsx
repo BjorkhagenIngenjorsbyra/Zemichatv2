@@ -300,7 +300,7 @@ const ChatList: React.FC = () => {
                 size={48}
               />
             ) : avatar ? (
-              <img src={avatar} alt={displayName} />
+              <img src={avatar} alt={displayName} loading="lazy" decoding="async" />
             ) : (
               <div className="avatar-placeholder" style={{ background: avatarGradient }}>{initial}</div>
             )}
@@ -809,7 +809,7 @@ const ChatList: React.FC = () => {
             <div className="preview-header-row">
               <div className="preview-avatar">
                 {getChatAvatar(previewChat) ? (
-                  <img src={getChatAvatar(previewChat)!} alt="" />
+                  <img src={getChatAvatar(previewChat)!} alt="" loading="lazy" decoding="async" />
                 ) : (
                   <div
                     className="avatar-placeholder-small"

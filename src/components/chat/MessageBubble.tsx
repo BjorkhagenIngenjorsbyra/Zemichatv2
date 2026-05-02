@@ -222,6 +222,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
               alt="GIF"
               className="message-gif"
               loading="lazy"
+              decoding="async"
               style={gifMeta?.width && gifMeta?.height ? {
                 aspectRatio: `${gifMeta.width} / ${gifMeta.height}`,
               } : undefined}

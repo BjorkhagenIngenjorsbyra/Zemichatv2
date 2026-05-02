@@ -16,9 +16,9 @@ const QuotedMessage: React.FC<QuotedMessageProps> = ({
 
   const getPreview = (): string => {
     if (message.content) {
-      return message.content.length > 100
-        ? message.content.slice(0, 100) + '...'
-        : message.content;
+      // CSS handles 3-line clamp + ellipsis (overflow-wrap + line-clamp).
+      // Don't pre-truncate here — that broke wrapping for long words.
+      return message.content;
     }
 
     switch (message.type) {
@@ -94,6 +94,7 @@ const QuotedMessage: React.FC<QuotedMessageProps> = ({
           display: flex;
           flex-direction: column;
           min-width: 0;
+          flex: 1 1 0;
           overflow: hidden;
         }
 
@@ -113,8 +114,17 @@ const QuotedMessage: React.FC<QuotedMessageProps> = ({
 
         .quote-text {
           font-size: 0.8rem;
+          line-height: 1.3;
           opacity: 0.8;
-          white-space: nowrap;
+          /* WhatsApp-style wrapping: max 3 rows then ellipsis.
+             overflow-wrap:anywhere + word-break:break-word handle long
+             URLs / unbroken strings without overflowing the bubble. */
+          overflow-wrap: anywhere;
+          word-break: break-word;
+          display: -webkit-box;
+          -webkit-line-clamp: 3;
+          line-clamp: 3;
+          -webkit-box-orient: vertical;
           overflow: hidden;
           text-overflow: ellipsis;
         }
