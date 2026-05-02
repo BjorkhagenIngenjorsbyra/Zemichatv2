@@ -4,6 +4,7 @@ import {
   useState,
   useEffect,
   useCallback,
+  useMemo,
   useRef,
   type ReactNode,
 } from 'react';
@@ -971,26 +972,51 @@ export function CallProvider({ children }: CallProviderProps) {
   // CONTEXT VALUE
   // ============================================================
 
-  const value: CallContextValue = {
-    activeCall,
-    incomingCall,
-    isAgoraReady,
-    callDuration,
-    callError,
-    localVideoTrack: videoTrackRef.current,
-    screenShareTrack: screenTrackRef.current,
-    remoteUsers,
-    initiateCall,
-    answerCall,
-    declineCall,
-    endCall,
-    toggleMute,
-    toggleSpeaker,
-    toggleVideo,
-    toggleScreenShare,
-    toggleMinimize,
-    clearCallError,
-  };
+  // Audit fix #36-5: memo:a context-värdet. Notera att videoTrackRef.current
+  // och screenTrackRef.current är ref-värden som ändras utan re-render — de
+  // räknas inte som egentliga "props" och utesluts som deps. Components som
+  // behöver färska track-referenser ska re-rendrera via callDuration eller
+  // remoteUsers-state.
+  const value: CallContextValue = useMemo(
+    () => ({
+      activeCall,
+      incomingCall,
+      isAgoraReady,
+      callDuration,
+      callError,
+      localVideoTrack: videoTrackRef.current,
+      screenShareTrack: screenTrackRef.current,
+      remoteUsers,
+      initiateCall,
+      answerCall,
+      declineCall,
+      endCall,
+      toggleMute,
+      toggleSpeaker,
+      toggleVideo,
+      toggleScreenShare,
+      toggleMinimize,
+      clearCallError,
+    }),
+    [
+      activeCall,
+      incomingCall,
+      isAgoraReady,
+      callDuration,
+      callError,
+      remoteUsers,
+      initiateCall,
+      answerCall,
+      declineCall,
+      endCall,
+      toggleMute,
+      toggleSpeaker,
+      toggleVideo,
+      toggleScreenShare,
+      toggleMinimize,
+      clearCallError,
+    ],
+  );
 
   return (
     <CallContext.Provider value={value}>

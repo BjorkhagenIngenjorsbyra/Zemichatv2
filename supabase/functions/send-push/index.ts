@@ -488,6 +488,14 @@ serve(async (req) => {
           },
           android: {
             priority: 'high',
+            // Issue #32: explicit channel_id ensures heads-up banner with
+            // text preview on Android. Channel is created with
+            // IMPORTANCE_HIGH in ZemichatMessagingService.onCreate().
+            notification: {
+              channel_id: 'messages_v2',
+              default_sound: true,
+              default_vibrate_timings: true,
+            },
           },
           // APNs payload for iOS — FCM proxies this to Apple Push Notification service
           ...(tokenRow.platform === 'ios' ? {

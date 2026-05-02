@@ -23,7 +23,13 @@ const GroupAvatar: React.FC<GroupAvatarProps> = ({ members, size = 48 }) => {
     return (
       <div style={{ width: size, height: size, borderRadius: '50%', overflow: 'hidden' }}>
         {m?.avatar_url ? (
-          <img src={m.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+          <img
+            src={m.avatar_url}
+            alt=""
+            loading="lazy"
+            decoding="async"
+            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+          />
         ) : (
           <div
             style={{
@@ -66,6 +72,8 @@ const GroupAvatar: React.FC<GroupAvatarProps> = ({ members, size = 48 }) => {
             <img
               src={m.avatar_url}
               alt=""
+              loading="lazy"
+              decoding="async"
               style={{ width: '100%', height: '100%', objectFit: 'cover' }}
             />
           ) : (

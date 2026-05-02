@@ -65,6 +65,13 @@
             </intent-filter>
         </service>
 
+        <!-- Issue #32: route FCM messages without an explicit channel_id to
+             the high-importance "messages_v2" channel so Android shows heads-up
+             banners with text preview by default. -->
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_channel_id"
+            android:value="messages_v2" />
+
         <!-- Broadcast receiver for declining calls from notification -->
         <receiver
             android:name=".CallDismissReceiver"

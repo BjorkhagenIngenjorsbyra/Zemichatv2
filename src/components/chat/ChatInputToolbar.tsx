@@ -152,8 +152,14 @@ const ChatInputToolbar: React.FC<ChatInputToolbarProps> = ({
   return (
     <div className="chat-input-toolbar">
       {/* Smiley / Emoji toggle */}
+      {/* Issue #35: iOS Safari/WKWebView fires blur on the textarea before
+          our click lands on the emoji button when the keyboard is open, so
+          the panel never opens. preventDefault on mousedown/touchstart keeps
+          focus on the textarea long enough for the click to register. */}
       <button
         className={`toolbar-icon-btn ${isEmojiPanelOpen ? 'active' : ''}`}
+        onMouseDown={(e) => e.preventDefault()}
+        onTouchStart={(e) => e.preventDefault()}
         onClick={onToggleEmojiPanel}
         disabled={isSending}
         aria-label={t('chat.emojis')}

@@ -32,7 +32,7 @@ const MentionAutocomplete: React.FC<MentionAutocompleteProps> = ({
         >
           <div className="mention-avatar">
             {m.user?.avatar_url ? (
-              <img src={m.user.avatar_url} alt="" />
+              <img src={m.user.avatar_url} alt="" loading="lazy" decoding="async" />
             ) : (
               <span className="mention-initial">
                 {(m.user?.display_name || '?').charAt(0).toUpperCase()}

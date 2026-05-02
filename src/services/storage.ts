@@ -392,17 +392,40 @@ export async function uploadAvatar(
 }
 
 /**
+ * Supabase Storage Image Transformation options.
+ *
+ * Resizes/recompresses on the CDN edge so we don't ship the full-size
+ * source down to thumbnails (audit fix #36-17). Only applied to images
+ * via createSignedUrl({ transform }).
+ */
+export interface MediaTransform {
+  width?: number;
+  height?: number;
+  quality?: number;
+  resize?: 'cover' | 'contain' | 'fill';
+  format?: 'origin';
+}
+
+/**
  * Get a signed URL for accessing a private file.
  * Useful when the bucket is private.
+ *
+ * Pass `transform` to apply Supabase Image Transformation (Pro feature).
+ * Storage returns a smaller, recompressed version for thumbnails.
  */
 export async function getSignedUrl(
   path: string,
-  expiresIn = SIGNED_URL_TTL_SECONDS
+  expiresIn = SIGNED_URL_TTL_SECONDS,
+  transform?: MediaTransform
 ): Promise<{ url: string | null; error: Error | null }> {
   try {
     const { data, error } = await supabase.storage
       .from(BUCKET_NAME)
-      .createSignedUrl(path, expiresIn);
+      .createSignedUrl(
+        path,
+        expiresIn,
+        transform ? { transform } : undefined
+      );
 
     if (error) {
       return { url: null, error: new Error(error.message) };
@@ -468,48 +491,99 @@ function isAbsoluteUrl(value: string): boolean {
 }
 
 /**
+ * Cache key includes transform options so a 96px avatar request and a
+ * 600px thumb request for the same path don't clobber each other.
+ */
+function cacheKey(path: string, transform?: MediaTransform): string {
+  if (!transform) return path;
+  const t = [
+    transform.width ?? '',
+    transform.height ?? '',
+    transform.quality ?? '',
+    transform.resize ?? '',
+    transform.format ?? '',
+  ].join(':');
+  return `${path}#${t}`;
+}
+
+/**
  * Resolve a chat-media storage path to a signed URL.
  *
  * Accepts:
  *   - storage paths like "userId/chatId/123_pic.jpg" (preferred)
- *   - legacy absolute URLs (returned as-is)
+ *   - legacy absolute URLs (returned as-is — Storage transforms only
+ *     work on paths in our private bucket, not on public/external URLs)
  *   - null/empty (returned as null)
  *
- * Caches signed URLs until 5 minutes before expiry to avoid round-trips.
+ * Pass `transform` to request a CDN-resized variant for thumbnails /
+ * avatars instead of the full-size source (audit fix #36-17).
+ *
+ * Caches signed URLs (per path + transform combo) until 5 minutes before
+ * expiry to avoid round-trips.
  */
 export async function resolveMediaUrl(
-  pathOrUrl: string | null | undefined
+  pathOrUrl: string | null | undefined,
+  transform?: MediaTransform
 ): Promise<string | null> {
   if (!pathOrUrl) return null;
+  // Absolute URLs (https://, data:, blob:) include Tenor/Giphy GIFs,
+  // legacy public URLs from before #18, and local previews. Pass them
+  // through unchanged — we can't apply Storage transforms to them.
   if (isAbsoluteUrl(pathOrUrl)) return pathOrUrl;
 
-  const cached = signedUrlCache.get(pathOrUrl);
+  const key = cacheKey(pathOrUrl, transform);
+
+  const cached = signedUrlCache.get(key);
   if (cached && cached.expiresAt - Date.now() > SIGNED_URL_REFRESH_MARGIN_MS) {
     return cached.url;
   }
 
-  // Coalesce concurrent requests for the same path.
-  const inflight = inflightSigning.get(pathOrUrl);
+  // Coalesce concurrent requests for the same path+transform.
+  const inflight = inflightSigning.get(key);
   if (inflight) return inflight;
 
   const promise = (async () => {
-    const { url, error } = await getSignedUrl(pathOrUrl, SIGNED_URL_TTL_SECONDS);
+    const { url, error } = await getSignedUrl(
+      pathOrUrl,
+      SIGNED_URL_TTL_SECONDS,
+      transform
+    );
     if (error || !url) {
       return null;
     }
-    signedUrlCache.set(pathOrUrl, {
+    signedUrlCache.set(key, {
       url,
       expiresAt: Date.now() + SIGNED_URL_TTL_SECONDS * 1000,
     });
     return url;
   })();
 
-  inflightSigning.set(pathOrUrl, promise);
+  inflightSigning.set(key, promise);
   try {
     return await promise;
   } finally {
-    inflightSigning.delete(pathOrUrl);
+    inflightSigning.delete(key);
   }
+}
+
+/**
+ * Synchronously read a cached signed URL (only fresh, non-expiring entries).
+ * Used by useSignedMediaUrl to avoid render-flicker — if we already have a
+ * valid signed URL for this path, return it immediately and skip the
+ * loading state on rerender (audit fix #36-18).
+ */
+export function getCachedMediaUrl(
+  pathOrUrl: string | null | undefined,
+  transform?: MediaTransform
+): string | null {
+  if (!pathOrUrl) return null;
+  if (isAbsoluteUrl(pathOrUrl)) return pathOrUrl;
+
+  const cached = signedUrlCache.get(cacheKey(pathOrUrl, transform));
+  if (cached && cached.expiresAt - Date.now() > SIGNED_URL_REFRESH_MARGIN_MS) {
+    return cached.url;
+  }
+  return null;
 }
 
 /**

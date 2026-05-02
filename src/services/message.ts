@@ -22,6 +22,12 @@ export interface SendMessageResult {
   error: Error | null;
 }
 
+// Module-level cache of senders we've already resolved. Keyed by user id.
+// Audit fix #36-8: avoids an extra round-trip per realtime INSERT/UPDATE
+// event — the payload already contains the message row, we only need to
+// attach sender metadata, which barely changes during a session.
+const senderCache = new Map<string, User>();
+
 /**
  * Get messages for a chat.
  */
@@ -53,6 +59,12 @@ export async function getChatMessages(
     }
 
     const messages = (data || []) as unknown as MessageWithSender[];
+
+    // Audit #36-8: prime the sender cache so subscribeToMessages doesn't
+    // need an extra round-trip for the first event from each user.
+    for (const msg of messages) {
+      if (msg.sender?.id) senderCache.set(msg.sender.id, msg.sender);
+    }
 
     // Fetch reply_to messages separately for messages that have replies
     const replyIds = messages
@@ -138,15 +150,55 @@ export async function sendMessage({
   }
 }
 
+async function getSenderCached(senderId: string): Promise<User | null> {
+  const cached = senderCache.get(senderId);
+  if (cached) return cached;
+  const { data } = await supabase
+    .from('users')
+    .select('*')
+    .eq('id', senderId)
+    .maybeSingle();
+  if (data) {
+    const user = data as unknown as User;
+    senderCache.set(senderId, user);
+    return user;
+  }
+  return null;
+}
+
 /**
  * Subscribe to new and updated messages in a chat.
  * Returns an unsubscribe function.
+ *
+ * Audit fix #36-8: previously each realtime event triggered an extra
+ * SELECT against `messages` to attach the sender. The realtime payload
+ * already contains the full row — we now use it directly and only fetch
+ * sender data once per user (cached).
  */
 export function subscribeToMessages(
   chatId: string,
   onMessage: (message: MessageWithSender) => void,
   onUpdate?: (message: MessageWithSender) => void
 ): () => void {
+  const handleEvent = async (
+    payload: { new: Record<string, unknown> },
+    callback: (m: MessageWithSender) => void,
+  ) => {
+    const row = payload.new as unknown as Message;
+    const senderId = row.sender_id;
+    const sender = senderId ? await getSenderCached(senderId) : null;
+    if (!sender) {
+      // Sender lookup failed — fall back to a stub so the UI can still
+      // render the message rather than dropping it.
+      callback({
+        ...row,
+        sender: { id: senderId, display_name: '', avatar_url: null } as unknown as User,
+      });
+      return;
+    }
+    callback({ ...row, sender });
+  };
+
   const channel: RealtimeChannel = supabase
     .channel(`messages:${chatId}`)
     .on(
@@ -157,20 +209,7 @@ export function subscribeToMessages(
         table: 'messages',
         filter: `chat_id=eq.${chatId}`,
       },
-      async (payload) => {
-        const { data } = await supabase
-          .from('messages')
-          .select(`
-            *,
-            sender:users!messages_sender_id_fkey (*)
-          `)
-          .eq('id', payload.new.id)
-          .maybeSingle();
-
-        if (data) {
-          onMessage(data as unknown as MessageWithSender);
-        }
-      }
+      (payload) => handleEvent(payload, onMessage),
     )
     .on(
       'postgres_changes',
@@ -180,27 +219,27 @@ export function subscribeToMessages(
         table: 'messages',
         filter: `chat_id=eq.${chatId}`,
       },
-      async (payload) => {
+      (payload) => {
         if (!onUpdate) return;
-        const { data } = await supabase
-          .from('messages')
-          .select(`
-            *,
-            sender:users!messages_sender_id_fkey (*)
-          `)
-          .eq('id', payload.new.id)
-          .maybeSingle();
-
-        if (data) {
-          onUpdate(data as unknown as MessageWithSender);
-        }
-      }
+        handleEvent(payload, onUpdate);
+      },
     )
     .subscribe();
 
   return () => {
     supabase.removeChannel(channel);
   };
+}
+
+/**
+ * Pre-warm the sender cache with users we already know about (e.g. chat
+ * members). This avoids the first-message-per-user round-trip in
+ * `subscribeToMessages`.
+ */
+export function primeSenderCache(users: User[]): void {
+  for (const u of users) {
+    if (u?.id) senderCache.set(u.id, u);
+  }
 }
 
 /**

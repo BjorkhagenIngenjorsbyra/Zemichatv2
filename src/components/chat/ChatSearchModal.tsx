@@ -197,7 +197,7 @@ export const ChatSearchModal: React.FC<ChatSearchModalProps> = ({
                 >
                   <IonAvatar slot="start" className="result-avatar">
                     {result.sender?.avatar_url ? (
-                      <img src={result.sender.avatar_url} alt="" />
+                      <img src={result.sender.avatar_url} alt="" loading="lazy" decoding="async" />
                     ) : (
                       <div
                         className="avatar-placeholder"
