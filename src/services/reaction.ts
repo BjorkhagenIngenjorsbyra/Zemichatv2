@@ -14,6 +14,10 @@ export interface GroupedReaction {
 
 /**
  * Add a reaction to a message.
+ *
+ * A user is allowed at most one reaction per message (issue #34, enforced by
+ * the (message_id, user_id) unique constraint). If the user already has a
+ * different reaction on this message it is replaced with the new emoji.
  */
 export async function addReaction(
   messageId: string,
@@ -28,6 +32,20 @@ export async function addReaction(
       return { reaction: null, error: new Error('Not authenticated') };
     }
 
+    // Remove any existing reaction by this user on this message first, so we
+    // can cleanly insert the new emoji. We do delete+insert (rather than
+    // upsert with ON CONFLICT DO UPDATE) because the message_reactions RLS
+    // policies only cover INSERT/DELETE — there is no UPDATE policy.
+    const { error: deleteError } = await supabase
+      .from('message_reactions')
+      .delete()
+      .eq('message_id', messageId)
+      .eq('user_id', user.id);
+
+    if (deleteError) {
+      return { reaction: null, error: new Error(deleteError.message) };
+    }
+
     const { data, error } = await supabase
       .from('message_reactions')
       .insert({
@@ -39,9 +57,11 @@ export async function addReaction(
       .single();
 
     if (error) {
-      // Handle unique constraint violation (already reacted with this emoji)
+      // Should not happen now that we delete first, but keep the guard so a
+      // race (two near-simultaneous reactions from the same user) surfaces a
+      // sensible error instead of a raw 23505.
       if (error.code === '23505') {
-        return { reaction: null, error: new Error('Already reacted with this emoji') };
+        return { reaction: null, error: new Error('Already reacted to this message') };
       }
       return { reaction: null, error: new Error(error.message) };
     }
@@ -91,7 +111,16 @@ export async function removeReaction(
 }
 
 /**
- * Toggle a reaction on a message (add if not present, remove if present).
+ * Toggle a reaction on a message.
+ *
+ * Issue #34: Each user may have at most one reaction per message. The
+ * semantics are WhatsApp/iMessage style:
+ *  - No existing reaction          → add the new emoji.
+ *  - Existing reaction, same emoji → remove it (untoggle).
+ *  - Existing reaction, different  → replace it with the new emoji.
+ *
+ * `added` is true when the user ends up with a reaction on the message, and
+ * false when the call resulted in removal.
  */
 export async function toggleReaction(
   messageId: string,
@@ -106,22 +135,26 @@ export async function toggleReaction(
       return { added: false, error: new Error('Not authenticated') };
     }
 
-    // Check if reaction exists
+    // Look up the user's existing reaction on this message (any emoji).
     const { data: existing } = await supabase
       .from('message_reactions')
-      .select('id')
+      .select('id, emoji')
       .eq('message_id', messageId)
       .eq('user_id', user.id)
-      .eq('emoji', emoji)
       .maybeSingle();
 
-    if (existing) {
+    const typed = existing as unknown as { id: string; emoji: string } | null;
+
+    if (typed && typed.emoji === emoji) {
+      // Same emoji — untoggle.
       const { error } = await removeReaction(messageId, emoji);
       return { added: false, error };
-    } else {
-      const { error } = await addReaction(messageId, emoji);
-      return { added: true, error };
     }
+
+    // Either no reaction yet, or a different emoji we should replace.
+    // addReaction() handles both cases (it deletes any existing row first).
+    const { error } = await addReaction(messageId, emoji);
+    return { added: true, error };
   } catch (err) {
     return {
       added: false,
