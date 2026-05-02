@@ -32,12 +32,18 @@ public class ZemichatMessagingService extends FirebaseMessagingService {
     // a new id is the only way to ship updated audio attributes without
     // an uninstall.
     private static final String CHANNEL_ID_CALLS = "incoming_calls_v2";
+    // Bumped to v2 for issue #32: previous "messages" channel was created
+    // with default importance and is immutable — re-create as v2 to upgrade
+    // to IMPORTANCE_HIGH so heads-up banners with text preview show on
+    // Android (matches WhatsApp behaviour).
+    public static final String CHANNEL_ID_MESSAGES = "messages_v2";
     private static final int CALL_NOTIFICATION_ID = 9001;
 
     @Override
     public void onCreate() {
         super.onCreate();
         createCallNotificationChannel();
+        createMessagesNotificationChannel();
     }
 
     @Override
@@ -147,6 +153,24 @@ public class ZemichatMessagingService extends FirebaseMessagingService {
         NotificationManager notificationManager =
                 (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         notificationManager.cancel(CALL_NOTIFICATION_ID);
+    }
+
+    private void createMessagesNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationChannel channel = new NotificationChannel(
+                    CHANNEL_ID_MESSAGES,
+                    "Meddelanden",
+                    NotificationManager.IMPORTANCE_HIGH
+            );
+            channel.setDescription("Push-notiser för chattmeddelanden");
+            channel.enableVibration(true);
+            channel.setLockscreenVisibility(NotificationCompat.VISIBILITY_PUBLIC);
+
+            NotificationManager nm = getSystemService(NotificationManager.class);
+            if (nm != null) {
+                nm.createNotificationChannel(channel);
+            }
+        }
     }
 
     private void createCallNotificationChannel() {
