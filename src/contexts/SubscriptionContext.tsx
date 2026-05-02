@@ -4,6 +4,7 @@ import {
   useState,
   useEffect,
   useCallback,
+  useMemo,
   type ReactNode,
 } from 'react';
 import { useAuthContext } from './AuthContext';
@@ -242,26 +243,49 @@ export function SubscriptionProvider({ children }: SubscriptionProviderProps) {
   // CONTEXT VALUE
   // ============================================================
 
-  const value: SubscriptionContextValue = {
-    status,
-    offerings,
-    currentOffering,
-    isLoading,
-    error,
-    currentPlan,
-    isTrialActive,
-    isTrialExpired,
-    trialDaysLeft,
-    canUseFeature,
-    refreshStatus,
-    purchase,
-    restore,
-    startTrial,
-    showPaywall,
-    hidePaywall,
-    isPaywallVisible,
-    paywallFeature,
-  };
+  // Audit fix #36-5: memo:a context-värdet.
+  const value: SubscriptionContextValue = useMemo(
+    () => ({
+      status,
+      offerings,
+      currentOffering,
+      isLoading,
+      error,
+      currentPlan,
+      isTrialActive,
+      isTrialExpired,
+      trialDaysLeft,
+      canUseFeature,
+      refreshStatus,
+      purchase,
+      restore,
+      startTrial,
+      showPaywall,
+      hidePaywall,
+      isPaywallVisible,
+      paywallFeature,
+    }),
+    [
+      status,
+      offerings,
+      currentOffering,
+      isLoading,
+      error,
+      currentPlan,
+      isTrialActive,
+      isTrialExpired,
+      trialDaysLeft,
+      canUseFeature,
+      refreshStatus,
+      purchase,
+      restore,
+      startTrial,
+      showPaywall,
+      hidePaywall,
+      isPaywallVisible,
+      paywallFeature,
+    ],
+  );
 
   return (
     <SubscriptionContext.Provider value={value}>

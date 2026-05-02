@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, useMemo, type ReactNode } from 'react';
 
 export type ThemeName = 'dark' | 'light' | 'ocean' | 'sunset' | 'forest' | 'candy';
 
@@ -164,11 +164,18 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     setThemeState(name);
   };
 
-  return (
-    <ThemeContext.Provider value={{ theme, setTheme, availableThemes: Object.keys(THEMES) as ThemeName[] }}>
-      {children}
-    </ThemeContext.Provider>
+  // Audit fix #36-5: memo:a context-värdet så provider inte invalida 30+
+  // konsumenter varje render.
+  const value = useMemo(
+    () => ({
+      theme,
+      setTheme,
+      availableThemes: Object.keys(THEMES) as ThemeName[],
+    }),
+    [theme],
   );
+
+  return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
 };
 
 export default ThemeContext;

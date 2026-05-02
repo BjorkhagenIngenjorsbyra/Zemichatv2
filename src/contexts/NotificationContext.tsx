@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useCallback, useRef, type ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo, useRef, type ReactNode } from 'react';
 import { useAuthContext } from './AuthContext';
 import { supabase } from '../services/supabase';
 import {
@@ -158,19 +158,29 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
     }
   }, [totalUnreadMessages]);
 
+  // Audit fix #36-5: memo:a context-värdet så provider inte invalida 30+
+  // konsumenter varje render.
+  const value = useMemo(
+    () => ({
+      unreadChatCount,
+      totalUnreadMessages,
+      pendingFriendRequests,
+      hasNewWallPosts: wallHasNew,
+      refreshCounts,
+      markWallVisited,
+    }),
+    [
+      unreadChatCount,
+      totalUnreadMessages,
+      pendingFriendRequests,
+      wallHasNew,
+      refreshCounts,
+      markWallVisited,
+    ],
+  );
+
   return (
-    <NotificationContext.Provider
-      value={{
-        unreadChatCount,
-        totalUnreadMessages,
-        pendingFriendRequests,
-        hasNewWallPosts: wallHasNew,
-        refreshCounts,
-        markWallVisited,
-      }}
-    >
-      {children}
-    </NotificationContext.Provider>
+    <NotificationContext.Provider value={value}>{children}</NotificationContext.Provider>
   );
 }
 

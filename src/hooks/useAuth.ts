@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import type { User as SupabaseUser, Session } from '@supabase/supabase-js';
 import { getSession, onAuthStateChange, signOut as authSignOut } from '../services/auth';
 import { getMyProfile, hasTeamProfile } from '../services/team';
@@ -165,17 +165,35 @@ export function useAuth(): AuthState {
     (profile.is_active === false || profile.is_paused === true)
   );
 
-  return {
-    isLoading,
-    isAuthenticated: !!authUser,
-    authUser,
-    session,
-    profile,
-    hasProfile,
-    pushPermission,
-    sosOnly,
-    signOut,
-    refreshProfile,
-    initializePush,
-  };
+  // Audit fix #36-5: memo:a returvärdet så context-konsumenter inte får ny
+  // referens varje render. Utan detta invaliderar AuthContext.Provider alla
+  // 30+ konsumenter (ChatView, ChatList, MessageBubbles m.fl.) varje gång
+  // någon liten state-bit i hooken förändras (typing-tick, presence-tick).
+  return useMemo(
+    () => ({
+      isLoading,
+      isAuthenticated: !!authUser,
+      authUser,
+      session,
+      profile,
+      hasProfile,
+      pushPermission,
+      sosOnly,
+      signOut,
+      refreshProfile,
+      initializePush,
+    }),
+    [
+      isLoading,
+      authUser,
+      session,
+      profile,
+      hasProfile,
+      pushPermission,
+      sosOnly,
+      signOut,
+      refreshProfile,
+      initializePush,
+    ],
+  );
 }
