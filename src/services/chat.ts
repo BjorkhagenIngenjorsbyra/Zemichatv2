@@ -22,134 +22,70 @@ export interface CreateChatResult {
   error: Error | null;
 }
 
-// Helper types for Supabase query results
-interface ChatMemberWithChat {
-  chat_id: string;
+interface ChatMemberWithUser extends ChatMember {
+  user: User;
+}
+
+// Shape returned by the get_my_chats_with_last_message RPC. One row per chat
+// where the caller is an active member, with members + last message bundled
+// as JSON so the whole chat list arrives in a single round-trip.
+interface MyChatsRpcRow {
+  id: string;
+  name: string | null;
+  description: string | null;
+  avatar_url: string | null;
+  is_group: boolean;
+  created_by: string;
+  created_at: string;
+  updated_at: string;
   unread_count: number;
   is_pinned: boolean;
   is_archived: boolean;
   is_muted: boolean;
   marked_unread: boolean;
-  chats: Chat;
-}
-
-interface ChatMemberWithUser extends ChatMember {
-  user: User;
+  members: ChatMemberWithUser[] | null;
+  last_message: Message | null;
 }
 
 /**
  * Get all chats for the current user with member details and last message.
+ *
+ * Uses a single SECURITY DEFINER RPC (get_my_chats_with_last_message) that
+ * returns one row per chat, including aggregated members and the most recent
+ * non-deleted message via LATERAL LIMIT 1. This replaces the previous flow
+ * that issued three queries and pulled every message in every chat with no
+ * limit (audit fix #36-7).
  */
 export async function getMyChats(): Promise<{ chats: ChatWithDetails[]; error: Error | null }> {
   try {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      return { chats: [], error: new Error('Not authenticated') };
+    const { data, error } = await supabase.rpc('get_my_chats_with_last_message' as never);
+
+    if (error) {
+      return { chats: [], error: new Error((error as { message: string }).message) };
     }
 
-    // Get chat IDs where current user is a member
-    const { data: memberData, error: memberError } = await supabase
-      .from('chat_members')
-      .select(`
-        chat_id,
-        unread_count,
-        is_pinned,
-        is_archived,
-        is_muted,
-        marked_unread,
-        chats (
-          id,
-          name,
-          description,
-          avatar_url,
-          is_group,
-          created_by,
-          created_at,
-          updated_at
-        )
-      `)
-      .eq('user_id', user.id)
-      .is('left_at', null)
-      .order('is_pinned', { ascending: false });
+    const rows = (data || []) as unknown as MyChatsRpcRow[];
 
-    if (memberError) {
-      return { chats: [], error: new Error(memberError.message) };
-    }
+    const chats: ChatWithDetails[] = rows.map((row) => ({
+      id: row.id,
+      name: row.name,
+      description: row.description,
+      avatar_url: row.avatar_url,
+      is_group: row.is_group,
+      created_by: row.created_by,
+      created_at: row.created_at,
+      updated_at: row.updated_at,
+      members: row.members ?? [],
+      lastMessage: row.last_message ?? undefined,
+      unreadCount: row.unread_count,
+      isPinned: row.is_pinned,
+      isArchived: row.is_archived,
+      isMuted: row.is_muted,
+      markedUnread: row.marked_unread,
+    }));
 
-    if (!memberData || memberData.length === 0) {
-      return { chats: [], error: null };
-    }
-
-    const typedMemberData = memberData as unknown as ChatMemberWithChat[];
-    const chatIds = typedMemberData.map((m) => m.chat_id);
-
-    // Get all members for these chats with user details
-    const { data: allMembers, error: allMembersError } = await supabase
-      .from('chat_members')
-      .select(`
-        *,
-        user:users (*)
-      `)
-      .in('chat_id', chatIds)
-      .is('left_at', null);
-
-    if (allMembersError) {
-      return { chats: [], error: new Error(allMembersError.message) };
-    }
-
-    // Get last message for each chat
-    const { data: lastMessages, error: lastMessagesError } = await supabase
-      .from('messages')
-      .select('*')
-      .in('chat_id', chatIds)
-      .is('deleted_at', null)
-      .order('created_at', { ascending: false });
-
-    if (lastMessagesError) {
-      console.error('Failed to get last messages:', lastMessagesError);
-    }
-
-    const typedMembers = (allMembers || []) as unknown as ChatMemberWithUser[];
-    const typedMessages = (lastMessages || []) as unknown as Message[];
-
-    // Group members by chat
-    const membersByChat = new Map<string, ChatMemberWithUser[]>();
-    for (const member of typedMembers) {
-      const chatMembers = membersByChat.get(member.chat_id) || [];
-      chatMembers.push(member);
-      membersByChat.set(member.chat_id, chatMembers);
-    }
-
-    // Get last message per chat
-    const lastMessageByChat = new Map<string, Message>();
-    for (const msg of typedMessages) {
-      if (!lastMessageByChat.has(msg.chat_id)) {
-        lastMessageByChat.set(msg.chat_id, msg);
-      }
-    }
-
-    // Build chat list with details
-    const chats: ChatWithDetails[] = typedMemberData.map((m) => {
-      const chat = m.chats;
-      return {
-        ...chat,
-        members: membersByChat.get(m.chat_id) || [],
-        lastMessage: lastMessageByChat.get(m.chat_id),
-        unreadCount: m.unread_count,
-        isPinned: m.is_pinned,
-        isArchived: m.is_archived,
-        isMuted: m.is_muted,
-        markedUnread: m.marked_unread,
-      };
-    });
-
-    // Sort by last message time (most recent first)
-    chats.sort((a, b) => {
-      const aTime = a.lastMessage?.created_at || a.created_at;
-      const bTime = b.lastMessage?.created_at || b.created_at;
-      return new Date(bTime).getTime() - new Date(aTime).getTime();
-    });
-
+    // The RPC orders by is_pinned DESC, then last_message/chat created_at DESC.
+    // Re-sorting in JS would be redundant; trust the server.
     return { chats, error: null };
   } catch (err) {
     return {

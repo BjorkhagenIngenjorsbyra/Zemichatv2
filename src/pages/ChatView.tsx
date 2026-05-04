@@ -14,6 +14,7 @@ import {
   IonButton,
   IonToast,
 } from '@ionic/react';
+import { Virtuoso, type VirtuosoHandle } from 'react-virtuoso';
 import { searchOutline, arrowDown } from 'ionicons/icons';
 import { Keyboard } from '@capacitor/keyboard';
 import { Capacitor } from '@capacitor/core';
@@ -101,6 +102,10 @@ const ChatView: React.FC = () => {
   const contentRef = useRef<HTMLIonContentElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const mediaPickerRef = useRef<MediaPickerHandle>(null);
+  // Virtuoso replaces IonContent's native scroll for the message list — see
+  // <Virtuoso /> render below. Audit fix #21 (onIonScroll throttling) is
+  // moot once Virtuoso owns the scroll surface.
+  const virtuosoRef = useRef<VirtuosoHandle>(null);
 
   // Reply state
   const [replyTo, setReplyTo] = useState<MessageWithSender | null>(null);
@@ -191,36 +196,25 @@ const ChatView: React.FC = () => {
   }, []);
 
   // --- Scroll detection ---
-  const handleScroll = useCallback(async () => {
-    const el = contentRef.current;
-    if (!el) return;
-
-    const scrollEl = await el.getScrollElement();
-    const { scrollTop, scrollHeight, clientHeight } = scrollEl;
-    const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
-    const nearBottom = distanceFromBottom < 200;
-    setIsNearBottom(nearBottom);
-    isNearBottomRef.current = nearBottom;
-
-    if (nearBottom) {
+  // Virtuoso owns the scroll surface for the message list, so we no longer
+  // listen to ionScroll for the messages container. atBottomStateChange below
+  // keeps isNearBottomRef + newMessageCount in sync. The old onIonScroll
+  // throttle concern (audit fix #21) is therefore no longer relevant.
+  const handleAtBottomStateChange = useCallback((atBottom: boolean) => {
+    setIsNearBottom(atBottom);
+    isNearBottomRef.current = atBottom;
+    if (atBottom) {
       setNewMessageCount(0);
     }
   }, []);
 
-  useEffect(() => {
-    const el = contentRef.current;
-    if (!el) return;
-
-    el.addEventListener('ionScroll', handleScroll);
-    return () => {
-      el.removeEventListener('ionScroll', handleScroll);
-    };
-  }, [handleScroll]);
-
   const scrollToBottom = useCallback(() => {
-    setTimeout(() => {
-      contentRef.current?.scrollToBottom(300);
-    }, 100);
+    // Virtuoso schedules the scroll itself; no need for a setTimeout dance.
+    virtuosoRef.current?.scrollToIndex({
+      index: 'LAST',
+      behavior: 'smooth',
+      align: 'end',
+    });
   }, []);
 
   const scrollToBottomRef = useRef(scrollToBottom);
@@ -319,28 +313,18 @@ const ChatView: React.FC = () => {
           return [...prev, newMessage];
         });
 
-        // Mät scroll-position FÄRSKT istället för cached ref. När användaren
-        // skriver i textarea triggas ingen scroll-event, så cached ref kan
-        // vara stale och nya meddelanden scrollas inte fram.
-        const computeNearBottom = async (): Promise<boolean> => {
-          const el = contentRef.current;
-          if (!el) return true;
-          const scrollEl = await el.getScrollElement();
-          const dist = scrollEl.scrollHeight - scrollEl.scrollTop - scrollEl.clientHeight;
-          return dist < 500;
-        };
-
-        computeNearBottom().then((near) => {
-          isNearBottomRef.current = near;
-          if (near) {
-            scrollToBottomRef.current();
-            if (newMessage.sender_id !== profile?.id) {
-              insertReadReceipts([newMessage.id]);
-            }
-          } else {
-            setNewMessageCount((n) => n + 1);
+        // Virtuoso håller isNearBottomRef färsk via atBottomStateChange;
+        // followOutput="smooth" sköter själva auto-scroll-animationen för
+        // nya meddelanden när vi redan är vid botten. Vi kompletterar bara
+        // med read-receipt + newMessageCount-räkning.
+        const near = isNearBottomRef.current;
+        if (near) {
+          if (newMessage.sender_id !== profile?.id) {
+            insertReadReceipts([newMessage.id]);
           }
-        });
+        } else {
+          setNewMessageCount((n) => n + 1);
+        }
 
         loadReactionsRef.current([newMessage.id]);
 
@@ -515,16 +499,20 @@ const ChatView: React.FC = () => {
   };
 
   const handleJumpToMessage = useCallback((messageId: string) => {
-    const el = document.querySelector(
-      `[data-message-id="${messageId}"]`
-    ) as HTMLElement | null;
-    if (!el) return;
-    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    // Virtualized list: bubbla kan vara ur DOM. Hitta index och be Virtuoso
+    // scrolla — den materialiserar item-noden själv.
+    const idx = messages.findIndex((m) => m.id === messageId);
+    if (idx === -1) return;
+    virtuosoRef.current?.scrollToIndex({
+      index: idx,
+      behavior: 'smooth',
+      align: 'center',
+    });
     setHighlightedMessageId(messageId);
     setTimeout(() => {
       setHighlightedMessageId((prev) => (prev === messageId ? null : prev));
     }, 1700);
-  }, []);
+  }, [messages]);
 
   const handleContextMenu = (message: MessageWithSender, _rect: DOMRect) => {
     setContextMenuTarget(message);
@@ -811,8 +799,6 @@ const ChatView: React.FC = () => {
         ref={contentRef}
         className="chat-content"
         fullscreen
-        scrollEvents
-        onIonScroll={handleScroll}
       >
         {isLoading ? (
           <SkeletonLoader variant="messages" />
@@ -827,45 +813,72 @@ const ChatView: React.FC = () => {
             className="messages-container"
             data-testid="messages-container"
           >
-            {(() => {
-              const galleryUrls = getGalleryUrls(messages);
-              return messages.map((message, index) => {
-              const isOwn = message.sender_id === profile?.id;
-              const showDivider = shouldShowDateDivider(message, index);
-              const messageReactions = reactions.get(message.id) || [];
+            <Virtuoso
+              ref={virtuosoRef}
+              style={{ height: '100%' }}
+              data={messages}
+              totalCount={messages.length}
+              initialTopMostItemIndex={messages.length - 1}
+              followOutput="smooth"
+              atBottomStateChange={handleAtBottomStateChange}
+              atBottomThreshold={200}
+              rangeChanged={({ startIndex, endIndex }) => {
+                // Mark visible inbound messages as read. Cheap no-op when
+                // already read (insertReadReceipts dedupes server-side).
+                const ids: string[] = [];
+                for (let i = startIndex; i <= endIndex; i++) {
+                  const m = messages[i];
+                  if (m && m.sender_id !== profile?.id) {
+                    ids.push(m.id);
+                  }
+                }
+                if (ids.length > 0) {
+                  insertReadReceipts(ids);
+                }
+              }}
+              components={{
+                Footer: () => (
+                  <TypingIndicator typers={typers} isGroup={chat?.is_group} />
+                ),
+              }}
+              itemContent={(index, message) => {
+                const isOwn = message.sender_id === profile?.id;
+                const showDivider = shouldShowDateDivider(message, index);
+                const messageReactions = reactions.get(message.id) || [];
+                const galleryUrls = getGalleryUrls(messages);
 
-              return (
-                <div key={message.id}>
-                  {showDivider && (
-                    <div className="date-divider">
-                      <span>{formatDateDivider(message.created_at)}</span>
+                return (
+                  <>
+                    {showDivider && (
+                      <div className="date-divider">
+                        <span>{formatDateDivider(message.created_at)}</span>
+                      </div>
+                    )}
+                    <div
+                      className={`message-wrapper ${isOwn ? 'own' : 'other'}`}
+                      data-testid={`message-${message.id}`}
+                    >
+                      <MessageBubble
+                        message={message}
+                        isOwn={isOwn}
+                        reactions={messageReactions}
+                        showSenderName={chat?.is_group && !isOwn}
+                        readStatus={getReadStatus(message)}
+                        isJustSent={message.id === lastSentId}
+                        galleryUrls={galleryUrls}
+                        onReply={() => handleReply(message)}
+                        onContextMenu={(msg, rect) => handleContextMenu(msg, rect)}
+                        onJumpToMessage={handleJumpToMessage}
+                        userId={profile?.id}
+                        userRole={profile?.role}
+                        onToggleReaction={handleToggleReaction}
+                        isHighlighted={highlightedMessageId === message.id}
+                      />
                     </div>
-                  )}
-                  <div className={`message-wrapper ${isOwn ? 'own' : 'other'}`} data-testid={`message-${message.id}`}>
-                    <MessageBubble
-                      message={message}
-                      isOwn={isOwn}
-                      reactions={messageReactions}
-                      showSenderName={chat?.is_group && !isOwn}
-                      readStatus={getReadStatus(message)}
-                      isJustSent={message.id === lastSentId}
-                      galleryUrls={galleryUrls}
-                      onReply={() => handleReply(message)}
-                      onContextMenu={(msg, rect) => handleContextMenu(msg, rect)}
-                      onJumpToMessage={handleJumpToMessage}
-                      userId={profile?.id}
-                      userRole={profile?.role}
-                      onToggleReaction={handleToggleReaction}
-                      isHighlighted={highlightedMessageId === message.id}
-                    />
-                  </div>
-                </div>
-              );
-            });
-            })()}
-
-            {/* Typing indicator */}
-            <TypingIndicator typers={typers} isGroup={chat?.is_group} />
+                  </>
+                );
+              }}
+            />
           </div>
         )}
 
@@ -934,6 +947,8 @@ const ChatView: React.FC = () => {
             display: flex;
             flex-direction: column;
             padding: 1rem;
+            /* Virtuoso behöver en explicit höjd; .chat-content fyller IonContent. */
+            height: 100%;
             min-height: 100%;
           }
 
@@ -941,8 +956,9 @@ const ChatView: React.FC = () => {
             display: flex;
             justify-content: center;
             margin: 1rem 0;
-            position: sticky;
-            top: 0;
+            /* position: sticky funkar inte i en virtualiserad lista där noder
+               unmountas — divider:n renderas inline ovanför första meddelandet
+               för respektive datum istället. */
             z-index: 10;
           }
 
