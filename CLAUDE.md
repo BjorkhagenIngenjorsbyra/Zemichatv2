@@ -40,6 +40,22 @@ Efter VARJE korrigering från Erik:
 - Skriv en regel som förhindrar samma misstag
 - Läs lessons vid sessionens start för relevanta projekt
 
+### 4. Uppdatera styrande dokument vid varje batch
+Innan en PR mergas, varje batch som introducerar nya funktioner, schemaändringar eller arkitektoniska val MÅSTE inkludera:
+
+- **`docs/PRD.md`** uppdaterad om feature-beteendet ändras eller en ny feature läggs till. Skriv vad användaren ska kunna göra, vilka roller som påverkas, och hur det interagerar med transparens-modellen.
+- **`docs/SCHEMA.md`** uppdaterad om schemat ändras (nya tabeller, kolumner, index, FK-policies). Inkludera ON DELETE-strategi för varje FK.
+- **`docs/RLS.md`** uppdaterad om policies tillkommer eller ändras.
+- **`docs/decisions/YYYY-MM-DD-N-titel.md`** skapas för icke-triviala arkitektoniska val. Format: vad valdes, vilka alternativ förkastades, varför. Format-mall finns i `docs/decisions/_template.md`.
+
+Detta är inte valfritt. Det är en gate i PR-flödet:
+
+> *"Vibe coding without architecture isn't building. It's accumulating debt."*
+
+PR utan motsvarande doc-uppdateringar (när ändringarna kräver det) får inte mergas. Reviewer-checklistan ska explicit kolla doc-uppdateringen.
+
+**Undantag som inte kräver doc-uppdatering:** rena buggfixar inom befintligt feature-scope, prestanda-optimeringar utan API-ändring, dependency-bumps, refactors utan beteendeförändring. Vid tveksamhet — uppdatera dokumentet.
+
 ---
 
 ## Utvecklingsprinciper
@@ -383,4 +399,4 @@ Om beslutet påverkar:
 
 ---
 
-*Senast uppdaterad: 2025-02-20*
+*Senast uppdaterad: 2026-05-07*
