@@ -106,7 +106,7 @@ const WallComments: React.FC<WallCommentsProps> = ({ postId, onCommentCountChang
       <div key={comment.id} className={`comment-item ${isReply ? 'comment-reply' : ''}`}>
         <IonAvatar className="comment-avatar">
           {comment.author?.avatar_url ? (
-            <img src={comment.author.avatar_url} alt="" />
+            <img src={comment.author.avatar_url} alt="" loading="lazy" decoding="async" />
           ) : (
             <div className="avatar-placeholder-sm">
               {(comment.author?.display_name || '?').charAt(0).toUpperCase()}

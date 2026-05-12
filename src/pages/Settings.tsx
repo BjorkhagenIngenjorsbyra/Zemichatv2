@@ -504,7 +504,7 @@ const Settings: React.FC = () => {
             <div className="profile-card" data-testid="profile-card">
               <div className="profile-avatar-section" onClick={handleAvatarUpload} style={{ cursor: 'pointer' }}>
                 {profile?.avatar_url ? (
-                  <img src={profile.avatar_url} alt="" className="profile-avatar-img" />
+                  <img src={profile.avatar_url} alt="" className="profile-avatar-img" loading="lazy" decoding="async" />
                 ) : (
                   <div className="profile-avatar-placeholder" style={{ background: getAvatarColor(profile) }}>
                     {getInitial(profile)}

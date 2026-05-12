@@ -84,7 +84,7 @@ const AddParticipantPicker: React.FC<AddParticipantPickerProps> = ({
               >
                 <IonAvatar slot="start">
                   {user.avatar_url ? (
-                    <img src={user.avatar_url} alt={user.display_name || ''} />
+                    <img src={user.avatar_url} alt={user.display_name || ''} loading="lazy" decoding="async" />
                   ) : (
                     <div style={{
                       width: '100%',

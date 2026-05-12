@@ -274,6 +274,8 @@ const OwnerOversight: React.FC = () => {
                       <img
                         src={chat.texter.avatar_url}
                         alt={chat.texter.display_name || chat.texter.zemi_number}
+                        loading="lazy"
+                        decoding="async"
                       />
                     ) : (
                       <div

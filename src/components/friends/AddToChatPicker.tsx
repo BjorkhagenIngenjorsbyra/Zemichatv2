@@ -188,7 +188,7 @@ const AddToChatPicker: React.FC<AddToChatPickerProps> = ({
                 >
                   <IonAvatar slot="start" className="atc-avatar">
                     {avatarUrl ? (
-                      <img src={avatarUrl} alt="" />
+                      <img src={avatarUrl} alt="" loading="lazy" decoding="async" />
                     ) : (
                       <div className="atc-avatar-placeholder">
                         {initial}

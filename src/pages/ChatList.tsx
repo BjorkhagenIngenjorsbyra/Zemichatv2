@@ -57,6 +57,7 @@ import {
 import { ChatSearchModal, MuteOptions } from '../components/chat';
 import { SkeletonLoader, EmptyStateIllustration } from '../components/common';
 import GroupAvatar from '../components/common/GroupAvatar';
+import { getOptimizedAvatarUrl } from '../utils/imageUrl';
 
 const ChatList: React.FC = () => {
   const { t } = useTranslation();
@@ -301,7 +302,12 @@ const ChatList: React.FC = () => {
                 size={48}
               />
             ) : avatar ? (
-              <img src={avatar} alt={displayName} loading="lazy" decoding="async" />
+              <img
+                src={getOptimizedAvatarUrl(avatar, 48)}
+                alt={displayName}
+                loading="lazy"
+                decoding="async"
+              />
             ) : (
               <div className="avatar-placeholder" style={{ background: avatarGradient }}>{initial}</div>
             )}

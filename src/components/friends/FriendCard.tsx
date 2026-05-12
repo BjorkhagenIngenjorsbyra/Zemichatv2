@@ -13,6 +13,7 @@ import {
 import { ellipse, ellipseOutline, personRemoveOutline } from 'ionicons/icons';
 import { type User, FRIEND_CATEGORIES } from '../../types/database';
 import { isUserOnline } from '../../services/presence';
+import { getOptimizedAvatarUrl } from '../../utils/imageUrl';
 
 interface FriendCardProps {
   user: User;
@@ -49,7 +50,12 @@ export const FriendCard: React.FC<FriendCardProps> = ({
       >
         <IonAvatar slot="start" className="friend-avatar">
           {user.avatar_url ? (
-            <img src={user.avatar_url} alt={user.display_name || ''} />
+            <img
+              src={getOptimizedAvatarUrl(user.avatar_url, 48)}
+              alt={user.display_name || ''}
+              loading="lazy"
+              decoding="async"
+            />
           ) : (
             <div className="avatar-placeholder" style={{ background: getAvatarColor(user) }}>
               {nickname?.charAt(0)?.toUpperCase() || getInitial(user)}

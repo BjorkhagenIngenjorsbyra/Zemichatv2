@@ -64,7 +64,7 @@ export const SOSAlertCard: React.FC<SOSAlertCardProps> = ({
 
           <IonAvatar className="texter-avatar">
             {alert.texter.avatar_url ? (
-              <img src={alert.texter.avatar_url} alt={alert.texter.display_name || ''} />
+              <img src={alert.texter.avatar_url} alt={alert.texter.display_name || ''} loading="lazy" decoding="async" />
             ) : (
               <div className="avatar-placeholder">
                 {alert.texter.display_name?.charAt(0)?.toUpperCase() || '?'}

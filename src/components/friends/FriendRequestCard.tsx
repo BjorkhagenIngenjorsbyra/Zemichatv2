@@ -45,7 +45,7 @@ export const FriendRequestCard: React.FC<FriendRequestCardProps> = ({
     <IonItem className="request-card" data-testid={`request-card-${friendshipId}`}>
       <IonAvatar slot="start" className="request-avatar">
         {displayUser.avatar_url ? (
-          <img src={displayUser.avatar_url} alt={displayUser.display_name || ''} />
+          <img src={displayUser.avatar_url} alt={displayUser.display_name || ''} loading="lazy" decoding="async" />
         ) : (
           <div className="avatar-placeholder">
             {displayUser.display_name?.charAt(0)?.toUpperCase() || '?'}

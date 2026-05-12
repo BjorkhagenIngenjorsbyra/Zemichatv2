@@ -202,6 +202,8 @@ const AddFriend: React.FC = () => {
                     <img
                       src={searchResult.avatar_url}
                       alt={searchResult.display_name || ''}
+                      loading="lazy"
+                      decoding="async"
                     />
                   ) : (
                     <div
