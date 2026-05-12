@@ -320,6 +320,7 @@
   },
   "sos": {
     "button": "SOS",
+    "summonSuper": "Call Super",
     "confirmTitle": "Send SOS Alert?",
     "confirmMessage": "This will alert your guardian with your location.",
     "confirmYes": "YES, SEND SOS",

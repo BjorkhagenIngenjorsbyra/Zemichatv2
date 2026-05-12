@@ -320,6 +320,7 @@
   },
   "sos": {
     "button": "SOS",
+    "summonSuper": "Tillkalla Super",
     "confirmTitle": "Skicka SOS-larm?",
     "confirmMessage": "Detta larmar din vårdnadshavare med din plats.",
     "confirmYes": "JA, SKICKA SOS",

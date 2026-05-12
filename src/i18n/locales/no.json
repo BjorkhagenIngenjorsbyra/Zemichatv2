@@ -320,6 +320,7 @@
   },
   "sos": {
     "button": "SOS",
+    "summonSuper": "Tilkall Super",
     "confirmTitle": "Sende SOS-alarm?",
     "confirmMessage": "Dette varsler din foresatte med din posisjon.",
     "confirmYes": "JA, SEND SOS",

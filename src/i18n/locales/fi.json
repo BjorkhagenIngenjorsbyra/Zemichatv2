@@ -320,6 +320,7 @@
   },
   "sos": {
     "button": "SOS",
+    "summonSuper": "Kutsu Super",
     "confirmTitle": "Lähetä SOS-hälytys?",
     "confirmMessage": "Tämä hälyttää huoltajasi sijainnillasi.",
     "confirmYes": "KYLLÄ, LÄHETÄ SOS",

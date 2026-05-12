@@ -320,6 +320,7 @@
   },
   "sos": {
     "button": "SOS",
+    "summonSuper": "Tilkald Super",
     "confirmTitle": "Send SOS-alarm?",
     "confirmMessage": "Dette alarmerer din forælder med din placering.",
     "confirmYes": "JA, SEND SOS",
