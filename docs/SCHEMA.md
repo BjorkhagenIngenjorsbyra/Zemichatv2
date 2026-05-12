@@ -718,6 +718,36 @@ Se separat dokument: [RLS.md](./RLS.md)
 
 ---
 
+## ON DELETE-policy på FKs mot users/teams/chats
+
+Normaliserad av migration `20260512090000_fk_cascade_user_team_delete.sql`
+(issue #41). Skiljer på två fall: `CASCADE` när barnraden är meningslös
+utan föräldern, `SET NULL` när raden ska överleva men referensen tappas.
+
+| FK                              | Policy     | Motivering                                                              |
+| ------------------------------- | ---------- | ----------------------------------------------------------------------- |
+| `poll_votes.user_id`            | CASCADE    | rösten är per-user                                                       |
+| `polls.creator_id`              | SET NULL   | enkäten består, "skapad av borttagen användare"                          |
+| `message_reactions.user_id`     | CASCADE    | reaktion är per-user                                                     |
+| `message_read_receipts.user_id` | CASCADE    | läskvitto är per-user                                                    |
+| `messages.sender_id`            | SET NULL   | meddelanden bevaras; klienten renderar "Borttagen användare"             |
+| `chat_members.user_id`          | CASCADE    | medlemskap är join-rad, ingen mening utan user                           |
+| `push_tokens.user_id`           | CASCADE    | token är enhet-per-user                                                  |
+| `texter_settings.user_id`       | CASCADE    | inställningar är per-user                                                |
+| `call_logs.chat_id`             | CASCADE    | samtalslog följer chatten                                                |
+| `call_logs.initiator_id`        | SET NULL   | bevara historik när initiator försvinner                                 |
+| `chats.created_by`              | SET NULL   | chatten överlever skaparens borttagning                                  |
+
+Konsekvenser klient-sidan:
+- `messages.sender_id` kan vara `NULL` — rendera "Borttagen användare" i
+  bubblan istället för att krascha.
+- `chats.created_by` kan vara `NULL` — `created_by`-baserade RLS-policies
+  och dashboards måste hantera fallet.
+- `polls.creator_id` och `call_logs.initiator_id` kan vara `NULL` —
+  motsvarande UI ska visa fallback-namn.
+
+---
+
 ## Migrations-ordning
 
 1. `001_create_enums.sql` – Alla enum-typer
