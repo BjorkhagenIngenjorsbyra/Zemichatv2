@@ -19,6 +19,7 @@ import {
   IonRefresherContent,
   IonAlert,
   IonActionSheet,
+  IonToast,
   RefresherEventDetail,
 } from '@ionic/react';
 import { personAddOutline, peopleOutline, timeOutline, chatbubbleOutline, call, videocam, settingsOutline } from 'ionicons/icons';
@@ -72,6 +73,7 @@ const Friends: React.FC = () => {
     userId: string;
     name: string;
   } | null>(null);
+  const [unfriendError, setUnfriendError] = useState<string | null>(null);
 
   const loadData = useCallback(async () => {
     const [friendsResult, requestsResult, settingsResult] = await Promise.all([
@@ -99,7 +101,14 @@ const Friends: React.FC = () => {
 
   const handleUnfriend = async (friendshipId: string) => {
     const { error } = await unfriend(friendshipId);
-    if (!error) {
+    if (error) {
+      // Issue #42: previously a failed delete (e.g. an external-team friend
+      // hitting an RLS/precedence edge) was swallowed and the friend stayed
+      // in the list. Surface the error and re-fetch so the user sees state
+      // truthfully instead of clicking forever with no feedback.
+      setUnfriendError(error.message || t('friends.unfriendFailed', 'Kunde inte ta bort vännen'));
+      loadData();
+    } else {
       setFriends((prev) => prev.filter((f) => f.id !== friendshipId));
     }
     setUnfriendTarget(null);
@@ -444,6 +453,14 @@ const Friends: React.FC = () => {
               return next;
             });
           }}
+        />
+
+        <IonToast
+          isOpen={!!unfriendError}
+          message={unfriendError || ''}
+          duration={3500}
+          color="warning"
+          onDidDismiss={() => setUnfriendError(null)}
         />
 
         <AddToChatPicker
