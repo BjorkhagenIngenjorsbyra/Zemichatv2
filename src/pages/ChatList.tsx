@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useHistory } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { Virtuoso } from 'react-virtuoso';
 import { getDisplayName, getAvatarColor } from '../utils/userDisplay';
 import {
   IonPage,
@@ -453,10 +454,30 @@ const ChatList: React.FC = () => {
               </div>
             )}
 
-            {/* Active Chats */}
-            {activeChats.length > 0 && (
+            {/* Active Chats — virtualized (audit #36-P1) once the list
+                crosses a threshold where we'd otherwise render every
+                IonItemSliding upfront. Under the threshold we stay with
+                the plain list because Virtuoso's measurement layer adds
+                paint cost that doesn't pay off for ~10 items, and we
+                want the swipe gesture (IonItemSliding) to feel native
+                from the first frame. */}
+            {activeChats.length > 0 && activeChats.length <= 25 && (
               <IonList className="chat-list">
                 {activeChats.map(renderChatItem)}
+              </IonList>
+            )}
+            {activeChats.length > 25 && (
+              <IonList className="chat-list virtualized-chat-list">
+                <Virtuoso
+                  useWindowScroll
+                  data={activeChats}
+                  totalCount={activeChats.length}
+                  // Estimate based on the .chat-item paddings + avatar+two
+                  // lines of text. Virtuoso self-corrects after mount.
+                  defaultItemHeight={84}
+                  computeItemKey={(_, chat) => chat.id}
+                  itemContent={(index, chat) => renderChatItem(chat, index)}
+                />
               </IonList>
             )}
 
