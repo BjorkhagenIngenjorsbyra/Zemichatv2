@@ -27,6 +27,7 @@ import {
   type Invitation,
 } from '../services/invitations';
 import { getCurrentLanguage } from '../i18n';
+import { getPublicAppOrigin } from '../utils/appOrigin';
 
 const InviteSuper: React.FC = () => {
   const { t } = useTranslation();
@@ -88,7 +89,7 @@ const InviteSuper: React.FC = () => {
     }
 
     if (invitation) {
-      const link = `${window.location.origin}/invite/${invitation.token}?lang=${getCurrentLanguage()}`;
+      const link = `${getPublicAppOrigin()}/invite/${invitation.token}?lang=${getCurrentLanguage()}`;
 
       // Try to send invitation email via Edge Function
       const { error: sendError } = await sendInvitationEmail(

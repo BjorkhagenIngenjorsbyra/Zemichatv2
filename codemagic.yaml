@@ -18,6 +18,7 @@ workflows:
         XCODE_SCHEME: "App"
         APP_STORE_CONNECT_APP_ID: "6758961616"
         BUNDLE_ID: "com.zemichat.app"
+        VITE_APP_URL: "https://app.zemichat.com"
         VITE_SUPABASE_URL: "https://qrrorlxocpxvqcfdipbq.supabase.co"
         VITE_SUPABASE_ANON_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFycm9ybHhvY3B4dnFjZmRpcGJxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAyODA3ODIsImV4cCI6MjA4NTg1Njc4Mn0.t7wtlKhS34SVX0Jw0d9kI36PaEK_OdhG4mU0XIh7ocU"
         VITE_REVENUECAT_IOS_KEY: "appl_BMmHxKRyBZvHYClLGUzqyDFeARS"
@@ -162,6 +163,7 @@ workflows:
         - zemichat_keystore
       vars:
         PACKAGE_NAME: "com.zemichat.app"
+        VITE_APP_URL: "https://app.zemichat.com"
         VITE_SUPABASE_URL: "https://qrrorlxocpxvqcfdipbq.supabase.co"
         VITE_SUPABASE_ANON_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFycm9ybHhvY3B4dnFjZmRpcGJxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAyODA3ODIsImV4cCI6MjA4NTg1Njc4Mn0.t7wtlKhS34SVX0Jw0d9kI36PaEK_OdhG4mU0XIh7ocU"
         VITE_REVENUECAT_IOS_KEY: "appl_BMmHxKRyBZvHYClLGUzqyDFeARS"
