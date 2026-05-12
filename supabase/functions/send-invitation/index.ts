@@ -33,8 +33,33 @@ serve(async (req) => {
     const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY') ?? '';
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
     const resendApiKey = Deno.env.get('RESEND_API_KEY') ?? '';
+    // Allow overriding the From address per environment. Falls back to the
+    // verified production sender. Misconfiguration (e.g. an unverified
+    // sender) is one of the common causes that #40 is meant to surface.
+    const fromAddress = Deno.env.get('INVITE_FROM_ADDRESS') ?? 'Zemichat <noreply@zemichat.com>';
 
-    if (!resendApiKey) {
+    // Diagnostic: surface configuration gaps in logs so a missing env var
+    // doesn't masquerade as a generic "Failed to send" 5xx (issue #40).
+    if (!supabaseUrl || !supabaseAnonKey || !supabaseServiceKey) {
+      console.error('send-invitation: Supabase env vars missing', {
+        hasUrl: !!supabaseUrl,
+        hasAnon: !!supabaseAnonKey,
+        hasServiceRole: !!supabaseServiceKey,
+      });
+      return new Response(
+        JSON.stringify({ error: 'Server misconfigured: Supabase env vars missing' }),
+        {
+          status: 500,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      );
+    }
+
+    if (!resendApiKey || !resendApiKey.startsWith('re_')) {
+      console.error('send-invitation: RESEND_API_KEY missing or malformed', {
+        present: !!resendApiKey,
+        prefixOk: resendApiKey.startsWith('re_'),
+      });
       return new Response(
         JSON.stringify({ error: 'Email service not configured' }),
         {
@@ -208,40 +233,105 @@ serve(async (req) => {
 </body>
 </html>`.trim();
 
-    // Send email via Resend API
-    const resendResponse = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${resendApiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        from: 'Zemichat <noreply@zemichat.com>',
-        to: email,
-        // Subject is plain text in the SMTP envelope — no HTML escaping
-        // needed, but we strip control characters / newlines to prevent
-        // header injection.
-        subject: `${inviterName.replace(/[\r\n]+/g, ' ')} invited you to join ${teamName.replace(/[\r\n]+/g, ' ')} on Zemichat`,
-        html: htmlEmail,
-      }),
+    // Send email via Resend API. We log the call with a correlation id so a
+    // failure can be traced back to a specific invitation row (#40).
+    const correlationId = invitationId.slice(0, 8);
+    console.log(`send-invitation[${correlationId}]: posting to Resend`, {
+      to: email,
+      from: fromAddress,
+      invitationId,
     });
 
-    if (!resendResponse.ok) {
-      const resendError = await resendResponse.text();
-      console.error('Resend API error:', resendError);
+    let resendResponse: Response;
+    try {
+      resendResponse = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${resendApiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          from: fromAddress,
+          to: email,
+          // Subject is plain text in the SMTP envelope — no HTML escaping
+          // needed, but we strip control characters / newlines to prevent
+          // header injection.
+          subject: `${inviterName.replace(/[\r\n]+/g, ' ')} invited you to join ${teamName.replace(/[\r\n]+/g, ' ')} on Zemichat`,
+          html: htmlEmail,
+        }),
+      });
+    } catch (networkErr) {
+      // Network-level failure (DNS, TLS, fetch abort). Distinguish from a
+      // 4xx/5xx so the client can prompt a retry rather than show "config".
+      console.error(`send-invitation[${correlationId}]: network failure calling Resend`, networkErr);
       return new Response(
-        JSON.stringify({ error: 'Failed to send invitation email' }),
+        JSON.stringify({
+          error: 'Could not reach email provider',
+          correlationId,
+        }),
         {
-          status: 502,
+          status: 503,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         }
       );
     }
 
+    if (!resendResponse.ok) {
+      const resendErrorBody = await resendResponse.text();
+      console.error(
+        `send-invitation[${correlationId}]: Resend rejected request`,
+        {
+          status: resendResponse.status,
+          body: resendErrorBody.slice(0, 500),
+        }
+      );
+
+      // Pick a friendly client-facing error that hints at the real cause.
+      // The raw Resend body is logged server-side only — we don't leak
+      // their wording in case it changes.
+      let clientMsg = 'Failed to send invitation email';
+      let clientStatus = 502;
+      if (resendResponse.status === 401 || resendResponse.status === 403) {
+        clientMsg = 'Email service authentication failed';
+        clientStatus = 500;
+      } else if (resendResponse.status === 422) {
+        clientMsg = 'Email rejected by provider (invalid recipient or sender)';
+        clientStatus = 400;
+      } else if (resendResponse.status === 429) {
+        clientMsg = 'Email provider rate limit hit, please try again shortly';
+        clientStatus = 429;
+      }
+
+      return new Response(
+        JSON.stringify({
+          error: clientMsg,
+          correlationId,
+          providerStatus: resendResponse.status,
+        }),
+        {
+          status: clientStatus,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      );
+    }
+
+    // Parse the Resend response so we can include the provider message-id
+    // in logs — invaluable if a recipient says "didn't receive it".
+    let resendBody: { id?: string } | null = null;
+    try {
+      resendBody = await resendResponse.json();
+    } catch {
+      // Resend should always return JSON on 2xx; tolerate the edge case.
+    }
+    console.log(`send-invitation[${correlationId}]: Resend accepted`, {
+      messageId: resendBody?.id ?? null,
+    });
+
     return new Response(
       JSON.stringify({
         success: true,
         message: 'Invitation email sent',
+        correlationId,
       }),
       {
         status: 200,
@@ -249,7 +339,14 @@ serve(async (req) => {
       }
     );
   } catch (err) {
-    console.error('send-invitation error:', err);
+    // Log the full error so the cause isn't hidden behind a generic 500.
+    // Issue #40 originally surfaced as "internal server error" with no
+    // breadcrumbs — that's what this branch addresses.
+    console.error('send-invitation: unhandled error', {
+      name: err instanceof Error ? err.name : 'unknown',
+      message: err instanceof Error ? err.message : String(err),
+      stack: err instanceof Error ? err.stack : undefined,
+    });
     return new Response(
       JSON.stringify({ error: 'Internal server error' }),
       {

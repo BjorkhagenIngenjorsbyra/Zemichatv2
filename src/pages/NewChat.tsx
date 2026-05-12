@@ -175,7 +175,7 @@ const NewChat: React.FC = () => {
                   >
                     <IonAvatar slot="start" className="contact-avatar">
                       {contact.avatar_url ? (
-                        <img src={contact.avatar_url} alt={contact.display_name || ''} />
+                        <img src={contact.avatar_url} alt={contact.display_name || ''} loading="lazy" decoding="async" />
                       ) : (
                         <div
                           className="avatar-placeholder"

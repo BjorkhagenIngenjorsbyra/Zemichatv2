@@ -391,6 +391,20 @@ export async function rejectFriendRequest(
 
 /**
  * Unfriend (remove an accepted friendship).
+ *
+ * Issue #42: previously this DELETE chained .eq('status', ACCEPTED) and
+ * .or(requester=me OR addressee=me). RLS already enforces that only the
+ * two participants (or their Owner) may delete a friendship row, so the
+ * client-side filters were redundant — and the `.or()` combined with
+ * `.eq()` in PostgREST can yield surprising precedence when the row's
+ * other party sits in a different team (the .or filter is treated as a
+ * sibling AND of the previous .eq, but the underlying SELECT used to
+ * validate the row may itself be filtered by users-table RLS, dropping
+ * the row from the user's view and producing a silent zero-row delete).
+ *
+ * The fix is to delete by primary key only and let RLS gate authority.
+ * We then fetch the returning row count via .select() so the caller can
+ * tell a "no permission / row gone" case apart from a real DB error.
  */
 export async function unfriend(friendshipId: string): Promise<{ error: Error | null }> {
   try {
@@ -402,16 +416,24 @@ export async function unfriend(friendshipId: string): Promise<{ error: Error | n
       return { error: new Error('Not authenticated') };
     }
 
-    // Delete the friendship (either party can unfriend)
-    const { error } = await supabase
+    // Delete by id alone — RLS enforces participant/Owner authority. We
+    // ask PostgREST to return the deleted rows so we can detect a
+    // zero-row outcome (which would otherwise present as success).
+    const { data, error } = await supabase
       .from('friendships')
       .delete()
       .eq('id', friendshipId)
-      .eq('status', FriendshipStatus.ACCEPTED)
-      .or(`requester_id.eq.${user.id},addressee_id.eq.${user.id}`);
+      .select('id');
 
     if (error) {
       return { error: new Error(error.message) };
+    }
+
+    if (!data || (Array.isArray(data) && data.length === 0)) {
+      // Either RLS rejected the delete or the row was already gone.
+      // Surface as an explicit error so the UI can react (re-fetch or
+      // show a toast) instead of silently leaving the friend on screen.
+      return { error: new Error('Friendship could not be removed') };
     }
 
     return { error: null };

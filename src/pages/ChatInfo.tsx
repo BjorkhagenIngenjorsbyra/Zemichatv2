@@ -147,7 +147,7 @@ const ChatInfo: React.FC = () => {
                   {getChatDisplayName().charAt(0)?.toUpperCase() || '?'}
                 </div>
               ) : otherUser?.avatar_url ? (
-                <img src={otherUser.avatar_url} alt={otherUser.display_name || ''} />
+                <img src={otherUser.avatar_url} alt={otherUser.display_name || ''} loading="lazy" decoding="async" />
               ) : (
                 <div
                   className="avatar-placeholder large"
@@ -206,7 +206,7 @@ const ChatInfo: React.FC = () => {
                     <IonItem key={member.user_id} className="member-item">
                       <IonAvatar slot="start" className="member-avatar">
                         {member.user?.avatar_url ? (
-                          <img src={member.user.avatar_url} alt={member.user.display_name || ''} />
+                          <img src={member.user.avatar_url} alt={member.user.display_name || ''} loading="lazy" decoding="async" />
                         ) : (
                           <div className="avatar-placeholder small">
                             {(member.user?.display_name || '?').charAt(0)?.toUpperCase()}

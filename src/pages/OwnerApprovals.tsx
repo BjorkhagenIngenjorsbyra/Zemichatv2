@@ -211,6 +211,8 @@ const OwnerApprovals: React.FC = () => {
                       <img
                         src={group.texter.avatar_url}
                         alt={group.texter.display_name || ''}
+                        loading="lazy"
+                        decoding="async"
                       />
                     ) : (
                       <div className="avatar-placeholder small">
@@ -239,6 +241,8 @@ const OwnerApprovals: React.FC = () => {
                             <img
                               src={request.requester.avatar_url}
                               alt={request.requester.display_name || ''}
+                              loading="lazy"
+                              decoding="async"
                             />
                           ) : (
                             <div className="avatar-placeholder">

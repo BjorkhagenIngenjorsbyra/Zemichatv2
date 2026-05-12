@@ -60,7 +60,7 @@ const CallHistoryItem: React.FC<CallHistoryItemProps> = ({
     >
       <IonAvatar slot="start" className="call-avatar">
         {avatarUrl ? (
-          <img src={avatarUrl} alt={displayName} />
+          <img src={avatarUrl} alt={displayName} loading="lazy" decoding="async" />
         ) : (
           <div className="call-avatar-placeholder" style={{ background: getAvatarColor(other) }}>
             {getInitial(other)}

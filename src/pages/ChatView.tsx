@@ -384,6 +384,15 @@ const ChatView: React.FC = () => {
   const activeMemberCount = chat?.members.filter((m) => !m.left_at).length || 0;
   const hideCallForGroupSize = chat?.is_group && activeMemberCount > MAX_GROUP_CALL_PARTICIPANTS;
 
+  // Issue #43: the per-chat "Tillkalla Super" button replaces the previous
+  // always-on SOS button. Only show it to Texters in chats where at least
+  // one Super is a current (not left) member — anywhere else there's no
+  // Super to summon. The SOS action itself remains unblockable elsewhere
+  // (Settings + SOSOnlyView keep the global SOSButton intact for safety).
+  const chatHasActiveSuper = !!chat?.members.some(
+    (m) => !m.left_at && m.user?.role === UserRole.SUPER
+  );
+
   const getChatDisplayName = (): string => {
     if (!chat) return '';
     if (chat.name) return chat.name;
@@ -790,7 +799,9 @@ const ChatView: React.FC = () => {
             <IonButton onClick={() => setShowSearch(true)}>
               <IonIcon icon={searchOutline} />
             </IonButton>
-            {profile?.role === UserRole.TEXTER && <SOSButton size="small" />}
+            {profile?.role === UserRole.TEXTER && chatHasActiveSuper && (
+              <SOSButton size="small" labelKey="sos.summonSuper" />
+            )}
           </IonButtons>
         </IonToolbar>
       </IonHeader>

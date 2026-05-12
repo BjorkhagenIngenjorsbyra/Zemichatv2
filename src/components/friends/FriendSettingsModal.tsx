@@ -74,7 +74,7 @@ export const FriendSettingsModal: React.FC<FriendSettingsModalProps> = ({
         <div className="fs-header">
           <IonAvatar className="fs-avatar">
             {friend.avatar_url ? (
-              <img src={friend.avatar_url} alt={friend.display_name || ''} />
+              <img src={friend.avatar_url} alt={friend.display_name || ''} loading="lazy" decoding="async" />
             ) : (
               <div className="fs-avatar-placeholder">
                 {friend.display_name?.charAt(0)?.toUpperCase() || '?'}

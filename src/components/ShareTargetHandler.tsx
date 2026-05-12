@@ -279,7 +279,7 @@ const ShareTargetHandler: React.FC = () => {
                   >
                     <IonAvatar slot="start" className="share-picker-avatar">
                       {avatarUrl ? (
-                        <img src={avatarUrl} alt="" />
+                        <img src={avatarUrl} alt="" loading="lazy" decoding="async" />
                       ) : (
                         <div className="share-avatar-placeholder">{initial}</div>
                       )}

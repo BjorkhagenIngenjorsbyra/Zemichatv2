@@ -8,6 +8,14 @@ import { sendSosAlert } from '../../services/sos';
 interface SOSButtonProps {
   onAlertSent?: () => void;
   size?: 'small' | 'default' | 'large';
+  /**
+   * Optional override for the button label. Defaults to the i18n key
+   * `sos.button`. Issue #43 introduces a per-chat variant labelled
+   * "Tillkalla Super" — passing `labelKey="sos.summonSuper"` lets the
+   * caller swap text without forking the component (the SOS action and
+   * safety guarantees stay identical).
+   */
+  labelKey?: string;
 }
 
 /**
@@ -17,6 +25,7 @@ interface SOSButtonProps {
 export const SOSButton: React.FC<SOSButtonProps> = ({
   onAlertSent,
   size = 'default',
+  labelKey = 'sos.button',
 }) => {
   const { t } = useTranslation();
   const [showConfirm, setShowConfirm] = useState(false);
@@ -53,7 +62,7 @@ export const SOSButton: React.FC<SOSButtonProps> = ({
         ) : (
           <>
             <IonIcon icon={alertCircle} slot="start" />
-            {t('sos.button')}
+            {t(labelKey)}
           </>
         )}
       </IonButton>

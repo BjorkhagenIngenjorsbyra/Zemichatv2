@@ -255,7 +255,7 @@ const TexterDetail: React.FC = () => {
           <div className="profile-card">
             <IonAvatar className="profile-avatar">
               {user.avatar_url ? (
-                <img src={user.avatar_url} alt={user.display_name || 'Avatar'} />
+                <img src={user.avatar_url} alt={user.display_name || 'Avatar'} loading="lazy" decoding="async" />
               ) : (
                 <div className="avatar-placeholder">
                   {user.display_name?.charAt(0)?.toUpperCase() || '?'}
