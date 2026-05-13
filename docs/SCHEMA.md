@@ -378,7 +378,9 @@ CREATE TABLE message_reactions (
   user_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   emoji text NOT NULL,
   created_at timestamptz NOT NULL DEFAULT now(),
-  UNIQUE(message_id, user_id, emoji)
+  -- Max one reaction per user per message (issue #34, WhatsApp/iMessage
+  -- semantics). A new emoji from the same user replaces the previous one.
+  CONSTRAINT message_reactions_one_per_user UNIQUE (message_id, user_id)
 );
 
 CREATE INDEX idx_reactions_message ON message_reactions(message_id);
