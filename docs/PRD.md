@@ -114,9 +114,13 @@ Alla chattar är tekniskt grupper. En 1:1-chatt är en grupp med exakt två delt
 - Visa alla som reagerat
 
 #### Reply/Citera
-- Svep höger på meddelande för snabb reply
-- Citerat meddelande visas ovanför svaret
-- Tryck på citat för att hoppa till ursprungsmeddelandet
+- Svep höger på meddelande eller välj "Svara" i kontextmenyn för att starta svar
+- Citationsbox visas ovanför chat-inputen med avsändarens namn och utdrag —
+  textmeddelanden visar 1-3 raders preview, bild/video visar miniatyrbild
+- Citationen bäddas in via `messages.reply_to_id` så mottagaren ser samma
+  preview i bubblan
+- Tryck på citatet i bubblan → scroll till ursprungsmeddelandet och kort
+  highlight-flash på målbubblan
 
 #### Vidarebefordra
 - Vidarebefordra meddelande till annan chatt
