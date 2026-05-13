@@ -1,0 +1,31 @@
+name: Supabase Keep-Alive
+
+on:
+  schedule:
+    - cron: '0 7 */5 * *'
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Ping Supabase REST API
+        env:
+          SUPABASE_URL: https://qrrorlxocpxvqcfdipbq.supabase.co
+          SUPABASE_ANON_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFycm9ybHhvY3B4dnFjZmRpcGJxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAyODA3ODIsImV4cCI6MjA4NTg1Njc4Mn0.t7wtlKhS34SVX0Jw0d9kI36PaEK_OdhG4mU0XIh7ocU
+        run: |
+          set -euo pipefail
+          echo "Ping at $(date -Iseconds)"
+          status=$(curl -sS -o /tmp/body -w '%{http_code}' \
+            -H "apikey: $SUPABASE_ANON_KEY" \
+            "$SUPABASE_URL/rest/v1/teams?select=id&limit=1" \
+            --max-time 30)
+          echo "HTTP $status"
+          head -c 500 /tmp/body || true
+          echo
+          if [ "$status" -ge 500 ]; then
+            echo "Server-fel — projektet kan vara pausat"
+            exit 1
+          fi
+          echo "OK — aktivitet registrerad"
