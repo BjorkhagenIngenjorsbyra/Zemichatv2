@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { hapticLight } from '../../utils/haptics';
-import ReactEmojiPicker, { EmojiClickData, Theme } from 'emoji-picker-react';
+import ReactEmojiPicker, { EmojiClickData, EmojiStyle, Theme } from 'emoji-picker-react';
 
 interface EmojiPickerProps {
   onSelect: (emoji: string) => void;
@@ -38,6 +38,8 @@ const EmojiPicker: React.FC<EmojiPickerProps> = ({ onSelect, onClose }) => {
         <ReactEmojiPicker
           onEmojiClick={handleSelect}
           theme={Theme.AUTO}
+          /* Use native system emojis instead of CDN PNG sprites — see #5. */
+          emojiStyle={EmojiStyle.NATIVE}
           searchPlaceholder="Sök emoji..."
           width="100%"
           height={350}
