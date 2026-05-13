@@ -77,12 +77,17 @@ export async function createWallPost(params: {
       return { post: null, error: new Error('Not authenticated') };
     }
 
-    // Get user's team_id
-    const { data: profile } = await supabase
+    // Get user's team_id. Use maybeSingle() so a missing row returns
+    // data=null with no error (instead of PostgREST 406). Issue #14.
+    const { data: profile, error: profileError } = await supabase
       .from('users')
       .select('team_id')
       .eq('id', user.id)
-      .single();
+      .maybeSingle();
+
+    if (profileError) {
+      return { post: null, error: new Error(profileError.message) };
+    }
 
     if (!profile) {
       return { post: null, error: new Error('User profile not found') };
