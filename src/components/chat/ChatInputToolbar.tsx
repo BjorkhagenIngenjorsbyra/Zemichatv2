@@ -63,6 +63,8 @@ const ChatInputToolbar: React.FC<ChatInputToolbarProps> = ({
 }) => {
   const { t } = useTranslation();
   const textareaContainerRef = useRef<HTMLDivElement>(null);
+  // Issue #35: dedup pointerdown vs synthetic click on the emoji button.
+  const emojiHandledByPointerRef = useRef(false);
 
   // Auto-grow textarea
   const adjustTextareaHeight = useCallback(() => {
@@ -152,15 +154,38 @@ const ChatInputToolbar: React.FC<ChatInputToolbarProps> = ({
   return (
     <div className="chat-input-toolbar">
       {/* Smiley / Emoji toggle */}
-      {/* Issue #35: iOS Safari/WKWebView fires blur on the textarea before
-          our click lands on the emoji button when the keyboard is open, so
-          the panel never opens. preventDefault on mousedown/touchstart keeps
-          focus on the textarea long enough for the click to register. */}
+      {/* Issue #35: on iOS WKWebView the textarea blurs before our click
+          lands on the button, swallowing the tap. Earlier we tried
+          preventDefault on touchstart — but that ALSO prevents the
+          synthetic click iOS emits after touchend, so the panel never
+          opened.
+
+          Correct fix: drive the toggle from pointerdown for pointer/touch
+          input (fires before blur, so the keyboard collapse cycle never
+          gets a chance to swallow the activation), and keep onClick only
+          as a fallback for keyboard activation. A ref flag dedupes the
+          two paths so a single tap doesn't fire twice. */}
       <button
+        type="button"
         className={`toolbar-icon-btn ${isEmojiPanelOpen ? 'active' : ''}`}
+        onPointerDown={(e) => {
+          if (isSending) return;
+          // Keep textarea focus so iOS doesn't dismiss the keyboard mid-tap.
+          e.preventDefault();
+          emojiHandledByPointerRef.current = true;
+          onToggleEmojiPanel();
+        }}
         onMouseDown={(e) => e.preventDefault()}
-        onTouchStart={(e) => e.preventDefault()}
-        onClick={onToggleEmojiPanel}
+        onClick={() => {
+          // Pointerdown already handled the tap on touch/mouse — only run
+          // for keyboard-activated clicks (Enter/Space).
+          if (emojiHandledByPointerRef.current) {
+            emojiHandledByPointerRef.current = false;
+            return;
+          }
+          if (isSending) return;
+          onToggleEmojiPanel();
+        }}
         disabled={isSending}
         aria-label={t('chat.emojis')}
       >
