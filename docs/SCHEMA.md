@@ -130,6 +130,7 @@ Funktionskontroll per Texter (vilka features Owner har aktiverat).
 | quiet_hours_start | time | Schemalagd tystnad start |
 | quiet_hours_end | time | Schemalagd tystnad slut |
 | quiet_hours_days | int[] | Vilka veckodagar (1=mån, 7=sön) |
+| push_enabled | boolean | Owner/Super-styrd: när `false` skickar `send-push` ingen FCM/APNs-notis till Textern (issue #6) |
 
 ```sql
 CREATE TABLE texter_settings (
@@ -146,6 +147,10 @@ CREATE TABLE texter_settings (
   quiet_hours_start time,
   quiet_hours_end time,
   quiet_hours_days int[],
+  -- Owner/Super-styrd push-toggle (issue #6). När false hoppar
+  -- send-push och friend-push edge-funktionerna över FCM/APNs för
+  -- den här Textern. In-app realtime levereras fortfarande.
+  push_enabled boolean NOT NULL DEFAULT true,
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now()
 );

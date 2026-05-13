@@ -245,6 +245,14 @@ Om Texter A (tillhör Owner 1) chattar med Texter B (tillhör Owner 2):
 - Kan muta enskilda chattar (inga notiser, men synlig i listan)
 - "Stör ej" – tysta alla notiser under vald tid
 
+### 9.1.1 Owner/Super push-toggle per Texter (issue #6)
+- Owner och Super kan stänga av push-notiser för enskilda Texters i Texter-detaljvyn.
+- När togglen är av: `send-push` och `friend-push` edge-funktionerna hoppar
+  över FCM/APNs för den Textern. In-app meddelanden levereras fortfarande
+  via Realtime när appen är öppen.
+- Textern ser en banner i sina egna Settings ("Push-notiser avstängda av
+  ditt team") så det är transparent vad som händer.
+
 ### 9.2 Team Owner-specifika notiser
 | Händelse | Notis |
 |----------|-------|
