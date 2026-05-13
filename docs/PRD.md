@@ -242,6 +242,10 @@ Om Texter A (tillhör Owner 1) chattar med Texter B (tillhör Owner 2):
 
 ### 9.1 Alla användare
 - Push-notis för varje meddelande
+- Push-notis när någon skickar dig en vänförfrågan eller accepterar din
+  förfrågan (issue #7). Levereras av `friend-push` edge function via
+  `notify_friend_request` Postgres-trigger på INSERT/UPDATE av
+  `friendships`. Respekterar samma push-toggle som meddelandepushar.
 - Kan muta enskilda chattar (inga notiser, men synlig i listan)
 - "Stör ej" – tysta alla notiser under vald tid
 
