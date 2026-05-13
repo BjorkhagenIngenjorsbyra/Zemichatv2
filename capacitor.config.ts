@@ -3,7 +3,7 @@ import type { CapacitorConfig } from '@capacitor/cli';
 const config: CapacitorConfig = {
   appId: 'com.zemichat.app',
   appName: 'Zemichat',
-  version: '1.5.15',
+  version: '1.5.16',
   webDir: 'dist',
   android: {
     buildOptions: {
