@@ -242,6 +242,11 @@ Om Texter A (tillhör Owner 1) chattar med Texter B (tillhör Owner 2):
 
 ### 9.1 Alla användare
 - Push-notis för varje meddelande
+- Heads-up banner med text-preview (titel = avsändare, body = meddelande)
+  på både iOS och Android (issue #32). Android använder kanal
+  `messages_v2` med `IMPORTANCE_HIGH` (deklarerad som default-kanal i
+  AndroidManifest så FCM-utan-channel_id ändå hamnar rätt); iOS får
+  APNs-priority 10 + badge.
 - Push-notis när någon skickar dig en vänförfrågan eller accepterar din
   förfrågan (issue #7). Levereras av `friend-push` edge function via
   `notify_friend_request` Postgres-trigger på INSERT/UPDATE av
