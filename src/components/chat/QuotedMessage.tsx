@@ -37,6 +37,11 @@ const QuotedMessage: React.FC<QuotedMessageProps> = ({
     }
   };
 
+  // Issue #4: when the cited message is an image, render a tiny thumbnail
+  // next to the text — like WhatsApp's reply preview.
+  const showThumbnail =
+    (message.type === 'image' || message.type === 'video') && !!message.media_url;
+
   return (
     <div
       className={`quoted-message ${isOwn ? 'own' : 'other'}`}
@@ -52,6 +57,15 @@ const QuotedMessage: React.FC<QuotedMessageProps> = ({
         </span>
         <span className="quote-text">{getPreview()}</span>
       </div>
+      {showThumbnail && (
+        <img
+          className="quote-thumb"
+          src={message.media_url ?? undefined}
+          alt=""
+          loading="lazy"
+          decoding="async"
+        />
+      )}
 
       <style>{`
         .quoted-message {
@@ -127,6 +141,15 @@ const QuotedMessage: React.FC<QuotedMessageProps> = ({
           -webkit-box-orient: vertical;
           overflow: hidden;
           text-overflow: ellipsis;
+        }
+
+        .quote-thumb {
+          width: 2.5rem;
+          height: 2.5rem;
+          object-fit: cover;
+          border-radius: 0.4rem;
+          flex-shrink: 0;
+          align-self: center;
         }
       `}</style>
     </div>

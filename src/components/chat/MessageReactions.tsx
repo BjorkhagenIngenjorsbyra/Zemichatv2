@@ -22,7 +22,10 @@ const MessageReactions: React.FC<MessageReactionsProps> = ({
           onClick={() => onToggle?.(reaction.emoji)}
           title={reaction.users.map((u) => u.display_name || 'User').join(', ')}
         >
-          <span className="reaction-emoji">{reaction.emoji}</span>
+          {/* Keying the emoji span by the emoji makes React re-mount it when
+              the user swaps their reaction (issue #34), so the CSS pop-in
+              animation fires — WhatsApp-style swap feedback. */}
+          <span key={reaction.emoji} className="reaction-emoji">{reaction.emoji}</span>
           <span className="reaction-count">{reaction.count}</span>
         </button>
       ))}
@@ -59,6 +62,18 @@ const MessageReactions: React.FC<MessageReactionsProps> = ({
 
         .reaction-emoji {
           font-size: 0.9rem;
+          display: inline-block;
+          animation: reaction-pop 0.18s ease-out;
+        }
+
+        @keyframes reaction-pop {
+          0%   { transform: scale(0.6); opacity: 0; }
+          60%  { transform: scale(1.25); opacity: 1; }
+          100% { transform: scale(1); }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+          .reaction-emoji { animation: none; }
         }
 
         .reaction-count {

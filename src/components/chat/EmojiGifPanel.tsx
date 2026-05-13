@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { IonIcon, IonSpinner } from '@ionic/react';
 import { close, search } from 'ionicons/icons';
-import ReactEmojiPicker, { EmojiClickData, Theme } from 'emoji-picker-react';
+import ReactEmojiPicker, { EmojiClickData, EmojiStyle, Theme } from 'emoji-picker-react';
 import { searchGifs, getTrendingGifs, type GifResult } from '../../services/gif';
 import { hapticLight } from '../../utils/haptics';
 
@@ -154,6 +154,12 @@ const EmojiGifPanel: React.FC<EmojiGifPanelProps> = ({
           <ReactEmojiPicker
             onEmojiClick={handleEmojiClick}
             theme={Theme.AUTO}
+            /* Issue #5: emoji-picker-react defaults to EmojiStyle.APPLE which
+               loads CDN PNG sprites. On iOS WKWebView the sprites often fail
+               to load (CSP / network throttling) so the grid renders empty.
+               Forcing NATIVE makes each cell render via the system font
+               stack, which iOS handles natively via Apple Color Emoji. */
+            emojiStyle={EmojiStyle.NATIVE}
             searchPlaceholder={t('common.search')}
             width="100%"
             height="100%"

@@ -1103,10 +1103,18 @@ const ChatView: React.FC = () => {
             padding: 0.5rem 1rem;
             background: hsl(var(--card));
             border-top: 1px solid hsl(var(--border));
+            /* Issue #33: cap the preview width so long quoted text wraps
+               into the bubble instead of pushing it off-screen. */
+            min-width: 0;
+            overflow: hidden;
           }
 
           .reply-preview > div {
-            flex: 1;
+            flex: 1 1 0;
+            /* Without min-width:0 a flex item won't shrink below its
+               intrinsic content width, which let long quotes clip past
+               the right edge. (Issue #33.) */
+            min-width: 0;
             margin: 0;
           }
 

@@ -114,9 +114,13 @@ Alla chattar är tekniskt grupper. En 1:1-chatt är en grupp med exakt två delt
 - Visa alla som reagerat
 
 #### Reply/Citera
-- Svep höger på meddelande för snabb reply
-- Citerat meddelande visas ovanför svaret
-- Tryck på citat för att hoppa till ursprungsmeddelandet
+- Svep höger på meddelande eller välj "Svara" i kontextmenyn för att starta svar
+- Citationsbox visas ovanför chat-inputen med avsändarens namn och utdrag —
+  textmeddelanden visar 1-3 raders preview, bild/video visar miniatyrbild
+- Citationen bäddas in via `messages.reply_to_id` så mottagaren ser samma
+  preview i bubblan
+- Tryck på citatet i bubblan → scroll till ursprungsmeddelandet och kort
+  highlight-flash på målbubblan
 
 #### Vidarebefordra
 - Vidarebefordra meddelande till annan chatt
@@ -238,8 +242,25 @@ Om Texter A (tillhör Owner 1) chattar med Texter B (tillhör Owner 2):
 
 ### 9.1 Alla användare
 - Push-notis för varje meddelande
+- Heads-up banner med text-preview (titel = avsändare, body = meddelande)
+  på både iOS och Android (issue #32). Android använder kanal
+  `messages_v2` med `IMPORTANCE_HIGH` (deklarerad som default-kanal i
+  AndroidManifest så FCM-utan-channel_id ändå hamnar rätt); iOS får
+  APNs-priority 10 + badge.
+- Push-notis när någon skickar dig en vänförfrågan eller accepterar din
+  förfrågan (issue #7). Levereras av `friend-push` edge function via
+  `notify_friend_request` Postgres-trigger på INSERT/UPDATE av
+  `friendships`. Respekterar samma push-toggle som meddelandepushar.
 - Kan muta enskilda chattar (inga notiser, men synlig i listan)
 - "Stör ej" – tysta alla notiser under vald tid
+
+### 9.1.1 Owner/Super push-toggle per Texter (issue #6)
+- Owner och Super kan stänga av push-notiser för enskilda Texters i Texter-detaljvyn.
+- När togglen är av: `send-push` och `friend-push` edge-funktionerna hoppar
+  över FCM/APNs för den Textern. In-app meddelanden levereras fortfarande
+  via Realtime när appen är öppen.
+- Textern ser en banner i sina egna Settings ("Push-notiser avstängda av
+  ditt team") så det är transparent vad som händer.
 
 ### 9.2 Team Owner-specifika notiser
 | Händelse | Notis |

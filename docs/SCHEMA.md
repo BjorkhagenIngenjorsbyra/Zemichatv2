@@ -130,6 +130,7 @@ Funktionskontroll per Texter (vilka features Owner har aktiverat).
 | quiet_hours_start | time | Schemalagd tystnad start |
 | quiet_hours_end | time | Schemalagd tystnad slut |
 | quiet_hours_days | int[] | Vilka veckodagar (1=mån, 7=sön) |
+| push_enabled | boolean | Owner/Super-styrd: när `false` skickar `send-push` ingen FCM/APNs-notis till Textern (issue #6) |
 
 ```sql
 CREATE TABLE texter_settings (
@@ -146,6 +147,10 @@ CREATE TABLE texter_settings (
   quiet_hours_start time,
   quiet_hours_end time,
   quiet_hours_days int[],
+  -- Owner/Super-styrd push-toggle (issue #6). När false hoppar
+  -- send-push och friend-push edge-funktionerna över FCM/APNs för
+  -- den här Textern. In-app realtime levereras fortfarande.
+  push_enabled boolean NOT NULL DEFAULT true,
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now()
 );
@@ -378,7 +383,9 @@ CREATE TABLE message_reactions (
   user_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   emoji text NOT NULL,
   created_at timestamptz NOT NULL DEFAULT now(),
-  UNIQUE(message_id, user_id, emoji)
+  -- Max one reaction per user per message (issue #34, WhatsApp/iMessage
+  -- semantics). A new emoji from the same user replaces the previous one.
+  CONSTRAINT message_reactions_one_per_user UNIQUE (message_id, user_id)
 );
 
 CREATE INDEX idx_reactions_message ON message_reactions(message_id);
