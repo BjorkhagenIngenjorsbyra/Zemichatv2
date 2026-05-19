@@ -401,6 +401,13 @@
     "subscribe": "Abonner på {{plan}}",
     "restorePurchases": "Gjenopprett kjøp",
     "termsText": "Betaling belastes din App Store- eller Google Play-konto. Abonnementet fornyes automatisk med mindre det avbrytes minst 24 timer før periodens slutt.",
+    "termsTextIos": "Betaling belastes din App Store-konto. Abonnementet fornyes automatisk med mindre det avbrytes minst 24 timer før periodens slutt. Du administrerer abonnementet i App Store-innstillingene.",
+    "termsTextAndroid": "Betaling belastes din Google Play-konto. Abonnementet fornyes automatisk med mindre det avbrytes minst 24 timer før periodens slutt. Du administrerer abonnementet i Google Play-innstillingene.",
+    "errorOfferingsUnavailable": "Kunne ikke laste abonnement. Sjekk tilkoblingen og prøv igjen.",
+    "errorProductNotFound": "Produktet \"{{product}}\" er ikke tilgjengelig akkurat nå. Prøv igjen om et øyeblikk.",
+    "errorPurchaseFailed": "Kjøpet kunne ikke fullføres. Prøv igjen eller kontakt support hvis problemet vedvarer.",
+    "errorPurchaseException": "Noe gikk galt under kjøpet: {{error}}",
+    "errorRestoreFailed": "Kunne ikke gjenopprette tidligere kjøp: {{error}}",
     "features": {
       "maxUsers": "Opptil {{count}} brukere",
       "textMessages": "Tekstmeldinger",

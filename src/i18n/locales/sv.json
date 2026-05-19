@@ -401,6 +401,13 @@
     "subscribe": "Prenumerera på {{plan}}",
     "restorePurchases": "Återställ köp",
     "termsText": "Betalning debiteras ditt App Store- eller Google Play-konto. Prenumerationen förnyas automatiskt om den inte avbryts minst 24 timmar före periodens slut.",
+    "termsTextIos": "Betalning debiteras ditt App Store-konto. Prenumerationen förnyas automatiskt om den inte avbryts minst 24 timmar före periodens slut. Du hanterar prenumerationen i App Store-inställningarna.",
+    "termsTextAndroid": "Betalning debiteras ditt Google Play-konto. Prenumerationen förnyas automatiskt om den inte avbryts minst 24 timmar före periodens slut. Du hanterar prenumerationen i Google Play-inställningarna.",
+    "errorOfferingsUnavailable": "Kunde inte ladda prenumerationer. Kontrollera anslutningen och försök igen.",
+    "errorProductNotFound": "Produkten \"{{product}}\" är inte tillgänglig just nu. Försök igen om en stund.",
+    "errorPurchaseFailed": "Köpet kunde inte genomföras. Försök igen eller kontakta support om problemet kvarstår.",
+    "errorPurchaseException": "Något gick fel vid köpet: {{error}}",
+    "errorRestoreFailed": "Kunde inte återställa tidigare köp: {{error}}",
     "features": {
       "maxUsers": "Upp till {{count}} användare",
       "textMessages": "Textmeddelanden",

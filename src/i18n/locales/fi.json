@@ -401,6 +401,13 @@
     "subscribe": "Tilaa {{plan}}",
     "restorePurchases": "Palauta ostokset",
     "termsText": "Maksu veloitetaan App Store- tai Google Play -tililtäsi. Tilaus uusiutuu automaattisesti, ellei sitä peruuteta vähintään 24 tuntia ennen jakson päättymistä.",
+    "termsTextIos": "Maksu veloitetaan App Store -tililtäsi. Tilaus uusiutuu automaattisesti, ellei sitä peruuteta vähintään 24 tuntia ennen jakson päättymistä. Hallinnoit tilausta App Store -asetuksissa.",
+    "termsTextAndroid": "Maksu veloitetaan Google Play -tililtäsi. Tilaus uusiutuu automaattisesti, ellei sitä peruuteta vähintään 24 tuntia ennen jakson päättymistä. Hallinnoit tilausta Google Play -asetuksissa.",
+    "errorOfferingsUnavailable": "Tilauksia ei voitu ladata. Tarkista yhteys ja yritä uudelleen.",
+    "errorProductNotFound": "Tuote \"{{product}}\" ei ole saatavilla juuri nyt. Yritä hetken kuluttua uudelleen.",
+    "errorPurchaseFailed": "Ostoa ei voitu suorittaa loppuun. Yritä uudelleen tai ota yhteyttä tukeen, jos ongelma jatkuu.",
+    "errorPurchaseException": "Jokin meni vikaan ostossa: {{error}}",
+    "errorRestoreFailed": "Aiempia ostoja ei voitu palauttaa: {{error}}",
     "features": {
       "maxUsers": "Enintään {{count}} käyttäjää",
       "textMessages": "Tekstiviestit",
