@@ -47,6 +47,8 @@ interface FcmMessage {
         aps: {
           sound?: string;
           badge?: number;
+          'content-available'?: number;
+          'mutable-content'?: number;
         };
       };
     };
@@ -326,6 +328,8 @@ serve(async (req) => {
           android: {
             priority: 'high',
           },
+          // iOS: same APNs envelope as send-push (priority 10, content-available
+          // and mutable-content so background updates and future NSE rendering work).
           ...(tokenRow.platform === 'ios'
             ? {
                 apns: {
@@ -336,6 +340,8 @@ serve(async (req) => {
                     aps: {
                       sound: 'default',
                       badge: 1,
+                      'content-available': 1,
+                      'mutable-content': 1,
                     },
                   },
                 },
