@@ -401,6 +401,13 @@
     "subscribe": "Abonner på {{plan}}",
     "restorePurchases": "Gendan køb",
     "termsText": "Betaling debiteres din App Store- eller Google Play-konto. Abonnementet fornyes automatisk, medmindre det opsiges mindst 24 timer før periodens udløb.",
+    "termsTextIos": "Betaling debiteres din App Store-konto. Abonnementet fornyes automatisk, medmindre det opsiges mindst 24 timer før periodens udløb. Du administrerer abonnementet i App Store-indstillingerne.",
+    "termsTextAndroid": "Betaling debiteres din Google Play-konto. Abonnementet fornyes automatisk, medmindre det opsiges mindst 24 timer før periodens udløb. Du administrerer abonnementet i Google Play-indstillingerne.",
+    "errorOfferingsUnavailable": "Kunne ikke indlæse abonnementer. Tjek forbindelsen og prøv igen.",
+    "errorProductNotFound": "Produktet \"{{product}}\" er ikke tilgængeligt lige nu. Prøv igen om et øjeblik.",
+    "errorPurchaseFailed": "Købet kunne ikke gennemføres. Prøv igen eller kontakt support, hvis problemet fortsætter.",
+    "errorPurchaseException": "Noget gik galt under købet: {{error}}",
+    "errorRestoreFailed": "Kunne ikke gendanne tidligere køb: {{error}}",
     "features": {
       "maxUsers": "Op til {{count}} brugere",
       "textMessages": "Tekstbeskeder",

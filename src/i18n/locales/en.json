@@ -401,6 +401,13 @@
     "subscribe": "Subscribe to {{plan}}",
     "restorePurchases": "Restore Purchases",
     "termsText": "Payment will be charged to your App Store or Google Play account. Subscription automatically renews unless cancelled at least 24 hours before the end of the current period.",
+    "termsTextIos": "Payment will be charged to your App Store account. Subscription automatically renews unless cancelled at least 24 hours before the end of the current period. Manage your subscription in App Store settings.",
+    "termsTextAndroid": "Payment will be charged to your Google Play account. Subscription automatically renews unless cancelled at least 24 hours before the end of the current period. Manage your subscription in Google Play settings.",
+    "errorOfferingsUnavailable": "Could not load subscriptions. Check your connection and try again.",
+    "errorProductNotFound": "The product \"{{product}}\" is not available right now. Please try again in a moment.",
+    "errorPurchaseFailed": "The purchase could not be completed. Please try again or contact support if the issue persists.",
+    "errorPurchaseException": "Something went wrong during purchase: {{error}}",
+    "errorRestoreFailed": "Could not restore previous purchases: {{error}}",
     "features": {
       "maxUsers": "Up to {{count}} users",
       "textMessages": "Text messages",

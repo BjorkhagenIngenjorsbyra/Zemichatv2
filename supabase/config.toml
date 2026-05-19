@@ -370,6 +370,18 @@ deno_version = 2
 [functions.revenuecat-webhook]
 verify_jwt = false
 
+# pg_net triggers (notify_new_message, notify_friend_request) call these
+# functions with a shared secret in the Authorization header — not a Supabase
+# JWT. The gateway must skip JWT verification so the request reaches the
+# function, where the shared-secret check runs (constant-time compare against
+# PG_NET_SHARED_SECRET env var). Without verify_jwt=false the gateway returns
+# 401 UNAUTHORIZED_INVALID_JWT_FORMAT and the trigger silently drops every push.
+[functions.send-push]
+verify_jwt = false
+
+[functions.friend-push]
+verify_jwt = false
+
 [analytics]
 enabled = true
 port = 54327

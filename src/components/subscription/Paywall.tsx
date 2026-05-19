@@ -10,8 +10,10 @@ import {
   IonContent,
   IonIcon,
   IonSpinner,
+  IonText,
 } from '@ionic/react';
-import { close, checkmarkCircle, sparkles } from 'ionicons/icons';
+import { close, checkmarkCircle, sparkles, alertCircle } from 'ionicons/icons';
+import { Capacitor } from '@capacitor/core';
 import { useSubscription } from '../../contexts/SubscriptionContext';
 import { PlanType } from '../../types/database';
 import { PLAN_FEATURES, PLAN_PRICING } from '../../types/subscription';
@@ -46,29 +48,77 @@ const Paywall: React.FC<PaywallProps> = ({ blocking = false }) => {
 
   const [selectedPlan, setSelectedPlan] = useState<PlanId>('plus_ringa');
   const [isProcessing, setIsProcessing] = useState(false);
+  const [purchaseError, setPurchaseError] = useState<string | null>(null);
+
+  // Paywall is interactive when:
+  //  - offerings have loaded (currentOffering present)
+  //  - context is not in a global loading state
+  //  - we are not mid-purchase
+  // Apple rejection 2026-05-18 (build 51, iPad Air 11" iPadOS 26.5) flagged the
+  // subscribe button as unresponsive. Root cause: when RC offerings hadn't
+  // finished loading yet, handlePurchase silently returned and the button
+  // never gave feedback. We now keep the button disabled with a spinner until
+  // offerings are ready, then enable it and surface any failure as a visible
+  // error message instead of failing silently.
+  const isReady = !!currentOffering && !isLoading;
 
   const handlePurchase = async () => {
-    if (!currentOffering) return;
+    setPurchaseError(null);
+
+    if (!currentOffering) {
+      // Offerings still loading or failed to load. Surface a real error
+      // instead of returning silently so the user can retry.
+      setPurchaseError(t('paywall.errorOfferingsUnavailable'));
+      return;
+    }
 
     setIsProcessing(true);
-    const planType = PLAN_ID_TO_TYPE[selectedPlan];
-    const pkg = currentOffering.availablePackages.find(
-      (p) => p.product.identifier === PLAN_PRICING[planType].productId
-    );
+    try {
+      const planType = PLAN_ID_TO_TYPE[selectedPlan];
+      const expectedProductId = PLAN_PRICING[planType].productId;
+      const pkg = currentOffering.availablePackages.find(
+        (p) => p.product.identifier === expectedProductId
+      );
 
-    if (pkg) {
+      if (!pkg) {
+        // Product mismatch between client config and store offering. Common
+        // causes: store-side product not approved yet, region-locked, or a
+        // typo in PLAN_PRICING.productId. Surface so we can debug.
+        setPurchaseError(
+          t('paywall.errorProductNotFound', { product: expectedProductId })
+        );
+        return;
+      }
+
       const success = await purchase(pkg);
       if (success) {
         hidePaywall();
+      } else {
+        // RevenueCat returned false. This typically means the user cancelled,
+        // but it can also mean a sandbox/StoreKit error. Show a generic
+        // failure message — cancellation is harmless, surfacing it briefly
+        // is better than a dead button.
+        setPurchaseError(t('paywall.errorPurchaseFailed'));
       }
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'unknown error';
+      setPurchaseError(t('paywall.errorPurchaseException', { error: msg }));
+    } finally {
+      setIsProcessing(false);
     }
-    setIsProcessing(false);
   };
 
   const handleRestore = async () => {
+    setPurchaseError(null);
     setIsProcessing(true);
-    await restore();
-    setIsProcessing(false);
+    try {
+      await restore();
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'unknown error';
+      setPurchaseError(t('paywall.errorRestoreFailed', { error: msg }));
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   const plans = [
@@ -165,19 +215,31 @@ const Paywall: React.FC<PaywallProps> = ({ blocking = false }) => {
             ))}
           </div>
 
-          {/* Purchase button */}
+          {/* Purchase button — disabled while offerings load or purchase
+              is in flight. Once offerings load, the button is interactive
+              even on iPad layouts (fix for Apple rejection 2026-05-18). */}
           <IonButton
             expand="block"
             className="purchase-button"
             onClick={handlePurchase}
-            disabled={isProcessing || isLoading}
+            disabled={isProcessing || !isReady}
+            data-testid="paywall-subscribe-button"
           >
-            {isProcessing ? (
+            {isProcessing || !isReady ? (
               <IonSpinner name="crescent" />
             ) : (
               t('paywall.subscribe', { plan: t(PLAN_ID_TO_I18N[selectedPlan]) })
             )}
           </IonButton>
+
+          {/* Visible error message — Apple flagged the silent-fail UX as
+              an unresponsive button. Showing the cause lets the user retry. */}
+          {purchaseError && (
+            <div className="purchase-error" role="alert">
+              <IonIcon icon={alertCircle} />
+              <IonText>{purchaseError}</IonText>
+            </div>
+          )}
 
           {/* Restore purchases */}
           <IonButton
@@ -186,13 +248,17 @@ const Paywall: React.FC<PaywallProps> = ({ blocking = false }) => {
             className="restore-button"
             onClick={handleRestore}
             disabled={isProcessing}
+            data-testid="paywall-restore-button"
           >
             {t('paywall.restorePurchases')}
           </IonButton>
 
-          {/* Terms */}
+          {/* Terms — platform-specific text removes Google Play references
+              on iOS (App Store guideline 2.3.10, fix for rejection 2026-05-18). */}
           <p className="terms-text">
-            {t('paywall.termsText')}
+            {Capacitor.getPlatform() === 'ios'
+              ? t('paywall.termsTextIos')
+              : t('paywall.termsTextAndroid')}
           </p>
         </div>
 
@@ -329,6 +395,38 @@ const Paywall: React.FC<PaywallProps> = ({ blocking = false }) => {
             font-size: 0.7rem;
             color: hsl(var(--foreground) / 0.6);
             margin-top: 1rem;
+          }
+
+          .purchase-error {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.5rem;
+            margin: 0.5rem 0;
+            padding: 0.75rem;
+            background: hsl(var(--destructive) / 0.1);
+            color: hsl(var(--destructive));
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            text-align: left;
+          }
+
+          .purchase-error ion-icon {
+            font-size: 1.125rem;
+            flex-shrink: 0;
+            margin-top: 0.125rem;
+          }
+
+          /* iPad layout: paywall.modal can stretch wide and break the plan-card
+             grid on iPadOS 26.5 (Apple rejection 2026-05-18 surface area).
+             Constrain max-width and re-center the action button so the
+             subscribe button always falls inside the viewport. */
+          @media (min-width: 768px) {
+            .paywall-container {
+              max-width: 560px;
+            }
+            .plan-cards {
+              gap: 1.25rem;
+            }
           }
         `}</style>
       </IonContent>

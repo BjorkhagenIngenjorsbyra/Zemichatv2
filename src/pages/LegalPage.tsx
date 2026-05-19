@@ -9,6 +9,7 @@ import {
   IonButtons,
   IonBackButton,
 } from '@ionic/react';
+import { Capacitor } from '@capacitor/core';
 
 /* ── Inline markdown content per language ────────────────────── */
 
@@ -23,6 +24,76 @@ import termsEn from '../legal/terms-en';
 import termsNo from '../legal/terms-no';
 import termsDa from '../legal/terms-da';
 import termsFi from '../legal/terms-fi';
+
+/**
+ * Strip cross-store references for the current platform.
+ *
+ * Apple rejection 2026-05-18 (build 51, Guideline 2.3.10) flagged the iOS
+ * binary for containing Google Play references. The legal documents share
+ * one source per language to keep wording in sync, but the binary that
+ * ships to a given store must only mention that store.
+ *
+ * Patterns we collapse:
+ *   - "App Store or Google Play"          -> "App Store" (iOS) / "Google Play" (Android)
+ *   - "App Store (Apple) or Google Play (Google)" -> single-store form
+ *   - "App Store's and Google Play's"     -> single-store form
+ *   - "App Store/Google Play"             -> single-store form
+ * Localised variants are handled via the translation table below so we cover
+ * sv/en/no/da/fi without touching the legal source files (which still need
+ * the dual-store wording for the privacy policy on the website).
+ */
+function stripCrossStoreReferences(html: string): string {
+  const platform = Capacitor.getPlatform();
+  if (platform !== 'ios' && platform !== 'android') {
+    // Web build keeps the dual-store wording.
+    return html;
+  }
+
+  const keep = platform === 'ios' ? 'App Store' : 'Google Play';
+
+  // Ordered: more specific patterns first so they don't get partially
+  // captured by the broader ones below.
+  const replacements: Array<[RegExp, string]> = [
+    // Parenthesised vendor-attribution forms
+    [/App\s?Store\s?\(Apple\)\s?(?:eller|or|of|tai|og|och)\s?Google\s?Play\s?\(Google\)/gi, keep],
+
+    // Slash form: "App Store/Google Play"
+    [/App\s?Store\s?\/\s?Google\s?Play/gi, keep],
+    [/Google\s?Play\s?\/\s?App\s?Store/gi, keep],
+
+    // Possessive forms: "App Store's and Google Play's"
+    [/App\s?Store(?:'|&#39;)?s?\s+(?:and|och|og|ja|og)\s+Google\s?Play(?:'|&#39;)?s?/gi, keep],
+    [/Google\s?Play(?:'|&#39;)?s?\s+(?:and|och|og|ja|og)\s+App\s?Store(?:'|&#39;)?s?/gi, keep],
+
+    // "App Stores och Google Plays" / "App Stores and Google Plays"
+    [/App\s?Stores?\s+(?:och|and|og|ja|tai|eller|or)\s+Google\s?Plays?/gi, keep],
+    [/Google\s?Plays?\s+(?:och|and|og|ja|tai|eller|or)\s+App\s?Stores?/gi, keep],
+
+    // Coordinated form with localised connectives:
+    //   sv: "eller"   en: "or"   no: "eller"   da: "eller"   fi: "tai"
+    [/App\s?Store(?:-|\s)?(?:eller|or|tai|og|ou)\s+Google\s?Play/gi, keep],
+    [/Google\s?Play(?:-|\s)?(?:eller|or|tai|og|ou)\s+App\s?Store/gi, keep],
+
+    // Loose "App Store och Google Play" or "App Store and Google Play"
+    [/App\s?Store(?:-|\s)*(?:och|and|og|ja)\s+Google\s?Play/gi, keep],
+    [/Google\s?Play(?:-|\s)*(?:och|and|og|ja)\s+App\s?Store/gi, keep],
+  ];
+
+  let result = html;
+  for (const [pattern, replacement] of replacements) {
+    result = result.replace(pattern, replacement);
+  }
+
+  // Final sweep: replace any remaining bare "Google Play" / "App Store"
+  // mentions with the platform-appropriate one. We only do this on iOS
+  // (the rejected platform). Android keeps both because Apple has no
+  // equivalent guideline against App Store mentions in Android binaries.
+  if (platform === 'ios') {
+    result = result.replace(/Google\s?Play/g, 'App Store');
+  }
+
+  return result;
+}
 
 const privacyContent: Record<string, string> = {
   sv: privacySv,
@@ -53,7 +124,7 @@ const LegalPage: React.FC<LegalPageProps> = ({ type }) => {
 
   useEffect(() => {
     const content = contentMap[lang] || contentMap['sv'];
-    setHtml(content);
+    setHtml(stripCrossStoreReferences(content));
   }, [lang, contentMap]);
 
   const title = type === 'privacy'

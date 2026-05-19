@@ -45,6 +45,8 @@ interface FcmMessage {
         aps: {
           sound?: string;
           badge?: number;
+          'content-available'?: number;
+          'mutable-content'?: number;
         };
       };
     };
@@ -497,7 +499,10 @@ serve(async (req) => {
               default_vibrate_timings: true,
             },
           },
-          // APNs payload for iOS — FCM proxies this to Apple Push Notification service
+          // APNs payload for iOS — FCM proxies this to Apple Push Notification service.
+          // - apns-priority 10: immediate delivery (matches WhatsApp/iMessage for chats)
+          // - content-available: 1 lets the app wake briefly in background to refresh state
+          // - mutable-content: 1 enables Notification Service Extension (future: rich previews)
           ...(tokenRow.platform === 'ios' ? {
             apns: {
               headers: {
@@ -507,6 +512,8 @@ serve(async (req) => {
                 aps: {
                   sound: 'default',
                   badge: badgeCount,
+                  'content-available': 1,
+                  'mutable-content': 1,
                 },
               },
             },
