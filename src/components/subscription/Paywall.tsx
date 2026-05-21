@@ -41,6 +41,7 @@ const Paywall: React.FC<PaywallProps> = ({ blocking = false }) => {
     hidePaywall,
     paywallFeature,
     currentOffering,
+    offeringsError,
     purchase,
     restore,
     isLoading,
@@ -54,13 +55,19 @@ const Paywall: React.FC<PaywallProps> = ({ blocking = false }) => {
   //  - offerings have loaded (currentOffering present)
   //  - context is not in a global loading state
   //  - we are not mid-purchase
+  //
   // Apple rejection 2026-05-18 (build 51, iPad Air 11" iPadOS 26.5) flagged the
-  // subscribe button as unresponsive. Root cause: when RC offerings hadn't
-  // finished loading yet, handlePurchase silently returned and the button
-  // never gave feedback. We now keep the button disabled with a spinner until
-  // offerings are ready, then enable it and surface any failure as a visible
-  // error message instead of failing silently.
+  // subscribe button as unresponsive when offerings hadn't finished loading.
+  // Build 52 was rejected again because, in sandbox, offerings sometimes never
+  // arrive at all — leaving the button in a permanent spinner state. The
+  // service layer now times offerings out at 10s and reports an error; here
+  // we promote that error to a visible message and re-enable the button so
+  // the user can retry (the button retriggers the purchase flow which itself
+  // re-fetches offerings via RevenueCat's purchasePackage call).
   const isReady = !!currentOffering && !isLoading;
+  const offeringsErrorMessage = offeringsError
+    ? t('paywall.errorOfferingsUnavailable')
+    : null;
 
   const handlePurchase = async () => {
     setPurchaseError(null);
@@ -216,28 +223,31 @@ const Paywall: React.FC<PaywallProps> = ({ blocking = false }) => {
           </div>
 
           {/* Purchase button — disabled while offerings load or purchase
-              is in flight. Once offerings load, the button is interactive
-              even on iPad layouts (fix for Apple rejection 2026-05-18). */}
+              is in flight. If offerings fail to load (build 52 sandbox case)
+              we re-enable the button so the user can retry rather than
+              staring at a permanent spinner. */}
           <IonButton
             expand="block"
             className="purchase-button"
             onClick={handlePurchase}
-            disabled={isProcessing || !isReady}
+            disabled={isProcessing || (!isReady && !offeringsError)}
             data-testid="paywall-subscribe-button"
           >
-            {isProcessing || !isReady ? (
+            {isProcessing || (!isReady && !offeringsError) ? (
               <IonSpinner name="crescent" />
             ) : (
               t('paywall.subscribe', { plan: t(PLAN_ID_TO_I18N[selectedPlan]) })
             )}
           </IonButton>
 
-          {/* Visible error message — Apple flagged the silent-fail UX as
-              an unresponsive button. Showing the cause lets the user retry. */}
-          {purchaseError && (
+          {/* Visible error message — covers both purchase failures and
+              offerings load failures. Apple flagged the silent-spinner UX
+              as an unresponsive button; surfacing the cause lets the user
+              retry. */}
+          {(purchaseError || offeringsErrorMessage) && (
             <div className="purchase-error" role="alert">
               <IonIcon icon={alertCircle} />
-              <IonText>{purchaseError}</IonText>
+              <IonText>{purchaseError || offeringsErrorMessage}</IonText>
             </div>
           )}
 
