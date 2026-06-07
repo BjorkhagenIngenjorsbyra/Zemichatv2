@@ -11,8 +11,10 @@ const SUPABASE_SERVICE_ROLE_KEY =
 const TEST_PASSWORD = 'test-password-123!';
 
 function execSQL(sql: string): string {
+  // ON_ERROR_STOP=1 so seed failures throw loudly instead of being silently
+  // swallowed (a swallowed teams-insert error once masked 31 test failures).
   return execSync(
-    'docker exec -i supabase_db_zemichat psql -U postgres -d postgres',
+    'docker exec -i supabase_db_zemichat psql -U postgres -d postgres -v ON_ERROR_STOP=1',
     { input: sql, encoding: 'utf-8' },
   );
 }
@@ -77,9 +79,9 @@ export async function setup() {
   execSQL(`
     SET session_replication_role = 'replica';
 
-    INSERT INTO public.teams (id, name, owner_id) VALUES
-      ('${IDS.team1}', 'Team Alpha', '${IDS.owner1}'),
-      ('${IDS.team2}', 'Team Beta',  '${IDS.owner2}');
+    INSERT INTO public.teams (id, name, owner_id, referral_code) VALUES
+      ('${IDS.team1}', 'Team Alpha', '${IDS.owner1}', 'REF-TEAM-ALPHA'),
+      ('${IDS.team2}', 'Team Beta',  '${IDS.owner2}', 'REF-TEAM-BETA');
 
     INSERT INTO public.users (id, team_id, role, zemi_number, display_name, is_active) VALUES
       ('${IDS.owner1}',  '${IDS.team1}', 'owner',  'ZEMI-001-001', 'Owner 1',  true),
