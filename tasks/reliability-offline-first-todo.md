@@ -78,20 +78,28 @@
 
 ---
 
-## Execution model (IMPORTANT — discovered 2026-06-07)
-- **No Docker on Alva's laptop** → local Supabase (RLS/sim integration tests) CANNOT run here.
-- Local dev loop = what runs WITHOUT Docker: `npx tsc --noEmit`, `eslint`, `vitest` unit tests.
-- Integration/sim loop runs in **GitHub Actions CI** (Linux runner with Docker + supabase CLI).
-  Loop: implement locally → push branch → CI runs `test.rls` + new `test.sim` → read result via
-  `gh`/API → fix red → repeat. (TODO A0 below: author the CI workflow first.)
-- Autonomous cadence: a daily scheduled task (`C:\Alva\tools\zemichat_reliability_loop.py`) invokes
-  Claude to advance ONE focused work-cycle, commit, trigger/read CI, update this file, and post a
-  Telegram progress report. Guardrails: branch-only, never merge/release, stop+report if a loop
-  isn't converging after N tries or if usage credits are near cap.
+## Execution model (UPDATED 2026-06-07 — Docker now installed)
+- **Docker Desktop installed locally** (WSL2 backend) → local Supabase stack runs on the laptop.
+  Full self-test loop runs locally: `npm run test.rls` (db reset → seed → vitest), unit, lint, tsc.
+- Mode: **interactive** — Erik corresponds here while Alva works through tasks (autonomous daily
+  task "Alva ZemiChat Reliability" is DISABLED; wrapper kept for future option).
+- CI (GitHub Actions) optional later for PR gating (Maestro/UI), not required for dev loop.
 
-### A0. CI test workflow (do first)
-- [ ] `.github/workflows/sim-tests.yml` — install supabase CLI, `supabase start`, run test.rls + test.sim on push to feature branch
-- [ ] Verify green on a trivial push before building the harness
+### A0b. Establish a green baseline (IN PROGRESS — 2026-06-07)
+- [x] Root-caused the 31 failures: stale test seed. `teams.referral_code` (NOT NULL, no default)
+      added by a later migration but never added to global-setup.ts. With
+      session_replication_role=replica disabling FK checks + psql w/o ON_ERROR_STOP, the teams
+      insert failed silently while dependent rows still inserted → teams table empty → all
+      Team-Owner oversight policies returned nothing. NOT an app bug.
+- [x] Fixed seed (referral_code + ON_ERROR_STOP). Result: **31 failed → 5 failed (214 passed)**. Committed 314b659.
+- [ ] Triage remaining 5 (carefully, real-bug vs test-drift):
+      - teams INSERT x2 (code 23502 not-null) — test inserts team w/o referral_code; likely test needs
+        to use create_team_with_owner RPC or supply referral_code. CHECK if app relies on a missing
+        default/trigger (could be real).
+      - messages "Sender can soft-delete own message" (42501 RLS deny) — CHECK policy; could be real regression.
+      - reports submit x2 (42501 RLS deny) — CHECK reports INSERT policy vs new extended fields.
+
+Note: `git push` via credential-helper hangs here; use token-in-URL (works). git creds = github_token.txt.
 
 ## Progress log
 - 2026-06-07: Branch created, plan + breakdown written. Mapped existing RLS/e2e test infra
