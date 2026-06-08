@@ -16,6 +16,7 @@ import { PrivateRoute, PublicRoute } from './components/PrivateRoute';
 
 /* Push */
 import { setNavigationHandler } from './services/push';
+import { startMessageOutboxAutoFlush } from './services/messageOutbox';
 
 /* Call */
 import { IncomingCallModal, CallView, CallPiP } from './components/call';
@@ -148,6 +149,14 @@ const PushInit: React.FC = () => {
       initializePush();
     }
   }, [isAuthenticated, hasProfile, initializePush]);
+
+  // Reliability: flush any queued (failed/offline) messages now and whenever
+  // connectivity returns, for the duration of an authenticated session.
+  useEffect(() => {
+    if (!isAuthenticated || !hasProfile) return;
+    const stop = startMessageOutboxAutoFlush();
+    return stop;
+  }, [isAuthenticated, hasProfile]);
 
   return null;
 };

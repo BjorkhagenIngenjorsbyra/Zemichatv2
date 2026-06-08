@@ -31,6 +31,7 @@ import {
   forwardMessage,
   type MessageWithSender,
 } from '../services/message';
+import { enqueueMessage } from '../services/messageOutbox';
 import {
   toggleReaction,
   getReactionsForMessages,
@@ -409,15 +410,23 @@ const ChatView: React.FC = () => {
     const text = messageText.trim();
     setMessageText('');
 
+    // Client-assigned id: lets the send be idempotent and lets the outbox retry
+    // the exact same message on failure without duplicating it.
+    const id = crypto.randomUUID();
+    const replyToId = replyTo?.id;
     const { message, error } = await sendMessage({
+      id,
       chatId,
       content: text,
-      replyToId: replyTo?.id,
+      replyToId,
     });
 
     if (error) {
-      console.error('Failed to send message:', error);
-      setMessageText(text);
+      // Don't lose the message on a flaky network — queue it; the outbox retries
+      // automatically (incl. when connectivity returns). Same id => no duplicate.
+      console.error('Failed to send message, queued for retry:', error);
+      enqueueMessage({ id, chatId, content: text, type: 'text', replyToId });
+      setReplyTo(null);
     } else {
       setReplyTo(null);
       hapticLight();
