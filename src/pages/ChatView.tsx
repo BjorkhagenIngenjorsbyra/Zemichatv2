@@ -414,6 +414,34 @@ const ChatView: React.FC = () => {
     // the exact same message on failure without duplicating it.
     const id = crypto.randomUUID();
     const replyToId = replyTo?.id;
+
+    // Optimistic insert: show the message instantly (don't wait for the server
+    // round-trip / realtime echo). The realtime handler dedupes by id, so when
+    // the server echo arrives it replaces this without duplicating.
+    if (profile) {
+      const optimistic: MessageWithSender = {
+        id,
+        chat_id: chatId,
+        sender_id: profile.id,
+        type: MessageType.TEXT,
+        content: text,
+        media_url: null,
+        media_metadata: null,
+        reply_to_id: replyToId ?? null,
+        forwarded_from_id: null,
+        location: null,
+        contact_zemi_number: null,
+        is_edited: false,
+        edited_at: null,
+        deleted_at: null,
+        deleted_by: null,
+        deleted_for_all: false,
+        created_at: new Date().toISOString(),
+        sender: profile,
+      };
+      setMessages((prev) => (prev.some((m) => m.id === id) ? prev : [...prev, optimistic]));
+    }
+
     const { message, error } = await sendMessage({
       id,
       chatId,
