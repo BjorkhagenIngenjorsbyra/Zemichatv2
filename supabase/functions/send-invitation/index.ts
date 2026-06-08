@@ -8,7 +8,63 @@ interface RequestBody {
   email: string;
   invitationId: string;
   inviteLink: string;
+  locale?: string;
 }
+
+type Strings = {
+  greeting: (name: string) => string;
+  body: (inviter: string, team: string) => string;
+  cta: string;
+  copyLink: string;
+  footer: string;
+  subject: (inviter: string, team: string) => string;
+};
+
+// Localised email copy. Keyed by 2-letter language; defaults to Swedish (the
+// primary market). The recipient's own locale is unknown at invite time, so we
+// use the inviter's app language.
+const EMAIL_STRINGS: Record<string, Strings> = {
+  sv: {
+    greeting: (n) => (n ? `Hej ${n}!` : 'Hej!'),
+    body: (i, t) => `<strong style="color:#F3F4F6;">${i}</strong> har bjudit in dig till <strong style="color:#F3F4F6;">${t}</strong> på Zemichat.`,
+    cta: 'Acceptera inbjudan',
+    copyLink: 'Eller kopiera den här länken till din webbläsare:',
+    footer: 'Inbjudan går ut om 7 dagar. Om du inte väntade dig detta mejl kan du ignorera det.',
+    subject: (i, t) => `${i} bjöd in dig till ${t} på Zemichat`,
+  },
+  en: {
+    greeting: (n) => (n ? `Hi ${n}!` : 'Hi!'),
+    body: (i, t) => `<strong style="color:#F3F4F6;">${i}</strong> has invited you to join <strong style="color:#F3F4F6;">${t}</strong> on Zemichat.`,
+    cta: 'Accept Invitation',
+    copyLink: 'Or copy this link into your browser:',
+    footer: "This invitation expires in 7 days. If you didn't expect this email, you can safely ignore it.",
+    subject: (i, t) => `${i} invited you to join ${t} on Zemichat`,
+  },
+  da: {
+    greeting: (n) => (n ? `Hej ${n}!` : 'Hej!'),
+    body: (i, t) => `<strong style="color:#F3F4F6;">${i}</strong> har inviteret dig til <strong style="color:#F3F4F6;">${t}</strong> på Zemichat.`,
+    cta: 'Acceptér invitation',
+    copyLink: 'Eller kopiér dette link til din browser:',
+    footer: 'Invitationen udløber om 7 dage. Hvis du ikke forventede denne e-mail, kan du ignorere den.',
+    subject: (i, t) => `${i} inviterede dig til ${t} på Zemichat`,
+  },
+  fi: {
+    greeting: (n) => (n ? `Hei ${n}!` : 'Hei!'),
+    body: (i, t) => `<strong style="color:#F3F4F6;">${i}</strong> on kutsunut sinut ryhmään <strong style="color:#F3F4F6;">${t}</strong> Zemichatissa.`,
+    cta: 'Hyväksy kutsu',
+    copyLink: 'Tai kopioi tämä linkki selaimeesi:',
+    footer: 'Kutsu vanhenee 7 päivässä. Jos et odottanut tätä viestiä, voit jättää sen huomiotta.',
+    subject: (i, t) => `${i} kutsui sinut ryhmään ${t} Zemichatissa`,
+  },
+  no: {
+    greeting: (n) => (n ? `Hei ${n}!` : 'Hei!'),
+    body: (i, t) => `<strong style="color:#F3F4F6;">${i}</strong> har invitert deg til <strong style="color:#F3F4F6;">${t}</strong> på Zemichat.`,
+    cta: 'Godta invitasjon',
+    copyLink: 'Eller kopier denne lenken til nettleseren din:',
+    footer: 'Invitasjonen utløper om 7 dager. Hvis du ikke ventet denne e-posten, kan du se bort fra den.',
+    subject: (i, t) => `${i} inviterte deg til ${t} på Zemichat`,
+  },
+};
 
 serve(async (req) => {
   const corsHeaders = getCorsHeaders(req);
@@ -97,7 +153,8 @@ serve(async (req) => {
 
     // Parse request body
     const body: RequestBody = await req.json();
-    const { email, invitationId, inviteLink } = body;
+    const { email, invitationId, inviteLink, locale } = body;
+    const s = EMAIL_STRINGS[(locale || 'sv').slice(0, 2).toLowerCase()] || EMAIL_STRINGS.sv;
 
     if (!email || !invitationId || !inviteLink) {
       return new Response(
@@ -196,24 +253,23 @@ serve(async (req) => {
           <tr>
             <td style="padding:0 32px 32px;">
               <p style="color:#F3F4F6;font-size:18px;font-weight:600;margin:0 0 8px;">
-                ${safeRecipientName ? `Hi ${safeRecipientName}!` : 'Hi!'}
+                ${s.greeting(safeRecipientName)}
               </p>
               <p style="color:#9CA3AF;font-size:15px;line-height:1.6;margin:0 0 24px;">
-                <strong style="color:#F3F4F6;">${safeInviterName}</strong> has invited you to join
-                <strong style="color:#F3F4F6;">${safeTeamName}</strong> on Zemichat.
+                ${s.body(safeInviterName, safeTeamName)}
               </p>
               <!-- CTA Button -->
               <table width="100%" cellpadding="0" cellspacing="0">
                 <tr>
                   <td align="center">
                     <a href="${safeInviteLink}" style="display:inline-block;background-color:#7C3AED;color:#ffffff;font-size:16px;font-weight:700;text-decoration:none;padding:14px 32px;border-radius:9999px;">
-                      Accept Invitation
+                      ${s.cta}
                     </a>
                   </td>
                 </tr>
               </table>
               <p style="color:#6B7280;font-size:13px;line-height:1.5;margin:24px 0 0;text-align:center;">
-                Or copy this link into your browser:<br>
+                ${s.copyLink}<br>
                 <a href="${safeInviteLink}" style="color:#A78BFA;word-break:break-all;">${safeInviteLink}</a>
               </p>
             </td>
@@ -222,7 +278,7 @@ serve(async (req) => {
           <tr>
             <td style="padding:16px 32px;border-top:1px solid #1E293B;">
               <p style="color:#4B5563;font-size:12px;text-align:center;margin:0;">
-                This invitation expires in 7 days. If you didn't expect this email, you can safely ignore it.
+                ${s.footer}
               </p>
             </td>
           </tr>
@@ -256,7 +312,7 @@ serve(async (req) => {
           // Subject is plain text in the SMTP envelope — no HTML escaping
           // needed, but we strip control characters / newlines to prevent
           // header injection.
-          subject: `${inviterName.replace(/[\r\n]+/g, ' ')} invited you to join ${teamName.replace(/[\r\n]+/g, ' ')} on Zemichat`,
+          subject: s.subject(inviterName.replace(/[\r\n]+/g, ' '), teamName.replace(/[\r\n]+/g, ' ')),
           html: htmlEmail,
         }),
       });
