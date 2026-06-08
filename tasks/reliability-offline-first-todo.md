@@ -92,7 +92,18 @@
       insert failed silently while dependent rows still inserted → teams table empty → all
       Team-Owner oversight policies returned nothing. NOT an app bug.
 - [x] Fixed seed (referral_code + ON_ERROR_STOP). Result: **31 failed → 5 failed (214 passed)**. Committed 314b659.
-- [ ] Triage remaining 5 (carefully, real-bug vs test-drift):
+- [x] Fixed teams fixtures (referral_code) + per-file is_active reset (reset-state.ts). **31 → ~4.** Committed b445ad7.
+- [ ] **A0c — Harden RLS test isolation (residual flakiness).** Remaining ~4 failures are
+      NON-DETERMINISTIC (shift between runs: deactivation tests, call-logs, reports extended-fields).
+      Root: the suite mutates shared global state (users.is_active, texter_settings flags) via
+      out-of-band `execSQL` while making async PostgREST calls on ONE shared DB → visibility/timing
+      races. Verified via direct DB sim that the app RLS logic is correct (e.g., reports insert
+      succeeds when user active). NOT app bugs. Proper fix: make mutating RLS tests deterministic
+      (e.g., isolate per-test state, or assert via SQL not racy API timing). Daytime task.
+- [ ] **Infra: `supabase db reset` flakiness** — intermittently fails on container restart
+      (storage 502 / context deadline) on this laptop. Added a 3x retry wrapper for runs; consider
+      raising Docker resources / a more robust reset. Affects loop stability.
+- [ ] (historical) Triage remaining 5 (carefully, real-bug vs test-drift):
       - teams INSERT x2 (code 23502 not-null) — test inserts team w/o referral_code; likely test needs
         to use create_team_with_owner RPC or supply referral_code. CHECK if app relies on a missing
         default/trigger (could be real).
