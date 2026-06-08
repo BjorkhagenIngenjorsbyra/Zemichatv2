@@ -372,7 +372,15 @@
     "verifyTitle": "Tvåfaktorsautentisering",
     "verifyDescription": "Ange koden från din autentiseringsapp",
     "newCode": "Begär ny kod",
-    "useAnotherAccount": "Använd ett annat konto"
+    "useAnotherAccount": "Använd ett annat konto",
+    "settingsTitle": "Tvåfaktorsautentisering",
+    "settingsDescription": "Extra skydd vid inloggning med en authenticator-app.",
+    "statusEnabled": "Aktiverad",
+    "statusDisabled": "Inte aktiverad",
+    "enable": "Aktivera",
+    "disable": "Inaktivera",
+    "disableConfirm": "Är du säker på att du vill inaktivera tvåfaktorsautentisering?",
+    "disabledToast": "Tvåfaktor inaktiverad"
   },
   "quietHours": {
     "title": "Tysta timmar",

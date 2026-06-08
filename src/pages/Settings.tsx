@@ -51,6 +51,7 @@ import { claimReferralRewards, getReferralStats } from '../services/referral';
 import { UserRole, PlanType, type ReferralStats } from '../types/database';
 import { supportedLanguages, changeLanguage, getCurrentLanguage } from '../i18n';
 import { ActiveSessions } from '../components/settings/ActiveSessions';
+import { TwoFactorSetting } from '../components/settings/TwoFactorSetting';
 
 const THEME_LABELS: Record<ThemeName, string> = {
   dark: 'Mörkt',
@@ -428,6 +429,9 @@ const Settings: React.FC = () => {
               </div>
             </div>
           )}
+
+          {/* Two-factor authentication (Owner/Super, opt-in) */}
+          <TwoFactorSetting />
 
           {/* Active sessions / devices */}
           <ActiveSessions />

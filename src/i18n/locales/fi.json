@@ -372,7 +372,15 @@
     "verifyTitle": "Kaksivaiheinen todennus",
     "verifyDescription": "Syötä koodi todennussovelluksestasi",
     "newCode": "Pyydä uusi koodi",
-    "useAnotherAccount": "Käytä toista tiliä"
+    "useAnotherAccount": "Käytä toista tiliä",
+    "settingsTitle": "Kaksivaiheinen tunnistautuminen",
+    "settingsDescription": "Lisäsuoja kirjautumiseen todennussovelluksella.",
+    "statusEnabled": "Käytössä",
+    "statusDisabled": "Ei käytössä",
+    "enable": "Ota käyttöön",
+    "disable": "Poista käytöstä",
+    "disableConfirm": "Haluatko varmasti poistaa kaksivaiheisen tunnistautumisen käytöstä?",
+    "disabledToast": "Kaksivaiheinen tunnistautuminen poistettu"
   },
   "quietHours": {
     "title": "Hiljaiset tunnit",

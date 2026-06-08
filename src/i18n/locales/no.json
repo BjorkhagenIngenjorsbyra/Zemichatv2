@@ -372,7 +372,15 @@
     "verifyTitle": "Tofaktorautentisering",
     "verifyDescription": "Skriv inn koden fra din autentiseringsapp",
     "newCode": "Be om ny kode",
-    "useAnotherAccount": "Bruk en annen konto"
+    "useAnotherAccount": "Bruk en annen konto",
+    "settingsTitle": "Tofaktorautentisering",
+    "settingsDescription": "Ekstra beskyttelse ved innlogging med en autentiseringsapp.",
+    "statusEnabled": "Aktivert",
+    "statusDisabled": "Ikke aktivert",
+    "enable": "Aktiver",
+    "disable": "Deaktiver",
+    "disableConfirm": "Er du sikker på at du vil deaktivere tofaktorautentisering?",
+    "disabledToast": "Tofaktor deaktivert"
   },
   "quietHours": {
     "title": "Stille timer",

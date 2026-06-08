@@ -372,7 +372,15 @@
     "verifyTitle": "Two-Factor Authentication",
     "verifyDescription": "Enter the code from your authenticator app",
     "newCode": "Request New Code",
-    "useAnotherAccount": "Use another account"
+    "useAnotherAccount": "Use another account",
+    "settingsTitle": "Two-factor authentication",
+    "settingsDescription": "Extra protection at login using an authenticator app.",
+    "statusEnabled": "Enabled",
+    "statusDisabled": "Not enabled",
+    "enable": "Enable",
+    "disable": "Disable",
+    "disableConfirm": "Are you sure you want to disable two-factor authentication?",
+    "disabledToast": "Two-factor disabled"
   },
   "quietHours": {
     "title": "Quiet Hours",
