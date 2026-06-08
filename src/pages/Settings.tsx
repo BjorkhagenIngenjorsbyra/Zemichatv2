@@ -49,7 +49,6 @@ import { getTeamMembers } from '../services/members';
 import { exportUserData, deleteOwnerAccount, deleteSuperAccount, updateUserProfile, downloadJSON } from '../services/gdpr';
 import { claimReferralRewards, getReferralStats } from '../services/referral';
 import { UserRole, PlanType, type ReferralStats } from '../types/database';
-import { SOSButton } from '../components/sos';
 import { supportedLanguages, changeLanguage, getCurrentLanguage } from '../i18n';
 
 const THEME_LABELS: Record<ThemeName, string> = {
@@ -478,13 +477,6 @@ const Settings: React.FC = () => {
                   )}
                 </div>
               </div>
-            </div>
-          )}
-
-          {/* SOS - Texter only */}
-          {isTexter && (
-            <div className="section">
-              <SOSButton />
             </div>
           )}
 
