@@ -21,6 +21,8 @@ import {
   checkmarkCircleOutline,
   timeOutline,
   closeCircleOutline,
+  copyOutline,
+  checkmarkOutline,
 } from 'ionicons/icons';
 import { useAuthContext } from '../contexts/AuthContext';
 import {
@@ -44,6 +46,18 @@ const AddFriend: React.FC = () => {
   >('none');
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
+
+  const handleCopyOwnNumber = useCallback(async () => {
+    if (!profile?.zemi_number) return;
+    try {
+      await navigator.clipboard.writeText(profile.zemi_number);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // Clipboard may be unavailable (e.g. insecure context) — fail silently.
+    }
+  }, [profile?.zemi_number]);
 
   const handleSearch = useCallback(async () => {
     if (!isValidZemiNumber(zemiNumber)) {
@@ -152,6 +166,25 @@ const AddFriend: React.FC = () => {
 
       <IonContent className="ion-padding" fullscreen>
         <div className="add-friend-container">
+          {profile?.zemi_number && (
+            <div className="own-number-card">
+              <div className="own-number-info">
+                <span className="own-number-label">{t('friends.yourZemiNumber')}</span>
+                <span className="own-number-value">{profile.zemi_number}</span>
+                <span className="own-number-hint">{t('friends.yourZemiNumberHint')}</span>
+              </div>
+              <IonButton
+                fill="clear"
+                size="small"
+                onClick={handleCopyOwnNumber}
+                aria-label={t('friends.copyZemiNumber')}
+                className="own-number-copy"
+              >
+                <IonIcon slot="icon-only" icon={copied ? checkmarkOutline : copyOutline} />
+              </IonButton>
+            </div>
+          )}
+
           <div className="search-section">
             <h2 className="section-title">{t('friends.enterZemiNumber')}</h2>
             <p className="section-description">{t('friends.searchDescription')}</p>
@@ -254,6 +287,48 @@ const AddFriend: React.FC = () => {
           .add-friend-container {
             max-width: 500px;
             margin: 0 auto;
+          }
+
+          .own-number-card {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.75rem;
+            background: hsl(var(--muted) / 0.4);
+            border: 1px solid hsl(var(--border));
+            border-radius: 1rem;
+            padding: 1rem 1.25rem;
+            margin: 0.5rem 0 0;
+          }
+
+          .own-number-info {
+            display: flex;
+            flex-direction: column;
+            gap: 0.15rem;
+          }
+
+          .own-number-label {
+            font-size: 0.75rem;
+            color: hsl(var(--muted-foreground));
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+          }
+
+          .own-number-value {
+            font-family: monospace;
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: hsl(var(--foreground));
+          }
+
+          .own-number-hint {
+            font-size: 0.8rem;
+            color: hsl(var(--muted-foreground));
+          }
+
+          .own-number-copy {
+            --color: hsl(var(--primary));
+            flex-shrink: 0;
           }
 
           .search-section {
