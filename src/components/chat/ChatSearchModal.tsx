@@ -158,7 +158,7 @@ export const ChatSearchModal: React.FC<ChatSearchModalProps> = ({
             showCancelButton="never"
           />
           <IonButtons slot="end">
-            <IonButton onClick={onClose}>
+            <IonButton onClick={onClose} aria-label={t('a11y.close')}>
               <IonIcon icon={closeOutline} />
             </IonButton>
           </IonButtons>

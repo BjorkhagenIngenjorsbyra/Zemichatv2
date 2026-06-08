@@ -854,6 +854,7 @@
     "cancel": "Avbryt",
     "sendVoiceMessage": "Skicka röstmeddelande",
     "openDashboard": "Översikt",
-    "searchMessages": "Sök meddelanden"
+    "searchMessages": "Sök meddelanden",
+    "close": "Stäng"
   }
 }

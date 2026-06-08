@@ -848,6 +848,7 @@
     "cancel": "Avbryt",
     "sendVoiceMessage": "Send talemelding",
     "openDashboard": "Oversikt",
-    "searchMessages": "Søk meldinger"
+    "searchMessages": "Søk meldinger",
+    "close": "Lukk"
   }
 }

@@ -848,6 +848,7 @@
     "cancel": "Annullér",
     "sendVoiceMessage": "Send talebesked",
     "openDashboard": "Oversigt",
-    "searchMessages": "Søg beskeder"
+    "searchMessages": "Søg beskeder",
+    "close": "Luk"
   }
 }

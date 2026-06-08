@@ -848,6 +848,7 @@
     "cancel": "Cancel",
     "sendVoiceMessage": "Send voice message",
     "openDashboard": "Overview",
-    "searchMessages": "Search messages"
+    "searchMessages": "Search messages",
+    "close": "Close"
   }
 }

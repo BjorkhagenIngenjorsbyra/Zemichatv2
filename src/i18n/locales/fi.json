@@ -848,6 +848,7 @@
     "cancel": "Peruuta",
     "sendVoiceMessage": "Lähetä ääniviesti",
     "openDashboard": "Yleiskatsaus",
-    "searchMessages": "Hae viestejä"
+    "searchMessages": "Hae viestejä",
+    "close": "Sulje"
   }
 }
