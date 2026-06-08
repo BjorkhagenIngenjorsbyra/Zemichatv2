@@ -10,5 +10,7 @@ export default defineConfig({
     fileParallelism: false,
     // Seed data once before all test suites via globalSetup
     globalSetup: ['src/tests/rls/helpers/global-setup.ts'],
+    // Reset shared mutable state (user is_active) before every test for isolation
+    setupFiles: ['src/tests/rls/helpers/reset-state.ts'],
   },
 });
