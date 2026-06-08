@@ -123,7 +123,8 @@ serve(async (req) => {
       },
       body: JSON.stringify({
         from: 'Zemichat Support <noreply@zemichat.com>',
-        to: 'support@zemichat.com',
+        // Routed to a monitored inbox (support@zemichat.com isn't watched).
+        to: 'alva@ingenjorsbyran.com',
         reply_to: email,
         // Strip CR/LF to defuse SMTP header injection if the user pasted
         // a newline-laden subject.
