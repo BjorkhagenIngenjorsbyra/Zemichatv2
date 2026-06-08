@@ -76,6 +76,15 @@ export class Agent {
     return (res.data?.length ?? 0) > 0;
   }
 
+  /** Raise an SOS / Tillkalla alert (Texter only). Must never be blockable. */
+  async sendSos(location?: string): Promise<DbResult<{ id: string }>> {
+    return this.client
+      .from('sos_alerts')
+      .insert({ texter_id: this.id, location: location ?? null })
+      .select('id')
+      .single() as unknown as Promise<DbResult<{ id: string }>>;
+  }
+
   /**
    * Eventually-consistent read: poll visibleMessages until `predicate` holds or
    * we run out of tries. Returns the last snapshot (so callers can assert on it).
