@@ -17,24 +17,26 @@
 
 ## PHASE A — Simulation/test harness (the engine for loop-test-correct)
 
-### A1. Multi-agent bot framework (headless, supabase-js)
-- [ ] `src/tests/sim/agent.ts` — a synthetic user that authenticates and acts via services/RLS
-- [ ] Role factories: Owner / Super / Texter with correct setup (team, texter_settings)
-- [ ] Actions: sendMessage, createChat, friendRequest, approveFriend, deleteMessage, call-signal
-- [ ] Assertion helpers: messageArrived(order), visibleTo(role), notVisibleTo(role)
-- [ ] `npm run test.sim` script wired in package.json
+### A1. Multi-agent bot framework (headless, supabase-js) — DONE (commit 85321ad)
+- [x] `src/tests/sim/agent.ts` — Agent wraps an authenticated role; sendMessage/deleteMessage/
+      visibleMessages/canSee/sendSos + waitForMessages (eventually-consistent poll). getSimWorld().
+- [x] Role factories: getSimWorld() builds Owner/Super/Texter agents per team over the seeded world.
+- [x] `npm run test.sim` + vitest.config.sim.ts wired.
+- [ ] More actions later as needed: createChat, friendRequest, approveFriend, call-signal.
 
-### A2. Scenario tests (replaces "two people chatting")
-- [ ] Owner+Texter 1:1 conversation round-trip, ordering, read receipts
-- [ ] Super-only chat exchange
+### A2. Scenario tests (replaces "two people chatting") — STARTED (commit 85321ad)
+- [x] Owner+Texter/Super 1:1 conversation round-trip, ordering, oversight, cross-team isolation.
 - [ ] Group chat with mixed roles
 - [ ] Friend request requiring Owner approval flow
+- [ ] Read receipts
 
-### A3. Invariant / property-based tests (exhaustive safety)
-- [ ] Owner ALWAYS sees Texter messages incl. deleted (deleted_at)
-- [ ] Super-only chats NEVER visible to Owner
-- [ ] SOS/Tillkalla can NEVER be blocked/disabled
+### A3. Invariant / property-based tests (exhaustive safety) — STARTED (commit fa59561)
+- [x] Owner ALWAYS sees Texter messages incl. deleted (deleted_at)
+- [x] Super-only chats NEVER visible to Owner
+- [x] SOS/Tillkalla can NEVER be blocked/disabled (even with all capabilities revoked)
 - [ ] Randomized action-sequence generator asserting invariants hold
+
+**Sim suite status: 7/7 green, stable across repeated runs.**
 
 ### A4. Network-chaos scaffolding
 - [ ] Helper to simulate offline/flaky/reconnect at the client/data layer
