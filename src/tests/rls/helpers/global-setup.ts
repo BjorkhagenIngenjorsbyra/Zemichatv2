@@ -38,6 +38,14 @@ const IDS = {
   msgEdited: 'dddd0003-0000-0000-0000-000000000003',
   msgInSuperChat: 'dddd0004-0000-0000-0000-000000000004',
   msgInCrossTeam: 'dddd0005-0000-0000-0000-000000000005',
+  // Realistic two-way conversation in the owner↔texter chat so the UI looks
+  // like a real chat (mixed senders → left/right alignment is exercised, and
+  // explorer/demo runs aren't dominated by leftover E2E test strings).
+  msgConvTexter1: 'dddd0010-0000-0000-0000-000000000010',
+  msgConvOwner1:  'dddd0011-0000-0000-0000-000000000011',
+  msgConvTexter2: 'dddd0012-0000-0000-0000-000000000012',
+  msgConvOwner2:  'dddd0013-0000-0000-0000-000000000013',
+  msgConvTexter3: 'dddd0014-0000-0000-0000-000000000014',
   friendshipAccepted: 'eeee0001-0000-0000-0000-000000000001',
   friendshipPending: 'eeee0002-0000-0000-0000-000000000002',
   texterSettings1: 'ffff0001-0000-0000-0000-000000000001',
@@ -66,6 +74,9 @@ export async function setup() {
   ];
 
   for (const u of userDefs) {
+    // Best-effort delete first so a half-finished prior run (e.g. one that
+    // aborted before the SQL seed) doesn't block re-creation with the same id.
+    await adminClient.auth.admin.deleteUser(u.id).catch(() => {});
     const { error } = await adminClient.auth.admin.createUser({
       id: u.id,
       email: u.email,
@@ -119,6 +130,14 @@ export async function setup() {
       ('${IDS.msgEdited}',      '${IDS.chatSuperToTexter}',  '${IDS.texter1}', 'text', 'Edited content'),
       ('${IDS.msgInSuperChat}', '${IDS.chatSuperToSuper}',   '${IDS.super1}',  'text', 'Super private msg'),
       ('${IDS.msgInCrossTeam}', '${IDS.chatTexterToTexter}', '${IDS.texter1}', 'text', 'Cross team msg');
+
+    -- Realistic owner↔texter conversation with mixed senders and ascending timestamps.
+    INSERT INTO public.messages (id, chat_id, sender_id, type, content, created_at) VALUES
+      ('${IDS.msgConvTexter1}', '${IDS.chatOwnerToTexter}', '${IDS.texter1}', 'text', 'Hej! Är du hemma snart?',            now() - interval '50 minutes'),
+      ('${IDS.msgConvOwner1}',  '${IDS.chatOwnerToTexter}', '${IDS.owner1}',  'text', 'Ja, jag är på väg nu. Hur var det i skolan?', now() - interval '45 minutes'),
+      ('${IDS.msgConvTexter2}', '${IDS.chatOwnerToTexter}', '${IDS.texter1}', 'text', 'Bra! Vi hade prov i matte och det gick fint.', now() - interval '40 minutes'),
+      ('${IDS.msgConvOwner2}',  '${IDS.chatOwnerToTexter}', '${IDS.owner1}',  'text', 'Vad kul att höra! Vill du ha pannkakor till middag?', now() - interval '20 minutes'),
+      ('${IDS.msgConvTexter3}', '${IDS.chatOwnerToTexter}', '${IDS.texter1}', 'text', 'Ja tack!! 🥞',                       now() - interval '5 minutes');
 
     INSERT INTO public.messages (id, chat_id, sender_id, type, content, deleted_at, deleted_by) VALUES
       ('${IDS.msgDeleted}', '${IDS.chatSuperToTexter}', '${IDS.texter1}', 'text', 'Deleted msg',
