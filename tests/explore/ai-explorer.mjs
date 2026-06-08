@@ -204,10 +204,36 @@ async function main() {
         if (a.type === 'back') {
           await page.goBack({ timeout: 8000 });
         } else if (a.type === 'click' && els[a.index]) {
-          await els[a.index].handle.click({ timeout: 8000 });
+          const h = els[a.index].handle;
+          await h.scrollIntoViewIfNeeded({ timeout: 4000 }).catch(() => {});
+          await h.click({ timeout: 8000 });
         } else if (a.type === 'type' && els[a.index]) {
-          await els[a.index].handle.click({ timeout: 8000 });
-          await page.keyboard.type(a.text || '', { delay: 20 });
+          const h = els[a.index].handle;
+          // Ionic (ion-input/ion-searchbar/ion-textarea) wraps the real
+          // <input>/<textarea> in shadow DOM — fill THAT so input events fire,
+          // instead of clicking the host and hoping keystrokes land.
+          const innerHandle = await h.evaluateHandle((el) => {
+            if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') return el;
+            return (
+              el.querySelector('input, textarea') ||
+              (el.shadowRoot && el.shadowRoot.querySelector('input, textarea')) ||
+              el
+            );
+          });
+          const innerEl = innerHandle.asElement();
+          let filled = false;
+          if (innerEl) {
+            try {
+              await innerEl.fill(a.text || '', { timeout: 5000 });
+              filled = true;
+            } catch {
+              /* fall back below */
+            }
+          }
+          if (!filled) {
+            await h.click({ timeout: 8000 }).catch(() => {});
+            await page.keyboard.type(a.text || '', { delay: 20 });
+          }
         }
         await page.waitForLoadState('networkidle', { timeout: 8000 }).catch(() => {});
       } catch (e) {
