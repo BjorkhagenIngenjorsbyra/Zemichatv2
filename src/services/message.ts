@@ -15,6 +15,13 @@ export interface SendMessageData {
   replyToId?: string;
   mediaUrl?: string;
   mediaMetadata?: Record<string, unknown>;
+  /**
+   * Optional client-generated message id (UUID). Reliability/offline-first:
+   * the client assigns the id up front so the message can be shown optimistically
+   * and a retry of the SAME logical send is idempotent (re-inserting the same id
+   * is a no-op rather than a duplicate). Defaults to a fresh UUID.
+   */
+  id?: string;
 }
 
 export interface SendMessageResult {
@@ -112,6 +119,7 @@ export async function sendMessage({
   replyToId,
   mediaUrl,
   mediaMetadata,
+  id,
 }: SendMessageData): Promise<SendMessageResult> {
   try {
     const {
@@ -122,9 +130,12 @@ export async function sendMessage({
       return { message: null, error: new Error('Not authenticated') };
     }
 
+    const messageId = id ?? crypto.randomUUID();
+
     const { data, error } = await supabase
       .from('messages')
       .insert({
+        id: messageId,
         chat_id: chatId,
         sender_id: user.id,
         type,
@@ -137,6 +148,19 @@ export async function sendMessage({
       .single();
 
     if (error) {
+      // Idempotent retry: if this exact id already landed (e.g. a previous
+      // attempt succeeded before the network dropped the response), treat the
+      // duplicate-key as success and return the existing row rather than erroring.
+      if (error.code === '23505') {
+        const { data: existing } = await supabase
+          .from('messages')
+          .select()
+          .eq('id', messageId)
+          .maybeSingle();
+        if (existing) {
+          return { message: existing as unknown as Message, error: null };
+        }
+      }
       return { message: null, error: new Error(error.message) };
     }
 

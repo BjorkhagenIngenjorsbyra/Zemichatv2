@@ -41,11 +41,21 @@ export class Agent {
     public readonly client: SupabaseClient<Database>,
   ) {}
 
-  /** Send a message into a chat. Returns the PostgREST result (data or error). */
-  async sendMessage(chatId: string, content: string, type = 'text'): Promise<DbResult<SimMessage>> {
+  /**
+   * Send a message into a chat. Returns the PostgREST result (data or error).
+   * Pass `opts.id` (a client UUID) to exercise optimistic/idempotent sends.
+   */
+  async sendMessage(
+    chatId: string,
+    content: string,
+    opts: { type?: string; id?: string } = {},
+  ): Promise<DbResult<SimMessage>> {
+    const { type = 'text', id } = opts;
+    const row: Record<string, unknown> = { chat_id: chatId, sender_id: this.id, type, content };
+    if (id) row.id = id;
     return this.client
       .from('messages')
-      .insert({ chat_id: chatId, sender_id: this.id, type, content })
+      .insert(row)
       .select()
       .single() as unknown as Promise<DbResult<SimMessage>>;
   }
