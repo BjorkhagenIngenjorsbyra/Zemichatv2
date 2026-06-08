@@ -49,6 +49,7 @@ export const TillkallaButton: React.FC<TillkallaButtonProps> = ({
         disabled={isSending}
         aria-label={t('tillkalla.button')}
         title={t('tillkalla.button')}
+        data-testid="tillkalla-button"
       >
         {isSending ? (
           <IonSpinner name="crescent" />

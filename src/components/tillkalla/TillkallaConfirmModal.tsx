@@ -81,6 +81,7 @@ export const TillkallaConfirmModal: React.FC<TillkallaConfirmModalProps> = ({
             className="confirm-button"
             onClick={handleConfirm}
             disabled={isLoading}
+            data-testid="tillkalla-confirm"
           >
             {isLoading ? (
               <IonSpinner name="crescent" />
