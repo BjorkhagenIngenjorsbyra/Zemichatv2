@@ -67,10 +67,14 @@ Design for B1:
 - subscribeToMessages must merge by id (skip if already present from optimistic insert).
 - Verify with a new sim scenario: send returns a stable client id; duplicate insert of
   same id is a no-op/idempotent; message appears exactly once.
-- [ ] Client-generated message UUID; idempotent insert (dedupe)
-- [ ] Outbox store; status sending→sent→delivered→read
-- [ ] Retry with exponential backoff; survive app restart
-- [ ] Reconcile on server ack
+- [x] Client-generated message UUID; idempotent insert (dedupe) — sendMessage assigns id,
+      23505-on-retry treated as success. Sim proof (outbox.sim.test). Commit 40e85a1.
+- [x] Outbox store + retry with exponential backoff + survive app restart — services/outbox.ts,
+      10 unit tests (no Docker). Commit c067ae6.
+- [ ] **WIRE UI (next):** ChatView enqueues via Outbox + optimistic local insert (status
+      sending/failed badge), flush on send + on reconnect/online, reconcile via realtime echo
+      (already dedupes by id). NEEDS app-run/Maestro verification (UI not headless-testable).
+- [ ] Reconcile on server ack (covered by realtime dedupe; confirm during UI wiring)
 
 ### B2. Local cache layer
 - [ ] Add `@capacitor-community/sqlite` (mobile) + Dexie/IndexedDB fallback (web)
