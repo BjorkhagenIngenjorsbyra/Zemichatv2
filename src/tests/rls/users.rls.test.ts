@@ -127,7 +127,25 @@ describe('users RLS', () => {
       // Restore
       await w.adminClient
         .from('users')
-        .update({ display_name: 'Texter 1' })
+        .update({ display_name: 'Liam Berg' })
+        .eq('id', w.team1.texter.id);
+    });
+
+    it('update_user_profile RPC is unambiguous (single overload)', async () => {
+      // Regression: two update_user_profile overloads — (TEXT) and (TEXT, TEXT)
+      // with all-NULL defaults — coexisted, so calling with only new_display_name
+      // matched both and PostgREST returned "Could not choose the best candidate
+      // function ...", which leaked into the profile UI and broke saves.
+      const res = await (w.team1.texter.client.rpc as unknown as
+        (fn: string, args: Record<string, unknown>) => Promise<{ data: unknown; error: { message: string } | null }>)(
+        'update_user_profile',
+        { new_display_name: 'Via RPC' }
+      );
+      expectSuccess(res as { data: unknown; error: { message: string } | null });
+      // Restore
+      await w.adminClient
+        .from('users')
+        .update({ display_name: 'Liam Berg' })
         .eq('id', w.team1.texter.id);
     });
 
