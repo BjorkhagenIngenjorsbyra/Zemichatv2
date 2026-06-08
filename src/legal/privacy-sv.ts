@@ -38,7 +38,7 @@ export default `
 <h3>2.3 Platsdata</h3>
 <p>Vi samlar <strong>inte</strong> in platsdata l&ouml;pande. Platsdata sparas <strong>enbart</strong> i f&ouml;ljande fall:</p>
 <ul>
-<li><strong>SOS-larm:</strong> Om en Texter skickar ett SOS-larm inkluderas aktuell position s&aring; att f&ouml;r&auml;ldern snabbt kan lokalisera barnet.</li>
+<li><strong>Tillkalla Vuxen-larm:</strong> Om en Texter skickar ett Tillkalla Vuxen-larm inkluderas aktuell position s&aring; att f&ouml;r&auml;ldern snabbt kan lokalisera barnet.</li>
 <li><strong>Platsdelning i chatt:</strong> Om en anv&auml;ndare aktivt v&auml;ljer att dela sin plats i ett meddelande (kr&auml;ver att funktionen &auml;r aktiverad i Texter-inst&auml;llningar).</li>
 </ul>
 <h3>2.4 Enhetsinformation</h3>
@@ -69,7 +69,7 @@ export default `
 <tr><td>Kontouppgifter</td><td>Skapa och hantera ditt konto, identifiera dig i appen</td><td>Avtal (art. 6.1b)</td></tr>
 <tr><td>Meddelanden och media</td><td>Leverera chattfunktionaliteten &ndash; att du kan skicka och ta emot meddelanden</td><td>Avtal (art. 6.1b)</td></tr>
 <tr><td>Redigeringshistorik</td><td>Transparens &ndash; Team Owner kan se &auml;ndringar i Texters meddelanden</td><td>Ber&auml;ttigat intresse (art. 6.1f)</td></tr>
-<tr><td>Platsdata (SOS)</td><td>Barns&auml;kerhet &ndash; hj&auml;lpa f&ouml;r&auml;ldrar att lokalisera sitt barn vid n&ouml;dsituation</td><td>Ber&auml;ttigat intresse (art. 6.1f)</td></tr>
+<tr><td>Platsdata (Tillkalla Vuxen)</td><td>Barns&auml;kerhet &ndash; hj&auml;lpa f&ouml;r&auml;ldrar att lokalisera sitt barn vid n&ouml;dsituation</td><td>Ber&auml;ttigat intresse (art. 6.1f)</td></tr>
 <tr><td>Enhetsinformation</td><td>Skicka pushnotiser och hantera aktiva sessioner</td><td>Samtycke (art. 6.1a)</td></tr>
 <tr><td>Texter-inst&auml;llningar</td><td>F&ouml;r&auml;ldrakontroll &ndash; l&aring;ta Team Owner styra vilka funktioner barnet har tillg&aring;ng till</td><td>Ber&auml;ttigat intresse/Samtycke (art. 6.1f/a)</td></tr>
 <tr><td>V&auml;nrelationer</td><td>Social funktionalitet &ndash; hantera kontakter och v&auml;nf&ouml;rfr&aring;gningar</td><td>Avtal (art. 6.1b)</td></tr>

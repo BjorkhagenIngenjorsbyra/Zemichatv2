@@ -318,19 +318,18 @@
     "denyFutureMessage": "This will reject the current request and prevent {{requester}} from sending requests to {{texter}} in the future.",
     "guardian": "Guardian: {{ownerName}}, {{teamName}} ({{email}})"
   },
-  "sos": {
-    "button": "SOS",
-    "summonSuper": "Call Super",
-    "confirmTitle": "Send SOS Alert?",
-    "confirmMessage": "This will alert your guardian with your location.",
-    "confirmYes": "YES, SEND SOS",
+  "tillkalla": {
+    "button": "Call an adult",
+    "confirmTitle": "Call an adult?",
+    "confirmMessage": "This alerts an adult.",
+    "confirmYes": "YES, CALL",
     "confirmNo": "Cancel",
-    "sent": "SOS Sent",
-    "alertReceived": "SOS Alert from {{name}}",
-    "viewLocation": "View Location",
+    "sent": "Adult alerted",
+    "alertReceived": "Call for an adult from {{name}}",
+    "viewLocation": "View location",
     "acknowledge": "Acknowledge",
-    "unacknowledged": "Unacknowledged SOS alerts",
-    "noAlerts": "No SOS alerts"
+    "unacknowledged": "Unacknowledged alerts",
+    "noAlerts": "No alerts"
   },
   "notifications": {
     "permissionTitle": "Enable Notifications",

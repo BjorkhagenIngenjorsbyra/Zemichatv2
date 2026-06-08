@@ -14,22 +14,22 @@ import {
   checkmarkCircleOutline,
 } from 'ionicons/icons';
 import {
-  type SosAlertWithTexter,
+  type TillkallaAlertWithTexter,
   parseAlertLocation,
   getGoogleMapsUrl,
-} from '../../services/sos';
+} from '../../services/tillkalla';
 
-interface SOSAlertCardProps {
-  alert: SosAlertWithTexter;
+interface TillkallaAlertCardProps {
+  alert: TillkallaAlertWithTexter;
   onAcknowledge: (alertId: string) => void;
   isAcknowledging?: boolean;
 }
 
 /**
- * Card displaying an SOS alert for Owners.
+ * Card displaying an Tillkalla Vuxen alert for Owners.
  * Pulsing animation when unacknowledged.
  */
-export const SOSAlertCard: React.FC<SOSAlertCardProps> = ({
+export const TillkallaAlertCard: React.FC<TillkallaAlertCardProps> = ({
   alert,
   onAcknowledge,
   isAcknowledging = false,
@@ -55,7 +55,7 @@ export const SOSAlertCard: React.FC<SOSAlertCardProps> = ({
   };
 
   return (
-    <IonCard className={`sos-alert-card ${!isAcknowledged ? 'urgent' : ''}`}>
+    <IonCard className={`tillkalla-alert-card ${!isAcknowledged ? 'urgent' : ''}`}>
       <IonCardContent>
         <div className="alert-header">
           <div className="alert-icon-container">
@@ -74,7 +74,7 @@ export const SOSAlertCard: React.FC<SOSAlertCardProps> = ({
 
           <div className="alert-info">
             <h3 className="alert-title">
-              {t('sos.alertReceived', { name: alert.texter.display_name })}
+              {t('tillkalla.alertReceived', { name: alert.texter.display_name })}
             </h3>
             <p className="alert-time">{formatTime(alert.created_at)}</p>
           </div>
@@ -89,7 +89,7 @@ export const SOSAlertCard: React.FC<SOSAlertCardProps> = ({
               onClick={handleViewLocation}
             >
               <IonIcon icon={locationOutline} slot="start" />
-              {t('sos.viewLocation')}
+              {t('tillkalla.viewLocation')}
             </IonButton>
           )}
 
@@ -106,7 +106,7 @@ export const SOSAlertCard: React.FC<SOSAlertCardProps> = ({
               ) : (
                 <>
                   <IonIcon icon={checkmarkCircleOutline} slot="start" />
-                  {t('sos.acknowledge')}
+                  {t('tillkalla.acknowledge')}
                 </>
               )}
             </IonButton>
@@ -122,13 +122,13 @@ export const SOSAlertCard: React.FC<SOSAlertCardProps> = ({
       </IonCardContent>
 
       <style>{`
-        .sos-alert-card {
+        .tillkalla-alert-card {
           margin: 0 0 1rem 0;
           border-radius: 1rem;
           overflow: hidden;
         }
 
-        .sos-alert-card.urgent {
+        .tillkalla-alert-card.urgent {
           border: 2px solid hsl(var(--destructive));
           animation: urgentPulse 2s ease-in-out infinite;
         }
@@ -158,7 +158,7 @@ export const SOSAlertCard: React.FC<SOSAlertCardProps> = ({
           color: hsl(var(--destructive));
         }
 
-        .sos-alert-card.urgent .alert-icon {
+        .tillkalla-alert-card.urgent .alert-icon {
           animation: iconPulse 1s ease-in-out infinite;
         }
 
@@ -227,4 +227,4 @@ export const SOSAlertCard: React.FC<SOSAlertCardProps> = ({
   );
 };
 
-export default SOSAlertCard;
+export default TillkallaAlertCard;

@@ -107,11 +107,11 @@ export default `
 <h3>7.2 F&ouml;r&auml;ldraansvar</h3>
 <p>Team Owner &auml;r ansvarig f&ouml;r att &ouml;vervaka Texters anv&auml;ndning av tj&auml;nsten och s&auml;kerst&auml;lla att den anv&auml;nds p&aring; ett l&auml;mpligt s&auml;tt.</p>
 <hr>
-<h2>8. SOS-funktionen</h2>
+<h2>8. Tillkalla Vuxen-funktionen</h2>
 <h3>8.1 Syfte</h3>
-<p>SOS-funktionen g&ouml;r det m&ouml;jligt f&ouml;r Texters att skicka ett n&ouml;dlarm med sin aktuella position till Team Owner.</p>
+<p>Tillkalla Vuxen-funktionen g&ouml;r det m&ouml;jligt f&ouml;r Texters att skicka ett n&ouml;dlarm med sin aktuella position till Team Owner.</p>
 <h3>8.2 Begr&auml;nsningar</h3>
-<p>SOS-funktionen &auml;r <strong>inte</strong> en ers&auml;ttning f&ouml;r n&ouml;dtj&auml;nster (112/911). I en n&ouml;dsituation ska du alltid kontakta r&auml;ddningstj&auml;nsten. Vi garanterar inte att SOS-larm levereras i realtid eller att platsdata &auml;r exakt.</p>
+<p>Tillkalla Vuxen-funktionen &auml;r <strong>inte</strong> en ers&auml;ttning f&ouml;r n&ouml;dtj&auml;nster (112/911). I en n&ouml;dsituation ska du alltid kontakta r&auml;ddningstj&auml;nsten. Vi garanterar inte att Tillkalla Vuxen-larm levereras i realtid eller att platsdata &auml;r exakt.</p>
 <hr>
 <h2>9. Immateriella r&auml;ttigheter</h2>
 <h3>9.1 V&aring;ra r&auml;ttigheter</h3>

@@ -318,19 +318,18 @@
     "denyFutureMessage": "Dette afviser den aktuelle anmodning og forhindrer {{requester}} i at sende anmodninger til {{texter}} i fremtiden.",
     "guardian": "Ansvarlig: {{ownerName}}, {{teamName}} ({{email}})"
   },
-  "sos": {
-    "button": "SOS",
-    "summonSuper": "Tilkald Super",
-    "confirmTitle": "Send SOS-alarm?",
-    "confirmMessage": "Dette alarmerer din forælder med din placering.",
-    "confirmYes": "JA, SEND SOS",
-    "confirmNo": "Annuller",
-    "sent": "SOS sendt",
-    "alertReceived": "SOS-alarm fra {{name}}",
+  "tillkalla": {
+    "button": "Tilkald en voksen",
+    "confirmTitle": "Tilkald en voksen?",
+    "confirmMessage": "Dette advarer en voksen.",
+    "confirmYes": "JA, TILKALD",
+    "confirmNo": "Annullér",
+    "sent": "Voksen tilkaldt",
+    "alertReceived": "Tilkald en voksen fra {{name}}",
     "viewLocation": "Vis placering",
     "acknowledge": "Bekræft",
-    "unacknowledged": "Ubekræftede SOS-alarmer",
-    "noAlerts": "Ingen SOS-alarmer"
+    "unacknowledged": "Ubekræftede alarmer",
+    "noAlerts": "Ingen alarmer"
   },
   "notifications": {
     "permissionTitle": "Aktiver notifikationer",

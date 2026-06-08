@@ -141,15 +141,15 @@ Team Owner er ansvarlig for at overvåge Texters brug af tjenesten og sikre, at 
 
 ---
 
-## 8. SOS-funktionen
+## 8. Tillkalla Vuxen-funktionen
 
 ### 8.1 Formål
 
-SOS-funktionen gør det muligt for Texters at sende en nødalarm med deres aktuelle position til Team Owner.
+Tillkalla Vuxen-funktionen gør det muligt for Texters at sende en nødalarm med deres aktuelle position til Team Owner.
 
 ### 8.2 Begrænsninger
 
-SOS-funktionen er **ikke** en erstatning for nødtjenester (112). I en nødsituation skal du altid kontakte alarmcentralen. Vi garanterer ikke, at SOS-alarmer leveres i realtid, eller at placeringsdata er nøjagtig.
+Tillkalla Vuxen-funktionen er **ikke** en erstatning for nødtjenester (112). I en nødsituation skal du altid kontakte alarmcentralen. Vi garanterer ikke, at Tillkalla Vuxen-alarmer leveres i realtid, eller at placeringsdata er nøjagtig.
 
 ---
 

@@ -38,7 +38,7 @@ export default `
 <h3>2.3 Placeringsdata</h3>
 <p>Vi indsamler <strong>ikke</strong> placeringsdata l&oslash;bende. Placeringsdata gemmes <strong>kun</strong> i f&oslash;lgende tilf&aelig;lde:</p>
 <ul>
-<li><strong>SOS-alarmer:</strong> Hvis en Texter sender en SOS-alarm, inkluderes den aktuelle position, s&aring; for&aelig;lderen hurtigt kan lokalisere barnet.</li>
+<li><strong>Tillkalla Vuxen-alarmer:</strong> Hvis en Texter sender en Tillkalla Vuxen-alarm, inkluderes den aktuelle position, s&aring; for&aelig;lderen hurtigt kan lokalisere barnet.</li>
 <li><strong>Placeringsdeling i chat:</strong> Hvis en bruger aktivt v&aelig;lger at dele sin placering i en besked (kr&aelig;ver, at funktionen er aktiveret i Texter-indstillinger).</li>
 </ul>
 <h3>2.4 Enhedsinformation</h3>
@@ -69,7 +69,7 @@ export default `
 <tr><td>Kontooplysninger</td><td>Oprette og administrere din konto, identificere dig i appen</td><td>Kontrakt (art. 6.1b)</td></tr>
 <tr><td>Beskeder og medier</td><td>Levere chatfunktionaliteten &ndash; at du kan sende og modtage beskeder</td><td>Kontrakt (art. 6.1b)</td></tr>
 <tr><td>Redigeringshistorik</td><td>Transparens &ndash; Team Owner kan se &aelig;ndringer i Texters beskeder</td><td>Legitim interesse (art. 6.1f)</td></tr>
-<tr><td>Placeringsdata (SOS)</td><td>B&oslash;rnesikkerhed &ndash; hj&aelig;lpe for&aelig;ldre med at lokalisere deres barn i en n&oslash;dsituation</td><td>Legitim interesse (art. 6.1f)</td></tr>
+<tr><td>Placeringsdata (Tillkalla Vuxen)</td><td>B&oslash;rnesikkerhed &ndash; hj&aelig;lpe for&aelig;ldre med at lokalisere deres barn i en n&oslash;dsituation</td><td>Legitim interesse (art. 6.1f)</td></tr>
 <tr><td>Enhedsinformation</td><td>Sende push-notifikationer og administrere aktive sessioner</td><td>Samtykke (art. 6.1a)</td></tr>
 <tr><td>Texter-indstillinger</td><td>For&aelig;ldrekontrol &ndash; lade Team Owner styre, hvilke funktioner barnet har adgang til</td><td>Legitim interesse/Samtykke (art. 6.1f/a)</td></tr>
 <tr><td>Vennerelationer</td><td>Social funktionalitet &ndash; h&aring;ndtere kontakter og venneanmodninger</td><td>Kontrakt (art. 6.1b)</td></tr>

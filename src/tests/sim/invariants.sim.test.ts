@@ -34,7 +34,7 @@ describe('Safety invariants', () => {
     expect(await sim.team1.super.canSee(id)).toBe(false);
   });
 
-  describe('SOS can NEVER be disabled', () => {
+  describe('Tillkalla Vuxen can NEVER be disabled', () => {
     afterAll(async () => {
       // Restore capabilities + clean up alerts (per-file reset also covers this).
       await sim.world.adminClient
@@ -52,7 +52,7 @@ describe('Safety invariants', () => {
         .eq('texter_id', sim.team1.texter.id);
     });
 
-    it('Texter can raise SOS even with EVERY capability revoked by the Owner', async () => {
+    it('Texter can raise Tillkalla Vuxen even with EVERY capability revoked by the Owner', async () => {
       // Owner strips every togglable capability from the Texter.
       const revoke = await sim.world.adminClient
         .from('texter_settings')
@@ -65,10 +65,10 @@ describe('Safety invariants', () => {
         .eq('user_id', sim.team1.texter.id);
       expect(revoke.error).toBeNull();
 
-      // SOS must still go through (location is an optional PostGIS geography).
-      const sos = await sim.team1.texter.sendSos();
-      expect(sos.error).toBeNull();
-      expect(sos.data?.id).toBeTruthy();
+      // Tillkalla Vuxen must still go through (location is an optional PostGIS geography).
+      const tillkalla = await sim.team1.texter.sendTillkalla();
+      expect(tillkalla.error).toBeNull();
+      expect(tillkalla.data?.id).toBeTruthy();
 
       // And the Owner must see it (oversight), via the Owner's own client.
       let ownerSees = 0;

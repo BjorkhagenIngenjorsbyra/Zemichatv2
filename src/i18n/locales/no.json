@@ -318,19 +318,18 @@
     "denyFutureMessage": "Dette avviser gjeldende forespørsel og hindrer {{requester}} fra å sende forespørsler til {{texter}} i fremtiden.",
     "guardian": "Ansvarlig: {{ownerName}}, {{teamName}} ({{email}})"
   },
-  "sos": {
-    "button": "SOS",
-    "summonSuper": "Tilkall Super",
-    "confirmTitle": "Sende SOS-alarm?",
-    "confirmMessage": "Dette varsler din foresatte med din posisjon.",
-    "confirmYes": "JA, SEND SOS",
+  "tillkalla": {
+    "button": "Tilkall en voksen",
+    "confirmTitle": "Tilkall en voksen?",
+    "confirmMessage": "Dette varsler en voksen.",
+    "confirmYes": "JA, TILKALL",
     "confirmNo": "Avbryt",
-    "sent": "SOS sendt",
-    "alertReceived": "SOS-alarm fra {{name}}",
+    "sent": "Voksen tilkalt",
+    "alertReceived": "Tilkall en voksen fra {{name}}",
     "viewLocation": "Vis posisjon",
     "acknowledge": "Bekreft",
-    "unacknowledged": "Ubekreftede SOS-alarmer",
-    "noAlerts": "Ingen SOS-alarmer"
+    "unacknowledged": "Ubekreftede varsler",
+    "noAlerts": "Ingen varsler"
   },
   "notifications": {
     "permissionTitle": "Aktiver varsler",

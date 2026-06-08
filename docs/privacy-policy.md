@@ -51,7 +51,7 @@ Om du har frågor om hur vi hanterar dina personuppgifter är du välkommen att 
 
 Vi samlar **inte** in platsdata löpande. Platsdata sparas **enbart** i följande fall:
 
-- **SOS-larm:** Om en Texter skickar ett SOS-larm inkluderas aktuell position så att föräldern snabbt kan lokalisera barnet.
+- **Tillkalla Vuxen-larm:** Om en Texter skickar ett Tillkalla Vuxen-larm inkluderas aktuell position så att föräldern snabbt kan lokalisera barnet.
 - **Platsdelning i chatt:** Om en användare aktivt väljer att dela sin plats i ett meddelande (kräver att funktionen är aktiverad i Texter-inställningar).
 
 ### 2.4 Enhetsinformation
@@ -83,7 +83,7 @@ Vi samlar bara in data som behövs för att appen ska fungera. Här är syftet m
 | Kontouppgifter | Skapa och hantera ditt konto, identifiera dig i appen | Avtal (art. 6.1b) |
 | Meddelanden och media | Leverera chattfunktionaliteten – att du kan skicka och ta emot meddelanden | Avtal (art. 6.1b) |
 | Redigeringshistorik | Transparens – Team Owner kan se ändringar i Texters meddelanden | Berättigat intresse (art. 6.1f) |
-| Platsdata (SOS) | Barnsäkerhet – hjälpa föräldrar att lokalisera sitt barn vid nödsituation | Berättigat intresse (art. 6.1f) |
+| Platsdata (Tillkalla Vuxen) | Barnsäkerhet – hjälpa föräldrar att lokalisera sitt barn vid nödsituation | Berättigat intresse (art. 6.1f) |
 | Enhetsinformation | Skicka pushnotiser och hantera aktiva sessioner | Samtycke (art. 6.1a) |
 | Texter-inställningar | Föräldrakontroll – låta Team Owner styra vilka funktioner barnet har tillgång till | Berättigat intresse/Samtycke (art. 6.1f/a) |
 | Vänrelationer | Social funktionalitet – hantera kontakter och vänförfrågningar | Avtal (art. 6.1b) |

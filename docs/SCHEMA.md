@@ -503,7 +503,7 @@ CREATE INDEX idx_reports_reported_user ON reports(reported_user_id);
 ---
 
 ### sos_alerts
-SOS-larm från Texters.
+Tillkalla Vuxen-larm från Texters (fysiskt tabellnamn kvar: sos_alerts).
 
 | Kolumn | Typ | Beskrivning |
 |--------|-----|-------------|

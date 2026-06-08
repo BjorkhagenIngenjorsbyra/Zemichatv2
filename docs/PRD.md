@@ -83,7 +83,7 @@ Alla chattar är tekniskt grupper. En 1:1-chatt är en grupp med exakt två delt
 
 ### 4.5 Lämna grupp
 - Texters kan lämna grupper själva
-- **Tillkalla-knapp:** Synlig i varje chatt – skickar akut notis till Team Owner
+- **Tillkalla Vuxen-knapp:** Synlig i varje chatt – skickar akut notis till Team Owner
 
 ### 4.6 Media-galleri per chatt
 - Tryck på chattens namn → Se alla delade medier
@@ -267,8 +267,7 @@ Om Texter A (tillhör Owner 1) chattar med Texter B (tillhör Owner 2):
 |----------|-------|
 | Texter läggs till i ny chatt | ✅ |
 | Texter rapporterar meddelande/användare | ✅ |
-| Texter trycker "Tillkalla"-knappen | ✅ (hög prioritet) |
-| Texter trycker SOS-knappen | ✅ (hög prioritet + plats) |
+| Texter trycker Tillkalla Vuxen-knappen | ✅ (hög prioritet + plats) |
 | Varje meddelande Texter skickar | ❌ |
 | Veckorapport | ❌ |
 
@@ -329,17 +328,23 @@ Team Owner kan skapa templates åt sina Texters:
 
 ---
 
-## 12. SOS-funktion
+## 12. Tillkalla Vuxen
+
+Funktionen heter **Tillkalla Vuxen**. Den finns **endast inne i chattarna** och är
+**endast tillgänglig för Texters**. Knappen visas som en **symbol** (ikon, ingen text).
 
 ### 12.1 Knapp
-- Tydlig, alltid tillgänglig SOS-knapp (t.ex. i sidomeny eller genom att hålla inne volymknapp)
-- Kräver bekräftelse för att undvika misstag
+- Symbol-knapp i chattens verktygsfält, synlig för Texters i alla deras chattar.
+- Kräver bekräftelse för att undvika misstag.
+- Kan aldrig stängas av (oberoende av Texterns övriga rättigheter).
 
 ### 12.2 Vid aktivering
-1. Skickar aktuell plats till Team Owner
-2. Push-notis med hög prioritet (genombryter "stör ej")
-3. Meddelande i chatt med Owner: "🆘 SOS aktiverad"
-4. Valfritt: Automatiskt röstsamtal till Owner
+1. Skickar aktuell plats (best effort) till Team Owner (den ansvariga vuxna).
+2. Push-notis med hög prioritet (genombryter "stör ej").
+3. Owner ser larmet i sin översikt och kan bekräfta det.
+
+*Notera:* Det tidigare separata "SOS"-läget och den låsta nödskärmen för pausade
+Texters är borttagna — Tillkalla Vuxen lever enbart i chattarna.
 
 ### 12.3 Tillgänglighet
 - Endast för Texters
@@ -588,7 +593,7 @@ Team Owner kan skapa templates åt sina Texters:
 - [ ] Röst- och videosamtal (Agora)
 - [ ] Gruppsamtal
 - [ ] Skärmdelning
-- [ ] SOS-knapp
+- [ ] Tillkalla Vuxen-knapp
 - [ ] Snabbmeddelanden/templates
 - [ ] Schemalagd tystnad
 
@@ -639,7 +644,7 @@ Team Owner kan skapa templates åt sina Texters:
 
 ### Texter
 - "Som Texter vill jag kunna chatta med mina godkända vänner, så att jag kan hålla kontakten med dem."
-- "Som Texter vill jag kunna trycka på en SOS-knapp om något känns fel, så att min förälder blir varnad direkt."
+- "Som Texter vill jag kunna trycka på en Tillkalla Vuxen-knapp om något känns fel, så att min förälder blir varnad direkt."
 - "Som Texter vill jag kunna använda snabbmeddelanden för att berätta att jag är framme, utan att behöva skriva."
 
 ---

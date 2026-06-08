@@ -275,7 +275,12 @@ export interface Report {
   created_at: string;
 }
 
-export interface SosAlert {
+/**
+ * "Tillkalla Vuxen" alert — a Texter summoning an adult from within a chat.
+ * (The physical table is still named `sos_alerts` for migration safety; the
+ * GDPR account-deletion functions reference it by that name.)
+ */
+export interface TillkallaAlert {
   id: string;
   texter_id: string;
   location: unknown | null;
@@ -541,9 +546,9 @@ export interface Database {
         Update: Partial<Omit<Report, 'id'>>;
       };
       sos_alerts: {
-        Row: SosAlert;
-        Insert: Pick<SosAlert, 'texter_id'> & Partial<Omit<SosAlert, 'id' | 'texter_id'>>;
-        Update: Partial<Omit<SosAlert, 'id'>>;
+        Row: TillkallaAlert;
+        Insert: Pick<TillkallaAlert, 'texter_id'> & Partial<Omit<TillkallaAlert, 'id' | 'texter_id'>>;
+        Update: Partial<Omit<TillkallaAlert, 'id'>>;
       };
       call_logs: {
         Row: CallLog;

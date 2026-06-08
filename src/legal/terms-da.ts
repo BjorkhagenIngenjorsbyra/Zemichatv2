@@ -107,11 +107,11 @@ export default `
 <h3>7.2 For&aelig;ldreansvar</h3>
 <p>Team Owner er ansvarlig for at overv&aring;ge Texters brug af tjenesten og sikre, at den bruges p&aring; en passende m&aring;de.</p>
 <hr>
-<h2>8. SOS-funktionen</h2>
+<h2>8. Tillkalla Vuxen-funktionen</h2>
 <h3>8.1 Form&aring;l</h3>
-<p>SOS-funktionen g&oslash;r det muligt for Texters at sende en n&oslash;dalarm med deres aktuelle position til Team Owner.</p>
+<p>Tillkalla Vuxen-funktionen g&oslash;r det muligt for Texters at sende en n&oslash;dalarm med deres aktuelle position til Team Owner.</p>
 <h3>8.2 Begr&aelig;nsninger</h3>
-<p>SOS-funktionen er <strong>ikke</strong> en erstatning for n&oslash;dtjenester (112). I en n&oslash;dsituation skal du altid kontakte alarmcentralen. Vi garanterer ikke, at SOS-alarmer leveres i realtid, eller at placeringsdata er n&oslash;jagtig.</p>
+<p>Tillkalla Vuxen-funktionen er <strong>ikke</strong> en erstatning for n&oslash;dtjenester (112). I en n&oslash;dsituation skal du altid kontakte alarmcentralen. Vi garanterer ikke, at Tillkalla Vuxen-alarmer leveres i realtid, eller at placeringsdata er n&oslash;jagtig.</p>
 <hr>
 <h2>9. Immaterielle rettigheder</h2>
 <h3>9.1 Vores rettigheder</h3>

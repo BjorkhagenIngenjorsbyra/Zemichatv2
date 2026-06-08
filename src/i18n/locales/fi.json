@@ -318,19 +318,18 @@
     "denyFutureMessage": "Tämä hylkää nykyisen pyynnön ja estää käyttäjää {{requester}} lähettämästä pyyntöjä käyttäjälle {{texter}} tulevaisuudessa.",
     "guardian": "Vastuuhenkilö: {{ownerName}}, {{teamName}} ({{email}})"
   },
-  "sos": {
-    "button": "SOS",
-    "summonSuper": "Kutsu Super",
-    "confirmTitle": "Lähetä SOS-hälytys?",
-    "confirmMessage": "Tämä hälyttää huoltajasi sijainnillasi.",
-    "confirmYes": "KYLLÄ, LÄHETÄ SOS",
+  "tillkalla": {
+    "button": "Kutsu aikuinen",
+    "confirmTitle": "Kutsu aikuinen?",
+    "confirmMessage": "Tämä hälyttää aikuisen.",
+    "confirmYes": "KYLLÄ, KUTSU",
     "confirmNo": "Peruuta",
-    "sent": "SOS lähetetty",
-    "alertReceived": "SOS-hälytys käyttäjältä {{name}}",
+    "sent": "Aikuinen kutsuttu",
+    "alertReceived": "Aikuisen kutsu käyttäjältä {{name}}",
     "viewLocation": "Näytä sijainti",
-    "acknowledge": "Kuittaa",
-    "unacknowledged": "Kuittaamattomat SOS-hälytykset",
-    "noAlerts": "Ei SOS-hälytyksiä"
+    "acknowledge": "Vahvista",
+    "unacknowledged": "Vahvistamattomat hälytykset",
+    "noAlerts": "Ei hälytyksiä"
   },
   "notifications": {
     "permissionTitle": "Ota ilmoitukset käyttöön",

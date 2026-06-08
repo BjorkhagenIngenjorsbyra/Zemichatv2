@@ -77,7 +77,7 @@ import {
   PollCreator,
 } from '../components/chat';
 import type { ReadStatus } from '../components/chat/MessageBubble';
-import { SOSButton } from '../components/sos';
+import { TillkallaButton } from '../components/tillkalla';
 import { CallButton } from '../components/call';
 import { UserRole, type TexterSettings } from '../types/database';
 import { getTexterSettings } from '../services/members';
@@ -383,15 +383,6 @@ const ChatView: React.FC = () => {
   // Group call: hide call buttons if > MAX_GROUP_CALL_PARTICIPANTS active members
   const activeMemberCount = chat?.members.filter((m) => !m.left_at).length || 0;
   const hideCallForGroupSize = chat?.is_group && activeMemberCount > MAX_GROUP_CALL_PARTICIPANTS;
-
-  // Issue #43: the per-chat "Tillkalla Super" button replaces the previous
-  // always-on SOS button. Only show it to Texters in chats where at least
-  // one Super is a current (not left) member — anywhere else there's no
-  // Super to summon. The SOS action itself remains unblockable elsewhere
-  // (Settings + SOSOnlyView keep the global SOSButton intact for safety).
-  const chatHasActiveSuper = !!chat?.members.some(
-    (m) => !m.left_at && m.user?.role === UserRole.SUPER
-  );
 
   const getChatDisplayName = (): string => {
     if (!chat) return '';
@@ -799,8 +790,8 @@ const ChatView: React.FC = () => {
             <IonButton onClick={() => setShowSearch(true)}>
               <IonIcon icon={searchOutline} />
             </IonButton>
-            {profile?.role === UserRole.TEXTER && chatHasActiveSuper && (
-              <SOSButton size="small" labelKey="sos.summonSuper" />
+            {profile?.role === UserRole.TEXTER && (
+              <TillkallaButton size="small" />
             )}
           </IonButtons>
         </IonToolbar>

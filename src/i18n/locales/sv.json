@@ -318,19 +318,18 @@
     "denyFutureMessage": "Detta nekar nuvarande förfrågan och hindrar {{requester}} från att skicka förfrågningar till {{texter}} i framtiden.",
     "guardian": "Ansvarig: {{ownerName}}, {{teamName}} ({{email}})"
   },
-  "sos": {
-    "button": "SOS",
-    "summonSuper": "Tillkalla Super",
-    "confirmTitle": "Skicka SOS-larm?",
-    "confirmMessage": "Detta larmar din vårdnadshavare med din plats.",
-    "confirmYes": "JA, SKICKA SOS",
+  "tillkalla": {
+    "button": "Tillkalla Vuxen",
+    "confirmTitle": "Tillkalla en vuxen?",
+    "confirmMessage": "Detta larmar en vuxen.",
+    "confirmYes": "JA, TILLKALLA",
     "confirmNo": "Avbryt",
-    "sent": "SOS skickat",
-    "alertReceived": "SOS-larm från {{name}}",
+    "sent": "Vuxen tillkallad",
+    "alertReceived": "Tillkalla Vuxen från {{name}}",
     "viewLocation": "Visa plats",
     "acknowledge": "Bekräfta",
-    "unacknowledged": "Obekräftade SOS-larm",
-    "noAlerts": "Inga SOS-larm"
+    "unacknowledged": "Obekräftade larm",
+    "noAlerts": "Inga larm"
   },
   "notifications": {
     "permissionTitle": "Aktivera notiser",

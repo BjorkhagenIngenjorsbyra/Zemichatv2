@@ -141,15 +141,15 @@ The Team Owner is responsible for monitoring Texters' use of the service and ens
 
 ---
 
-## 8. The SOS feature
+## 8. The Tillkalla Vuxen feature
 
 ### 8.1 Purpose
 
-The SOS feature allows Texters to send an emergency alert with their current location to the Team Owner.
+The Tillkalla Vuxen feature allows Texters to send an emergency alert with their current location to the Team Owner.
 
 ### 8.2 Limitations
 
-The SOS feature is **not** a replacement for emergency services (112/911). In an emergency, you should always contact emergency services. We do not guarantee that SOS alerts are delivered in real time or that location data is accurate.
+The Tillkalla Vuxen feature is **not** a replacement for emergency services (112/911). In an emergency, you should always contact emergency services. We do not guarantee that Tillkalla Vuxen alerts are delivered in real time or that location data is accurate.
 
 ---
 

@@ -86,8 +86,8 @@ export class Agent {
     return (res.data?.length ?? 0) > 0;
   }
 
-  /** Raise an SOS / Tillkalla alert (Texter only). Must never be blockable. */
-  async sendSos(location?: string): Promise<DbResult<{ id: string }>> {
+  /** Raise a "Tillkalla Vuxen" alert (Texter only). Must never be blockable. */
+  async sendTillkalla(location?: string): Promise<DbResult<{ id: string }>> {
     return this.client
       .from('sos_alerts')
       .insert({ texter_id: this.id, location: location ?? null })
