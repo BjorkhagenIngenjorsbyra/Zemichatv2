@@ -18,6 +18,7 @@ import {
   parseAlertLocation,
   getGoogleMapsUrl,
 } from '../../services/tillkalla';
+import { formatDateTime } from '../../utils/datetime';
 
 interface TillkallaAlertCardProps {
   alert: TillkallaAlertWithTexter;
@@ -38,15 +39,7 @@ export const TillkallaAlertCard: React.FC<TillkallaAlertCardProps> = ({
   const location = parseAlertLocation(alert);
   const isAcknowledged = !!alert.acknowledged_at;
 
-  const formatTime = (dateStr: string): string => {
-    const date = new Date(dateStr);
-    return date.toLocaleString([], {
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  };
+  const formatTime = (dateStr: string): string => formatDateTime(dateStr);
 
   const handleViewLocation = () => {
     if (location) {

@@ -50,6 +50,7 @@ import {
 import { uploadImage, uploadVoice, uploadDocument } from '../services/storage';
 import { createPoll } from '../services/poll';
 import { hapticLight } from '../utils/haptics';
+import { formatLongDate } from '../utils/datetime';
 import { playSendSound, playReceiveSound } from '../services/soundEffects';
 import { SkeletonLoader } from '../components/common';
 import { MessageType, type Message, type User } from '../types/database';
@@ -765,7 +766,7 @@ const ChatView: React.FC = () => {
     } else if (date.toDateString() === yesterday.toDateString()) {
       return t('common.yesterday') || 'Yesterday';
     } else {
-      return date.toLocaleDateString([], { weekday: 'long', month: 'long', day: 'numeric' });
+      return formatLongDate(dateStr);
     }
   };
 

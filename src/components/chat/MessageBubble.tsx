@@ -13,6 +13,7 @@ import MessageReactions from './MessageReactions';
 import LinkPreview, { extractUrl } from './LinkPreview';
 import PollMessage from './PollMessage';
 import LocationMessage from './LocationMessage';
+import { formatTimeShort } from '../../utils/datetime';
 
 export type ReadStatus = 'sent' | 'delivered' | 'read';
 
@@ -67,10 +68,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
   const DOUBLE_TAP_DELAY = 300;
   const LONG_PRESS_DELAY = 400;
 
-  const formatMessageTime = (dateStr: string): string => {
-    const date = new Date(dateStr);
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  };
+  const formatMessageTime = (dateStr: string): string => formatTimeShort(dateStr);
 
   const handleLongPress = useCallback(() => {
     if (bubbleRef.current) {
