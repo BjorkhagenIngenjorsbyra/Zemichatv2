@@ -761,15 +761,15 @@
   },
   "presence": {
     "online": "Online",
-    "lastSeenMinutes_one": "Sedd för {{count}} minut sedan",
-    "lastSeenMinutes_other": "Sedd för {{count}} minuter sedan",
-    "lastSeenHours_one": "Sedd för {{count}} timme sedan",
-    "lastSeenHours_other": "Sedd för {{count}} timmar sedan",
-    "lastSeenDays_one": "Sedd för {{count}} dag sedan",
-    "lastSeenDays_other": "Sedd för {{count}} dagar sedan",
-    "lastSeenMinutes": "Sedd för {{count}} min sedan",
-    "lastSeenHours": "Sedd för {{count}} h sedan",
-    "lastSeenDays": "Sedd för {{count}} dagar sedan"
+    "lastSeenMinutes_one": "Senast sedd för {{count}} minut sedan",
+    "lastSeenMinutes_other": "Senast sedd för {{count}} minuter sedan",
+    "lastSeenHours_one": "Senast sedd för {{count}} timme sedan",
+    "lastSeenHours_other": "Senast sedd för {{count}} timmar sedan",
+    "lastSeenDays_one": "Senast sedd för {{count}} dag sedan",
+    "lastSeenDays_other": "Senast sedd för {{count}} dagar sedan",
+    "lastSeenMinutes": "Senast sedd för {{count}} min sedan",
+    "lastSeenHours": "Senast sedd för {{count}} h sedan",
+    "lastSeenDays": "Senast sedd för {{count}} dagar sedan"
   },
   "chatInfo": {
     "title": "Chattinfo",
@@ -846,5 +846,12 @@
       "resolved": "Löst",
       "dismissed": "Avvisad"
     }
+  },
+  "a11y": {
+    "attach": "Bifoga",
+    "selectReaction": "Välj reaktion",
+    "moreReactions": "Fler reaktioner",
+    "cancel": "Avbryt",
+    "sendVoiceMessage": "Skicka röstmeddelande"
   }
 }

@@ -840,5 +840,12 @@
       "resolved": "Løst",
       "dismissed": "Avvist"
     }
+  },
+  "a11y": {
+    "attach": "Legg ved",
+    "selectReaction": "Velg reaksjon",
+    "moreReactions": "Flere reaksjoner",
+    "cancel": "Avbryt",
+    "sendVoiceMessage": "Send talemelding"
   }
 }

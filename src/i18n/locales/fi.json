@@ -840,5 +840,12 @@
       "resolved": "Ratkaistu",
       "dismissed": "Hylätty"
     }
+  },
+  "a11y": {
+    "attach": "Liitä",
+    "selectReaction": "Valitse reaktio",
+    "moreReactions": "Lisää reaktioita",
+    "cancel": "Peruuta",
+    "sendVoiceMessage": "Lähetä ääniviesti"
   }
 }

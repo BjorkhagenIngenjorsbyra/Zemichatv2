@@ -840,5 +840,12 @@
       "resolved": "Resolved",
       "dismissed": "Dismissed"
     }
+  },
+  "a11y": {
+    "attach": "Attach",
+    "selectReaction": "Select reaction",
+    "moreReactions": "More reactions",
+    "cancel": "Cancel",
+    "sendVoiceMessage": "Send voice message"
   }
 }

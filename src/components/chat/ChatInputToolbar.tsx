@@ -219,7 +219,7 @@ const ChatInputToolbar: React.FC<ChatInputToolbarProps> = ({
         className="toolbar-icon-btn"
         onClick={onToggleAttachmentSheet}
         disabled={isSending}
-        aria-label="Attach"
+        aria-label={t('a11y.attach')}
       >
         <IonIcon icon={attachOutline} />
       </button>
