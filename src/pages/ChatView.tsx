@@ -824,7 +824,7 @@ const ChatView: React.FC = () => {
           <IonButtons slot="end">
             <CallButton chatId={chatId} type="voice" hidden={texterSettings?.can_voice_call === false || !canUseFeature('canVoiceCall') || !!hideCallForGroupSize} />
             <CallButton chatId={chatId} type="video" hidden={texterSettings?.can_video_call === false || !canUseFeature('canVideoCall') || !!hideCallForGroupSize} />
-            <IonButton onClick={() => setShowSearch(true)}>
+            <IonButton onClick={() => setShowSearch(true)} aria-label={t('a11y.searchMessages')} data-testid="open-chat-search">
               <IonIcon icon={searchOutline} />
             </IonButton>
             {profile?.role === UserRole.TEXTER && (
