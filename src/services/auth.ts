@@ -1,6 +1,7 @@
 import { supabase } from './supabase';
 import type { AuthError, User as SupabaseUser, Session } from '@supabase/supabase-js';
 import { trackEvent } from './analytics';
+import { recordSession } from './sessions';
 
 export interface AuthResult {
   user: SupabaseUser | null;
@@ -88,6 +89,7 @@ export async function signIn({ email, password }: SignInData): Promise<AuthResul
 
   if (data.user && !error) {
     trackEvent('login', { method: 'email' });
+    void recordSession();
   }
 
   return {
@@ -143,6 +145,7 @@ export async function signInAsTexter({ zemiNumber, password }: TexterSignInData)
 
   if (data.user && !error) {
     trackEvent('login', { method: 'zemi_number' });
+    void recordSession();
   }
 
   return {

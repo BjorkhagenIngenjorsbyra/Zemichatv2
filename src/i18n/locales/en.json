@@ -4,6 +4,17 @@
     "boundaryRetry": "Try again",
     "boundaryHome": "Go to start"
   },
+  "sessions": {
+    "title": "Active devices",
+    "none": "No other devices",
+    "thisDevice": "(this device)",
+    "lastActive": "Last active",
+    "unknownDevice": "Unknown device",
+    "remove": "Remove",
+    "signOutOthers": "Sign out all other devices",
+    "signedOutOthers": "Other devices signed out",
+    "signOutError": "Could not sign out other devices"
+  },
   "common": {
     "appName": "Zemichat",
     "loading": "Loading...",

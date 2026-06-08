@@ -4,6 +4,17 @@
     "boundaryRetry": "Yritä uudelleen",
     "boundaryHome": "Etusivulle"
   },
+  "sessions": {
+    "title": "Aktiiviset laitteet",
+    "none": "Ei muita laitteita",
+    "thisDevice": "(tämä laite)",
+    "lastActive": "Viimeksi aktiivinen",
+    "unknownDevice": "Tuntematon laite",
+    "remove": "Poista",
+    "signOutOthers": "Kirjaa ulos kaikki muut laitteet",
+    "signedOutOthers": "Muut laitteet kirjattu ulos",
+    "signOutError": "Muiden laitteiden uloskirjaus epäonnistui"
+  },
   "common": {
     "appName": "Zemichat",
     "loading": "Ladataan...",

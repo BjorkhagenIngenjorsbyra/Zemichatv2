@@ -4,6 +4,17 @@
     "boundaryRetry": "Prøv igen",
     "boundaryHome": "Til forsiden"
   },
+  "sessions": {
+    "title": "Aktive enheder",
+    "none": "Ingen andre enheder",
+    "thisDevice": "(denne enhed)",
+    "lastActive": "Sidst aktiv",
+    "unknownDevice": "Ukendt enhed",
+    "remove": "Fjern",
+    "signOutOthers": "Log ud af alle andre enheder",
+    "signedOutOthers": "Andre enheder logget ud",
+    "signOutError": "Kunne ikke logge andre enheder ud"
+  },
   "common": {
     "appName": "Zemichat",
     "loading": "Indlæser...",
