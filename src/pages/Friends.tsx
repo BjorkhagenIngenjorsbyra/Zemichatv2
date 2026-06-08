@@ -168,11 +168,11 @@ const Friends: React.FC = () => {
             onIonChange={(e) => setActiveTab(e.detail.value as TabValue)}
             className="friends-segment"
           >
-            <IonSegmentButton value="friends">
+            <IonSegmentButton value="friends" data-testid="segment-friends">
               <IonIcon icon={peopleOutline} />
               <IonLabel>{t('friends.myFriends')}</IonLabel>
             </IonSegmentButton>
-            <IonSegmentButton value="requests">
+            <IonSegmentButton value="requests" data-testid="segment-requests">
               <IonIcon icon={timeOutline} />
               <IonLabel>
                 {t('friends.requests')}
@@ -282,7 +282,7 @@ const Friends: React.FC = () => {
             )}
           </div>
         ) : (
-          <div className="requests-container">
+          <div className="requests-container" data-testid="requests-container">
             {incomingRequests.length === 0 && outgoingRequests.length === 0 ? (
               <div className="empty-state">
                 <EmptyStateIllustration type="no-requests" />
