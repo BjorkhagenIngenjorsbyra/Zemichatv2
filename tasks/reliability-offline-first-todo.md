@@ -54,6 +54,19 @@
 - [ ] Measure send-latency, send-success rate, reconnect gaps, cold start
 
 ### B1. Optimistic send + outbox
+Current flow (src/services/message.ts `sendMessage`, ~L108): direct
+`supabase.from('messages').insert({...}).select().single()` — no client id, no
+optimism, no retry; UI awaits the round-trip and the realtime sub echoes it back.
+Design for B1:
+- Generate client UUID for `messages.id` (PostgREST accepts explicit id) → idempotent
+  insert; the optimistic row and the realtime echo dedupe on the same id.
+- Outbox store (Zustand/state + persisted): enqueue on send; status
+  pending→sent→delivered→read; show immediately in UI as "sending".
+- Retry with exponential backoff on network error; persist across app restart
+  (so a queued message survives a kill). Reconcile/clear on server ack.
+- subscribeToMessages must merge by id (skip if already present from optimistic insert).
+- Verify with a new sim scenario: send returns a stable client id; duplicate insert of
+  same id is a no-op/idempotent; message appears exactly once.
 - [ ] Client-generated message UUID; idempotent insert (dedupe)
 - [ ] Outbox store; status sending→sent→delivered→read
 - [ ] Retry with exponential backoff; survive app restart
