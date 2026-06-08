@@ -9,7 +9,7 @@
     "preview": "vite preview",
     "test.e2e": "vitest run --config vitest.config.e2e.ts",
     "test.e2e:cypress": "cypress run",
-    "test.unit": "vitest",
+    "test.unit": "vitest run --config vitest.config.unit.ts",
     "test.rls": "npx supabase db reset && vitest run --config vitest.config.rls.ts",
     "test.sim": "npx supabase db reset && vitest run --config vitest.config.sim.ts",
     "test.e2e:pw": "npx playwright test --project=two-user",
