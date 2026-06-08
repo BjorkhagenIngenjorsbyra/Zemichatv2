@@ -382,11 +382,11 @@ const ChatList: React.FC = () => {
           </IonTitle>
           <IonButtons slot="end">
             {profile?.role === UserRole.OWNER && (
-              <IonButton routerLink="/dashboard">
+              <IonButton routerLink="/dashboard" aria-label={t('a11y.openDashboard')}>
                 <IonIcon icon={gridOutline} />
               </IonButton>
             )}
-            <IonButton onClick={() => setShowSearch(true)}>
+            <IonButton onClick={() => setShowSearch(true)} aria-label={t('a11y.searchMessages')}>
               <IonIcon icon={searchOutline} />
             </IonButton>
           </IonButtons>

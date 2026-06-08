@@ -9,7 +9,7 @@ import {
 import { alertCircle, close } from 'ionicons/icons';
 import { hapticHeavy } from '../../utils/haptics';
 
-interface SOSConfirmModalProps {
+interface TillkallaConfirmModalProps {
   isOpen: boolean;
   onConfirm: () => void;
   onCancel: () => void;
@@ -19,10 +19,10 @@ interface SOSConfirmModalProps {
 const AUTO_CANCEL_SECONDS = 5;
 
 /**
- * Confirmation modal for SOS alerts.
+ * Confirmation modal for Tillkalla Vuxen.
  * Auto-cancels after 5 seconds to prevent accidental triggers.
  */
-export const SOSConfirmModal: React.FC<SOSConfirmModalProps> = ({
+export const TillkallaConfirmModal: React.FC<TillkallaConfirmModalProps> = ({
   isOpen,
   onConfirm,
   onCancel,
@@ -60,15 +60,15 @@ export const SOSConfirmModal: React.FC<SOSConfirmModalProps> = ({
     <IonModal
       isOpen={isOpen}
       onDidDismiss={onCancel}
-      className="sos-confirm-modal"
+      className="tillkalla-confirm-modal"
     >
       <div className="modal-content">
-        <div className="sos-icon-container">
-          <IonIcon icon={alertCircle} className="sos-icon" />
+        <div className="tillkalla-icon-container">
+          <IonIcon icon={alertCircle} className="tillkalla-icon" />
         </div>
 
-        <h1 className="modal-title">{t('sos.confirmTitle')}</h1>
-        <p className="modal-message">{t('sos.confirmMessage')}</p>
+        <h1 className="modal-title">{t('tillkalla.confirmTitle')}</h1>
+        <p className="modal-message">{t('tillkalla.confirmMessage')}</p>
 
         <div className="countdown">
           <span>{t('common.cancel')} in {countdown}s</span>
@@ -81,11 +81,12 @@ export const SOSConfirmModal: React.FC<SOSConfirmModalProps> = ({
             className="confirm-button"
             onClick={handleConfirm}
             disabled={isLoading}
+            data-testid="tillkalla-confirm"
           >
             {isLoading ? (
               <IonSpinner name="crescent" />
             ) : (
-              t('sos.confirmYes')
+              t('tillkalla.confirmYes')
             )}
           </IonButton>
 
@@ -98,17 +99,17 @@ export const SOSConfirmModal: React.FC<SOSConfirmModalProps> = ({
             disabled={isLoading}
           >
             <IonIcon icon={close} slot="start" />
-            {t('sos.confirmNo')}
+            {t('tillkalla.confirmNo')}
           </IonButton>
         </div>
       </div>
 
       <style>{`
-        .sos-confirm-modal {
+        .tillkalla-confirm-modal {
           --background: transparent;
         }
 
-        .sos-confirm-modal::part(content) {
+        .tillkalla-confirm-modal::part(content) {
           display: flex;
           align-items: center;
           justify-content: center;
@@ -125,13 +126,13 @@ export const SOSConfirmModal: React.FC<SOSConfirmModalProps> = ({
           box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
         }
 
-        .sos-icon-container {
+        .tillkalla-icon-container {
           display: flex;
           justify-content: center;
           margin-bottom: 1rem;
         }
 
-        .sos-icon {
+        .tillkalla-icon {
           font-size: 4rem;
           color: hsl(var(--destructive));
           animation: pulse 1s ease-in-out infinite;
@@ -189,4 +190,4 @@ export const SOSConfirmModal: React.FC<SOSConfirmModalProps> = ({
   );
 };
 
-export default SOSConfirmModal;
+export default TillkallaConfirmModal;

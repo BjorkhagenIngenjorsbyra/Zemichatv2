@@ -146,7 +146,7 @@ const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
           className="cancel-button"
           onClick={cancelRecording}
           disabled={isSending}
-          aria-label="Cancel"
+          aria-label={t('a11y.cancel')}
         >
           <IonIcon icon={close} />
         </button>
@@ -160,7 +160,7 @@ const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
           className="send-recording-button"
           onClick={sendRecording}
           disabled={isSending}
-          aria-label="Send voice message"
+          aria-label={t('a11y.sendVoiceMessage')}
         >
           {isSending ? (
             <IonSpinner name="crescent" />

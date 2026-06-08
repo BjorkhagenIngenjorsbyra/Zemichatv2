@@ -49,8 +49,9 @@ import { getTeamMembers } from '../services/members';
 import { exportUserData, deleteOwnerAccount, deleteSuperAccount, updateUserProfile, downloadJSON } from '../services/gdpr';
 import { claimReferralRewards, getReferralStats } from '../services/referral';
 import { UserRole, PlanType, type ReferralStats } from '../types/database';
-import { SOSButton } from '../components/sos';
 import { supportedLanguages, changeLanguage, getCurrentLanguage } from '../i18n';
+import { ActiveSessions } from '../components/settings/ActiveSessions';
+import { TwoFactorSetting } from '../components/settings/TwoFactorSetting';
 
 const THEME_LABELS: Record<ThemeName, string> = {
   dark: 'Mörkt',
@@ -429,6 +430,12 @@ const Settings: React.FC = () => {
             </div>
           )}
 
+          {/* Two-factor authentication (Owner/Super, opt-in) */}
+          <TwoFactorSetting />
+
+          {/* Active sessions / devices */}
+          <ActiveSessions />
+
           {/* Referral Section - Owner only */}
           {isOwner && referralStats && (
             <div className="section">
@@ -478,13 +485,6 @@ const Settings: React.FC = () => {
                   )}
                 </div>
               </div>
-            </div>
-          )}
-
-          {/* SOS - Texter only */}
-          {isTexter && (
-            <div className="section">
-              <SOSButton />
             </div>
           )}
 

@@ -1,4 +1,20 @@
 {
+  "errors": {
+    "boundaryMessage": "Något gick fel. Försök igen.",
+    "boundaryRetry": "Försök igen",
+    "boundaryHome": "Till startsidan"
+  },
+  "sessions": {
+    "title": "Aktiva enheter",
+    "none": "Inga andra enheter",
+    "thisDevice": "(den här enheten)",
+    "lastActive": "Senast aktiv",
+    "unknownDevice": "Okänd enhet",
+    "remove": "Ta bort",
+    "signOutOthers": "Logga ut alla andra enheter",
+    "signedOutOthers": "Andra enheter utloggade",
+    "signOutError": "Kunde inte logga ut andra enheter"
+  },
   "common": {
     "appName": "Zemichat",
     "loading": "Laddar...",
@@ -131,6 +147,8 @@
     "accountDeactivated": "Kontot är inaktiverat. Kontakta din Team Owner."
   },
   "chat": {
+    "formerContact": "Tidigare kontakt",
+    "formerContactNamed": "Tidigare kontakt ({{name}})",
     "newChat": "Ny chatt",
     "typeMessage": "Skriv ett meddelande...",
     "send": "Skicka",
@@ -281,6 +299,9 @@
     "outgoingRequests": "Utgående förfrågningar",
     "search": "Sök",
     "enterZemiNumber": "Ange Zemi-nummer",
+    "yourZemiNumber": "Ditt Zemi-nummer",
+    "yourZemiNumberHint": "Dela detta så andra kan lägga till dig",
+    "copyZemiNumber": "Kopiera ditt Zemi-nummer",
     "searchDescription": "Sök efter en användare med deras Zemi-nummer för att skicka en vänförfrågan",
     "invalidZemiNumber": "Ange ett giltigt Zemi-nummer (ZEMI-XXX-XXX)",
     "cannotAddSelf": "Du kan inte lägga till dig själv som vän",
@@ -318,19 +339,18 @@
     "denyFutureMessage": "Detta nekar nuvarande förfrågan och hindrar {{requester}} från att skicka förfrågningar till {{texter}} i framtiden.",
     "guardian": "Ansvarig: {{ownerName}}, {{teamName}} ({{email}})"
   },
-  "sos": {
-    "button": "SOS",
-    "summonSuper": "Tillkalla Super",
-    "confirmTitle": "Skicka SOS-larm?",
-    "confirmMessage": "Detta larmar din vårdnadshavare med din plats.",
-    "confirmYes": "JA, SKICKA SOS",
+  "tillkalla": {
+    "button": "Tillkalla Vuxen",
+    "confirmTitle": "Tillkalla en vuxen?",
+    "confirmMessage": "Detta larmar en vuxen.",
+    "confirmYes": "JA, TILLKALLA",
     "confirmNo": "Avbryt",
-    "sent": "SOS skickat",
-    "alertReceived": "SOS-larm från {{name}}",
+    "sent": "Vuxen tillkallad",
+    "alertReceived": "Tillkalla Vuxen från {{name}}",
     "viewLocation": "Visa plats",
     "acknowledge": "Bekräfta",
-    "unacknowledged": "Obekräftade SOS-larm",
-    "noAlerts": "Inga SOS-larm"
+    "unacknowledged": "Obekräftade larm",
+    "noAlerts": "Inga larm"
   },
   "notifications": {
     "permissionTitle": "Aktivera notiser",
@@ -352,7 +372,15 @@
     "verifyTitle": "Tvåfaktorsautentisering",
     "verifyDescription": "Ange koden från din autentiseringsapp",
     "newCode": "Begär ny kod",
-    "useAnotherAccount": "Använd ett annat konto"
+    "useAnotherAccount": "Använd ett annat konto",
+    "settingsTitle": "Tvåfaktorsautentisering",
+    "settingsDescription": "Extra skydd vid inloggning med en authenticator-app.",
+    "statusEnabled": "Aktiverad",
+    "statusDisabled": "Inte aktiverad",
+    "enable": "Aktivera",
+    "disable": "Inaktivera",
+    "disableConfirm": "Är du säker på att du vill inaktivera tvåfaktorsautentisering?",
+    "disabledToast": "Tvåfaktor inaktiverad"
   },
   "quietHours": {
     "title": "Tysta timmar",
@@ -762,15 +790,15 @@
   },
   "presence": {
     "online": "Online",
-    "lastSeenMinutes_one": "Sedd för {{count}} minut sedan",
-    "lastSeenMinutes_other": "Sedd för {{count}} minuter sedan",
-    "lastSeenHours_one": "Sedd för {{count}} timme sedan",
-    "lastSeenHours_other": "Sedd för {{count}} timmar sedan",
-    "lastSeenDays_one": "Sedd för {{count}} dag sedan",
-    "lastSeenDays_other": "Sedd för {{count}} dagar sedan",
-    "lastSeenMinutes": "Sedd för {{count}} min sedan",
-    "lastSeenHours": "Sedd för {{count}} h sedan",
-    "lastSeenDays": "Sedd för {{count}} dagar sedan"
+    "lastSeenMinutes_one": "Senast sedd för {{count}} minut sedan",
+    "lastSeenMinutes_other": "Senast sedd för {{count}} minuter sedan",
+    "lastSeenHours_one": "Senast sedd för {{count}} timme sedan",
+    "lastSeenHours_other": "Senast sedd för {{count}} timmar sedan",
+    "lastSeenDays_one": "Senast sedd för {{count}} dag sedan",
+    "lastSeenDays_other": "Senast sedd för {{count}} dagar sedan",
+    "lastSeenMinutes": "Senast sedd för {{count}} min sedan",
+    "lastSeenHours": "Senast sedd för {{count}} h sedan",
+    "lastSeenDays": "Senast sedd för {{count}} dagar sedan"
   },
   "chatInfo": {
     "title": "Chattinfo",
@@ -847,5 +875,15 @@
       "resolved": "Löst",
       "dismissed": "Avvisad"
     }
+  },
+  "a11y": {
+    "attach": "Bifoga",
+    "selectReaction": "Välj reaktion",
+    "moreReactions": "Fler reaktioner",
+    "cancel": "Avbryt",
+    "sendVoiceMessage": "Skicka röstmeddelande",
+    "openDashboard": "Översikt",
+    "searchMessages": "Sök meddelanden",
+    "close": "Stäng"
   }
 }

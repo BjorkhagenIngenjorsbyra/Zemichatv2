@@ -80,6 +80,17 @@ export async function canShareLocation(chatId: string): Promise<boolean> {
   // Owner and Super can always share
   if (typedProfile.role !== UserRole.TEXTER) return true;
 
+  // Texter: the owner can disable location sharing per child (can_share_location).
+  const { data: settings } = await supabase
+    .from('texter_settings')
+    .select('can_share_location')
+    .eq('user_id', user.id)
+    .maybeSingle();
+  // Default-allow only when no row exists; an explicit false blocks sharing.
+  if ((settings as { can_share_location: boolean } | null)?.can_share_location === false) {
+    return false;
+  }
+
   // Texter: check if team owner is in this chat
   const { data: teamOwner } = await supabase
     .from('users')

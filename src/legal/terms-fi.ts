@@ -107,11 +107,11 @@ export default `
 <h3>7.2 Vanhempien vastuu</h3>
 <p>Team Owner on vastuussa Texterien palvelun k&auml;yt&ouml;n valvomisesta ja sen varmistamisesta, ett&auml; palvelua k&auml;ytet&auml;&auml;n asianmukaisesti.</p>
 <hr>
-<h2>8. SOS-toiminto</h2>
+<h2>8. Tillkalla Vuxen-toiminto</h2>
 <h3>8.1 Tarkoitus</h3>
-<p>SOS-toiminto mahdollistaa Texterien l&auml;hett&auml;&auml; h&auml;t&auml;h&auml;lytyksen nykyisell&auml; sijainnillaan Team Ownerille.</p>
+<p>Tillkalla Vuxen-toiminto mahdollistaa Texterien l&auml;hett&auml;&auml; h&auml;t&auml;h&auml;lytyksen nykyisell&auml; sijainnillaan Team Ownerille.</p>
 <h3>8.2 Rajoitukset</h3>
-<p>SOS-toiminto <strong>ei</strong> korvaa h&auml;t&auml;palveluita (112). H&auml;t&auml;tilanteessa sinun tulee aina ottaa yhteytt&auml; h&auml;t&auml;keskukseen. Emme takaa, ett&auml; SOS-h&auml;lytykset toimitetaan reaaliajassa tai ett&auml; sijaintitiedot ovat tarkkoja.</p>
+<p>Tillkalla Vuxen-toiminto <strong>ei</strong> korvaa h&auml;t&auml;palveluita (112). H&auml;t&auml;tilanteessa sinun tulee aina ottaa yhteytt&auml; h&auml;t&auml;keskukseen. Emme takaa, ett&auml; Tillkalla Vuxen-h&auml;lytykset toimitetaan reaaliajassa tai ett&auml; sijaintitiedot ovat tarkkoja.</p>
 <hr>
 <h2>9. Immateriaalioikeudet</h2>
 <h3>9.1 Meid&auml;n oikeutemme</h3>

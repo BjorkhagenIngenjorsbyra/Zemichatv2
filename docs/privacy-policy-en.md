@@ -51,7 +51,7 @@ If you have any questions about how we handle your personal data, please don't h
 
 We do **not** collect location data on an ongoing basis. Location data is stored **only** in the following cases:
 
-- **SOS alerts:** If a Texter sends an SOS alert, their current position is included so the parent can quickly locate the child.
+- **Tillkalla Vuxen alerts:** If a Texter sends an Tillkalla Vuxen alert, their current position is included so the parent can quickly locate the child.
 - **Location sharing in chat:** If a user actively chooses to share their location in a message (requires the feature to be enabled in Texter settings).
 
 ### 2.4 Device information
@@ -83,7 +83,7 @@ We only collect data that is necessary for the app to function. Here is the purp
 | Account information | Create and manage your account, identify you in the app | Contract (Art. 6.1b) |
 | Messages and media | Deliver the chat functionality — sending and receiving messages | Contract (Art. 6.1b) |
 | Edit history | Transparency — Team Owner can see changes to Texters' messages | Legitimate interest (Art. 6.1f) |
-| Location data (SOS) | Child safety — help parents locate their child in an emergency | Legitimate interest (Art. 6.1f) |
+| Location data (Tillkalla Vuxen) | Child safety — help parents locate their child in an emergency | Legitimate interest (Art. 6.1f) |
 | Device information | Send push notifications and manage active sessions | Consent (Art. 6.1a) |
 | Texter settings | Parental controls — let Team Owner manage which features the child can access | Legitimate interest/Consent (Art. 6.1f/a) |
 | Friend relationships | Social functionality — manage contacts and friend requests | Contract (Art. 6.1b) |

@@ -155,7 +155,7 @@ const MessageContextMenu: React.FC<MessageContextMenuProps> = ({
           <button
             className="ctx-reaction-btn ctx-reaction-plus"
             onClick={handlePlusClick}
-            aria-label="More reactions"
+            aria-label={t('a11y.moreReactions')}
           >
             +
           </button>

@@ -38,7 +38,7 @@ export default `
 <h3>2.3 Posisjonsdata</h3>
 <p>Vi samler <strong>ikke</strong> inn posisjonsdata l&oslash;pende. Posisjonsdata lagres <strong>kun</strong> i f&oslash;lgende tilfeller:</p>
 <ul>
-<li><strong>SOS-varsler:</strong> Hvis en Texter sender et SOS-varsel, inkluderes n&aring;v&aelig;rende posisjon slik at forelderen raskt kan lokalisere barnet.</li>
+<li><strong>Tillkalla Vuxen-varsler:</strong> Hvis en Texter sender et Tillkalla Vuxen-varsel, inkluderes n&aring;v&aelig;rende posisjon slik at forelderen raskt kan lokalisere barnet.</li>
 <li><strong>Posisjonsdeling i chat:</strong> Hvis en bruker aktivt velger &aring; dele sin posisjon i en melding (krever at funksjonen er aktivert i Texter-innstillinger).</li>
 </ul>
 <h3>2.4 Enhetsinformasjon</h3>
@@ -69,7 +69,7 @@ export default `
 <tr><td>Kontoinformasjon</td><td>Opprette og administrere kontoen din, identifisere deg i appen</td><td>Avtale (art. 6.1b)</td></tr>
 <tr><td>Meldinger og media</td><td>Levere chattefunksjonaliteten &ndash; at du kan sende og motta meldinger</td><td>Avtale (art. 6.1b)</td></tr>
 <tr><td>Redigeringshistorikk</td><td>Transparens &ndash; Team Owner kan se endringer i Texters meldinger</td><td>Berettiget interesse (art. 6.1f)</td></tr>
-<tr><td>Posisjonsdata (SOS)</td><td>Barnesikkerhet &ndash; hjelpe foreldre med &aring; lokalisere barnet sitt i en n&oslash;dsituasjon</td><td>Berettiget interesse (art. 6.1f)</td></tr>
+<tr><td>Posisjonsdata (Tillkalla Vuxen)</td><td>Barnesikkerhet &ndash; hjelpe foreldre med &aring; lokalisere barnet sitt i en n&oslash;dsituasjon</td><td>Berettiget interesse (art. 6.1f)</td></tr>
 <tr><td>Enhetsinformasjon</td><td>Sende push-varsler og administrere aktive sesjoner</td><td>Samtykke (art. 6.1a)</td></tr>
 <tr><td>Texter-innstillinger</td><td>Foreldrekontroll &ndash; la Team Owner styre hvilke funksjoner barnet har tilgang til</td><td>Berettiget interesse/Samtykke (art. 6.1f/a)</td></tr>
 <tr><td>Vennerelasjoner</td><td>Sosial funksjonalitet &ndash; h&aring;ndtere kontakter og venneforesp&oslash;rsler</td><td>Avtale (art. 6.1b)</td></tr>

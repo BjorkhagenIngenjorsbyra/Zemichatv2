@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { QUICK_REACTIONS } from '../../services/reaction';
 import { hapticLight } from '../../utils/haptics';
 
@@ -17,6 +18,7 @@ const InlineReactionBar: React.FC<InlineReactionBarProps> = ({
   onOpenFullPicker,
   onClose,
 }) => {
+  const { t } = useTranslation();
   const barRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -94,7 +96,7 @@ const InlineReactionBar: React.FC<InlineReactionBarProps> = ({
           <button
             className="reaction-btn reaction-plus-btn"
             onClick={handlePlusClick}
-            aria-label="More reactions"
+            aria-label={t('a11y.moreReactions')}
           >
             +
           </button>

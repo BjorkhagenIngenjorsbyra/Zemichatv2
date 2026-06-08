@@ -51,7 +51,7 @@ Jos sinulla on kysyttävää henkilötietojesi käsittelystä, ota meihin yhteyt
 
 Emme kerää sijaintitietoja jatkuvasti. Sijaintitietoja tallennetaan **ainoastaan** seuraavissa tapauksissa:
 
-- **SOS-hälytykset:** Jos Texter lähettää SOS-hälytyksen, nykyinen sijainti sisällytetään, jotta vanhempi voi nopeasti paikantaa lapsen.
+- **Tillkalla Vuxen-hälytykset:** Jos Texter lähettää Tillkalla Vuxen-hälytyksen, nykyinen sijainti sisällytetään, jotta vanhempi voi nopeasti paikantaa lapsen.
 - **Sijainnin jakaminen keskustelussa:** Jos käyttäjä aktiivisesti valitsee jakaa sijaintinsa viestissä (edellyttää, että toiminto on otettu käyttöön Texter-asetuksissa).
 
 ### 2.4 Laitetiedot
@@ -83,7 +83,7 @@ Keräämme vain tietoja, jotka ovat välttämättömiä sovelluksen toiminnalle.
 | Tilitiedot | Tilin luominen ja hallinta, tunnistaminen sovelluksessa | Sopimus (art. 6.1b) |
 | Viestit ja media | Keskustelutoiminnon toteuttaminen – viestien lähettäminen ja vastaanottaminen | Sopimus (art. 6.1b) |
 | Muokkaushistoria | Läpinäkyvyys – Team Owner voi nähdä muutokset Texterien viesteihin | Oikeutettu etu (art. 6.1f) |
-| Sijaintitiedot (SOS) | Lasten turvallisuus – vanhempien auttaminen lapsen paikantamisessa hätätilanteessa | Oikeutettu etu (art. 6.1f) |
+| Sijaintitiedot (Tillkalla Vuxen) | Lasten turvallisuus – vanhempien auttaminen lapsen paikantamisessa hätätilanteessa | Oikeutettu etu (art. 6.1f) |
 | Laitetiedot | Push-ilmoitusten lähettäminen ja aktiivisten istuntojen hallinta | Suostumus (art. 6.1a) |
 | Texter-asetukset | Vanhempien valvonta – Team Owner voi hallita, mihin toimintoihin lapsella on pääsy | Oikeutettu etu/Suostumus (art. 6.1f/a) |
 | Kaverisuhteet | Sosiaalinen toiminnallisuus – kontaktien ja kaveripyyntöjen hallinta | Sopimus (art. 6.1b) |

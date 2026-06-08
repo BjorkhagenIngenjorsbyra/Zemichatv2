@@ -141,15 +141,15 @@ Team Owner on vastuussa Texterien palvelun käytön valvomisesta ja sen varmista
 
 ---
 
-## 8. SOS-toiminto
+## 8. Tillkalla Vuxen-toiminto
 
 ### 8.1 Tarkoitus
 
-SOS-toiminto mahdollistaa Texterien lähettää hätähälytyksen nykyisellä sijainnillaan Team Ownerille.
+Tillkalla Vuxen-toiminto mahdollistaa Texterien lähettää hätähälytyksen nykyisellä sijainnillaan Team Ownerille.
 
 ### 8.2 Rajoitukset
 
-SOS-toiminto **ei** korvaa hätäpalveluita (112). Hätätilanteessa sinun tulee aina ottaa yhteyttä hätäkeskukseen. Emme takaa, että SOS-hälytykset toimitetaan reaaliajassa tai että sijaintitiedot ovat tarkkoja.
+Tillkalla Vuxen-toiminto **ei** korvaa hätäpalveluita (112). Hätätilanteessa sinun tulee aina ottaa yhteyttä hätäkeskukseen. Emme takaa, että Tillkalla Vuxen-hälytykset toimitetaan reaaliajassa tai että sijaintitiedot ovat tarkkoja.
 
 ---
 

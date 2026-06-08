@@ -51,7 +51,7 @@ Har du spørgsmål om, hvordan vi håndterer dine personoplysninger, er du velko
 
 Vi indsamler **ikke** placeringsdata løbende. Placeringsdata gemmes **kun** i følgende tilfælde:
 
-- **SOS-alarmer:** Hvis en Texter sender en SOS-alarm, inkluderes den aktuelle position, så forælderen hurtigt kan lokalisere barnet.
+- **Tillkalla Vuxen-alarmer:** Hvis en Texter sender en Tillkalla Vuxen-alarm, inkluderes den aktuelle position, så forælderen hurtigt kan lokalisere barnet.
 - **Placeringsdeling i chat:** Hvis en bruger aktivt vælger at dele sin placering i en besked (kræver, at funktionen er aktiveret i Texter-indstillinger).
 
 ### 2.4 Enhedsinformation
@@ -83,7 +83,7 @@ Vi indsamler kun data, der er nødvendig for, at appen kan fungere. Her er form�
 | Kontooplysninger | Oprette og administrere din konto, identificere dig i appen | Kontrakt (art. 6.1b) |
 | Beskeder og medier | Levere chatfunktionaliteten – at du kan sende og modtage beskeder | Kontrakt (art. 6.1b) |
 | Redigeringshistorik | Transparens – Team Owner kan se ændringer i Texters beskeder | Legitim interesse (art. 6.1f) |
-| Placeringsdata (SOS) | Børnesikkerhed – hjælpe forældre med at lokalisere deres barn i en nødsituation | Legitim interesse (art. 6.1f) |
+| Placeringsdata (Tillkalla Vuxen) | Børnesikkerhed – hjælpe forældre med at lokalisere deres barn i en nødsituation | Legitim interesse (art. 6.1f) |
 | Enhedsinformation | Sende push-notifikationer og administrere aktive sessioner | Samtykke (art. 6.1a) |
 | Texter-indstillinger | Forældrekontrol – lade Team Owner styre, hvilke funktioner barnet har adgang til | Legitim interesse/Samtykke (art. 6.1f/a) |
 | Vennerelationer | Social funktionalitet – håndtere kontakter og venneanmodninger | Kontrakt (art. 6.1b) |

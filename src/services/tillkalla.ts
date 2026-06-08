@@ -1,11 +1,11 @@
 import { supabase } from './supabase';
-import { type SosAlert, type User, UserRole } from '../types/database';
+import { type TillkallaAlert, type User, UserRole } from '../types/database';
 
 // ============================================================
 // Types
 // ============================================================
 
-export interface SosAlertWithTexter extends SosAlert {
+export interface TillkallaAlertWithTexter extends TillkallaAlert {
   texter: User;
 }
 
@@ -57,11 +57,11 @@ export async function getCurrentLocation(): Promise<Location | null> {
 // ============================================================
 
 /**
- * Send an SOS alert (Texter only).
+ * Send an Tillkalla Vuxen-larm (Texter only).
  * This function works even when is_active=false - safety is critical.
  */
-export async function sendSosAlert(): Promise<{
-  alert: SosAlert | null;
+export async function sendTillkalla(): Promise<{
+  alert: TillkallaAlert | null;
   error: Error | null;
 }> {
   try {
@@ -76,7 +76,7 @@ export async function sendSosAlert(): Promise<{
     // Get current location (best effort)
     const location = await getCurrentLocation();
 
-    // Create the SOS alert
+    // Create the Tillkalla Vuxen-larm
     // PostGIS geography columns require EWKT format via PostgREST
     const { data, error } = await supabase
       .from('sos_alerts')
@@ -93,7 +93,7 @@ export async function sendSosAlert(): Promise<{
       return { alert: null, error: new Error(error.message) };
     }
 
-    return { alert: data as unknown as SosAlert, error: null };
+    return { alert: data as unknown as TillkallaAlert, error: null };
   } catch (err) {
     return {
       alert: null,
@@ -103,10 +103,10 @@ export async function sendSosAlert(): Promise<{
 }
 
 /**
- * Get unacknowledged SOS alerts for the current Owner's team.
+ * Get unacknowledged Tillkalla Vuxen-larms for the current Owner's team.
  */
 export async function getUnacknowledgedAlerts(): Promise<{
-  alerts: SosAlertWithTexter[];
+  alerts: TillkallaAlertWithTexter[];
   error: Error | null;
 }> {
   try {
@@ -132,7 +132,7 @@ export async function getUnacknowledgedAlerts(): Promise<{
     const typedUser = currentUser as unknown as { team_id: string; role: string };
 
     if (typedUser.role !== UserRole.OWNER) {
-      return { alerts: [], error: new Error('Only owners can view SOS alerts') };
+      return { alerts: [], error: new Error('Only owners can view Tillkalla Vuxen-larms') };
     }
 
     // Get all Texters in the team
@@ -167,16 +167,16 @@ export async function getUnacknowledgedAlerts(): Promise<{
       return { alerts: [], error: new Error(alertsError.message) };
     }
 
-    const typedAlerts = (alerts || []) as unknown as SosAlert[];
+    const typedAlerts = (alerts || []) as unknown as TillkallaAlert[];
 
     // Attach texter details
-    const alertsWithTexter: SosAlertWithTexter[] = typedAlerts
+    const alertsWithTexter: TillkallaAlertWithTexter[] = typedAlerts
       .map((alert) => {
         const texter = texterMap.get(alert.texter_id);
         if (!texter) return null;
         return { ...alert, texter };
       })
-      .filter((a): a is SosAlertWithTexter => a !== null);
+      .filter((a): a is TillkallaAlertWithTexter => a !== null);
 
     return { alerts: alertsWithTexter, error: null };
   } catch (err) {
@@ -188,10 +188,10 @@ export async function getUnacknowledgedAlerts(): Promise<{
 }
 
 /**
- * Get all SOS alerts (including acknowledged) for the current Owner's team.
+ * Get all Tillkalla Vuxen-larms (including acknowledged) for the current Owner's team.
  */
 export async function getAllAlerts(limit = 50): Promise<{
-  alerts: SosAlertWithTexter[];
+  alerts: TillkallaAlertWithTexter[];
   error: Error | null;
 }> {
   try {
@@ -217,7 +217,7 @@ export async function getAllAlerts(limit = 50): Promise<{
     const typedUser = currentUser as unknown as { team_id: string; role: string };
 
     if (typedUser.role !== UserRole.OWNER) {
-      return { alerts: [], error: new Error('Only owners can view SOS alerts') };
+      return { alerts: [], error: new Error('Only owners can view Tillkalla Vuxen-larms') };
     }
 
     // Get all Texters in the team
@@ -252,16 +252,16 @@ export async function getAllAlerts(limit = 50): Promise<{
       return { alerts: [], error: new Error(alertsError.message) };
     }
 
-    const typedAlerts = (alerts || []) as unknown as SosAlert[];
+    const typedAlerts = (alerts || []) as unknown as TillkallaAlert[];
 
     // Attach texter details
-    const alertsWithTexter: SosAlertWithTexter[] = typedAlerts
+    const alertsWithTexter: TillkallaAlertWithTexter[] = typedAlerts
       .map((alert) => {
         const texter = texterMap.get(alert.texter_id);
         if (!texter) return null;
         return { ...alert, texter };
       })
-      .filter((a): a is SosAlertWithTexter => a !== null);
+      .filter((a): a is TillkallaAlertWithTexter => a !== null);
 
     return { alerts: alertsWithTexter, error: null };
   } catch (err) {
@@ -273,9 +273,9 @@ export async function getAllAlerts(limit = 50): Promise<{
 }
 
 /**
- * Acknowledge an SOS alert (Owner only).
+ * Acknowledge an Tillkalla Vuxen-larm (Owner only).
  */
-export async function acknowledgeSosAlert(
+export async function acknowledgeTillkalla(
   alertId: string
 ): Promise<{ error: Error | null }> {
   try {
@@ -321,11 +321,11 @@ function parseHexDouble(hex: string, byteOffset: number): number {
 }
 
 /**
- * Parse location from SOS alert.
+ * Parse location from Tillkalla Vuxen-larm.
  * Handles both GeoJSON objects and hex-encoded EWKB strings from PostgREST.
  */
 export function parseAlertLocation(
-  alert: SosAlert
+  alert: TillkallaAlert
 ): Location | null {
   if (!alert.location) return null;
 

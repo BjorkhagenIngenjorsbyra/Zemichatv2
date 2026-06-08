@@ -20,6 +20,7 @@ import { closeOutline } from 'ionicons/icons';
 import { searchInChat, searchGlobal, type SearchResultMessage } from '../../services/search';
 import { useAuthContext } from '../../contexts/AuthContext';
 import { getAvatarColor, getInitial } from '../../utils/userDisplay';
+import { formatTimeOrDate } from '../../utils/datetime';
 
 interface ChatSearchModalProps {
   isOpen: boolean;
@@ -104,17 +105,7 @@ export const ChatSearchModal: React.FC<ChatSearchModalProps> = ({
     onClose();
   };
 
-  const formatTime = (dateStr: string): string => {
-    const date = new Date(dateStr);
-    const now = new Date();
-    const isToday = date.toDateString() === now.toDateString();
-
-    if (isToday) {
-      return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    }
-
-    return date.toLocaleDateString([], { month: 'short', day: 'numeric' });
-  };
+  const formatTime = (dateStr: string): string => formatTimeOrDate(dateStr);
 
   const highlightMatch = (text: string, query: string): React.ReactNode => {
     if (!text || !query) return text;
@@ -158,7 +149,7 @@ export const ChatSearchModal: React.FC<ChatSearchModalProps> = ({
             showCancelButton="never"
           />
           <IonButtons slot="end">
-            <IonButton onClick={onClose}>
+            <IonButton onClick={onClose} aria-label={t('a11y.close')} data-testid="close-chat-search">
               <IonIcon icon={closeOutline} />
             </IonButton>
           </IonButtons>

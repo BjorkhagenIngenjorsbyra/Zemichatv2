@@ -1,0 +1,15 @@
+{
+  "group_id": "22097215",
+  "subscriptions": [
+    {
+      "name": "Zemi Plus",
+      "id": "6770456190",
+      "productId": "zemichat_plus_monthly"
+    },
+    {
+      "name": "Zemi Plus med samtal",
+      "id": "6770456191",
+      "productId": "zemi_plus_ringa_monthly"
+    }
+  ]
+}

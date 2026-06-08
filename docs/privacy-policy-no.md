@@ -51,7 +51,7 @@ Har du spørsmål om hvordan vi håndterer dine personopplysninger, er du velkom
 
 Vi samler **ikke** inn posisjonsdata løpende. Posisjonsdata lagres **kun** i følgende tilfeller:
 
-- **SOS-varsler:** Hvis en Texter sender et SOS-varsel, inkluderes nåværende posisjon slik at forelderen raskt kan lokalisere barnet.
+- **Tillkalla Vuxen-varsler:** Hvis en Texter sender et Tillkalla Vuxen-varsel, inkluderes nåværende posisjon slik at forelderen raskt kan lokalisere barnet.
 - **Posisjonsdeling i chat:** Hvis en bruker aktivt velger å dele sin posisjon i en melding (krever at funksjonen er aktivert i Texter-innstillinger).
 
 ### 2.4 Enhetsinformasjon
@@ -83,7 +83,7 @@ Vi samler bare inn data som er nødvendig for at appen skal fungere. Her er form
 | Kontoinformasjon | Opprette og administrere kontoen din, identifisere deg i appen | Avtale (art. 6.1b) |
 | Meldinger og media | Levere chattefunksjonaliteten – at du kan sende og motta meldinger | Avtale (art. 6.1b) |
 | Redigeringshistorikk | Transparens – Team Owner kan se endringer i Texters meldinger | Berettiget interesse (art. 6.1f) |
-| Posisjonsdata (SOS) | Barnesikkerhet – hjelpe foreldre med å lokalisere barnet sitt i en nødsituasjon | Berettiget interesse (art. 6.1f) |
+| Posisjonsdata (Tillkalla Vuxen) | Barnesikkerhet – hjelpe foreldre med å lokalisere barnet sitt i en nødsituasjon | Berettiget interesse (art. 6.1f) |
 | Enhetsinformasjon | Sende push-varsler og administrere aktive sesjoner | Samtykke (art. 6.1a) |
 | Texter-innstillinger | Foreldrekontroll – la Team Owner styre hvilke funksjoner barnet har tilgang til | Berettiget interesse/Samtykke (art. 6.1f/a) |
 | Vennerelasjoner | Sosial funksjonalitet – håndtere kontakter og venneforespørsler | Avtale (art. 6.1b) |

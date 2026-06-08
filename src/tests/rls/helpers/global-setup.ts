@@ -11,8 +11,10 @@ const SUPABASE_SERVICE_ROLE_KEY =
 const TEST_PASSWORD = 'test-password-123!';
 
 function execSQL(sql: string): string {
+  // ON_ERROR_STOP=1 so seed failures throw loudly instead of being silently
+  // swallowed (a swallowed teams-insert error once masked 31 test failures).
   return execSync(
-    'docker exec -i supabase_db_zemichat psql -U postgres -d postgres',
+    'docker exec -i supabase_db_zemichat psql -U postgres -d postgres -v ON_ERROR_STOP=1',
     { input: sql, encoding: 'utf-8' },
   );
 }
@@ -36,6 +38,14 @@ const IDS = {
   msgEdited: 'dddd0003-0000-0000-0000-000000000003',
   msgInSuperChat: 'dddd0004-0000-0000-0000-000000000004',
   msgInCrossTeam: 'dddd0005-0000-0000-0000-000000000005',
+  // Realistic two-way conversation in the owner↔texter chat so the UI looks
+  // like a real chat (mixed senders → left/right alignment is exercised, and
+  // explorer/demo runs aren't dominated by leftover E2E test strings).
+  msgConvTexter1: 'dddd0010-0000-0000-0000-000000000010',
+  msgConvOwner1:  'dddd0011-0000-0000-0000-000000000011',
+  msgConvTexter2: 'dddd0012-0000-0000-0000-000000000012',
+  msgConvOwner2:  'dddd0013-0000-0000-0000-000000000013',
+  msgConvTexter3: 'dddd0014-0000-0000-0000-000000000014',
   friendshipAccepted: 'eeee0001-0000-0000-0000-000000000001',
   friendshipPending: 'eeee0002-0000-0000-0000-000000000002',
   texterSettings1: 'ffff0001-0000-0000-0000-000000000001',
@@ -64,6 +74,9 @@ export async function setup() {
   ];
 
   for (const u of userDefs) {
+    // Best-effort delete first so a half-finished prior run (e.g. one that
+    // aborted before the SQL seed) doesn't block re-creation with the same id.
+    await adminClient.auth.admin.deleteUser(u.id).catch(() => {});
     const { error } = await adminClient.auth.admin.createUser({
       id: u.id,
       email: u.email,
@@ -77,17 +90,17 @@ export async function setup() {
   execSQL(`
     SET session_replication_role = 'replica';
 
-    INSERT INTO public.teams (id, name, owner_id) VALUES
-      ('${IDS.team1}', 'Team Alpha', '${IDS.owner1}'),
-      ('${IDS.team2}', 'Team Beta',  '${IDS.owner2}');
+    INSERT INTO public.teams (id, name, owner_id, referral_code) VALUES
+      ('${IDS.team1}', 'Team Alpha', '${IDS.owner1}', 'REF-TEAM-ALPHA'),
+      ('${IDS.team2}', 'Team Beta',  '${IDS.owner2}', 'REF-TEAM-BETA');
 
     INSERT INTO public.users (id, team_id, role, zemi_number, display_name, is_active) VALUES
-      ('${IDS.owner1}',  '${IDS.team1}', 'owner',  'ZEMI-001-001', 'Owner 1',  true),
-      ('${IDS.super1}',  '${IDS.team1}', 'super',  'ZEMI-001-002', 'Super 1',  true),
-      ('${IDS.texter1}', '${IDS.team1}', 'texter', 'ZEMI-001-003', 'Texter 1', true),
-      ('${IDS.owner2}',  '${IDS.team2}', 'owner',  'ZEMI-002-001', 'Owner 2',  true),
-      ('${IDS.super2}',  '${IDS.team2}', 'super',  'ZEMI-002-002', 'Super 2',  true),
-      ('${IDS.texter2}', '${IDS.team2}', 'texter', 'ZEMI-002-003', 'Texter 2', true);
+      ('${IDS.owner1}',  '${IDS.team1}', 'owner',  'ZEMI-001-001', 'Anna Berg',    true),
+      ('${IDS.super1}',  '${IDS.team1}', 'super',  'ZEMI-001-002', 'Johan Berg',   true),
+      ('${IDS.texter1}', '${IDS.team1}', 'texter', 'ZEMI-001-003', 'Liam Berg',    true),
+      ('${IDS.owner2}',  '${IDS.team2}', 'owner',  'ZEMI-002-001', 'Sara Lund',    true),
+      ('${IDS.super2}',  '${IDS.team2}', 'super',  'ZEMI-002-002', 'Erik Lund',    true),
+      ('${IDS.texter2}', '${IDS.team2}', 'texter', 'ZEMI-002-003', 'Nora Lund',    true);
 
     INSERT INTO public.texter_settings (id, user_id) VALUES
       ('${IDS.texterSettings1}', '${IDS.texter1}');
@@ -97,10 +110,12 @@ export async function setup() {
       ('${IDS.friendshipPending}',  '${IDS.super2}',  '${IDS.texter1}', 'pending',  NULL);
 
     INSERT INTO public.chats (id, name, is_group, created_by) VALUES
-      ('${IDS.chatTexterToTexter}', 'Texter-Texter Chat', false, '${IDS.texter1}'),
-      ('${IDS.chatSuperToSuper}',   'Super-Super Chat',   false, '${IDS.super1}'),
-      ('${IDS.chatSuperToTexter}',  'Super-Texter Chat',  false, '${IDS.super1}'),
-      ('${IDS.chatOwnerToTexter}',  'Owner-Texter Chat',  false, '${IDS.owner1}');
+      -- 1-on-1 chats have no stored name in real usage; the UI derives the
+      -- other member's display name. NULL here exercises that real path.
+      ('${IDS.chatTexterToTexter}', NULL, false, '${IDS.texter1}'),
+      ('${IDS.chatSuperToSuper}',   NULL, false, '${IDS.super1}'),
+      ('${IDS.chatSuperToTexter}',  NULL, false, '${IDS.super1}'),
+      ('${IDS.chatOwnerToTexter}',  NULL, false, '${IDS.owner1}');
 
     INSERT INTO public.chat_members (chat_id, user_id) VALUES
       ('${IDS.chatTexterToTexter}', '${IDS.texter1}'),
@@ -112,11 +127,27 @@ export async function setup() {
       ('${IDS.chatOwnerToTexter}', '${IDS.owner1}'),
       ('${IDS.chatOwnerToTexter}', '${IDS.texter1}');
 
+    -- session_replication_role='replica' (set above) disables triggers, so the
+    -- chat_member display-name snapshot trigger doesn't fire during seeding.
+    -- Populate it explicitly to mirror the production trigger's result.
+    UPDATE public.chat_members cm
+    SET display_name = u.display_name
+    FROM public.users u
+    WHERE u.id = cm.user_id;
+
     INSERT INTO public.messages (id, chat_id, sender_id, type, content) VALUES
       ('${IDS.msgNormal}',      '${IDS.chatSuperToTexter}',  '${IDS.texter1}', 'text', 'Hello from texter'),
       ('${IDS.msgEdited}',      '${IDS.chatSuperToTexter}',  '${IDS.texter1}', 'text', 'Edited content'),
       ('${IDS.msgInSuperChat}', '${IDS.chatSuperToSuper}',   '${IDS.super1}',  'text', 'Super private msg'),
       ('${IDS.msgInCrossTeam}', '${IDS.chatTexterToTexter}', '${IDS.texter1}', 'text', 'Cross team msg');
+
+    -- Realistic owner↔texter conversation with mixed senders and ascending timestamps.
+    INSERT INTO public.messages (id, chat_id, sender_id, type, content, created_at) VALUES
+      ('${IDS.msgConvTexter1}', '${IDS.chatOwnerToTexter}', '${IDS.texter1}', 'text', 'Hej! Är du hemma snart?',            now() - interval '50 minutes'),
+      ('${IDS.msgConvOwner1}',  '${IDS.chatOwnerToTexter}', '${IDS.owner1}',  'text', 'Ja, jag är på väg nu. Hur var det i skolan?', now() - interval '45 minutes'),
+      ('${IDS.msgConvTexter2}', '${IDS.chatOwnerToTexter}', '${IDS.texter1}', 'text', 'Bra! Vi hade prov i matte och det gick fint.', now() - interval '40 minutes'),
+      ('${IDS.msgConvOwner2}',  '${IDS.chatOwnerToTexter}', '${IDS.owner1}',  'text', 'Vad kul att höra! Vill du ha pannkakor till middag?', now() - interval '20 minutes'),
+      ('${IDS.msgConvTexter3}', '${IDS.chatOwnerToTexter}', '${IDS.texter1}', 'text', 'Ja tack!! 🥞',                       now() - interval '5 minutes');
 
     INSERT INTO public.messages (id, chat_id, sender_id, type, content, deleted_at, deleted_by) VALUES
       ('${IDS.msgDeleted}', '${IDS.chatSuperToTexter}', '${IDS.texter1}', 'text', 'Deleted msg',

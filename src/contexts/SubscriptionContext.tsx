@@ -36,6 +36,7 @@ interface SubscriptionContextValue {
   status: SubscriptionStatus | null;
   offerings: RevenueCatOffering[];
   currentOffering: RevenueCatOffering | null;
+  offeringsError: Error | null;
   isLoading: boolean;
   error: Error | null;
 
@@ -79,6 +80,7 @@ export function SubscriptionProvider({ children }: SubscriptionProviderProps) {
   const [status, setStatus] = useState<SubscriptionStatus | null>(null);
   const [offerings, setOfferings] = useState<RevenueCatOffering[]>([]);
   const [currentOffering, setCurrentOffering] = useState<RevenueCatOffering | null>(null);
+  const [offeringsError, setOfferingsError] = useState<Error | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
@@ -121,12 +123,14 @@ export function SubscriptionProvider({ children }: SubscriptionProviderProps) {
         setStatus(subStatus);
       }
 
-      // Get offerings
-      const { offerings: off, current, error: offeringsError } = await getOfferings();
-      if (!offeringsError) {
-        setOfferings(off);
-        setCurrentOffering(current);
-      }
+      // Get offerings — Apple rejection 2026-05-20 (build 52) flagged the
+      // paywall as "loading indefinitely" when offerings failed to arrive.
+      // We now expose the error so the paywall can render an actionable
+      // message instead of holding a spinner forever.
+      const { offerings: off, current, error: offErr } = await getOfferings();
+      setOfferings(off);
+      setCurrentOffering(current);
+      setOfferingsError(offErr);
 
       setIsLoading(false);
     };
@@ -249,6 +253,7 @@ export function SubscriptionProvider({ children }: SubscriptionProviderProps) {
       status,
       offerings,
       currentOffering,
+      offeringsError,
       isLoading,
       error,
       currentPlan,
@@ -269,6 +274,7 @@ export function SubscriptionProvider({ children }: SubscriptionProviderProps) {
       status,
       offerings,
       currentOffering,
+      offeringsError,
       isLoading,
       error,
       currentPlan,

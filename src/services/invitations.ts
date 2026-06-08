@@ -1,5 +1,6 @@
 import { supabase } from './supabase';
 import { type User } from '../types/database';
+import i18n from '../i18n';
 
 export interface Invitation {
   id: string;
@@ -198,7 +199,9 @@ export async function sendInvitationEmail(
 ): Promise<{ error: Error | null }> {
   try {
     const { data, error } = await supabase.functions.invoke('send-invitation', {
-      body: { email, invitationId, inviteLink },
+      // Pass the inviter's app language so the email is sent in their language
+      // (the recipient's locale is unknown until they sign up).
+      body: { email, invitationId, inviteLink, locale: i18n.language },
     });
 
     if (error) {

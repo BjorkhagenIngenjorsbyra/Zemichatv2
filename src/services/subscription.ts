@@ -424,7 +424,16 @@ export async function getSubscriptionStatusForUser(userId: string): Promise<{
 
 /**
  * Get available offerings from RevenueCat.
+ *
+ * Apple rejection 2026-05-20 (build 52): subscribe button "loading
+ * indefinitely" in sandbox. Root cause: Purchases.getOfferings() can hang
+ * silently when StoreKit hasn't received product metadata (typical when IAPs
+ * aren't submitted yet or sandbox isn't reachable). We wrap the call in a
+ * timeout so the paywall can render an actionable error instead of a
+ * permanent spinner.
  */
+const OFFERINGS_TIMEOUT_MS = 10_000;
+
 export async function getOfferings(): Promise<{
   offerings: RevenueCatOffering[];
   current: RevenueCatOffering | null;
@@ -440,15 +449,33 @@ export async function getOfferings(): Promise<{
       };
     }
 
-    const offerings = await Purchases.getOfferings();
+    const offerings = await Promise.race([
+      Purchases.getOfferings(),
+      new Promise<never>((_, reject) =>
+        setTimeout(
+          () => reject(new Error('Offerings request timed out')),
+          OFFERINGS_TIMEOUT_MS,
+        ),
+      ),
+    ]);
 
-    return {
-      offerings: offerings?.all
-        ? Object.values(offerings.all as unknown as Record<string, RevenueCatOffering>)
-        : [],
-      current: offerings?.current as unknown as RevenueCatOffering | null,
-      error: null,
-    };
+    const current = offerings?.current as unknown as RevenueCatOffering | null;
+    const all = offerings?.all
+      ? Object.values(offerings.all as unknown as Record<string, RevenueCatOffering>)
+      : [];
+
+    // Treat "offerings loaded but no current" as an error so the paywall
+    // surfaces it instead of waiting forever for a current that will never
+    // arrive (happens when IAPs aren't approved / not in the right region).
+    if (!current) {
+      return {
+        offerings: all,
+        current: null,
+        error: new Error('No current offering available'),
+      };
+    }
+
+    return { offerings: all, current, error: null };
   } catch (err) {
     return {
       offerings: [],

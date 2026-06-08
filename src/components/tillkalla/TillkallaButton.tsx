@@ -1,31 +1,22 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { IonButton, IonIcon, IonSpinner } from '@ionic/react';
-import { alertCircle } from 'ionicons/icons';
-import { SOSConfirmModal } from './SOSConfirmModal';
-import { sendSosAlert } from '../../services/sos';
+import { handLeftOutline } from 'ionicons/icons';
+import { TillkallaConfirmModal } from './TillkallaConfirmModal';
+import { sendTillkalla } from '../../services/tillkalla';
 
-interface SOSButtonProps {
+interface TillkallaButtonProps {
   onAlertSent?: () => void;
   size?: 'small' | 'default' | 'large';
-  /**
-   * Optional override for the button label. Defaults to the i18n key
-   * `sos.button`. Issue #43 introduces a per-chat variant labelled
-   * "Tillkalla Super" — passing `labelKey="sos.summonSuper"` lets the
-   * caller swap text without forking the component (the SOS action and
-   * safety guarantees stay identical).
-   */
-  labelKey?: string;
 }
 
 /**
- * SOS button for Texters to send emergency alerts.
- * This button CANNOT be disabled - safety is critical.
+ * "Tillkalla Vuxen" button for Texters — summons an adult from within a chat.
+ * Icon-only (symbol), no text label. Texter-only; lives only inside chats.
  */
-export const SOSButton: React.FC<SOSButtonProps> = ({
+export const TillkallaButton: React.FC<TillkallaButtonProps> = ({
   onAlertSent,
   size = 'default',
-  labelKey = 'sos.button',
 }) => {
   const { t } = useTranslation();
   const [showConfirm, setShowConfirm] = useState(false);
@@ -34,10 +25,10 @@ export const SOSButton: React.FC<SOSButtonProps> = ({
   const handleConfirm = async () => {
     setIsSending(true);
 
-    const { error } = await sendSosAlert();
+    const { error } = await sendTillkalla();
 
     if (error) {
-      console.error('Failed to send SOS:', error);
+      console.error('Failed to send Tillkalla Vuxen alert:', error);
     } else {
       onAlertSent?.();
     }
@@ -46,7 +37,7 @@ export const SOSButton: React.FC<SOSButtonProps> = ({
     setShowConfirm(false);
   };
 
-  const buttonClass = `sos-button sos-button-${size}`;
+  const buttonClass = `tillkalla-button tillkalla-button-${size}`;
 
   return (
     <>
@@ -56,18 +47,18 @@ export const SOSButton: React.FC<SOSButtonProps> = ({
         className={buttonClass}
         onClick={() => setShowConfirm(true)}
         disabled={isSending}
+        aria-label={t('tillkalla.button')}
+        title={t('tillkalla.button')}
+        data-testid="tillkalla-button"
       >
         {isSending ? (
           <IonSpinner name="crescent" />
         ) : (
-          <>
-            <IonIcon icon={alertCircle} slot="start" />
-            {t(labelKey)}
-          </>
+          <IonIcon icon={handLeftOutline} />
         )}
       </IonButton>
 
-      <SOSConfirmModal
+      <TillkallaConfirmModal
         isOpen={showConfirm}
         onConfirm={handleConfirm}
         onCancel={() => setShowConfirm(false)}
@@ -75,25 +66,25 @@ export const SOSButton: React.FC<SOSButtonProps> = ({
       />
 
       <style>{`
-        .sos-button {
+        .tillkalla-button {
           --border-radius: 9999px;
           font-weight: 700;
           text-transform: uppercase;
           letter-spacing: 0.05em;
         }
 
-        .sos-button-small {
+        .tillkalla-button-small {
           --padding-start: 0.75rem;
           --padding-end: 0.75rem;
           font-size: 0.75rem;
         }
 
-        .sos-button-default {
+        .tillkalla-button-default {
           --padding-start: 1rem;
           --padding-end: 1rem;
         }
 
-        .sos-button-large {
+        .tillkalla-button-large {
           --padding-start: 2rem;
           --padding-end: 2rem;
           font-size: 1.25rem;
@@ -103,4 +94,4 @@ export const SOSButton: React.FC<SOSButtonProps> = ({
   );
 };
 
-export default SOSButton;
+export default TillkallaButton;

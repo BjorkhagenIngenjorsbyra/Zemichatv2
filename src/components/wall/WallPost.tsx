@@ -25,6 +25,7 @@ import {
 } from '../../services/wall';
 import { useSignedMediaUrl } from '../../hooks/useSignedMediaUrl';
 import WallComments from './WallComments';
+import { formatShortDate } from '../../utils/datetime';
 
 interface WallPostCardProps {
   post: WallPostWithAuthor;
@@ -73,7 +74,7 @@ const WallPostCard: React.FC<WallPostCardProps> = ({
     if (diffMin < 60) return `${diffMin}m`;
     if (diffHrs < 24) return `${diffHrs}h`;
     if (diffDays < 7) return `${diffDays}d`;
-    return date.toLocaleDateString([], { month: 'short', day: 'numeric' });
+    return formatShortDate(dateStr);
   };
 
   const handleReaction = async (emoji: string) => {

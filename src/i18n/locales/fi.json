@@ -1,4 +1,20 @@
 {
+  "errors": {
+    "boundaryMessage": "Jotain meni pieleen. Yritä uudelleen.",
+    "boundaryRetry": "Yritä uudelleen",
+    "boundaryHome": "Etusivulle"
+  },
+  "sessions": {
+    "title": "Aktiiviset laitteet",
+    "none": "Ei muita laitteita",
+    "thisDevice": "(tämä laite)",
+    "lastActive": "Viimeksi aktiivinen",
+    "unknownDevice": "Tuntematon laite",
+    "remove": "Poista",
+    "signOutOthers": "Kirjaa ulos kaikki muut laitteet",
+    "signedOutOthers": "Muut laitteet kirjattu ulos",
+    "signOutError": "Muiden laitteiden uloskirjaus epäonnistui"
+  },
   "common": {
     "appName": "Zemichat",
     "loading": "Ladataan...",
@@ -131,6 +147,8 @@
     "accountDeactivated": "Tili on poistettu käytöstä. Ota yhteyttä Team Owneriin."
   },
   "chat": {
+    "formerContact": "Entinen yhteystieto",
+    "formerContactNamed": "Entinen yhteystieto ({{name}})",
     "newChat": "Uusi keskustelu",
     "typeMessage": "Kirjoita viesti...",
     "send": "Lähetä",
@@ -281,6 +299,9 @@
     "outgoingRequests": "Lähtevät pyynnöt",
     "search": "Hae",
     "enterZemiNumber": "Syötä Zemi-numero",
+    "yourZemiNumber": "Oma Zemi-numerosi",
+    "yourZemiNumberHint": "Jaa tämä, jotta muut voivat lisätä sinut",
+    "copyZemiNumber": "Kopioi Zemi-numerosi",
     "searchDescription": "Etsi käyttäjää Zemi-numerolla lähettääksesi ystäväpyynnön",
     "invalidZemiNumber": "Syötä kelvollinen Zemi-numero (ZEMI-XXX-XXX)",
     "cannotAddSelf": "Et voi lisätä itseäsi ystäväksi",
@@ -318,19 +339,18 @@
     "denyFutureMessage": "Tämä hylkää nykyisen pyynnön ja estää käyttäjää {{requester}} lähettämästä pyyntöjä käyttäjälle {{texter}} tulevaisuudessa.",
     "guardian": "Vastuuhenkilö: {{ownerName}}, {{teamName}} ({{email}})"
   },
-  "sos": {
-    "button": "SOS",
-    "summonSuper": "Kutsu Super",
-    "confirmTitle": "Lähetä SOS-hälytys?",
-    "confirmMessage": "Tämä hälyttää huoltajasi sijainnillasi.",
-    "confirmYes": "KYLLÄ, LÄHETÄ SOS",
+  "tillkalla": {
+    "button": "Kutsu aikuinen",
+    "confirmTitle": "Kutsu aikuinen?",
+    "confirmMessage": "Tämä hälyttää aikuisen.",
+    "confirmYes": "KYLLÄ, KUTSU",
     "confirmNo": "Peruuta",
-    "sent": "SOS lähetetty",
-    "alertReceived": "SOS-hälytys käyttäjältä {{name}}",
+    "sent": "Aikuinen kutsuttu",
+    "alertReceived": "Aikuisen kutsu käyttäjältä {{name}}",
     "viewLocation": "Näytä sijainti",
-    "acknowledge": "Kuittaa",
-    "unacknowledged": "Kuittaamattomat SOS-hälytykset",
-    "noAlerts": "Ei SOS-hälytyksiä"
+    "acknowledge": "Vahvista",
+    "unacknowledged": "Vahvistamattomat hälytykset",
+    "noAlerts": "Ei hälytyksiä"
   },
   "notifications": {
     "permissionTitle": "Ota ilmoitukset käyttöön",
@@ -352,7 +372,15 @@
     "verifyTitle": "Kaksivaiheinen todennus",
     "verifyDescription": "Syötä koodi todennussovelluksestasi",
     "newCode": "Pyydä uusi koodi",
-    "useAnotherAccount": "Käytä toista tiliä"
+    "useAnotherAccount": "Käytä toista tiliä",
+    "settingsTitle": "Kaksivaiheinen tunnistautuminen",
+    "settingsDescription": "Lisäsuoja kirjautumiseen todennussovelluksella.",
+    "statusEnabled": "Käytössä",
+    "statusDisabled": "Ei käytössä",
+    "enable": "Ota käyttöön",
+    "disable": "Poista käytöstä",
+    "disableConfirm": "Haluatko varmasti poistaa kaksivaiheisen tunnistautumisen käytöstä?",
+    "disabledToast": "Kaksivaiheinen tunnistautuminen poistettu"
   },
   "quietHours": {
     "title": "Hiljaiset tunnit",
@@ -841,5 +869,15 @@
       "resolved": "Ratkaistu",
       "dismissed": "Hylätty"
     }
+  },
+  "a11y": {
+    "attach": "Liitä",
+    "selectReaction": "Valitse reaktio",
+    "moreReactions": "Lisää reaktioita",
+    "cancel": "Peruuta",
+    "sendVoiceMessage": "Lähetä ääniviesti",
+    "openDashboard": "Yleiskatsaus",
+    "searchMessages": "Hae viestejä",
+    "close": "Sulje"
   }
 }

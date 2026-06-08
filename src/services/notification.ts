@@ -60,13 +60,18 @@ const WALL_LAST_VISITED_KEY = 'zemichat-wall-last-visited';
  */
 export async function hasNewWallPosts(teamId: string): Promise<boolean> {
   const lastVisited = localStorage.getItem(WALL_LAST_VISITED_KEY);
-  if (!lastVisited) return true; // Never visited — show dot
 
-  const { count, error } = await supabase
+  // The dot means "there is unseen wall content". On a never-visited wall we
+  // still only want it when posts actually exist — otherwise a brand-new team
+  // with an empty wall shows a notification dot for content that isn't there.
+  const query = supabase
     .from('wall_posts')
     .select('id', { count: 'exact', head: true })
-    .eq('team_id', teamId)
-    .gt('created_at', lastVisited);
+    .eq('team_id', teamId);
+
+  const { count, error } = lastVisited
+    ? await query.gt('created_at', lastVisited)
+    : await query;
 
   if (error) return false;
   return (count ?? 0) > 0;

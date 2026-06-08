@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { hapticLight } from '../../utils/haptics';
 import ReactEmojiPicker, { EmojiClickData, EmojiStyle, Theme } from 'emoji-picker-react';
 
@@ -8,6 +9,7 @@ interface EmojiPickerProps {
 }
 
 const EmojiPicker: React.FC<EmojiPickerProps> = ({ onSelect, onClose }) => {
+  const { t } = useTranslation();
   const pickerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -33,7 +35,7 @@ const EmojiPicker: React.FC<EmojiPickerProps> = ({ onSelect, onClose }) => {
         className="full-emoji-picker"
         onClick={(e) => e.stopPropagation()}
         role="dialog"
-        aria-label="Select reaction"
+        aria-label={t('a11y.selectReaction')}
       >
         <ReactEmojiPicker
           onEmojiClick={handleSelect}

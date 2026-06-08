@@ -141,15 +141,15 @@ Team Owner är ansvarig för att övervaka Texters användning av tjänsten och 
 
 ---
 
-## 8. SOS-funktionen
+## 8. Tillkalla Vuxen-funktionen
 
 ### 8.1 Syfte
 
-SOS-funktionen gör det möjligt för Texters att skicka ett nödlarm med sin aktuella position till Team Owner.
+Tillkalla Vuxen-funktionen gör det möjligt för Texters att skicka ett nödlarm med sin aktuella position till Team Owner.
 
 ### 8.2 Begränsningar
 
-SOS-funktionen är **inte** en ersättning för nödtjänster (112/911). I en nödsituation ska du alltid kontakta räddningstjänsten. Vi garanterar inte att SOS-larm levereras i realtid eller att platsdata är exakt.
+Tillkalla Vuxen-funktionen är **inte** en ersättning för nödtjänster (112/911). I en nödsituation ska du alltid kontakta räddningstjänsten. Vi garanterar inte att Tillkalla Vuxen-larm levereras i realtid eller att platsdata är exakt.
 
 ---
 

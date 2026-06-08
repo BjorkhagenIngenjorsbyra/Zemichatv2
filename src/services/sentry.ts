@@ -32,3 +32,15 @@ export function initSentry(): void {
     SentryReact.init,
   );
 }
+
+/**
+ * Report a caught exception. Safe no-op when Sentry isn't initialised
+ * (e.g. in dev or when VITE_SENTRY_DSN is unset).
+ */
+export function captureException(error: unknown, context?: Record<string, unknown>): void {
+  try {
+    SentryReact.captureException(error, context ? { extra: context } : undefined);
+  } catch {
+    // Never let error reporting itself throw.
+  }
+}

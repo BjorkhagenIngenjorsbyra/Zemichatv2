@@ -143,7 +143,7 @@ const EmojiGifPanel: React.FC<EmojiGifPanelProps> = ({
         >
           {t('chat.gifs')}
         </button>
-        <button className="egp-close-btn" onClick={onClose}>
+        <button className="egp-close-btn" onClick={onClose} aria-label={t('a11y.close')}>
           <IonIcon icon={close} />
         </button>
       </div>

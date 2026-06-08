@@ -38,7 +38,7 @@ export default `
 <h3>2.3 Sijaintitiedot</h3>
 <p>Emme ker&auml;&auml; sijaintitietoja jatkuvasti. Sijaintitietoja tallennetaan <strong>ainoastaan</strong> seuraavissa tapauksissa:</p>
 <ul>
-<li><strong>SOS-h&auml;lytykset:</strong> Jos Texter l&auml;hett&auml;&auml; SOS-h&auml;lytyksen, nykyinen sijainti sis&auml;llytet&auml;&auml;n, jotta vanhempi voi nopeasti paikantaa lapsen.</li>
+<li><strong>Tillkalla Vuxen-h&auml;lytykset:</strong> Jos Texter l&auml;hett&auml;&auml; Tillkalla Vuxen-h&auml;lytyksen, nykyinen sijainti sis&auml;llytet&auml;&auml;n, jotta vanhempi voi nopeasti paikantaa lapsen.</li>
 <li><strong>Sijainnin jakaminen keskustelussa:</strong> Jos k&auml;ytt&auml;j&auml; aktiivisesti valitsee jakaa sijaintinsa viestiss&auml; (edellytt&auml;&auml;, ett&auml; toiminto on otettu k&auml;ytt&ouml;&ouml;n Texter-asetuksissa).</li>
 </ul>
 <h3>2.4 Laitetiedot</h3>
@@ -69,7 +69,7 @@ export default `
 <tr><td>Tilitiedot</td><td>Tilin luominen ja hallinta, tunnistaminen sovelluksessa</td><td>Sopimus (art. 6.1b)</td></tr>
 <tr><td>Viestit ja media</td><td>Keskustelutoiminnon toteuttaminen &ndash; viestien l&auml;hett&auml;minen ja vastaanottaminen</td><td>Sopimus (art. 6.1b)</td></tr>
 <tr><td>Muokkaushistoria</td><td>L&auml;pin&auml;kyvyys &ndash; Team Owner voi n&auml;hd&auml; muutokset Texterien viesteihin</td><td>Oikeutettu etu (art. 6.1f)</td></tr>
-<tr><td>Sijaintitiedot (SOS)</td><td>Lasten turvallisuus &ndash; vanhempien auttaminen lapsen paikantamisessa h&auml;t&auml;tilanteessa</td><td>Oikeutettu etu (art. 6.1f)</td></tr>
+<tr><td>Sijaintitiedot (Tillkalla Vuxen)</td><td>Lasten turvallisuus &ndash; vanhempien auttaminen lapsen paikantamisessa h&auml;t&auml;tilanteessa</td><td>Oikeutettu etu (art. 6.1f)</td></tr>
 <tr><td>Laitetiedot</td><td>Push-ilmoitusten l&auml;hett&auml;minen ja aktiivisten istuntojen hallinta</td><td>Suostumus (art. 6.1a)</td></tr>
 <tr><td>Texter-asetukset</td><td>Vanhempien valvonta &ndash; Team Owner voi hallita, mihin toimintoihin lapsella on p&auml;&auml;sy</td><td>Oikeutettu etu/Suostumus (art. 6.1f/a)</td></tr>
 <tr><td>Kaverisuhteet</td><td>Sosiaalinen toiminnallisuus &ndash; kontaktien ja kaveripyynt&ouml;jen hallinta</td><td>Sopimus (art. 6.1b)</td></tr>

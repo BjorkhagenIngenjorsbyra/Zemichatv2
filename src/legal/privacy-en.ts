@@ -38,7 +38,7 @@ export default `
 <h3>2.3 Location data</h3>
 <p>We do <strong>not</strong> collect location data on an ongoing basis. Location data is stored <strong>only</strong> in the following cases:</p>
 <ul>
-<li><strong>SOS alerts:</strong> If a Texter sends an SOS alert, their current position is included so the parent can quickly locate the child.</li>
+<li><strong>Tillkalla Vuxen alerts:</strong> If a Texter sends an Tillkalla Vuxen alert, their current position is included so the parent can quickly locate the child.</li>
 <li><strong>Location sharing in chat:</strong> If a user actively chooses to share their location in a message (requires the feature to be enabled in Texter settings).</li>
 </ul>
 <h3>2.4 Device information</h3>
@@ -69,7 +69,7 @@ export default `
 <tr><td>Account information</td><td>Create and manage your account, identify you in the app</td><td>Contract (Art. 6.1b)</td></tr>
 <tr><td>Messages and media</td><td>Deliver the chat functionality &mdash; sending and receiving messages</td><td>Contract (Art. 6.1b)</td></tr>
 <tr><td>Edit history</td><td>Transparency &mdash; Team Owner can see changes to Texters' messages</td><td>Legitimate interest (Art. 6.1f)</td></tr>
-<tr><td>Location data (SOS)</td><td>Child safety &mdash; help parents locate their child in an emergency</td><td>Legitimate interest (Art. 6.1f)</td></tr>
+<tr><td>Location data (Tillkalla Vuxen)</td><td>Child safety &mdash; help parents locate their child in an emergency</td><td>Legitimate interest (Art. 6.1f)</td></tr>
 <tr><td>Device information</td><td>Send push notifications and manage active sessions</td><td>Consent (Art. 6.1a)</td></tr>
 <tr><td>Texter settings</td><td>Parental controls &mdash; let Team Owner manage which features the child can access</td><td>Legitimate interest/Consent (Art. 6.1f/a)</td></tr>
 <tr><td>Friend relationships</td><td>Social functionality &mdash; manage contacts and friend requests</td><td>Contract (Art. 6.1b)</td></tr>

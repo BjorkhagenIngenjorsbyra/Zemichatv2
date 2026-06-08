@@ -31,6 +31,7 @@ import {
   forwardMessage,
   type MessageWithSender,
 } from '../services/message';
+import { enqueueMessage } from '../services/messageOutbox';
 import {
   toggleReaction,
   getReactionsForMessages,
@@ -49,6 +50,7 @@ import {
 import { uploadImage, uploadVoice, uploadDocument } from '../services/storage';
 import { createPoll } from '../services/poll';
 import { hapticLight } from '../utils/haptics';
+import { formatLongDate } from '../utils/datetime';
 import { playSendSound, playReceiveSound } from '../services/soundEffects';
 import { SkeletonLoader } from '../components/common';
 import { MessageType, type Message, type User } from '../types/database';
@@ -77,7 +79,7 @@ import {
   PollCreator,
 } from '../components/chat';
 import type { ReadStatus } from '../components/chat/MessageBubble';
-import { SOSButton } from '../components/sos';
+import { TillkallaButton } from '../components/tillkalla';
 import { CallButton } from '../components/call';
 import { UserRole, type TexterSettings } from '../types/database';
 import { getTexterSettings } from '../services/members';
@@ -384,22 +386,20 @@ const ChatView: React.FC = () => {
   const activeMemberCount = chat?.members.filter((m) => !m.left_at).length || 0;
   const hideCallForGroupSize = chat?.is_group && activeMemberCount > MAX_GROUP_CALL_PARTICIPANTS;
 
-  // Issue #43: the per-chat "Tillkalla Super" button replaces the previous
-  // always-on SOS button. Only show it to Texters in chats where at least
-  // one Super is a current (not left) member — anywhere else there's no
-  // Super to summon. The SOS action itself remains unblockable elsewhere
-  // (Settings + SOSOnlyView keep the global SOSButton intact for safety).
-  const chatHasActiveSuper = !!chat?.members.some(
-    (m) => !m.left_at && m.user?.role === UserRole.SUPER
-  );
-
   const getChatDisplayName = (): string => {
     if (!chat) return '';
     if (chat.name) return chat.name;
 
     if (!chat.is_group && chat.members.length > 0) {
       const otherMember = chat.members.find((m) => m.user_id !== profile?.id);
-      return otherMember?.user?.display_name || t('dashboard.unnamed');
+      // Live name when the profile is visible (current contact).
+      const liveName = otherMember?.user?.display_name;
+      if (liveName) return liveName;
+      // Profile hidden (e.g. former friend) — fall back to the snapshotted name
+      // so there's still evidence of who you talked to, marked as a former contact.
+      const snapshotName = otherMember?.display_name;
+      if (snapshotName) return t('chat.formerContactNamed', { name: snapshotName });
+      return t('chat.formerContact');
     }
 
     return t('chat.newChat');
@@ -418,15 +418,51 @@ const ChatView: React.FC = () => {
     const text = messageText.trim();
     setMessageText('');
 
+    // Client-assigned id: lets the send be idempotent and lets the outbox retry
+    // the exact same message on failure without duplicating it.
+    const id = crypto.randomUUID();
+    const replyToId = replyTo?.id;
+
+    // Optimistic insert: show the message instantly (don't wait for the server
+    // round-trip / realtime echo). The realtime handler dedupes by id, so when
+    // the server echo arrives it replaces this without duplicating.
+    if (profile) {
+      const optimistic: MessageWithSender = {
+        id,
+        chat_id: chatId,
+        sender_id: profile.id,
+        type: MessageType.TEXT,
+        content: text,
+        media_url: null,
+        media_metadata: null,
+        reply_to_id: replyToId ?? null,
+        forwarded_from_id: null,
+        location: null,
+        contact_zemi_number: null,
+        is_edited: false,
+        edited_at: null,
+        deleted_at: null,
+        deleted_by: null,
+        deleted_for_all: false,
+        created_at: new Date().toISOString(),
+        sender: profile,
+      };
+      setMessages((prev) => (prev.some((m) => m.id === id) ? prev : [...prev, optimistic]));
+    }
+
     const { message, error } = await sendMessage({
+      id,
       chatId,
       content: text,
-      replyToId: replyTo?.id,
+      replyToId,
     });
 
     if (error) {
-      console.error('Failed to send message:', error);
-      setMessageText(text);
+      // Don't lose the message on a flaky network — queue it; the outbox retries
+      // automatically (incl. when connectivity returns). Same id => no duplicate.
+      console.error('Failed to send message, queued for retry:', error);
+      enqueueMessage({ id, chatId, content: text, type: 'text', replyToId });
+      setReplyTo(null);
     } else {
       setReplyTo(null);
       hapticLight();
@@ -730,7 +766,7 @@ const ChatView: React.FC = () => {
     } else if (date.toDateString() === yesterday.toDateString()) {
       return t('common.yesterday') || 'Yesterday';
     } else {
-      return date.toLocaleDateString([], { weekday: 'long', month: 'long', day: 'numeric' });
+      return formatLongDate(dateStr);
     }
   };
 
@@ -796,11 +832,11 @@ const ChatView: React.FC = () => {
           <IonButtons slot="end">
             <CallButton chatId={chatId} type="voice" hidden={texterSettings?.can_voice_call === false || !canUseFeature('canVoiceCall') || !!hideCallForGroupSize} />
             <CallButton chatId={chatId} type="video" hidden={texterSettings?.can_video_call === false || !canUseFeature('canVideoCall') || !!hideCallForGroupSize} />
-            <IonButton onClick={() => setShowSearch(true)}>
+            <IonButton onClick={() => setShowSearch(true)} aria-label={t('a11y.searchMessages')} data-testid="open-chat-search">
               <IonIcon icon={searchOutline} />
             </IonButton>
-            {profile?.role === UserRole.TEXTER && chatHasActiveSuper && (
-              <SOSButton size="small" labelKey="sos.summonSuper" />
+            {profile?.role === UserRole.TEXTER && (
+              <TillkallaButton size="small" />
             )}
           </IonButtons>
         </IonToolbar>
@@ -1067,7 +1103,10 @@ const ChatView: React.FC = () => {
           placeholder={editingMessage ? t('contextMenu.editPlaceholder') : undefined}
           editingMessage={!!editingMessage}
           onEditCancel={handleEditCancel}
-          canSendVoice={canUseFeature('canSendVoice')}
+          canSendVoice={
+            canUseFeature('canSendVoice') &&
+            !(profile?.role === UserRole.TEXTER && texterSettings?.can_send_voice === false)
+          }
           chat={chat}
           inputRef={inputRef}
           mentionQuery={mentionQuery}

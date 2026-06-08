@@ -16,6 +16,7 @@ import {
   deleteComment,
   type WallCommentWithAuthor,
 } from '../../services/wall';
+import { formatShortDate } from '../../utils/datetime';
 
 interface WallCommentsProps {
   postId: string;
@@ -83,7 +84,7 @@ const WallComments: React.FC<WallCommentsProps> = ({ postId, onCommentCountChang
     if (diffMin < 60) return `${diffMin}m`;
     if (diffHrs < 24) return `${diffHrs}h`;
     if (diffDays < 7) return `${diffDays}d`;
-    return date.toLocaleDateString([], { month: 'short', day: 'numeric' });
+    return formatShortDate(dateStr);
   };
 
   // Group: top-level + replies

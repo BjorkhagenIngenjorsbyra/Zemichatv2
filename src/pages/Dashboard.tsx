@@ -34,9 +34,9 @@ import {
 import { useAuthContext } from '../contexts/AuthContext';
 import { getTeamMembers } from '../services/members';
 import { getAllTexterPendingRequests } from '../services/friend';
-import { getUnacknowledgedAlerts, acknowledgeSosAlert, type SosAlertWithTexter } from '../services/sos';
+import { getUnacknowledgedAlerts, acknowledgeTillkalla, type TillkallaAlertWithTexter } from '../services/tillkalla';
 import { CreateTexterModal } from '../components/CreateTexterModal';
-import { SOSAlertCard } from '../components/sos';
+import { TillkallaAlertCard } from '../components/tillkalla';
 import { type User, UserRole } from '../types/database';
 import { SkeletonLoader, EmptyStateIllustration } from '../components/common';
 
@@ -48,7 +48,7 @@ const Dashboard: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [showCreateTexter, setShowCreateTexter] = useState(false);
   const [pendingApprovalsCount, setPendingApprovalsCount] = useState(0);
-  const [sosAlerts, setSosAlerts] = useState<SosAlertWithTexter[]>([]);
+  const [tillkallaAlerts, setTillkallaAlerts] = useState<TillkallaAlertWithTexter[]>([]);
   const [acknowledgingAlertId, setAcknowledgingAlertId] = useState<string | null>(null);
 
   const isOwner = profile?.role === UserRole.OWNER;
@@ -65,17 +65,17 @@ const Dashboard: React.FC = () => {
     setPendingApprovalsCount(totalCount);
   }, [isOwner]);
 
-  const loadSosAlerts = useCallback(async () => {
+  const loadTillkallaAlerts = useCallback(async () => {
     if (!isOwner) return;
     const { alerts } = await getUnacknowledgedAlerts();
-    setSosAlerts(alerts);
+    setTillkallaAlerts(alerts);
   }, [isOwner]);
 
-  const handleAcknowledgeSos = async (alertId: string) => {
+  const handleAcknowledgeTillkalla = async (alertId: string) => {
     setAcknowledgingAlertId(alertId);
-    const { error } = await acknowledgeSosAlert(alertId);
+    const { error } = await acknowledgeTillkalla(alertId);
     if (!error) {
-      setSosAlerts((prev) => prev.filter((a) => a.id !== alertId));
+      setTillkallaAlerts((prev) => prev.filter((a) => a.id !== alertId));
     }
     setAcknowledgingAlertId(null);
   };
@@ -83,8 +83,8 @@ const Dashboard: React.FC = () => {
   useEffect(() => {
     loadMembers();
     loadApprovalsCount();
-    loadSosAlerts();
-  }, [loadMembers, loadApprovalsCount, loadSosAlerts]);
+    loadTillkallaAlerts();
+  }, [loadMembers, loadApprovalsCount, loadTillkallaAlerts]);
 
   // Redirect to first-login tour if not completed
   useEffect(() => {
@@ -98,7 +98,7 @@ const Dashboard: React.FC = () => {
   }, [profile, history]);
 
   const handleRefresh = async (event: CustomEvent<RefresherEventDetail>) => {
-    await Promise.all([loadMembers(), loadApprovalsCount(), loadSosAlerts()]);
+    await Promise.all([loadMembers(), loadApprovalsCount(), loadTillkallaAlerts()]);
     await refreshProfile();
     event.detail.complete();
   };
@@ -143,15 +143,15 @@ const Dashboard: React.FC = () => {
         </IonRefresher>
 
         <div className="dashboard-container">
-          {/* SOS Alerts (high priority, shown first for Owners) */}
-          {isOwner && sosAlerts.length > 0 && (
-            <div className="section sos-section">
-              <h3 className="section-title sos-title">{t('sos.unacknowledged')}</h3>
-              {sosAlerts.map((alert) => (
-                <SOSAlertCard
+          {/* Tillkalla Vuxen alerts (high priority, shown first for Owners) */}
+          {isOwner && tillkallaAlerts.length > 0 && (
+            <div className="section tillkalla-section">
+              <h3 className="section-title tillkalla-title">{t('tillkalla.unacknowledged')}</h3>
+              {tillkallaAlerts.map((alert) => (
+                <TillkallaAlertCard
                   key={alert.id}
                   alert={alert}
-                  onAcknowledge={handleAcknowledgeSos}
+                  onAcknowledge={handleAcknowledgeTillkalla}
                   isAcknowledging={acknowledgingAlertId === alert.id}
                 />
               ))}
@@ -287,11 +287,11 @@ const Dashboard: React.FC = () => {
             margin: 0 auto;
           }
 
-          .sos-section {
+          .tillkalla-section {
             margin-bottom: 1.5rem;
           }
 
-          .sos-title {
+          .tillkalla-title {
             color: hsl(var(--destructive)) !important;
           }
 

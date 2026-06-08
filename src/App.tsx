@@ -16,12 +16,13 @@ import { PrivateRoute, PublicRoute } from './components/PrivateRoute';
 
 /* Push */
 import { setNavigationHandler } from './services/push';
+import { startMessageOutboxAutoFlush } from './services/messageOutbox';
 
 /* Call */
 import { IncomingCallModal, CallView, CallPiP } from './components/call';
 
 /* Network */
-import { OfflineBanner, TrialBanner } from './components/common';
+import { OfflineBanner, TrialBanner, ErrorBoundary } from './components/common';
 
 /* Share target */
 import ShareTargetHandler from './components/ShareTargetHandler';
@@ -35,7 +36,6 @@ import TabLayout from './components/TabLayout';
 
 /* Pages */
 import Login from './pages/Login';
-import SOSOnlyView from './pages/SOSOnlyView';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 import PasswordChanged from './pages/PasswordChanged';
@@ -150,6 +150,14 @@ const PushInit: React.FC = () => {
     }
   }, [isAuthenticated, hasProfile, initializePush]);
 
+  // Reliability: flush any queued (failed/offline) messages now and whenever
+  // connectivity returns, for the duration of an authenticated session.
+  useEffect(() => {
+    if (!isAuthenticated || !hasProfile) return;
+    const stop = startMessageOutboxAutoFlush();
+    return stop;
+  }, [isAuthenticated, hasProfile]);
+
   return null;
 };
 
@@ -174,6 +182,7 @@ const App: React.FC = () => (
           <AuthCallbackHandler />
           <PushInit />
           <ShareTargetHandler />
+          <ErrorBoundary>
           <IonRouterOutlet>
             <Switch>
             {/* Public routes - redirect to chats if authenticated */}
@@ -217,13 +226,6 @@ const App: React.FC = () => (
             </PrivateRoute>
             <PrivateRoute exact path="/mfa-verify" requireProfile={false}>
               <MFAVerify />
-            </PrivateRoute>
-
-            {/* SOS-only screen for paused/deactivated Texters (audit fix #23).
-                allowSosOnly opts this route into being reachable from
-                that locked-down state. */}
-            <PrivateRoute exact path="/sos-only" requireProfile={true} allowSosOnly>
-              <SOSOnlyView />
             </PrivateRoute>
 
             {/* Onboarding tours - need auth and profile */}
@@ -314,6 +316,7 @@ const App: React.FC = () => (
             </Route>
           </Switch>
         </IonRouterOutlet>
+          </ErrorBoundary>
 
           {/* Global call overlays */}
           <IncomingCallModal />

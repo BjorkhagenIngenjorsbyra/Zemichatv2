@@ -1,4 +1,20 @@
 {
+  "errors": {
+    "boundaryMessage": "Noe gikk galt. Prøv igjen.",
+    "boundaryRetry": "Prøv igjen",
+    "boundaryHome": "Til startsiden"
+  },
+  "sessions": {
+    "title": "Aktive enheter",
+    "none": "Ingen andre enheter",
+    "thisDevice": "(denne enheten)",
+    "lastActive": "Sist aktiv",
+    "unknownDevice": "Ukjent enhet",
+    "remove": "Fjern",
+    "signOutOthers": "Logg ut alle andre enheter",
+    "signedOutOthers": "Andre enheter logget ut",
+    "signOutError": "Kunne ikke logge ut andre enheter"
+  },
   "common": {
     "appName": "Zemichat",
     "loading": "Laster...",
@@ -131,6 +147,8 @@
     "accountDeactivated": "Kontoen er deaktivert. Kontakt din Team Owner."
   },
   "chat": {
+    "formerContact": "Tidligere kontakt",
+    "formerContactNamed": "Tidligere kontakt ({{name}})",
     "newChat": "Ny chat",
     "typeMessage": "Skriv en melding...",
     "send": "Send",
@@ -281,6 +299,9 @@
     "outgoingRequests": "Utgående forespørsler",
     "search": "Søk",
     "enterZemiNumber": "Skriv inn Zemi-nummer",
+    "yourZemiNumber": "Ditt Zemi-nummer",
+    "yourZemiNumberHint": "Del dette så andre kan legge deg til",
+    "copyZemiNumber": "Kopier ditt Zemi-nummer",
     "searchDescription": "Søk etter en bruker med deres Zemi-nummer for å sende en venneforespørsel",
     "invalidZemiNumber": "Skriv inn et gyldig Zemi-nummer (ZEMI-XXX-XXX)",
     "cannotAddSelf": "Du kan ikke legge til deg selv som venn",
@@ -318,19 +339,18 @@
     "denyFutureMessage": "Dette avviser gjeldende forespørsel og hindrer {{requester}} fra å sende forespørsler til {{texter}} i fremtiden.",
     "guardian": "Ansvarlig: {{ownerName}}, {{teamName}} ({{email}})"
   },
-  "sos": {
-    "button": "SOS",
-    "summonSuper": "Tilkall Super",
-    "confirmTitle": "Sende SOS-alarm?",
-    "confirmMessage": "Dette varsler din foresatte med din posisjon.",
-    "confirmYes": "JA, SEND SOS",
+  "tillkalla": {
+    "button": "Tilkall en voksen",
+    "confirmTitle": "Tilkall en voksen?",
+    "confirmMessage": "Dette varsler en voksen.",
+    "confirmYes": "JA, TILKALL",
     "confirmNo": "Avbryt",
-    "sent": "SOS sendt",
-    "alertReceived": "SOS-alarm fra {{name}}",
+    "sent": "Voksen tilkalt",
+    "alertReceived": "Tilkall en voksen fra {{name}}",
     "viewLocation": "Vis posisjon",
     "acknowledge": "Bekreft",
-    "unacknowledged": "Ubekreftede SOS-alarmer",
-    "noAlerts": "Ingen SOS-alarmer"
+    "unacknowledged": "Ubekreftede varsler",
+    "noAlerts": "Ingen varsler"
   },
   "notifications": {
     "permissionTitle": "Aktiver varsler",
@@ -352,7 +372,15 @@
     "verifyTitle": "Tofaktorautentisering",
     "verifyDescription": "Skriv inn koden fra din autentiseringsapp",
     "newCode": "Be om ny kode",
-    "useAnotherAccount": "Bruk en annen konto"
+    "useAnotherAccount": "Bruk en annen konto",
+    "settingsTitle": "Tofaktorautentisering",
+    "settingsDescription": "Ekstra beskyttelse ved innlogging med en autentiseringsapp.",
+    "statusEnabled": "Aktivert",
+    "statusDisabled": "Ikke aktivert",
+    "enable": "Aktiver",
+    "disable": "Deaktiver",
+    "disableConfirm": "Er du sikker på at du vil deaktivere tofaktorautentisering?",
+    "disabledToast": "Tofaktor deaktivert"
   },
   "quietHours": {
     "title": "Stille timer",
@@ -841,5 +869,15 @@
       "resolved": "Løst",
       "dismissed": "Avvist"
     }
+  },
+  "a11y": {
+    "attach": "Legg ved",
+    "selectReaction": "Velg reaksjon",
+    "moreReactions": "Flere reaksjoner",
+    "cancel": "Avbryt",
+    "sendVoiceMessage": "Send talemelding",
+    "openDashboard": "Oversikt",
+    "searchMessages": "Søk meldinger",
+    "close": "Lukk"
   }
 }

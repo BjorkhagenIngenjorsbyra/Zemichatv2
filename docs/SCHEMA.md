@@ -273,12 +273,21 @@ CREATE TABLE chat_members (
   is_archived boolean NOT NULL DEFAULT false,
   unread_count int NOT NULL DEFAULT 0,
   last_read_at timestamptz,
+  display_name text,  -- snapshot of the member's name (see note below)
   UNIQUE(chat_id, user_id)
 );
 
 CREATE INDEX idx_chat_members_user ON chat_members(user_id);
 CREATE INDEX idx_chat_members_chat ON chat_members(chat_id);
 ```
+
+**`display_name` (namn-ögonblicksbild):** En 1-on-1-chatt kan överleva relationen som
+gjorde motpartens profil synlig (t.ex. efter unfriend döljer users-RLS deras rad).
+Snapshotet på medlemskapsraden — som en chattmedlem alltid kan läsa — gör att namnet
+finns kvar som bevis ("Tidigare kontakt (Namn)") utan att lätta på RLS för `users`.
+Hålls aktuellt av en trigger på `users` medan namnet är synligt, och fryser vid senast
+kända värde när relationen/synligheten upphör. Fylls vid INSERT av en trigger
+(`chat_member_capture_display_name`); migration `20260608130000_chat_member_name_snapshot`.
 
 ---
 
@@ -503,7 +512,7 @@ CREATE INDEX idx_reports_reported_user ON reports(reported_user_id);
 ---
 
 ### sos_alerts
-SOS-larm från Texters.
+Tillkalla Vuxen-larm från Texters (fysiskt tabellnamn kvar: sos_alerts).
 
 | Kolumn | Typ | Beskrivning |
 |--------|-----|-------------|

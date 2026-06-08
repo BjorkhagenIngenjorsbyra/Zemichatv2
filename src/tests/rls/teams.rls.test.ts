@@ -73,7 +73,7 @@ describe('teams RLS', () => {
       const teamId = crypto.randomUUID();
       const res = await w.team1.owner.client
         .from('teams')
-        .insert({ id: teamId, name: 'New Team', owner_id: w.team1.owner.id, plan: 'free' });
+        .insert({ id: teamId, name: 'New Team', owner_id: w.team1.owner.id, plan: 'free', referral_code: `REF-${teamId.slice(0, 8)}` });
       expectSuccess(res);
       // Cleanup
       await w.adminClient.from('teams').delete().eq('id', teamId);
@@ -91,7 +91,7 @@ describe('teams RLS', () => {
       const teamId = crypto.randomUUID();
       const res = await w.team1.texter.client
         .from('teams')
-        .insert({ id: teamId, name: 'Texter Team', owner_id: w.team1.texter.id, plan: 'free' });
+        .insert({ id: teamId, name: 'Texter Team', owner_id: w.team1.texter.id, plan: 'free', referral_code: `REF-${teamId.slice(0, 8)}` });
       expectSuccess(res);
       await w.adminClient.from('teams').delete().eq('id', teamId);
     });

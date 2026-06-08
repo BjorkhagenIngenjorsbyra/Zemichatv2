@@ -9,6 +9,7 @@ import {
 } from 'ionicons/icons';
 import { type CallHistoryEntry } from '../../services/callHistory';
 import { CallStatus } from '../../types/database';
+import { formatTimeOrDate } from '../../utils/datetime';
 
 interface CallHistoryItemProps {
   entry: CallHistoryEntry;
@@ -25,13 +26,7 @@ function formatDuration(seconds: number | null): string {
 }
 
 function formatTime(dateStr: string): string {
-  const d = new Date(dateStr);
-  const now = new Date();
-  const isToday = d.toDateString() === now.toDateString();
-  if (isToday) {
-    return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  }
-  return d.toLocaleDateString([], { month: 'short', day: 'numeric' });
+  return formatTimeOrDate(dateStr);
 }
 
 const CallHistoryItem: React.FC<CallHistoryItemProps> = ({
