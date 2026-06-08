@@ -71,10 +71,13 @@ Design for B1:
       23505-on-retry treated as success. Sim proof (outbox.sim.test). Commit 40e85a1.
 - [x] Outbox store + retry with exponential backoff + survive app restart — services/outbox.ts,
       10 unit tests (no Docker). Commit c067ae6.
-- [ ] **WIRE UI (next):** ChatView enqueues via Outbox + optimistic local insert (status
-      sending/failed badge), flush on send + on reconnect/online, reconcile via realtime echo
-      (already dedupes by id). NEEDS app-run/Maestro verification (UI not headless-testable).
-- [ ] Reconcile on server ack (covered by realtime dedupe; confirm during UI wiring)
+- [x] **B1c — resilient send wired** (commit ee1ceaa): messageOutbox.ts (buildSendFn, enqueueMessage,
+      startMessageOutboxAutoFlush on `online`+heartbeat); ChatView send uses client id and queues on
+      failure for idempotent auto-retry; App starts auto-flush per authenticated session. unit 13/13.
+- [ ] **B1c-2 — optimistic in-UI rendering (NEEDS app-run verify):** instant local bubble with
+      sending/failed status badge + tap-to-retry; reconcile via realtime echo (already dedupes by id).
+      Requires the running app (web dev server + Playwright against a test DB, or Maestro on emulator).
+- [x] Reconcile on server ack — realtime sub already dedupes by id; client-id send makes it idempotent.
 
 ### B2. Local cache layer
 - [ ] Add `@capacitor-community/sqlite` (mobile) + Dexie/IndexedDB fallback (web)
