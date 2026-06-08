@@ -852,6 +852,8 @@
     "selectReaction": "Välj reaktion",
     "moreReactions": "Fler reaktioner",
     "cancel": "Avbryt",
-    "sendVoiceMessage": "Skicka röstmeddelande"
+    "sendVoiceMessage": "Skicka röstmeddelande",
+    "openDashboard": "Översikt",
+    "searchMessages": "Sök meddelanden"
   }
 }

@@ -846,6 +846,8 @@
     "selectReaction": "Vælg reaktion",
     "moreReactions": "Flere reaktioner",
     "cancel": "Annullér",
-    "sendVoiceMessage": "Send talebesked"
+    "sendVoiceMessage": "Send talebesked",
+    "openDashboard": "Oversigt",
+    "searchMessages": "Søg beskeder"
   }
 }

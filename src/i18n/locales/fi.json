@@ -846,6 +846,8 @@
     "selectReaction": "Valitse reaktio",
     "moreReactions": "Lisää reaktioita",
     "cancel": "Peruuta",
-    "sendVoiceMessage": "Lähetä ääniviesti"
+    "sendVoiceMessage": "Lähetä ääniviesti",
+    "openDashboard": "Yleiskatsaus",
+    "searchMessages": "Hae viestejä"
   }
 }

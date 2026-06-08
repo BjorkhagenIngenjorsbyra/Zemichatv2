@@ -846,6 +846,8 @@
     "selectReaction": "Select reaction",
     "moreReactions": "More reactions",
     "cancel": "Cancel",
-    "sendVoiceMessage": "Send voice message"
+    "sendVoiceMessage": "Send voice message",
+    "openDashboard": "Overview",
+    "searchMessages": "Search messages"
   }
 }
