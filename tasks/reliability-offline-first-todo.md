@@ -93,13 +93,17 @@
       Team-Owner oversight policies returned nothing. NOT an app bug.
 - [x] Fixed seed (referral_code + ON_ERROR_STOP). Result: **31 failed → 5 failed (214 passed)**. Committed 314b659.
 - [x] Fixed teams fixtures (referral_code) + per-file is_active reset (reset-state.ts). **31 → ~4.** Committed b445ad7.
-- [ ] **A0c — Harden RLS test isolation (residual flakiness).** Remaining ~4 failures are
-      NON-DETERMINISTIC (shift between runs: deactivation tests, call-logs, reports extended-fields).
-      Root: the suite mutates shared global state (users.is_active, texter_settings flags) via
-      out-of-band `execSQL` while making async PostgREST calls on ONE shared DB → visibility/timing
-      races. Verified via direct DB sim that the app RLS logic is correct (e.g., reports insert
-      succeeds when user active). NOT app bugs. Proper fix: make mutating RLS tests deterministic
-      (e.g., isolate per-test state, or assert via SQL not racy API timing). Daytime task.
+- [x] **REAL BUG FOUND + FIXED:** stale `reports_check` constraint blocked chat-targeted reports
+      (reportChat feature) in prod. Migration 20260608070000 drops it. Committed ccb73a4.
+- [x] teams fixtures + per-file is_active & texter_settings reset (reset-state.ts). Clean runs hit **219/219 green.**
+- [ ] **A0c — Residual read-after-write flake (LOW priority, NOT app bug, does NOT block harness).**
+      A handful of call-logs/messages/reports state-toggle tests intermittently fail (~2-4, shifting):
+      a write (is_active / texter_settings via execSQL or adminClient) occasionally isn't visible to
+      the immediately following texter-client API read on the shared local stack. NOT concurrency
+      (forcing maxConcurrency:1/singleFork did not help) and NOT an app bug (verified app RLS correct
+      via direct DB sim; a clean run is fully green). Recommended fix: a small retry/poll wrapper on
+      the state-dependent assertions (re-run the query a few times before failing). Deferred — pursue
+      only if it actually impedes the feature loop.
 - [ ] **Infra: `supabase db reset` flakiness** — intermittently fails on container restart
       (storage 502 / context deadline) on this laptop. Added a 3x retry wrapper for runs; consider
       raising Docker resources / a more robust reset. Affects loop stability.
