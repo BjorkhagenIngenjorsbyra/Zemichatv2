@@ -1,0 +1,13 @@
+-- Fix: chat-targeted reports (the reportChat() feature in src/services/report.ts)
+-- were blocked at the database by a stale CHECK constraint.
+--
+-- The moderation migration (20260427160000_extend_reports_for_moderation) added
+-- reports_target_present_chk = CHECK(user OR message OR chat >= 1) and dropped
+-- reports_reported_user_id_check, but the ORIGINAL reports_check
+-- (CHECK(reported_user_id IS NOT NULL OR reported_message_id IS NOT NULL)) was
+-- left in place. A report with only reported_chat_id set satisfies the new
+-- constraint but violates the stale one, so chat reports fail with a 23514.
+--
+-- reports_target_present_chk already guarantees at least one target, so dropping
+-- the stale constraint does not weaken integrity.
+ALTER TABLE public.reports DROP CONSTRAINT IF EXISTS reports_check;
