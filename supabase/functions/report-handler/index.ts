@@ -23,7 +23,8 @@ import { checkRateLimit, rateLimitResponse } from '../_shared/rate-limit.ts';
 import { escapeHtml } from '../_shared/escape-html.ts';
 
 const ESCALATION_THRESHOLD = 3;
-const SUPPORT_INBOX = 'support@zemichat.com';
+// Routed to a monitored inbox (support@zemichat.com isn't watched).
+const SUPPORT_INBOX = 'alva@ingenjorsbyran.com';
 
 interface ReportRow {
   id: string;
