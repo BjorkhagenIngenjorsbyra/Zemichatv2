@@ -74,3 +74,6 @@ test-results/
 
 .vercel
 .env*.local
+
+# AI explorer run artifacts (screenshots + reports)
+tests/explore/runs/
