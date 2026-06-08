@@ -42,9 +42,26 @@
 - [ ] Helper to simulate offline/flaky/reconnect at the client/data layer
 - [ ] Baseline scenario proving current behavior (pre-outbox), documents the gap
 
-### A5. (later/CI) Maestro UI flows + GitHub Actions
-- [ ] Author Maestro YAML for core flows (login, send message, see in oversight)
-- [ ] GitHub Actions workflow (emulator) — note: needs CI setup, flag to Erik before paid infra
+### A5. UI E2E harness (Playwright vs LOCAL Supabase) — WORKING
+Real-app UI automation ("computer does what a human does"). Runs the dev server
+against LOCAL Supabase via `.env.local` (gitignored: VITE_SUPABASE_URL=127.0.0.1:54321
++ legacy anon JWT) — NEVER prod. Setup: `db reset` + seed (run any rls file once to
+trigger globalSetup) → `npm run dev` → `npx playwright test --project=two-user <spec>`.
+Auth: email login form works for any seeded user incl. texter1 (user-aaaa0003@test.local).
+- [x] `two-user-offline-outbox.spec.ts` — offline send queued + delivered on reconnect (B1c). Green.
+- [x] `two-user-tillkalla.spec.ts` — checklist #13 Tillkalla Vuxen (texter sees/triggers; owner doesn't). Green.
+
+### A6. Automate the manual Verifieringschecklista (Erik's doc 1sH3ay...) as E2E
+Erik wants the never-run manual checklist turned into automated tests. Status:
+- [x] #13 Tillkalla Vuxen
+- [ ] #3 reply/quote, #4 reactions, #5 emoji-picker, #6 friend requests, #7 push-toggle (UI),
+      #8 call-log (UI presence), #11 invitations, #12 unfriend — each needs data-testid
+      instrumentation + a spec; build incrementally.
+- N/A (manual/device, automation can't replace): #1/#2 push delivery on real phones,
+      #9/#14 subjective performance, iOS via TestFlight.
+
+### (later/CI) Maestro / GitHub Actions
+- [ ] Optionally port E2E to CI (needs runner with local Supabase) — flag before paid infra.
 
 ---
 
