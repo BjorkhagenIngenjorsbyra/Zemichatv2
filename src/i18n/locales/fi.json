@@ -136,6 +136,8 @@
     "accountDeactivated": "Tili on poistettu käytöstä. Ota yhteyttä Team Owneriin."
   },
   "chat": {
+    "formerContact": "Entinen yhteystieto",
+    "formerContactNamed": "Entinen yhteystieto ({{name}})",
     "newChat": "Uusi keskustelu",
     "typeMessage": "Kirjoita viesti...",
     "send": "Lähetä",

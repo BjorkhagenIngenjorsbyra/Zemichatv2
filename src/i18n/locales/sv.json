@@ -136,6 +136,8 @@
     "accountDeactivated": "Kontot är inaktiverat. Kontakta din Team Owner."
   },
   "chat": {
+    "formerContact": "Tidigare kontakt",
+    "formerContactNamed": "Tidigare kontakt ({{name}})",
     "newChat": "Ny chatt",
     "typeMessage": "Skriv ett meddelande...",
     "send": "Skicka",

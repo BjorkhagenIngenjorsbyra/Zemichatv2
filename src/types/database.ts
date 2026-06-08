@@ -197,6 +197,12 @@ export interface ChatMember {
   last_read_at: string | null;
   marked_unread: boolean;
   muted_until: string | null;
+  /**
+   * Snapshot of the member's display name at/while membership exists. Survives
+   * even when the live users row becomes invisible via RLS (e.g. after
+   * unfriending), so the chat can still attribute who you talked to.
+   */
+  display_name: string | null;
 }
 
 export interface Message {

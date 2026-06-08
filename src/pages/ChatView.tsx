@@ -391,7 +391,14 @@ const ChatView: React.FC = () => {
 
     if (!chat.is_group && chat.members.length > 0) {
       const otherMember = chat.members.find((m) => m.user_id !== profile?.id);
-      return otherMember?.user?.display_name || t('dashboard.unnamed');
+      // Live name when the profile is visible (current contact).
+      const liveName = otherMember?.user?.display_name;
+      if (liveName) return liveName;
+      // Profile hidden (e.g. former friend) — fall back to the snapshotted name
+      // so there's still evidence of who you talked to, marked as a former contact.
+      const snapshotName = otherMember?.display_name;
+      if (snapshotName) return t('chat.formerContactNamed', { name: snapshotName });
+      return t('chat.formerContact');
     }
 
     return t('chat.newChat');

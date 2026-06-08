@@ -127,6 +127,14 @@ export async function setup() {
       ('${IDS.chatOwnerToTexter}', '${IDS.owner1}'),
       ('${IDS.chatOwnerToTexter}', '${IDS.texter1}');
 
+    -- session_replication_role='replica' (set above) disables triggers, so the
+    -- chat_member display-name snapshot trigger doesn't fire during seeding.
+    -- Populate it explicitly to mirror the production trigger's result.
+    UPDATE public.chat_members cm
+    SET display_name = u.display_name
+    FROM public.users u
+    WHERE u.id = cm.user_id;
+
     INSERT INTO public.messages (id, chat_id, sender_id, type, content) VALUES
       ('${IDS.msgNormal}',      '${IDS.chatSuperToTexter}',  '${IDS.texter1}', 'text', 'Hello from texter'),
       ('${IDS.msgEdited}',      '${IDS.chatSuperToTexter}',  '${IDS.texter1}', 'text', 'Edited content'),
