@@ -95,12 +95,12 @@ export async function setup() {
       ('${IDS.team2}', 'Team Beta',  '${IDS.owner2}', 'REF-TEAM-BETA');
 
     INSERT INTO public.users (id, team_id, role, zemi_number, display_name, is_active) VALUES
-      ('${IDS.owner1}',  '${IDS.team1}', 'owner',  'ZEMI-001-001', 'Owner 1',  true),
-      ('${IDS.super1}',  '${IDS.team1}', 'super',  'ZEMI-001-002', 'Super 1',  true),
-      ('${IDS.texter1}', '${IDS.team1}', 'texter', 'ZEMI-001-003', 'Texter 1', true),
-      ('${IDS.owner2}',  '${IDS.team2}', 'owner',  'ZEMI-002-001', 'Owner 2',  true),
-      ('${IDS.super2}',  '${IDS.team2}', 'super',  'ZEMI-002-002', 'Super 2',  true),
-      ('${IDS.texter2}', '${IDS.team2}', 'texter', 'ZEMI-002-003', 'Texter 2', true);
+      ('${IDS.owner1}',  '${IDS.team1}', 'owner',  'ZEMI-001-001', 'Anna Berg',    true),
+      ('${IDS.super1}',  '${IDS.team1}', 'super',  'ZEMI-001-002', 'Johan Berg',   true),
+      ('${IDS.texter1}', '${IDS.team1}', 'texter', 'ZEMI-001-003', 'Liam Berg',    true),
+      ('${IDS.owner2}',  '${IDS.team2}', 'owner',  'ZEMI-002-001', 'Sara Lund',    true),
+      ('${IDS.super2}',  '${IDS.team2}', 'super',  'ZEMI-002-002', 'Erik Lund',    true),
+      ('${IDS.texter2}', '${IDS.team2}', 'texter', 'ZEMI-002-003', 'Nora Lund',    true);
 
     INSERT INTO public.texter_settings (id, user_id) VALUES
       ('${IDS.texterSettings1}', '${IDS.texter1}');
@@ -110,10 +110,12 @@ export async function setup() {
       ('${IDS.friendshipPending}',  '${IDS.super2}',  '${IDS.texter1}', 'pending',  NULL);
 
     INSERT INTO public.chats (id, name, is_group, created_by) VALUES
-      ('${IDS.chatTexterToTexter}', 'Texter-Texter Chat', false, '${IDS.texter1}'),
-      ('${IDS.chatSuperToSuper}',   'Super-Super Chat',   false, '${IDS.super1}'),
-      ('${IDS.chatSuperToTexter}',  'Super-Texter Chat',  false, '${IDS.super1}'),
-      ('${IDS.chatOwnerToTexter}',  'Owner-Texter Chat',  false, '${IDS.owner1}');
+      -- 1-on-1 chats have no stored name in real usage; the UI derives the
+      -- other member's display name. NULL here exercises that real path.
+      ('${IDS.chatTexterToTexter}', NULL, false, '${IDS.texter1}'),
+      ('${IDS.chatSuperToSuper}',   NULL, false, '${IDS.super1}'),
+      ('${IDS.chatSuperToTexter}',  NULL, false, '${IDS.super1}'),
+      ('${IDS.chatOwnerToTexter}',  NULL, false, '${IDS.owner1}');
 
     INSERT INTO public.chat_members (chat_id, user_id) VALUES
       ('${IDS.chatTexterToTexter}', '${IDS.texter1}'),
