@@ -1,4 +1,9 @@
 {
+  "errors": {
+    "boundaryMessage": "Something went wrong. Please try again.",
+    "boundaryRetry": "Try again",
+    "boundaryHome": "Go to start"
+  },
   "common": {
     "appName": "Zemichat",
     "loading": "Loading...",

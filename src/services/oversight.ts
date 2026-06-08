@@ -143,9 +143,15 @@ export async function getTexterChats(): Promise<{
         // Other User fields default-filled where missing.
       } as unknown as User;
 
+      // m.user is null when RLS hides that member's profile from the owner
+      // (e.g. the texter's cross-team friend, whom the owner cannot SELECT).
+      // Drop those nulls — otherwise OwnerOversight crashes on
+      // otherMembers[0].display_name and the whole app falls back to the
+      // bootstrap error screen.
       const otherMembers = (membersByChat.get(row.chat_id) || [])
         .filter((m) => m.user_id !== row.texter_id)
-        .map((m) => m.user);
+        .map((m) => m.user)
+        .filter((u): u is User => u != null);
 
       const lastMessage: Message | undefined = row.last_message_id
         ? ({

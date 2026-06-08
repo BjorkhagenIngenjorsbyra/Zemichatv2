@@ -1,4 +1,9 @@
 {
+  "errors": {
+    "boundaryMessage": "Jotain meni pieleen. Yritä uudelleen.",
+    "boundaryRetry": "Yritä uudelleen",
+    "boundaryHome": "Etusivulle"
+  },
   "common": {
     "appName": "Zemichat",
     "loading": "Ladataan...",

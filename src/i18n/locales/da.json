@@ -1,4 +1,9 @@
 {
+  "errors": {
+    "boundaryMessage": "Noget gik galt. Prøv igen.",
+    "boundaryRetry": "Prøv igen",
+    "boundaryHome": "Til forsiden"
+  },
   "common": {
     "appName": "Zemichat",
     "loading": "Indlæser...",

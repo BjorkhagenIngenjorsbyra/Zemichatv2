@@ -22,7 +22,7 @@ import { startMessageOutboxAutoFlush } from './services/messageOutbox';
 import { IncomingCallModal, CallView, CallPiP } from './components/call';
 
 /* Network */
-import { OfflineBanner, TrialBanner } from './components/common';
+import { OfflineBanner, TrialBanner, ErrorBoundary } from './components/common';
 
 /* Share target */
 import ShareTargetHandler from './components/ShareTargetHandler';
@@ -182,6 +182,7 @@ const App: React.FC = () => (
           <AuthCallbackHandler />
           <PushInit />
           <ShareTargetHandler />
+          <ErrorBoundary>
           <IonRouterOutlet>
             <Switch>
             {/* Public routes - redirect to chats if authenticated */}
@@ -315,6 +316,7 @@ const App: React.FC = () => (
             </Route>
           </Switch>
         </IonRouterOutlet>
+          </ErrorBoundary>
 
           {/* Global call overlays */}
           <IncomingCallModal />
