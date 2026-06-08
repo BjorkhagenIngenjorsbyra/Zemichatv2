@@ -1102,7 +1102,10 @@ const ChatView: React.FC = () => {
           placeholder={editingMessage ? t('contextMenu.editPlaceholder') : undefined}
           editingMessage={!!editingMessage}
           onEditCancel={handleEditCancel}
-          canSendVoice={canUseFeature('canSendVoice')}
+          canSendVoice={
+            canUseFeature('canSendVoice') &&
+            !(profile?.role === UserRole.TEXTER && texterSettings?.can_send_voice === false)
+          }
           chat={chat}
           inputRef={inputRef}
           mentionQuery={mentionQuery}
