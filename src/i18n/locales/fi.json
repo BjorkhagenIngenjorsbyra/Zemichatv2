@@ -877,6 +877,8 @@
     "cancel": "Peruuta",
     "sendVoiceMessage": "Lähetä ääniviesti",
     "openDashboard": "Yleiskatsaus",
+    "acceptFriendRequest": "Hyväksy kaveripyyntö",
+    "rejectFriendRequest": "Hylkää kaveripyyntö",
     "searchMessages": "Hae viestejä",
     "close": "Sulje"
   }

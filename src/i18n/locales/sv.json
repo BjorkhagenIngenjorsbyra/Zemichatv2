@@ -883,6 +883,8 @@
     "cancel": "Avbryt",
     "sendVoiceMessage": "Skicka röstmeddelande",
     "openDashboard": "Översikt",
+    "acceptFriendRequest": "Godkänn vänförfrågan",
+    "rejectFriendRequest": "Avslå vänförfrågan",
     "searchMessages": "Sök meddelanden",
     "close": "Stäng"
   }

@@ -877,6 +877,8 @@
     "cancel": "Cancel",
     "sendVoiceMessage": "Send voice message",
     "openDashboard": "Overview",
+    "acceptFriendRequest": "Accept friend request",
+    "rejectFriendRequest": "Reject friend request",
     "searchMessages": "Search messages",
     "close": "Close"
   }

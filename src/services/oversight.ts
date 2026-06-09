@@ -95,6 +95,7 @@ export async function getTexterChats(): Promise<{
       .select(`
         chat_id,
         user_id,
+        display_name,
         user:users (*)
       `)
       .in('chat_id', chatIds)
@@ -107,10 +108,11 @@ export async function getTexterChats(): Promise<{
     const typedAllMembers = (allMembers || []) as unknown as {
       chat_id: string;
       user_id: string;
-      user: User;
+      display_name: string | null;
+      user: User | null;
     }[];
 
-    const membersByChat = new Map<string, { chat_id: string; user_id: string; user: User }[]>();
+    const membersByChat = new Map<string, { chat_id: string; user_id: string; display_name: string | null; user: User | null }[]>();
     for (const member of typedAllMembers) {
       const list = membersByChat.get(member.chat_id) || [];
       list.push(member);
@@ -145,12 +147,19 @@ export async function getTexterChats(): Promise<{
 
       // m.user is null when RLS hides that member's profile from the owner
       // (e.g. the texter's cross-team friend, whom the owner cannot SELECT).
-      // Drop those nulls — otherwise OwnerOversight crashes on
-      // otherMembers[0].display_name and the whole app falls back to the
-      // bootstrap error screen.
+      // The cross-team chat is still within the owner's oversight (PRD 8.2),
+      // so fall back to the snapshotted name on the membership row — otherwise
+      // the owner can't see WHO their child is talking to. Only drop a member
+      // if we have neither a live profile nor a snapshot.
       const otherMembers = (membersByChat.get(row.chat_id) || [])
         .filter((m) => m.user_id !== row.texter_id)
-        .map((m) => m.user)
+        .map((m) => {
+          if (m.user) return m.user;
+          if (m.display_name) {
+            return { id: m.user_id, display_name: m.display_name, role: 'texter' } as unknown as User;
+          }
+          return null;
+        })
         .filter((u): u is User => u != null);
 
       const lastMessage: Message | undefined = row.last_message_id

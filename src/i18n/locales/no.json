@@ -877,6 +877,8 @@
     "cancel": "Avbryt",
     "sendVoiceMessage": "Send talemelding",
     "openDashboard": "Oversikt",
+    "acceptFriendRequest": "Godta venneforespørsel",
+    "rejectFriendRequest": "Avslå venneforespørsel",
     "searchMessages": "Søk meldinger",
     "close": "Lukk"
   }

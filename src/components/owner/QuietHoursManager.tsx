@@ -24,15 +24,16 @@ interface QuietHoursManagerProps {
   userId: string;
 }
 
-// Days of week: 0 = Sunday, 1 = Monday, etc.
+// Stored values follow JS getDay() (0 = Sunday), but display Monday-first to
+// match Swedish/ISO-8601 convention (Fable flagged the Sunday-first order).
 const DAYS_OF_WEEK = [
-  { value: 0, labelKey: 'quietHours.sunday' },
   { value: 1, labelKey: 'quietHours.monday' },
   { value: 2, labelKey: 'quietHours.tuesday' },
   { value: 3, labelKey: 'quietHours.wednesday' },
   { value: 4, labelKey: 'quietHours.thursday' },
   { value: 5, labelKey: 'quietHours.friday' },
   { value: 6, labelKey: 'quietHours.saturday' },
+  { value: 0, labelKey: 'quietHours.sunday' },
 ];
 
 /**
@@ -138,11 +139,10 @@ export const QuietHoursManager: React.FC<QuietHoursManagerProps> = ({
   };
 
   const formatTime = (time: string): string => {
+    // 24-hour format — matches the time picker and Swedish/Nordic convention
+    // (the app is Swedish-primary). Avoids the AM/PM inconsistency Fable flagged.
     const [hours, minutes] = time.split(':');
-    const hour = parseInt(hours, 10);
-    const ampm = hour >= 12 ? 'PM' : 'AM';
-    const hour12 = hour % 12 || 12;
-    return `${hour12}:${minutes} ${ampm}`;
+    return `${hours.padStart(2, '0')}:${(minutes ?? '00').padStart(2, '0')}`;
   };
 
   if (isLoading) {
