@@ -19,11 +19,12 @@ import { chromium } from '@playwright/test';
 import Anthropic from '@anthropic-ai/sdk';
 import fs from 'fs';
 import path from 'path';
+import { execSync } from 'node:child_process';
 
 const BASE_URL = 'http://localhost:5173';
 const EMAIL = process.env.EXPLORE_EMAIL || 'user-aaaa0001@test.local'; // seeded owner
 const PASSWORD = process.env.EXPLORE_PASSWORD || 'test-password-123!';
-const MODEL = 'claude-opus-4-8';
+const MODEL = process.env.EXPLORE_MODEL || 'claude-opus-4-8';
 const MAX_STEPS = Number(process.env.EXPLORE_STEPS || 12);
 const OUT_DIR = path.resolve('tests/explore/runs');
 
@@ -69,6 +70,38 @@ const client = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY || fs.readFileSync('C:/Alva/config/anthropic_token.txt', 'utf-8').trim(),
 });
 
+// Brain routing: the standalone Anthropic SDK uses the developer API key
+// (pay-as-you-go). Routing through the Claude Code CLI instead uses the Max
+// subscription auth — which includes Fable 5 — so set EXPLORE_BRAIN=claude-code
+// (auto-on for fable models) to avoid burning API credits.
+const USE_CLAUDE_CODE = process.env.EXPLORE_BRAIN === 'claude-code' || MODEL.startsWith('claude-fable');
+
+// Call Claude Code headless with the prompt on stdin (no shell-quoting risk).
+// Returns the model's final text. Allows the Read tool so it can view a
+// screenshot referenced by path.
+function claudeCode(prompt) {
+  const cmd = `claude -p --model ${MODEL} --output-format json --max-turns 8 --allowedTools Read`;
+  const raw = execSync(cmd, {
+    input: prompt,
+    encoding: 'utf-8',
+    maxBuffer: 64 * 1024 * 1024,
+    timeout: 180000,
+  });
+  const parsed = JSON.parse(raw);
+  if (parsed.is_error) throw new Error(parsed.result || 'claude-code error');
+  return parsed.result;
+}
+
+// Lenient JSON extraction (model may wrap JSON in prose / code fences).
+function extractJson(text) {
+  const fenced = text.match(/```(?:json)?\s*([\s\S]*?)```/);
+  const body = fenced ? fenced[1] : text;
+  const a = body.indexOf('{');
+  const b = body.lastIndexOf('}');
+  if (a === -1 || b === -1) throw new Error('no JSON in model output: ' + text.slice(0, 200));
+  return JSON.parse(body.slice(a, b + 1));
+}
+
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 async function login(page) {
@@ -109,7 +142,14 @@ function describeElements(els) {
     .join('\n');
 }
 
-async function decide(screenshotB64, url, elementList, history) {
+const DECIDE_SYSTEM =
+  'You are a curious, slightly impatient first-time user testing ZemiChat — a family chat app where a parent (Team Owner) oversees their children (Texters). ' +
+  'Explore the app like a real person: open things, read labels, try features. Your job is to surface anything confusing, broken, mislabelled, empty-where-it-should-not-be, or that simply feels off. ' +
+  'You are given a screenshot and a numbered list of the interactive elements currently on screen. Choose exactly ONE next action. ' +
+  'Prefer exploring parts you have not seen. Use "type" only into text fields (give the element index + text). Use "back" to leave a dead end. Use "done" when you have seen enough of the app. ' +
+  'Report issues you notice in the issues array (be specific; ok to be empty).';
+
+async function decide(screenshotB64, screenshotPath, url, elementList, history) {
   const recent = history.slice(-6).map((h) => `- ${h.action.type}${h.action.index != null ? ` [${h.action.index}]` : ''}: ${h.action.reason}`).join('\n') || '(none yet)';
   // Breadth nudge: if the last 3 steps were on the same screen, push elsewhere.
   const lastUrls = history.slice(-3).map((h) => h.url);
@@ -117,6 +157,18 @@ async function decide(screenshotB64, url, elementList, history) {
   const breadthNote = stuck
     ? '\n\nNOTE: You have spent the last 3 steps on THIS screen. Do not repeat the same action again — navigate somewhere new (go back, or open a different section like the dashboard/oversight, friends, or settings) to explore more of the app.'
     : '';
+
+  if (USE_CLAUDE_CODE) {
+    const prompt =
+      `${DECIDE_SYSTEM}\n\n` +
+      `First, look at the screenshot using the Read tool: ${screenshotPath.replace(/\\/g, '/')}\n\n` +
+      `Current URL: ${url}\n\nInteractive elements:\n${elementList}\n\nRecent actions:\n${recent}${breadthNote}\n\n` +
+      `Decide your next single action and note any issues. Respond with ONLY a JSON object (no prose, no code fences) of the form: ` +
+      `{"observation": string, "issues": [{"severity": "low"|"medium"|"high", "text": string}], "action": {"type": "click"|"type"|"back"|"done", "index": number, "text": string, "reason": string}}. ` +
+      `Omit index/text when not needed.`;
+    return extractJson(claudeCode(prompt));
+  }
+
   const res = await client.messages.create({
     model: MODEL,
     max_tokens: 1500,
@@ -144,9 +196,20 @@ async function decide(screenshotB64, url, elementList, history) {
   return JSON.parse(textBlock.text);
 }
 
+const SUMMARY_SYSTEM =
+  'You are a senior product/QA reviewer. You just explored ZemiChat as a first-time user. ' +
+  'Write a concise, honest UX report in Swedish markdown: (1) helhetsintryck, (2) vad som fungerade bra, ' +
+  '(3) problem/förvirring (grupperat efter allvarsgrad, konkret), (4) topp-3 rekommendationer. Var saklig och nedtonad.';
+
 async function summarize(history, issues) {
   const log = history.map((h, i) => `Step ${i + 1} @ ${h.url}\n  saw: ${h.observation}\n  did: ${h.action.type} ${h.action.reason}`).join('\n\n');
   const issueList = issues.map((x) => `- [${x.severity}] (step ${x.step}) ${x.text}`).join('\n') || '(none reported)';
+
+  if (USE_CLAUDE_CODE) {
+    const prompt = `${SUMMARY_SYSTEM}\n\nUtforskningslogg:\n\n${log}\n\nRapporterade problem:\n${issueList}\n\nSkriv rapporten.`;
+    return claudeCode(prompt);
+  }
+
   const res = await client.messages.create({
     model: MODEL,
     max_tokens: 4000,
@@ -182,13 +245,14 @@ async function main() {
     for (let step = 0; step < MAX_STEPS; step++) {
       await sleep(700);
       const shotBuf = await page.screenshot();
-      fs.writeFileSync(path.join(shotsDir, `step-${String(step + 1).padStart(2, '0')}.png`), shotBuf);
+      const shotPath = path.join(shotsDir, `step-${String(step + 1).padStart(2, '0')}.png`);
+      fs.writeFileSync(shotPath, shotBuf);
       const els = await collectElements(page);
       const url = page.url();
 
       let decision;
       try {
-        decision = await decide(shotBuf.toString('base64'), url, describeElements(els), history);
+        decision = await decide(shotBuf.toString('base64'), shotPath, url, describeElements(els), history);
       } catch (e) {
         console.log(`  step ${step + 1}: brain error: ${e.message}`);
         break;

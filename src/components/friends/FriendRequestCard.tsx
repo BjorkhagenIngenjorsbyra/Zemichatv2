@@ -80,6 +80,7 @@ export const FriendRequestCard: React.FC<FriendRequestCardProps> = ({
               size="small"
               onClick={() => onReject(friendshipId)}
               className="reject-button"
+              aria-label={t('a11y.rejectFriendRequest')}
             >
               <IonIcon icon={close} slot="icon-only" />
             </IonButton>
@@ -91,6 +92,7 @@ export const FriendRequestCard: React.FC<FriendRequestCardProps> = ({
               size="small"
               onClick={() => onAccept(friendshipId)}
               className="accept-button"
+              aria-label={t('a11y.acceptFriendRequest')}
             >
               <IonIcon icon={checkmark} slot="icon-only" />
             </IonButton>
