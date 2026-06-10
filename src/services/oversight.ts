@@ -221,3 +221,32 @@ export async function getOversightMessages(
     };
   }
 }
+
+export interface MessageEdit {
+  old_content: string;
+  edited_at: string;
+}
+
+/**
+ * Edit history for messages, for owner oversight (PRD 8.4: edit history is
+ * visible to the Team Owner). Returns a map message_id -> edits (oldest first,
+ * so the first entry is the original text). RLS (message_edits_select_owner_
+ * oversight) already grants owners access to their texters' chats.
+ */
+export async function getMessageEditHistory(
+  messageIds: string[]
+): Promise<Map<string, MessageEdit[]>> {
+  const map = new Map<string, MessageEdit[]>();
+  if (messageIds.length === 0) return map;
+  const { data } = await supabase
+    .from('message_edits')
+    .select('message_id, old_content, edited_at')
+    .in('message_id', messageIds)
+    .order('edited_at', { ascending: true });
+  for (const e of (data ?? []) as unknown as { message_id: string; old_content: string; edited_at: string }[]) {
+    const list = map.get(e.message_id) || [];
+    list.push({ old_content: e.old_content, edited_at: e.edited_at });
+    map.set(e.message_id, list);
+  }
+  return map;
+}

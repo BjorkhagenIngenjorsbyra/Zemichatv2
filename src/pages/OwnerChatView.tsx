@@ -24,7 +24,7 @@ import {
   documentOutline,
   locationOutline,
 } from 'ionicons/icons';
-import { getOversightMessages } from '../services/oversight';
+import { getOversightMessages, getMessageEditHistory, type MessageEdit } from '../services/oversight';
 import { getChat, type ChatWithDetails } from '../services/chat';
 import { MessageType, type Message, type User } from '../types/database';
 import { useAuthContext } from '../contexts/AuthContext';
@@ -49,6 +49,7 @@ const OwnerChatView: React.FC = () => {
   const { profile } = useAuthContext();
   const [chat, setChat] = useState<ChatWithDetails | null>(null);
   const [messages, setMessages] = useState<(Message & { sender?: User })[]>([]);
+  const [editHistory, setEditHistory] = useState<Map<string, MessageEdit[]>>(new Map());
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
   const contentRef = useRef<HTMLIonContentElement>(null);
@@ -77,6 +78,13 @@ const OwnerChatView: React.FC = () => {
         return;
       }
       setMessages(chatMessages);
+
+      // Edit history (PRD 8.4): the owner sees the original text of edited messages.
+      const editedIds = chatMessages.filter((m) => m.is_edited && !m.deleted_at).map((m) => m.id);
+      if (editedIds.length > 0) {
+        const hist = await getMessageEditHistory(editedIds);
+        setEditHistory(hist);
+      }
 
       // Scroll to bottom
       setTimeout(() => {
@@ -312,6 +320,14 @@ const OwnerChatView: React.FC = () => {
                       {message.is_edited && !message.deleted_at && (
                         <div className="edited-indicator">
                           <span>{t('message.edited')}</span>
+                          {(editHistory.get(message.id) || []).length > 0 && (
+                            <div className="edit-history">
+                              <span className="edit-history-label">{t('message.original')}</span>
+                              <span className="edit-history-original">
+                                {editHistory.get(message.id)![0].old_content}
+                              </span>
+                            </div>
+                          )}
                         </div>
                       )}
                     </div>
@@ -499,6 +515,31 @@ const OwnerChatView: React.FC = () => {
             font-size: 0.7rem;
             color: hsl(var(--muted-foreground));
             font-style: italic;
+          }
+
+          .edit-history {
+            margin-top: 0.25rem;
+            padding: 0.4rem 0.5rem;
+            background: hsl(var(--muted) / 0.4);
+            border-left: 2px solid hsl(var(--border));
+            border-radius: 0.4rem;
+            font-style: normal;
+            display: flex;
+            flex-direction: column;
+            gap: 0.1rem;
+          }
+          .edit-history-label {
+            font-size: 0.65rem;
+            font-weight: 600;
+            color: hsl(var(--muted-foreground));
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+          }
+          .edit-history-original {
+            font-size: 0.85rem;
+            color: hsl(var(--foreground));
+            white-space: pre-wrap;
+            word-break: break-word;
           }
 
           .type-icon {
