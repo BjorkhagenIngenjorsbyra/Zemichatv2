@@ -118,7 +118,8 @@
     "owner": "Owner",
     "super": "Super",
     "texter": "Texter",
-    "teamOwner": "Team Owner"
+    "teamOwner": "Team Owner",
+    "label": "Rolle"
   },
   "texter": {
     "createTitle": "Opret Texter",
@@ -349,6 +350,7 @@
     "confirmMessage": "Dette advarer en voksen.",
     "confirmYes": "JA, TILKALD",
     "confirmNo": "Annullér",
+    "autoCancelIn": "Annulleres automatisk om {{count}} s",
     "sent": "Voksen tilkaldt",
     "alertReceived": "Tilkald en voksen fra {{name}}",
     "viewLocation": "Vis placering",
