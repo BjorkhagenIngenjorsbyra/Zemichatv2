@@ -124,7 +124,8 @@
     "owner": "Ägare",
     "super": "Super",
     "texter": "Texter",
-    "teamOwner": "Teamägare"
+    "teamOwner": "Teamägare",
+    "label": "Roll"
   },
   "texter": {
     "createTitle": "Skapa Texter",
@@ -366,6 +367,7 @@
     "confirmMessage": "Detta larmar en vuxen.",
     "confirmYes": "JA, TILLKALLA",
     "confirmNo": "Avbryt",
+    "autoCancelIn": "Avbryts automatiskt om {{count}} s",
     "sent": "Vuxen tillkallad",
     "failed": "Larmet kunde inte skickas. Försök igen.",
     "alertReceived": "Tillkalla Vuxen från {{name}}",

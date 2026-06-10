@@ -124,7 +124,8 @@
     "owner": "Owner",
     "super": "Super",
     "texter": "Texter",
-    "teamOwner": "Team Owner"
+    "teamOwner": "Team Owner",
+    "label": "Role"
   },
   "texter": {
     "createTitle": "Create Texter",
@@ -366,6 +367,7 @@
     "confirmMessage": "This alerts an adult.",
     "confirmYes": "YES, CALL",
     "confirmNo": "Cancel",
+    "autoCancelIn": "Cancels automatically in {{count}} s",
     "sent": "Adult alerted",
     "failed": "The alert could not be sent. Please try again.",
     "alertReceived": "Call for an adult from {{name}}",
