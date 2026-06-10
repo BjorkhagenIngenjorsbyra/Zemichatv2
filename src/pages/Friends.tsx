@@ -74,6 +74,7 @@ const Friends: React.FC = () => {
     name: string;
   } | null>(null);
   const [unfriendError, setUnfriendError] = useState<string | null>(null);
+  const [actionFeedback, setActionFeedback] = useState<{ message: string; color: 'success' | 'warning' } | null>(null);
 
   const loadData = useCallback(async () => {
     const [friendsResult, requestsResult, settingsResult] = await Promise.all([
@@ -119,6 +120,9 @@ const Friends: React.FC = () => {
     if (!error) {
       await loadData();
       refreshCounts();
+      setActionFeedback({ message: t('friends.requestAccepted'), color: 'success' });
+    } else {
+      setActionFeedback({ message: t('friends.requestActionFailed'), color: 'warning' });
     }
   };
 
@@ -127,6 +131,9 @@ const Friends: React.FC = () => {
     if (!error) {
       setIncomingRequests((prev) => prev.filter((r) => r.id !== friendshipId));
       refreshCounts();
+      setActionFeedback({ message: t('friends.requestRejected'), color: 'success' });
+    } else {
+      setActionFeedback({ message: t('friends.requestActionFailed'), color: 'warning' });
     }
   };
 
@@ -461,6 +468,14 @@ const Friends: React.FC = () => {
           duration={3500}
           color="warning"
           onDidDismiss={() => setUnfriendError(null)}
+        />
+
+        <IonToast
+          isOpen={!!actionFeedback}
+          message={actionFeedback?.message || ''}
+          duration={2500}
+          color={actionFeedback?.color}
+          onDidDismiss={() => setActionFeedback(null)}
         />
 
         <AddToChatPicker
