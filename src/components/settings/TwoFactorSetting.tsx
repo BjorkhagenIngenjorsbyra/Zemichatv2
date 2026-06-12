@@ -7,6 +7,13 @@ import { useAuthContext } from '../../contexts/AuthContext';
 import { isMFAEnabled, disableMFA } from '../../services/mfa';
 import { UserRole } from '../../types/database';
 
+// Feature flag: Supabase Auth TOTP enroll is currently disabled server-side
+// ("MFA enroll is disabled for TOTP"), so the whole setup flow is broken. Hide
+// the entry until the full TOTP feature (incl. recovery codes) ships — a broken
+// security flow erodes trust more than an absent one. Flip to true once the
+// backend + recovery flow are in place.
+const TWO_FACTOR_UI_ENABLED = false;
+
 /**
  * Two-factor authentication entry point in Settings. Opt-in, and only offered to
  * Owners and Supers (the adults) — Texters are never burdened with 2FA. Links to
@@ -24,11 +31,11 @@ export const TwoFactorSetting: React.FC = () => {
   const isOwnerOrSuper = profile?.role === UserRole.OWNER || profile?.role === UserRole.SUPER;
 
   useEffect(() => {
-    if (!isOwnerOrSuper) return;
+    if (!TWO_FACTOR_UI_ENABLED || !isOwnerOrSuper) return;
     isMFAEnabled().then(({ enabled: e }) => setEnabled(e));
   }, [isOwnerOrSuper]);
 
-  if (!isOwnerOrSuper) return null;
+  if (!TWO_FACTOR_UI_ENABLED || !isOwnerOrSuper) return null;
 
   const handleDisable = async () => {
     setBusy(true);

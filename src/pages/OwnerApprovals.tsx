@@ -281,6 +281,7 @@ const OwnerApprovals: React.FC = () => {
                               size="small"
                               onClick={() => handleReject(request)}
                               className="action-button"
+                              aria-label={t('ownerApprovals.reject')}
                             >
                               <IonIcon icon={close} slot="icon-only" />
                             </IonButton>
@@ -290,6 +291,7 @@ const OwnerApprovals: React.FC = () => {
                               size="small"
                               onClick={() => handleApprove(request)}
                               className="action-button"
+                              aria-label={t('ownerApprovals.approve')}
                             >
                               <IonIcon icon={checkmark} slot="icon-only" />
                             </IonButton>
@@ -299,6 +301,7 @@ const OwnerApprovals: React.FC = () => {
                               size="small"
                               onClick={() => setShowActionSheet({ request })}
                               className="more-button"
+                              aria-label={t('ownerApprovals.moreActions')}
                             >
                               <IonIcon icon={ellipsisVertical} slot="icon-only" />
                             </IonButton>
