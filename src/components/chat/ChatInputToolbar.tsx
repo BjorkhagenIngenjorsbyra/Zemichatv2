@@ -84,10 +84,11 @@ const ChatInputToolbar: React.FC<ChatInputToolbarProps> = ({
     const value = e.target.value;
     onMessageTextChange(value);
 
-    // Detect @mention
+    // Detect @mention. Use Unicode letters/numbers so Swedish names with
+    // å/ä/ö (e.g. @Åsa, @Märta) match — \w is ASCII-only (Fable code review).
     const cursorPos = e.target.selectionStart || value.length;
     const textUpToCursor = value.slice(0, cursorPos);
-    const atMatch = textUpToCursor.match(/@(\w*)$/);
+    const atMatch = textUpToCursor.match(/@([\p{L}\p{N}_]*)$/u);
 
     if (atMatch && chat?.is_group) {
       onMentionQueryChange(atMatch[1], true);
