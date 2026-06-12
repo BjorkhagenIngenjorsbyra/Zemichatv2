@@ -12,7 +12,10 @@ interface TillkallaButtonProps {
 
 /**
  * "Tillkalla Vuxen" button for Texters — summons an adult from within a chat.
- * Icon-only (symbol), no text label. Texter-only; lives only inside chats.
+ * A soft danger pill with icon + label (Fable round-3 flagged the old icon-only
+ * red circle as mistakable for an avatar; Erik picked the calm-pill variant).
+ * The countdown confirm dialog still guards against accidental taps.
+ * Texter-only; lives only inside chats.
  */
 export const TillkallaButton: React.FC<TillkallaButtonProps> = ({
   onAlertSent,
@@ -43,7 +46,7 @@ export const TillkallaButton: React.FC<TillkallaButtonProps> = ({
     <>
       <IonButton
         color="danger"
-        fill="solid"
+        fill="outline"
         className={buttonClass}
         onClick={() => setShowConfirm(true)}
         disabled={isSending}
@@ -54,7 +57,10 @@ export const TillkallaButton: React.FC<TillkallaButtonProps> = ({
         {isSending ? (
           <IonSpinner name="crescent" />
         ) : (
-          <IonIcon icon={handLeftOutline} />
+          <>
+            <IonIcon icon={handLeftOutline} slot="start" />
+            {t('tillkalla.button')}
+          </>
         )}
       </IonButton>
 
@@ -68,26 +74,37 @@ export const TillkallaButton: React.FC<TillkallaButtonProps> = ({
       <style>{`
         .tillkalla-button {
           --border-radius: 9999px;
+          --background: hsl(var(--destructive) / 0.12);
+          --background-hover: hsl(var(--destructive) / 0.2);
+          --background-activated: hsl(var(--destructive) / 0.25);
+          --border-width: 1px;
           font-weight: 700;
-          text-transform: uppercase;
-          letter-spacing: 0.05em;
+          text-transform: none;
+          letter-spacing: 0.01em;
+          white-space: nowrap;
+        }
+
+        .tillkalla-button ion-icon {
+          margin-inline-end: 0.35rem;
+          font-size: 1.05em;
         }
 
         .tillkalla-button-small {
-          --padding-start: 0.75rem;
-          --padding-end: 0.75rem;
-          font-size: 0.75rem;
+          --padding-start: 0.7rem;
+          --padding-end: 0.85rem;
+          font-size: 0.78rem;
         }
 
         .tillkalla-button-default {
-          --padding-start: 1rem;
-          --padding-end: 1rem;
+          --padding-start: 0.9rem;
+          --padding-end: 1.1rem;
+          font-size: 0.9rem;
         }
 
         .tillkalla-button-large {
-          --padding-start: 2rem;
-          --padding-end: 2rem;
-          font-size: 1.25rem;
+          --padding-start: 1.5rem;
+          --padding-end: 1.75rem;
+          font-size: 1.1rem;
         }
       `}</style>
     </>
