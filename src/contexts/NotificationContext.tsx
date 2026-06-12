@@ -138,7 +138,11 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
           table: 'wall_posts',
           filter: `team_id=eq.${profile.team_id}`,
         },
-        () => {
+        (payload) => {
+          // Don't light the user's own Wall tab for a post they just authored
+          // (Fable round-3: the badge lit up on your own post and never cleared).
+          const row = payload.new as { author_id?: string };
+          if (row.author_id && row.author_id === profile.id) return;
           setWallHasNew(true);
         }
       )
@@ -147,7 +151,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [profile?.team_id]);
+  }, [profile?.team_id, profile?.id]);
 
   // App badge: sync with totalUnreadMessages
   useEffect(() => {

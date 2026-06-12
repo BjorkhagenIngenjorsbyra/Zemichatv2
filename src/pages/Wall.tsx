@@ -202,7 +202,7 @@ const Wall: React.FC = () => {
         </IonInfiniteScroll>
 
         <IonFab vertical="bottom" horizontal="end" slot="fixed" className="safe-fab">
-          <IonFabButton onClick={() => setShowNewPost(true)} className="new-post-fab">
+          <IonFabButton onClick={() => setShowNewPost(true)} className="new-post-fab" aria-label={t('a11y.newWallPost', 'Nytt inlägg')}>
             <IonIcon icon={add} />
           </IonFabButton>
         </IonFab>

@@ -341,7 +341,7 @@ const Friends: React.FC = () => {
           slot="fixed"
           className="safe-fab"
         >
-          <IonFabButton routerLink="/add-friend" data-testid="add-friend-fab">
+          <IonFabButton routerLink="/add-friend" data-testid="add-friend-fab" aria-label={t('a11y.addFriend', 'Lägg till vän')}>
             <IonIcon icon={personAddOutline} />
           </IonFabButton>
         </IonFab>

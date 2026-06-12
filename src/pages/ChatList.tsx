@@ -519,7 +519,7 @@ const ChatList: React.FC = () => {
           slot="fixed"
           className="safe-fab"
         >
-          <IonFabButton onClick={openNewChat} className="new-chat-fab" data-testid="new-chat-fab">
+          <IonFabButton onClick={openNewChat} className="new-chat-fab" data-testid="new-chat-fab" aria-label={t('a11y.newChat', 'Ny chatt')}>
             <IonIcon icon={add} />
           </IonFabButton>
         </IonFab>
