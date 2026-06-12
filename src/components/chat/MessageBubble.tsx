@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useSwipeable } from 'react-swipeable';
 import { hapticLight, hapticMedium } from '../../utils/haptics';
 import { getDisplayName } from '../../utils/userDisplay';
-import { type MessageWithSender } from '../../services/message';
+import { getMessageEdits, type MessageWithSender } from '../../services/message';
 import { type GroupedReaction } from '../../services/reaction';
 import { useSignedMediaUrl } from '../../hooks/useSignedMediaUrl';
 import ImageMessage from './ImageMessage';
@@ -14,6 +14,8 @@ import LinkPreview, { extractUrl } from './LinkPreview';
 import PollMessage from './PollMessage';
 import LocationMessage from './LocationMessage';
 import { formatTimeShort } from '../../utils/datetime';
+import { IonAlert } from '@ionic/react';
+import { type MessageEdit } from '../../types/database';
 
 export type ReadStatus = 'sent' | 'delivered' | 'read';
 
@@ -248,6 +250,18 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
     }
   };
 
+  const [showEditHistory, setShowEditHistory] = useState(false);
+  const [editHistory, setEditHistory] = useState<MessageEdit[] | null>(null);
+
+  // Owner-only: reveal what a message originally said before it was edited.
+  // The history is captured server-side by a trigger and gated by RLS, so an
+  // edit can't be used to hide content from the overseeing Owner (PRD 8.4).
+  const openEditHistory = async () => {
+    const { edits } = await getMessageEdits(message.id);
+    setEditHistory(edits);
+    setShowEditHistory(true);
+  };
+
   const renderReadStatus = () => {
     if (!isOwn || !readStatus) return null;
 
@@ -344,11 +358,37 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
           <span className="message-time">
             {formatMessageTime(message.created_at)}
             {message.is_edited && (
-              <span className="edited-tag"> ({t('message.edited')})</span>
+              userRole === 'owner' ? (
+                <button
+                  type="button"
+                  className="edited-tag"
+                  style={{ background: 'none', border: 'none', padding: 0, font: 'inherit', color: 'inherit', cursor: 'pointer', textDecoration: 'underline' }}
+                  onClick={openEditHistory}
+                  aria-label={t('message.viewEditHistory', 'Visa redigeringshistorik')}
+                > ({t('message.edited')})</button>
+              ) : (
+                <span className="edited-tag"> ({t('message.edited')})</span>
+              )
             )}
           </span>
           {renderReadStatus()}
         </div>
+
+        {showEditHistory && (
+          <IonAlert
+            isOpen={showEditHistory}
+            onDidDismiss={() => setShowEditHistory(false)}
+            header={t('message.editHistory', 'Redigeringshistorik')}
+            message={
+              editHistory && editHistory.length > 0
+                ? editHistory
+                    .map((e) => `• ${new Date(e.edited_at).toLocaleString('sv-SE')}\n${e.old_content}`)
+                    .join('\n\n')
+                : t('message.noEditHistory', 'Ingen tidigare version sparad.')
+            }
+            buttons={[t('common.close', 'Stäng')]}
+          />
+        )}
 
         {reactions.length > 0 && (
           <MessageReactions
