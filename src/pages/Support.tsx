@@ -214,6 +214,14 @@ const Support: React.FC = () => {
                     )}
                   </IonButton>
 
+                  {!canSubmit && !isSubmitting && (
+                    <p
+                      style={{ fontSize: '0.8rem', color: 'hsl(var(--muted-foreground))', textAlign: 'center', margin: '0.5rem 0 0' }}
+                    >
+                      {t('support.requiredHint', 'Fyll i ämne, beskrivning och en giltig e-postadress för att kunna skicka.')}
+                    </p>
+                  )}
+
                   {submitError && (
                     <p className="error-text">{submitError}</p>
                   )}
