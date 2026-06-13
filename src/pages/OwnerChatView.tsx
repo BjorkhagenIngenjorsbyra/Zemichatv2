@@ -36,9 +36,10 @@ import { useSignedMediaUrl } from '../hooks/useSignedMediaUrl';
  * (audit fix #18).
  */
 const OversightImage: React.FC<{ mediaUrl: string }> = ({ mediaUrl }) => {
+  const { t } = useTranslation();
   const url = useSignedMediaUrl(mediaUrl);
   if (!url) return null;
-  return <img src={url} alt="Image" className="message-image" />;
+  return <img src={url} alt={t('message.image')} className="message-image" />;
 };
 
 const OwnerChatView: React.FC = () => {

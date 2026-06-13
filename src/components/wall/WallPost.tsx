@@ -73,7 +73,7 @@ const WallPostCard: React.FC<WallPostCardProps> = ({
     const diffHrs = Math.floor(diffMs / 3600000);
     const diffDays = Math.floor(diffMs / 86400000);
 
-    if (diffMin < 1) return 'nu';
+    if (diffMin < 1) return t('common.justNow');
     if (diffMin < 60) return `${diffMin}m`;
     if (diffHrs < 24) return `${diffHrs}h`;
     if (diffDays < 7) return `${diffDays}d`;

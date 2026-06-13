@@ -261,7 +261,7 @@ const Dashboard: React.FC = () => {
                     >
                       <IonAvatar slot="start" className="member-avatar">
                         {member.avatar_url ? (
-                          <img src={member.avatar_url} alt={member.display_name || 'Avatar'} loading="lazy" decoding="async" />
+                          <img src={member.avatar_url} alt={member.display_name || t('dashboard.unnamed')} loading="lazy" decoding="async" />
                         ) : (
                           <div className="avatar-placeholder small" style={{ background: getAvatarColor(member) }}>
                             {getInitial(member)}
