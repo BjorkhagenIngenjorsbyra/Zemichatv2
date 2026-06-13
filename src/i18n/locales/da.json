@@ -910,6 +910,8 @@
     "acceptFriendRequest": "Godkend venneanmodning",
     "rejectFriendRequest": "Afvis venneanmodning",
     "searchMessages": "Søg beskeder",
-    "close": "Luk"
+    "close": "Luk",
+    "previousImage": "Forrige billede",
+    "nextImage": "Næste billede"
   }
 }

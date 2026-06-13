@@ -910,6 +910,8 @@
     "acceptFriendRequest": "Hyväksy kaveripyyntö",
     "rejectFriendRequest": "Hylkää kaveripyyntö",
     "searchMessages": "Hae viestejä",
-    "close": "Sulje"
+    "close": "Sulje",
+    "previousImage": "Edellinen kuva",
+    "nextImage": "Seuraava kuva"
   }
 }

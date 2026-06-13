@@ -910,6 +910,8 @@
     "acceptFriendRequest": "Godta venneforespørsel",
     "rejectFriendRequest": "Avslå venneforespørsel",
     "searchMessages": "Søk meldinger",
-    "close": "Lukk"
+    "close": "Lukk",
+    "previousImage": "Forrige bilde",
+    "nextImage": "Neste bilde"
   }
 }

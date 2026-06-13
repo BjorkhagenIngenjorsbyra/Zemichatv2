@@ -526,6 +526,7 @@ const ChatList: React.FC = () => {
                 <button
                   className="section-header clickable"
                   onClick={() => setShowArchived(!showArchived)}
+                  aria-expanded={showArchived}
                 >
                   <IonIcon icon={archive} />
                   <span>

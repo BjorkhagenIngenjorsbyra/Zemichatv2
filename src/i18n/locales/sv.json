@@ -916,6 +916,8 @@
     "acceptFriendRequest": "Godkänn vänförfrågan",
     "rejectFriendRequest": "Avslå vänförfrågan",
     "searchMessages": "Sök meddelanden",
-    "close": "Stäng"
+    "close": "Stäng",
+    "previousImage": "Föregående bild",
+    "nextImage": "Nästa bild"
   }
 }

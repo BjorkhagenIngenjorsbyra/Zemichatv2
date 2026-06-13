@@ -388,15 +388,15 @@ const ImageMessage: React.FC<ImageMessageProps> = ({
           onTouchEnd={handleTouchEnd}
         >
           {/* Top bar buttons */}
-          <button className="fullscreen-close" onClick={closeFullscreen}>
+          <button className="fullscreen-close" onClick={closeFullscreen} aria-label={t('a11y.close')}>
             <IonIcon icon={close} />
           </button>
 
           <div className="fullscreen-actions">
-            <button className="fullscreen-action-btn" onClick={handleSaveImage} title={t('image.save')}>
+            <button className="fullscreen-action-btn" onClick={handleSaveImage} title={t('image.save')} aria-label={t('image.save')}>
               <IonIcon icon={download} />
             </button>
-            <button className="fullscreen-action-btn" onClick={handleShareImage} title={t('image.share')}>
+            <button className="fullscreen-action-btn" onClick={handleShareImage} title={t('image.share')} aria-label={t('image.share')}>
               <IonIcon icon={shareSocial} />
             </button>
           </div>
@@ -420,6 +420,7 @@ const ImageMessage: React.FC<ImageMessageProps> = ({
                 <button
                   className="gallery-nav gallery-prev"
                   onClick={(e) => { e.stopPropagation(); goPrev(); }}
+                  aria-label={t('a11y.previousImage')}
                 >
                   <IonIcon icon={chevronBack} />
                 </button>
@@ -428,6 +429,7 @@ const ImageMessage: React.FC<ImageMessageProps> = ({
                 <button
                   className="gallery-nav gallery-next"
                   onClick={(e) => { e.stopPropagation(); goNext(); }}
+                  aria-label={t('a11y.nextImage')}
                 >
                   <IonIcon icon={chevronForward} />
                 </button>
