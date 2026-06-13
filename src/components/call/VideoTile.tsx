@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, memo } from 'react';
 import type { IRemoteVideoTrack, ICameraVideoTrack, ILocalVideoTrack } from '../../services/agora';
 import './VideoTile.css';
 
@@ -61,4 +61,4 @@ const VideoTile: React.FC<VideoTileProps> = ({
   );
 };
 
-export default VideoTile;
+export default memo(VideoTile);

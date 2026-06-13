@@ -58,9 +58,9 @@ const Calls: React.FC = () => {
     event.detail.complete();
   };
 
-  const handleCallback = async (chatId: string) => {
+  const handleCallback = useCallback((chatId: string) => {
     history.push(`/chat/${chatId}`);
-  };
+  }, [history]);
 
   return (
     <IonPage>

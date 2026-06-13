@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { IonItem, IonAvatar, IonLabel, IonIcon } from '@ionic/react';
 import { getDisplayName, getInitial, getAvatarColor } from '../../utils/userDisplay';
@@ -40,10 +41,10 @@ const CallHistoryItem: React.FC<CallHistoryItemProps> = ({
   const isMissed = entry.status === CallStatus.MISSED && !isOutgoing;
   const isVideo = entry.type === 'video';
 
-  // Determine display name + avatar
-  const other = isOutgoing
-    ? entry.otherParticipant || entry.initiator
-    : entry.initiator;
+  // Determine display name + avatar. For an outgoing call the initiator IS the
+  // current user, so falling back to it showed the user themselves as the
+  // counterpart — use only otherParticipant (getDisplayName handles null).
+  const other = isOutgoing ? entry.otherParticipant : entry.initiator;
   const displayName = getDisplayName(other);
   const avatarUrl = other?.avatar_url;
 
@@ -94,4 +95,4 @@ const CallHistoryItem: React.FC<CallHistoryItemProps> = ({
   );
 };
 
-export default CallHistoryItem;
+export default memo(CallHistoryItem);

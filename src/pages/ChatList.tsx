@@ -199,14 +199,18 @@ const ChatList: React.FC = () => {
   const formatLastMessageTime = (dateStr: string): string => {
     const date = new Date(dateStr);
     const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
-    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+    // Compare calendar days, not raw ms — otherwise "yesterday 23:30" viewed at
+    // 08:00 reads as a time-of-day, and the today/yesterday boundary drifts with
+    // the time of day instead of the date.
+    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+    const startOfDate = new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime();
+    const dayDiff = Math.round((startOfToday - startOfDate) / 86_400_000);
 
-    if (diffDays === 0) {
+    if (dayDiff <= 0) {
       return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    } else if (diffDays === 1) {
+    } else if (dayDiff === 1) {
       return t('common.yesterday') || 'Yesterday';
-    } else if (diffDays < 7) {
+    } else if (dayDiff < 7) {
       return date.toLocaleDateString([], { weekday: 'short' });
     } else {
       return date.toLocaleDateString([], { month: 'short', day: 'numeric' });
