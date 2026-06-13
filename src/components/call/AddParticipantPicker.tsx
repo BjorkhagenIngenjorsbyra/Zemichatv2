@@ -50,7 +50,7 @@ const AddParticipantPicker: React.FC<AddParticipantPickerProps> = ({
       try {
         const { data, error } = await supabase
           .from('chat_members')
-          .select('user_id, users:user_id(*)')
+          .select('user_id, users:user_id(id, display_name, avatar_url)')
           .eq('chat_id', chatId)
           .is('left_at', null);
 

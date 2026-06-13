@@ -25,6 +25,7 @@ import {
   IonItemOptions,
   IonItemOption,
   IonPopover,
+  useIonToast,
   RefresherEventDetail,
 } from '@ionic/react';
 import {
@@ -63,6 +64,7 @@ const ChatList: React.FC = () => {
   const { t } = useTranslation();
   const history = useHistory();
   const { profile } = useAuthContext();
+  const [presentToast] = useIonToast();
   const [chats, setChats] = useState<ChatWithDetails[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   // Memoize the id list so useTypingList doesn't tear down and recreate every
@@ -262,8 +264,8 @@ const ChatList: React.FC = () => {
     } else {
       const { error } = await pinChatWithLimit(chat.id);
       if (error) {
-        // Max 3 pinned - could show toast
-        console.warn(error.message);
+        // Max 3 pinned — tell the user why nothing happened.
+        presentToast({ message: error.message || t('errors.generic'), duration: 2500, color: 'warning' });
         return;
       }
     }
