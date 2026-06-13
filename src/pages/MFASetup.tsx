@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useHistory } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
@@ -36,8 +36,14 @@ const MFASetup: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [isVerifying, setIsVerifying] = useState(false);
   const [secretCopied, setSecretCopied] = useState(false);
+  // Guard against React 18 StrictMode running the effect twice, which would
+  // create two unverified TOTP factors.
+  const didInitRef = useRef(false);
 
   useEffect(() => {
+    if (didInitRef.current) return;
+    didInitRef.current = true;
+
     const initSetup = async () => {
       // Check if MFA is already enabled
       const { enabled } = await isMFAEnabled();

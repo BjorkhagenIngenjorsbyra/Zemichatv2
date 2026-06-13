@@ -11,6 +11,7 @@ import {
 } from '@ionic/react';
 import { signIn } from '../services/auth';
 import { claimInvitation } from '../services/invitations';
+import { getMFAAssuranceLevel } from '../services/mfa';
 import '../theme/auth-forms.css';
 
 const Login: React.FC = () => {
@@ -51,6 +52,15 @@ const Login: React.FC = () => {
         } else {
           localStorage.removeItem('zemichat-pending-invite-token');
         }
+      }
+
+      // If the account has MFA enrolled, the session is still at AAL1 after
+      // password sign-in — route to verification instead of straight into the
+      // app, otherwise MFA is effectively skipped on this path.
+      const { currentLevel, nextLevel } = await getMFAAssuranceLevel();
+      if (nextLevel === 'aal2' && currentLevel !== 'aal2') {
+        history.replace('/mfa-verify');
+        return;
       }
 
       history.replace('/chats');

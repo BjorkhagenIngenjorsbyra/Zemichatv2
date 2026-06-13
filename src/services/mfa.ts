@@ -99,6 +99,22 @@ export async function getMFAAssuranceLevel(): Promise<{
  */
 export async function enrollMFA(friendlyName?: string): Promise<EnrollResult> {
   try {
+    // Clean up stale unverified TOTP factors first — Supabase rejects a new
+    // enroll while an unverified factor with the same friendly name exists,
+    // which wedges the setup flow after a StrictMode double-mount or an
+    // abandoned attempt. Best-effort; ignore failures.
+    try {
+      const { data: list } = await supabase.auth.mfa.listFactors();
+      const stale = (list?.all ?? []).filter(
+        (f) => f.factor_type === 'totp' && f.status === 'unverified'
+      );
+      for (const f of stale) {
+        await supabase.auth.mfa.unenroll({ factorId: f.id });
+      }
+    } catch {
+      // ignore — proceed to enroll regardless
+    }
+
     const { data, error } = await supabase.auth.mfa.enroll({
       factorType: 'totp',
       friendlyName: friendlyName || 'Zemichat Authenticator',

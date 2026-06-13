@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useHistory } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
@@ -32,35 +32,49 @@ const MFAVerify: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isVerifying, setIsVerifying] = useState(false);
+  // A lookup failure must NOT fail open to /chats — track it so we can show a
+  // retry instead of silently bypassing MFA.
+  const [loadError, setLoadError] = useState(false);
+
+  const initVerification = useCallback(async () => {
+    setIsLoading(true);
+    setLoadError(false);
+    setError(null);
+
+    const { factor: verifiedFactor, error: factorError } = await getVerifiedFactor();
+
+    if (factorError) {
+      // Lookup failed (likely transient network) — do NOT redirect to /chats,
+      // which would bypass MFA entirely. Offer a retry.
+      console.error('MFA factor lookup failed:', factorError);
+      setLoadError(true);
+      setIsLoading(false);
+      return;
+    }
+
+    if (!verifiedFactor) {
+      // Affirmatively no enrolled factor — proceed to the app.
+      history.replace('/chats');
+      return;
+    }
+
+    setFactor(verifiedFactor);
+
+    const { challenge, error: challengeError } = await createMFAChallenge(verifiedFactor.id);
+
+    if (challengeError || !challenge) {
+      setError(challengeError?.message || t('errors.generic'));
+      setIsLoading(false);
+      return;
+    }
+
+    setChallengeId(challenge.id);
+    setIsLoading(false);
+  }, [history, t]);
 
   useEffect(() => {
-    const initVerification = async () => {
-      // Get the verified factor
-      const { factor: verifiedFactor, error: factorError } = await getVerifiedFactor();
-
-      if (factorError || !verifiedFactor) {
-        // No MFA factor, proceed to chats
-        history.replace('/chats');
-        return;
-      }
-
-      setFactor(verifiedFactor);
-
-      // Create a challenge
-      const { challenge, error: challengeError } = await createMFAChallenge(verifiedFactor.id);
-
-      if (challengeError || !challenge) {
-        setError(challengeError?.message || 'Failed to create challenge');
-        setIsLoading(false);
-        return;
-      }
-
-      setChallengeId(challenge.id);
-      setIsLoading(false);
-    };
-
     initVerification();
-  }, [history]);
+  }, [initVerification]);
 
   const handleVerify = async () => {
     if (!factor || !challengeId || verificationCode.length !== 6) {
@@ -130,6 +144,21 @@ const MFAVerify: React.FC = () => {
             <div className="loading-state">
               <IonSpinner name="crescent" />
               <p>{t('common.loading')}</p>
+            </div>
+          ) : loadError ? (
+            <div className="verify-content">
+              <div className="icon-container">
+                <IonIcon icon={shieldCheckmarkOutline} className="shield-icon" />
+              </div>
+              <p className="description">{t('errors.generic')}</p>
+              <IonButton expand="block" onClick={initVerification} className="verify-button">
+                {t('errors.boundaryRetry')}
+              </IonButton>
+              <div className="cancel-section">
+                <IonButton fill="clear" color="medium" onClick={handleCancel}>
+                  {t('mfa.useAnotherAccount')}
+                </IonButton>
+              </div>
             </div>
           ) : (
             <div className="verify-content">
