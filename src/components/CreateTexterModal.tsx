@@ -1,4 +1,4 @@
-import { useState, FormEvent } from 'react';
+import { useState, useRef, useEffect, FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   IonModal,
@@ -43,6 +43,10 @@ export const CreateTexterModal: React.FC<CreateTexterModalProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const [createdTexter, setCreatedTexter] = useState<CreatedTexter | null>(null);
   const [copied, setCopied] = useState(false);
+  const copiedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => () => {
+    if (copiedTimerRef.current) clearTimeout(copiedTimerRef.current);
+  }, []);
 
   const resetForm = () => {
     setDisplayName('');
@@ -51,6 +55,7 @@ export const CreateTexterModal: React.FC<CreateTexterModalProps> = ({
     setError(null);
     setCreatedTexter(null);
     setCopied(false);
+    if (copiedTimerRef.current) clearTimeout(copiedTimerRef.current);
   };
 
   const handleClose = () => {
@@ -119,7 +124,8 @@ ${t('texter.password')}: ${createdTexter.password}`;
     try {
       await navigator.clipboard.writeText(text);
       setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+      if (copiedTimerRef.current) clearTimeout(copiedTimerRef.current);
+      copiedTimerRef.current = setTimeout(() => setCopied(false), 2000);
     } catch (err) {
       // Clipboard can reject (permissions / insecure context) — don't throw an
       // unhandled rejection; the credentials are still shown on screen to copy.
