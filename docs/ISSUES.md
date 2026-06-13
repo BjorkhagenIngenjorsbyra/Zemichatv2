@@ -17,6 +17,7 @@ Senast uppdaterad: 2026-02-10
 ## 🟢 Låga (polish)
 | # | Problem | Status |
 |---|---------|--------|
+| L1 | ImageMessage "spara bild" på native går via OS-delningsbladet (Filesystem+Share) — ett dedikerat media-library-plugin skulle ge ett-tap direkt-spar till galleriet. Kräver native-plugin + enhetstest + ombygge. | Öppen (Fable r3) |
 
 ## ✅ Lösta
 | # | Problem | Datum |

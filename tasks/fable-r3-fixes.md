@@ -13,11 +13,11 @@ Status-nyckel: [x] fixad · [skip] redan fixad/falskt larm · [HOLD] eskalerad t
 
 - [ ] PrivateRoute.tsx — Redirect/Spinner istället för Route i Switch skuggar senare routes
 - [ ] ShareTargetHandler.tsx — stale-closure i share-handler
-- [ ] TabLayout.tsx — wall-access fail-open för Texter + ingen realtime
+- [skip] TabLayout.tsx — wall-access fail-open — REDAN fail-closed (f6efc81, rad 47 `?? false`). Realtime-omkoll vid Owner-toggle ej gjord (mindre UX, ej säkerhet) — kvar som låg.
 - [ ] call/VideoGrid.tsx — remote video positionellt mappad (fel namn över fel stream)
 - [skip] chat/ChatInputToolbar.tsx — @mention \w bryter å/ä/ö — REDAN FIXAD (f00787b, rad 91 använder /@([\p{L}\p{N}_]*)$/u)
 - [ ] chat/EmojiGifPanel.tsx + GifPicker.tsx — duplicerad GIF-flik (refaktor)
-- [ ] chat/ImageMessage.tsx — spara till galleri funkar ej native + tap-to-close kapar knappar
+- [x] chat/ImageMessage.tsx — tap-to-close kapade knappar (target.closest('button')-guard) + native spara via Filesystem+Share (galleri-direktspar → ISSUES L1)
 - [ ] chat/MessageBubble.tsx — ej memoizerad + 300-rad <style> per instans
 - [ ] chat/PollMessage.tsx — N+1 poll-fetch + icke-atomisk röstväxling
 - [x] chat/VoiceMessage.tsx — Infinity-duration (webm utan duration-header) — Number.isFinite-guard + metadata-prio

@@ -3,8 +3,20 @@ import { useTranslation } from 'react-i18next';
 import { IonSpinner, IonModal, IonIcon } from '@ionic/react';
 import { chevronBack, chevronForward, close, download, shareSocial } from 'ionicons/icons';
 import { Capacitor } from '@capacitor/core';
+import { Filesystem, Directory } from '@capacitor/filesystem';
+import { Share } from '@capacitor/share';
 import { useSignedMediaUrl } from '../../hooks/useSignedMediaUrl';
 import { resolveMediaUrl } from '../../services/storage';
+
+/** Read a Blob as a base64 string (no data: prefix) for Filesystem.writeFile. */
+function blobToBase64(blob: Blob): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve((reader.result as string).split(',')[1] ?? '');
+    reader.onerror = () => reject(reader.error);
+    reader.readAsDataURL(blob);
+  });
+}
 
 interface ImageMessageProps {
   /** Storage path (preferred) or legacy public URL. */
@@ -177,6 +189,15 @@ const ImageMessage: React.FC<ImageMessageProps> = ({
   }, [scale]);
 
   const handleTouchEnd = useCallback((e: React.TouchEvent) => {
+    // Taps that end on an overlay button (close/save/share/gallery arrows) must
+    // not be hijacked by the container's tap-to-close / swipe logic, which would
+    // dismiss the modal before the button's own click handler runs.
+    if ((e.target as HTMLElement | null)?.closest('button')) {
+      isPinchingRef.current = false;
+      isPanningRef.current = false;
+      return;
+    }
+
     if (isPinchingRef.current) {
       isPinchingRef.current = false;
       lastDistRef.current = 0;
@@ -229,14 +250,20 @@ const ImageMessage: React.FC<ImageMessageProps> = ({
 
     try {
       if (Capacitor.isNativePlatform()) {
-        // On native, use Filesystem + MediaLibrary
+        // A <a download> anchor is a no-op in a Capacitor WebView. Write the
+        // image to the cache dir and hand it to the OS share sheet, which offers
+        // "Save Image"/"Save to Photos". (A dedicated media-library plugin would
+        // allow a one-tap direct save — tracked in docs/ISSUES.md.)
         const response = await fetch(url);
         const blob = await response.blob();
-        const a = document.createElement('a');
-        a.href = URL.createObjectURL(blob);
-        a.download = metadata?.fileName || `image_${Date.now()}.jpg`;
-        a.click();
-        URL.revokeObjectURL(a.href);
+        const base64 = await blobToBase64(blob);
+        const fileName = metadata?.fileName || `image_${Date.now()}.jpg`;
+        const written = await Filesystem.writeFile({
+          path: fileName,
+          data: base64,
+          directory: Directory.Cache,
+        });
+        await Share.share({ title: fileName, url: written.uri, dialogTitle: t('image.save') });
       } else {
         // Web fallback: trigger download
         const a = document.createElement('a');
@@ -248,7 +275,7 @@ const ImageMessage: React.FC<ImageMessageProps> = ({
     } catch (err) {
       console.error('Failed to save image:', err);
     }
-  }, [currentUrl, metadata?.fileName]);
+  }, [currentUrl, metadata?.fileName, t]);
 
   // Share image externally
   const handleShareImage = useCallback(async () => {
