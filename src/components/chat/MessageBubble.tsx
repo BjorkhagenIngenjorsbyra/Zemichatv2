@@ -138,7 +138,9 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
   });
 
   const renderTextWithMentions = (text: string) => {
-    const parts = text.split(/(@\w+)/g);
+    // Unicode-aware so Swedish names (@Åsa, @Märta) highlight correctly —
+    // mirrors the mention-detection regex in ChatInputToolbar (\w misses å/ä/ö).
+    const parts = text.split(/(@[\p{L}\p{N}_]+)/gu);
     return parts.map((part, i) => {
       if (part.startsWith('@')) {
         return <span key={i} className="mention-highlight">{part}</span>;

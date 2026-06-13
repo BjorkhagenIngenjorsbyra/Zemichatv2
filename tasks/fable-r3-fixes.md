@@ -52,5 +52,8 @@ Status-nyckel: [x] fixad · [skip] redan fixad/falskt larm · [HOLD] eskalerad t
 - [HOLD] #37 OwnerChatView.tsx — loadData utan paginering → ESKALERAT (samma som #32, core oversight-laddning; hög regressionsrisk blint)
 
 ## Medel (172) — efter hög
+- [x] #43 MessageBubble.renderTextWithMentions — split(/(@\w+)/) missade å/ä/ö → /(@[\p{L}\p{N}_]+)/gu (render-sidans motsvarighet till input-fixen f00787b)
+- [skip] EmojiGifPanel #27/#28/#29 (medel: try/catch, gifs.length-effekt, race) — REDAN fixade i d9de747 (GifPicker-dedupen).
+- (Resten av medel ej påbörjade — teman: per-instans <style> (CallHistoryItem/VideoTile/ImageMessage/VoiceMessage/PollMessage), saknad felhantering (CreateTexterModal/ReportButton/ChatSearchModal/ForwardPicker/QuickMessageBar m.fl.), a11y (AttachmentSheet/MentionAutocomplete/MessageContextMenu), säkerhet (LinkPreview SSRF #37, LocationMessage-koordinater #38 — granska noga). Bearbeta i ordning nästa session.)
 
 ## Låg (177) — efter medel
