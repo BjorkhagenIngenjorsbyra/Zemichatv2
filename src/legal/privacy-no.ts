@@ -187,6 +187,7 @@ export default `
 <h3>7.5 Rett til å klage</h3>
 <p>Hvis du mener at vi håndterer dine personopplysninger feil, har du rett til å klage til:</p>
 <p><strong>Datatilsynet</strong><br>Postboks 458 Sentrum, 0105 Oslo<br>E-post: postkasse@datatilsynet.no<br>Nett: <a href="https://www.datatilsynet.no" target="_blank" rel="noopener noreferrer">https://www.datatilsynet.no</a></p>
+<p>Du kan også kontakte datatilsynsmyndigheten i ditt eget land.</p>
 <hr>
 <h2>8. Informasjonskapsler og sporing</h2>
 <p>Zemichat bruker <strong>ingen informasjonskapsler</strong> (cookies) for sporing eller markedsføring.</p>

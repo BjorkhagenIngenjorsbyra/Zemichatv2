@@ -187,6 +187,7 @@ export default `
 <h3>7.5 Rätt att klaga</h3>
 <p>Om du anser att vi hanterar dina personuppgifter felaktigt har du rätt att lämna klagomål till:</p>
 <p><strong>Integritetsskyddsmyndigheten (IMY)</strong><br>Box 8114, 104 20 Stockholm<br>E-post: imy@imy.se<br>Webb: <a href="https://www.imy.se" target="_blank" rel="noopener noreferrer">https://www.imy.se</a></p>
+<p>Du kan även vända dig till dataskyddsmyndigheten i ditt eget land.</p>
 <hr>
 <h2>8. Cookies och spårning</h2>
 <p>Zemichat använder <strong>inga cookies</strong> för spårning eller marknadsföring.</p>

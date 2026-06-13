@@ -187,6 +187,7 @@ export default `
 <h3>7.5 Oikeus tehdä valitus</h3>
 <p>Jos katsot, että käsittelemme henkilötietojasi virheellisesti, sinulla on oikeus tehdä valitus:</p>
 <p><strong>Tietosuojavaltuutetun toimisto</strong><br>PL 800, 00531 Helsinki<br>Sähköposti: tietosuoja@om.fi<br>Verkko: <a href="https://tietosuoja.fi" target="_blank" rel="noopener noreferrer">https://tietosuoja.fi</a></p>
+<p>Voit myös ottaa yhteyttä oman maasi tietosuojaviranomaiseen.</p>
 <hr>
 <h2>8. Evästeet ja seuranta</h2>
 <p>Zemichat <strong>ei käytä evästeitä</strong> seurantaan tai markkinointiin.</p>

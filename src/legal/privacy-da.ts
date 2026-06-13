@@ -187,6 +187,7 @@ export default `
 <h3>7.5 Ret til at klage</h3>
 <p>Hvis du mener, at vi håndterer dine personoplysninger forkert, har du ret til at klage til:</p>
 <p><strong>Datatilsynet</strong><br>Carl Jacobsens Vej 35, 2500 Valby<br>E-mail: dt@datatilsynet.dk<br>Web: <a href="https://www.datatilsynet.dk" target="_blank" rel="noopener noreferrer">https://www.datatilsynet.dk</a></p>
+<p>Du kan også kontakte databeskyttelsesmyndigheden i dit eget land.</p>
 <hr>
 <h2>8. Cookies og sporing</h2>
 <p>Zemichat bruger <strong>ingen cookies</strong> til sporing eller markedsføring.</p>
