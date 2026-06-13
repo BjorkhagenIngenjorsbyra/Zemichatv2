@@ -19,7 +19,7 @@ Status-nyckel: [x] fixad · [skip] redan fixad/falskt larm · [HOLD] eskalerad t
 - [ ] chat/EmojiGifPanel.tsx + GifPicker.tsx — duplicerad GIF-flik (refaktor)
 - [x] chat/ImageMessage.tsx — tap-to-close kapade knappar (target.closest('button')-guard) + native spara via Filesystem+Share (galleri-direktspar → ISSUES L1)
 - [x] chat/MessageBubble.tsx — 300-rad <style> per instans → extraherat till MessageBubble.css (importeras en gång) + React.memo. FÖLJD: ChatView bör skicka stabila callbacks/memoizerad galleryUrls för full memo-vinst (medel).
-- [ ] chat/PollMessage.tsx — N+1 poll-fetch + icke-atomisk röstväxling
+- [x] chat/PollMessage.tsx — icke-atomisk röstväxling → cast_poll_vote-RPC (migration 20260613110000, SECURITY INVOKER, advisory-lock per poll+user, single-choice clear+insert i en transaktion). Verifierat psql: switch→1, multi→2, re-vote idempotent→1. (N+1 poll-fetch = kvar, perf/medel — egen cache.)
 - [x] chat/VoiceMessage.tsx — Infinity-duration (webm utan duration-header) — Number.isFinite-guard + metadata-prio
 - [x] chat/VoiceRecorder.tsx — cancel skickar ändå + ingen unmount-cleanup (mic kvar på) — cancelledRef + streamRef + cleanup-effect
 - [skip] friends/AddToChatPicker.tsx — 1:1→grupp-konvertering är AVSIKTLIG server-side (add_member_to_chat sätter is_group=true). Erik 2026-06-13: ingen varning behövs → inget att ändra (alt A).

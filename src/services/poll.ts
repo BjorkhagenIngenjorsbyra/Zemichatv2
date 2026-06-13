@@ -162,6 +162,24 @@ export async function votePoll(pollId: string, optionId: string): Promise<{ erro
 }
 
 /**
+ * Atomically cast a vote. For single-choice polls the server clears the
+ * caller's other votes on the poll and inserts the new one in one transaction,
+ * replacing the old non-atomic unvote-each-then-vote client sequence.
+ */
+export async function castPollVote(pollId: string, optionId: string): Promise<{ error: Error | null }> {
+  const { error } = await supabase.rpc('cast_poll_vote' as never, {
+    p_poll_id: pollId,
+    p_option_id: optionId,
+  } as never);
+
+  if (error) {
+    return { error: new Error((error as { message: string }).message) };
+  }
+
+  return { error: null };
+}
+
+/**
  * Remove a vote from a poll option.
  */
 export async function unvotePoll(pollId: string, optionId: string): Promise<{ error: Error | null }> {

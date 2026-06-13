@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuthContext } from '../../contexts/AuthContext';
-import { getPollByMessageId, votePoll, unvotePoll } from '../../services/poll';
+import { getPollByMessageId, castPollVote, unvotePoll } from '../../services/poll';
 import type { PollWithOptions } from '../../types/database';
 
 interface PollMessageProps {
@@ -38,16 +38,9 @@ const PollMessage: React.FC<PollMessageProps> = ({ messageId, isOwn }) => {
     if (hasVoted) {
       await unvotePoll(poll.id, optionId);
     } else {
-      // If single choice, remove other votes first
-      if (!poll.allows_multiple) {
-        for (const opt of poll.options) {
-          const myVote = opt.votes.find((v) => v.user_id === profile?.id);
-          if (myVote) {
-            await unvotePoll(poll.id, opt.id);
-          }
-        }
-      }
-      await votePoll(poll.id, optionId);
+      // Atomic on the server — for single-choice polls it clears the user's
+      // other votes and inserts in one transaction (no partial-failure window).
+      await castPollVote(poll.id, optionId);
     }
 
     await loadPoll();
