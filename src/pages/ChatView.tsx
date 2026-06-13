@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { useParams, useHistory } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
@@ -98,6 +98,9 @@ const ChatView: React.FC = () => {
   const { refreshCounts } = useNotifications();
   const [chat, setChat] = useState<ChatWithDetails | null>(null);
   const [messages, setMessages] = useState<MessageWithSender[]>([]);
+  // Compute the gallery URL list once per messages change, not per rendered row
+  // (Virtuoso calls itemContent for every visible row).
+  const galleryUrls = useMemo(() => getGalleryUrls(messages), [messages]);
   const [isLoading, setIsLoading] = useState(true);
   const [messageText, setMessageText] = useState('');
   const [isSending, setIsSending] = useState(false);
@@ -892,7 +895,6 @@ const ChatView: React.FC = () => {
                 const isOwn = message.sender_id === profile?.id;
                 const showDivider = shouldShowDateDivider(message, index);
                 const messageReactions = reactions.get(message.id) || [];
-                const galleryUrls = getGalleryUrls(messages);
 
                 return (
                   <>
