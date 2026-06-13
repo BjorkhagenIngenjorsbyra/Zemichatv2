@@ -108,6 +108,9 @@ const ShareTargetHandler: React.FC = () => {
       .then(({ chats: fetched }) => {
         setChats(fetched.filter((c) => !c.isArchived));
       })
+      .catch((err) => {
+        console.error('[ShareTarget] getMyChats failed:', err);
+      })
       .finally(() => setIsLoading(false));
 
     setTimeout(() => searchbarRef.current?.setFocus(), 300);
@@ -159,15 +162,17 @@ const ShareTargetHandler: React.FC = () => {
         });
         if (error) throw error;
       } else {
-        // Upload and send each image
-        for (const item of shareData.items) {
+        // Upload and send each image. The shared caption belongs to the set,
+        // so attach it to the first image only — not repeated on every one.
+        for (let i = 0; i < shareData.items.length; i++) {
+          const item = shareData.items[i];
           const file = sharedItemToFile(item);
           const uploadResult = await uploadImage(file, chatId);
           if (uploadResult.error) throw uploadResult.error;
 
           const { error } = await sendMessage({
             chatId,
-            content: shareData.text || undefined,
+            content: i === 0 ? (shareData.text || undefined) : undefined,
             type: MessageType.IMAGE,
             mediaUrl: uploadResult.url!,
             mediaMetadata: uploadResult.metadata as unknown as Record<string, unknown>,

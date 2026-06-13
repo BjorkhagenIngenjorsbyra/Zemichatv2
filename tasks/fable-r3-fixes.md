@@ -65,6 +65,10 @@ Status-nyckel: [x] fixad · [skip] redan fixad/falskt larm · [HOLD] eskalerad t
 - [x] #47 MediaPicker — upload-await utan catch (handleSendImage + handleDocumentChange → catch+logg)
 - [HOLD] #48 MediaPicker — e.preventDefault() i onTouchMove (ev. passiv lyssnare) — osäkert + kräver enhets-test av pinch-zoom → eskalerat
 - [HOLD] #49 MediaPicker — ingen klient-fil-storlek/MIME-validering → kräver beslut om maxgräns + i18n-meddelande → eskalerat
+### ShareTargetHandler-batch
+- [x] #8 ShareTargetHandler — delad caption sattes på VARJE bild → bara första bilden
+- [x] #9 ShareTargetHandler — getMyChats picker-effekt saknade .catch → tillagd
+- [skip] #10 ShareTargetHandler — post-login pending-share-effekt "körs på varje ändring": clearShareIntent() efter hantering gör omkörningar till no-ops → låg/ofarlig, lämnad
 ### Övrigt medel
 - [x] #43 MessageBubble.renderTextWithMentions — split(/(@\w+)/) missade å/ä/ö → /(@[\p{L}\p{N}_]+)/gu (render-sidans motsvarighet till input-fixen f00787b)
 - [skip] EmojiGifPanel #27/#28/#29 (medel: try/catch, gifs.length-effekt, race) — REDAN fixade i d9de747 (GifPicker-dedupen).
