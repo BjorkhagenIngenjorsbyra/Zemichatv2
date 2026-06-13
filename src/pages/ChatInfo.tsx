@@ -331,8 +331,8 @@ const ChatInfo: React.FC = () => {
               <p className="empty-text">{t('chatInfo.noSharedMedia')}</p>
             ) : (
               <div className="media-grid">
-                {sharedMedia.map((path, index) => (
-                  <SharedMediaThumb key={index} url={resolvedMedia.get(path) ?? null} />
+                {sharedMedia.map((path) => (
+                  <SharedMediaThumb key={path} url={resolvedMedia.get(path) ?? null} />
                 ))}
               </div>
             )}
