@@ -12,7 +12,7 @@ Status-nyckel: [x] fixad · [skip] redan fixad/falskt larm · [HOLD] eskalerad t
 ## Hög allvarsgrad (37)
 
 - [ ] PrivateRoute.tsx — Redirect/Spinner istället för Route i Switch skuggar senare routes
-- [ ] ShareTargetHandler.tsx — stale-closure i share-handler
+- [x] ShareTargetHandler.tsx — stale-closure i share-handler — handlerRef + stabil wrapper, init-effekt tom dep
 - [skip] TabLayout.tsx — wall-access fail-open — REDAN fail-closed (f6efc81, rad 47 `?? false`). Realtime-omkoll vid Owner-toggle ej gjord (mindre UX, ej säkerhet) — kvar som låg.
 - [ ] call/VideoGrid.tsx — remote video positionellt mappad (fel namn över fel stream)
 - [skip] chat/ChatInputToolbar.tsx — @mention \w bryter å/ä/ö — REDAN FIXAD (f00787b, rad 91 använder /@([\p{L}\p{N}_]*)$/u)
@@ -22,7 +22,7 @@ Status-nyckel: [x] fixad · [skip] redan fixad/falskt larm · [HOLD] eskalerad t
 - [ ] chat/PollMessage.tsx — N+1 poll-fetch + icke-atomisk röstväxling
 - [x] chat/VoiceMessage.tsx — Infinity-duration (webm utan duration-header) — Number.isFinite-guard + metadata-prio
 - [x] chat/VoiceRecorder.tsx — cancel skickar ändå + ingen unmount-cleanup (mic kvar på) — cancelledRef + streamRef + cleanup-effect
-- [ ] friends/AddToChatPicker.tsx — 1:1-chattar listas → injektion gör om till grupp
+- [HOLD] friends/AddToChatPicker.tsx — 1:1→grupp-konvertering är AVSIKTLIG server-side (add_member_to_chat-funktionen sätter is_group=true medvetet). Inte en bugg. UX-tydlighet (varna att 1:1 blir grupp) = design/transparens-beslut → flaggat Erik, ej auto-ändrat.
 - [x] friends/FriendSettingsModal.tsx — reset-effekt wipe:ar pågående redigering — init-key-ref (en gång per öppning/friend)
 - [x] friends/ZemiNumberInput.tsx — går ej radera förbi prefix — robust formatZemiNumber (tom + partiell prefix), handleInput delegerar; 12 node-cases gröna
 - [ ] subscription/MemberLimitDialog.tsx — gräns bara klientsidig (TROL. redan #2 4018c35)

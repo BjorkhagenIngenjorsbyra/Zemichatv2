@@ -64,14 +64,24 @@ const ShareTargetHandler: React.FC = () => {
     [isAuthenticated, hasProfile, history]
   );
 
-  // ---- Initialize native listener ----
+  // Keep the latest handler in a ref so the once-registered native listener
+  // always sees current auth state. Registering handleShareData directly (it is
+  // only set once, guarded by initializedRef) would permanently capture the
+  // boot-time isAuthenticated/hasProfile (false), routing post-login shares
+  // down the 'not authenticated' path.
+  const handlerRef = useRef(handleShareData);
+  useEffect(() => {
+    handlerRef.current = handleShareData;
+  }, [handleShareData]);
+
+  // ---- Initialize native listener (once) with a stable wrapper ----
   useEffect(() => {
     if (initializedRef.current) return;
     initializedRef.current = true;
 
     initializeShareTarget();
-    setShareHandler((data) => handleShareData(data));
-  }, [handleShareData]);
+    setShareHandler((data) => handlerRef.current(data));
+  }, []);
 
   // ---- After login, check for pending share data ----
   useEffect(() => {
