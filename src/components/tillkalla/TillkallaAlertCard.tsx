@@ -19,6 +19,7 @@ import {
   getGoogleMapsUrl,
 } from '../../services/tillkalla';
 import { formatDateTime } from '../../utils/datetime';
+import './TillkallaAlertCard.css';
 
 interface TillkallaAlertCardProps {
   alert: TillkallaAlertWithTexter;
@@ -39,11 +40,10 @@ export const TillkallaAlertCard: React.FC<TillkallaAlertCardProps> = ({
   const location = parseAlertLocation(alert);
   const isAcknowledged = !!alert.acknowledged_at;
 
-  const formatTime = (dateStr: string): string => formatDateTime(dateStr);
-
   const handleViewLocation = () => {
     if (location) {
-      window.open(getGoogleMapsUrl(location), '_blank');
+      // noopener,noreferrer prevents reverse-tabnabbing on web.
+      window.open(getGoogleMapsUrl(location), '_blank', 'noopener,noreferrer');
     }
   };
 
@@ -69,7 +69,7 @@ export const TillkallaAlertCard: React.FC<TillkallaAlertCardProps> = ({
             <h3 className="alert-title">
               {t('tillkalla.alertReceived', { name: alert.texter.display_name })}
             </h3>
-            <p className="alert-time">{formatTime(alert.created_at)}</p>
+            <p className="alert-time">{formatDateTime(alert.created_at)}</p>
           </div>
         </div>
 
@@ -113,109 +113,6 @@ export const TillkallaAlertCard: React.FC<TillkallaAlertCardProps> = ({
           )}
         </div>
       </IonCardContent>
-
-      <style>{`
-        .tillkalla-alert-card {
-          margin: 0 0 1rem 0;
-          border-radius: 1rem;
-          overflow: hidden;
-        }
-
-        .tillkalla-alert-card.urgent {
-          border: 2px solid hsl(var(--destructive));
-          animation: urgentPulse 2s ease-in-out infinite;
-        }
-
-        @keyframes urgentPulse {
-          0%, 100% {
-            box-shadow: 0 0 0 0 hsl(var(--destructive) / 0.4);
-          }
-          50% {
-            box-shadow: 0 0 0 8px hsl(var(--destructive) / 0);
-          }
-        }
-
-        .alert-header {
-          display: flex;
-          align-items: center;
-          gap: 0.75rem;
-          margin-bottom: 1rem;
-        }
-
-        .alert-icon-container {
-          flex-shrink: 0;
-        }
-
-        .alert-icon {
-          font-size: 2rem;
-          color: hsl(var(--destructive));
-        }
-
-        .tillkalla-alert-card.urgent .alert-icon {
-          animation: iconPulse 1s ease-in-out infinite;
-        }
-
-        @keyframes iconPulse {
-          0%, 100% {
-            transform: scale(1);
-          }
-          50% {
-            transform: scale(1.1);
-          }
-        }
-
-        .texter-avatar {
-          width: 40px;
-          height: 40px;
-          flex-shrink: 0;
-        }
-
-        .avatar-placeholder {
-          width: 100%;
-          height: 100%;
-          background: hsl(var(--primary));
-          color: hsl(var(--primary-foreground));
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 1rem;
-          font-weight: 700;
-          border-radius: 50%;
-        }
-
-        .alert-info {
-          flex: 1;
-          min-width: 0;
-        }
-
-        .alert-title {
-          font-size: 1rem;
-          font-weight: 600;
-          color: hsl(var(--foreground));
-          margin: 0 0 0.25rem 0;
-        }
-
-        .alert-time {
-          font-size: 0.8rem;
-          color: hsl(var(--foreground) / 0.7);
-          margin: 0;
-        }
-
-        .alert-actions {
-          display: flex;
-          gap: 0.5rem;
-          flex-wrap: wrap;
-        }
-
-        .acknowledged-badge {
-          display: flex;
-          align-items: center;
-          gap: 0.25rem;
-          color: hsl(var(--secondary));
-          font-size: 0.875rem;
-          font-weight: 500;
-        }
-      `}</style>
     </IonCard>
   );
 };
