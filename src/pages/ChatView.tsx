@@ -81,6 +81,7 @@ import {
 import type { ReadStatus } from '../components/chat/MessageBubble';
 import { TillkallaButton } from '../components/tillkalla';
 import { CallButton } from '../components/call';
+import './ChatView.css';
 import { UserRole, type TexterSettings } from '../types/database';
 import { getTexterSettings } from '../services/members';
 import { usePresence } from '../hooks/usePresence';
@@ -941,128 +942,9 @@ const ChatView: React.FC = () => {
           </div>
         )}
 
-        <style>{`
-          .chat-header-title {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-start;
-            line-height: 1.2;
-          }
-
-          .chat-header-subtitle {
-            font-size: 0.7rem;
-            font-weight: 400;
-            color: hsl(var(--muted-foreground));
-          }
-
-          .chat-header-subtitle.online {
-            color: hsl(var(--secondary));
-          }
-
-          .chat-content {
-            --background: hsl(var(--background));
-          }
-
-          .welcome-banner {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            height: 100%;
-            padding: 2rem;
-            animation: fade-slide-in 0.4s ease-out both;
-          }
-
-          .welcome-icon {
-            font-size: 3rem;
-            margin-bottom: 0.75rem;
-          }
-
-          .welcome-banner h3 {
-            margin: 0 0 0.5rem 0;
-            font-size: 1.25rem;
-            font-weight: 700;
-            color: hsl(var(--foreground));
-          }
-
-          .welcome-banner p {
-            margin: 0;
-            font-size: 0.95rem;
-            color: hsl(var(--muted-foreground));
-          }
-
-          .messages-container {
-            display: flex;
-            flex-direction: column;
-            padding: 1rem;
-            /* Virtuoso behöver en explicit höjd; .chat-content fyller IonContent. */
-            height: 100%;
-            min-height: 100%;
-          }
-
-          .date-divider {
-            display: flex;
-            justify-content: center;
-            margin: 1rem 0;
-            /* position: sticky funkar inte i en virtualiserad lista där noder
-               unmountas — divider:n renderas inline ovanför första meddelandet
-               för respektive datum istället. */
-            z-index: 10;
-          }
-
-          .date-divider span {
-            background: hsl(var(--muted) / 0.6);
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
-            color: hsl(var(--foreground));
-            font-size: 0.75rem;
-            font-weight: 500;
-            padding: 0.25rem 0.75rem;
-            border-radius: 9999px;
-            box-shadow: 0 1px 4px hsl(0 0% 0% / 0.15);
-          }
-
-          .message-wrapper {
-            display: flex;
-            margin-bottom: 0.5rem;
-          }
-
-          .message-wrapper.own {
-            justify-content: flex-end;
-          }
-
-          .message-wrapper.other {
-            justify-content: flex-start;
-          }
-
-          .new-messages-button {
-            position: fixed;
-            bottom: 120px;
-            left: 50%;
-            transform: translateX(-50%);
-            display: flex;
-            align-items: center;
-            gap: 0.4rem;
-            padding: 0.5rem 1rem;
-            background: hsl(var(--primary));
-            color: hsl(var(--primary-foreground));
-            border-radius: 9999px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            cursor: pointer;
-            box-shadow: 0 4px 16px hsl(var(--primary) / 0.4);
-            z-index: 100;
-            animation: fade-slide-in 0.2s ease-out;
-          }
-
-          .new-messages-button ion-icon {
-            font-size: 0.9rem;
-          }
-        `}</style>
       </IonContent>
 
-      <IonFooter>
+      <IonFooter className="chat-footer">
         {editingMessage && (
           <div className="edit-preview">
             <div className="edit-preview-content">
@@ -1132,80 +1014,6 @@ const ChatView: React.FC = () => {
           }}
         />
 
-        <style>{`
-          ion-footer {
-            padding-bottom: env(safe-area-inset-bottom, 0px);
-          }
-
-          .reply-preview {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0.5rem 1rem;
-            background: hsl(var(--card));
-            border-top: 1px solid hsl(var(--border));
-            /* Issue #33: cap the preview width so long quoted text wraps
-               into the bubble instead of pushing it off-screen. */
-            min-width: 0;
-            overflow: hidden;
-          }
-
-          .reply-preview > div {
-            flex: 1 1 0;
-            /* Without min-width:0 a flex item won't shrink below its
-               intrinsic content width, which let long quotes clip past
-               the right edge. (Issue #33.) */
-            min-width: 0;
-            margin: 0;
-          }
-
-          .cancel-reply {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 1.5rem;
-            height: 1.5rem;
-            border-radius: 50%;
-            background: hsl(var(--muted) / 0.3);
-            border: none;
-            cursor: pointer;
-            font-size: 1.25rem;
-            color: hsl(var(--foreground));
-            line-height: 1;
-          }
-
-          .edit-preview {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0.5rem 1rem;
-            background: hsl(var(--primary) / 0.1);
-            border-top: 1px solid hsl(var(--primary) / 0.3);
-            border-left: 3px solid hsl(var(--primary));
-          }
-
-          .edit-preview-content {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            gap: 0.15rem;
-          }
-
-          .edit-label {
-            font-size: 0.7rem;
-            font-weight: 600;
-            color: hsl(var(--primary));
-            letter-spacing: 0.02em;
-          }
-
-          .edit-text {
-            font-size: 0.8rem;
-            color: hsl(var(--muted-foreground));
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-          }
-        `}</style>
       </IonFooter>
 
       {/* MediaPicker (hidden inputs + image preview modal) */}
