@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, useEffect } from 'react';
+import { useState, useRef, useCallback, useEffect, memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSwipeable } from 'react-swipeable';
 import { hapticLight, hapticMedium } from '../../utils/haptics';
@@ -16,6 +16,7 @@ import LocationMessage from './LocationMessage';
 import { formatTimeShort } from '../../utils/datetime';
 import { IonAlert } from '@ionic/react';
 import { type MessageEdit } from '../../types/database';
+import './MessageBubble.css';
 
 export type ReadStatus = 'sent' | 'delivered' | 'read';
 
@@ -34,7 +35,7 @@ interface MessageBubbleProps {
   onContextMenu?: (message: MessageWithSender, rect: DOMRect) => void;
   onJumpToMessage?: (messageId: string) => void;
   userId?: string;
-  /** Current user's role — Owner sees original content of deleted-for-all messages */
+  /** Current user's role â€” Owner sees original content of deleted-for-all messages */
   userRole?: string;
   /** Highlight bubble briefly (e.g. when scrolled to via reply tap) */
   isHighlighted?: boolean;
@@ -49,7 +50,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
   isJustSent = false,
   galleryUrls,
   onReply,
-  // onReact and userId are unused inside the bubble itself — they're
+  // onReact and userId are unused inside the bubble itself â€” they're
   // forwarded to the context menu by the parent. Keep in the interface
   // so the contract is documented.
   onReact: _onReact,
@@ -86,9 +87,9 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
     const timeSinceLastTap = now - lastTapRef.current;
 
     if (timeSinceLastTap < DOUBLE_TAP_DELAY) {
-      // Double tap — toggle heart reaction
+      // Double tap â€” toggle heart reaction
       hapticLight();
-      onToggleReaction?.(message.id, '❤️');
+      onToggleReaction?.(message.id, 'â¤ï¸');
       setShowHeartAnim(true);
       setTimeout(() => setShowHeartAnim(false), 600);
       lastTapRef.current = 0; // Reset to prevent triple-tap
@@ -147,7 +148,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
   };
 
   // Resolve media path to signed URL once per render (audit fix #18).
-  // Only matters for video/document/gif — image and voice resolve inside
+  // Only matters for video/document/gif â€” image and voice resolve inside
   // their own components.
   const resolvedMediaUrl = useSignedMediaUrl(message.media_url);
 
@@ -190,7 +191,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
               rel="noopener noreferrer"
               className="document-link"
             >
-              <span className="document-icon">📄</span>
+              <span className="document-icon">ðŸ“„</span>
               <span className="document-name">
                 {(message.media_metadata as { fileName?: string })?.fileName || t('message.document')}
               </span>
@@ -204,7 +205,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
         }
         return (
           <div className="location-message">
-            <span className="location-icon">📍</span>
+            <span className="location-icon">ðŸ“</span>
             <span>{t('message.location')}</span>
           </div>
         );
@@ -267,11 +268,11 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
 
     switch (readStatus) {
       case 'sent':
-        return <span className="read-status sent">✓</span>;
+        return <span className="read-status sent">âœ“</span>;
       case 'delivered':
-        return <span className="read-status delivered">✓✓</span>;
+        return <span className="read-status delivered">âœ“âœ“</span>;
       case 'read':
-        return <span className="read-status read">✓✓</span>;
+        return <span className="read-status read">âœ“âœ“</span>;
       default:
         return null;
     }
@@ -308,7 +309,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
           className="reply-indicator"
           style={{ opacity: Math.min(swipeOffset / SWIPE_THRESHOLD, 1) }}
         >
-          <span className="reply-icon">↩️</span>
+          <span className="reply-icon">â†©ï¸</span>
         </div>
       )}
 
@@ -329,7 +330,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
         {/* Owner sees deleted-for-all messages with a warning banner */}
         {message.deleted_at && message.deleted_for_all && userRole === 'owner' && (
           <div className="owner-deleted-banner">
-            <span>🗑️</span> {t('contextMenu.deletedVisibleToOwner')}
+            <span>ðŸ—‘ï¸</span> {t('contextMenu.deletedVisibleToOwner')}
           </div>
         )}
 
@@ -352,7 +353,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
         {renderContent()}
 
         {/* Heart animation overlay */}
-        {showHeartAnim && <span className="heart-anim">❤️</span>}
+        {showHeartAnim && <span className="heart-anim">â¤ï¸</span>}
 
         <div className="message-footer">
           <span className="message-time">
@@ -382,11 +383,11 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
             message={
               editHistory && editHistory.length > 0
                 ? editHistory
-                    .map((e) => `• ${new Date(e.edited_at).toLocaleString('sv-SE')}\n${e.old_content}`)
+                    .map((e) => `â€¢ ${new Date(e.edited_at).toLocaleString('sv-SE')}\n${e.old_content}`)
                     .join('\n\n')
                 : t('message.noEditHistory', 'Ingen tidigare version sparad.')
             }
-            buttons={[t('common.close', 'Stäng')]}
+            buttons={[t('common.close', 'StÃ¤ng')]}
           />
         )}
 
@@ -397,267 +398,8 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
           />
         )}
       </div>
-
-      <style>{`
-        .swipe-container {
-          position: relative;
-          transition: transform 0.1s ease-out;
-          display: flex;
-          align-items: center;
-          max-width: 85%;
-        }
-
-        .reply-indicator {
-          position: absolute;
-          left: -40px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          width: 32px;
-          height: 32px;
-          background: hsl(var(--primary) / 0.2);
-          border-radius: 50%;
-          transition: opacity 0.1s ease;
-        }
-
-        .reply-icon {
-          font-size: 1rem;
-        }
-
-        .message-bubble {
-          padding: 0.5rem 0.75rem;
-          border-radius: 1.25rem;
-          position: relative;
-        }
-
-        .message-bubble.own {
-          background: hsl(var(--primary));
-          color: #fff;
-          border-bottom-right-radius: 0.25rem;
-        }
-
-        .message-bubble.other {
-          background: hsl(var(--bubble-received, var(--card)));
-          color: hsl(var(--foreground));
-          border-bottom-left-radius: 0.25rem;
-        }
-
-        .message-bubble.message-highlighted {
-          animation: highlight-flash 1.6s ease-out;
-        }
-
-        @keyframes highlight-flash {
-          0%   { box-shadow: 0 0 0 4px hsl(var(--primary) / 0.55); }
-          100% { box-shadow: 0 0 0 0 hsl(var(--primary) / 0); }
-        }
-
-        .sender-name {
-          display: block;
-          font-size: 0.7rem;
-          font-weight: 600;
-          color: hsl(var(--accent));
-          margin-bottom: 0.15rem;
-        }
-
-        .message-content {
-          margin: 0;
-          word-wrap: break-word;
-          white-space: pre-wrap;
-          line-height: 1.4;
-        }
-
-        /* Links inside messages */
-        .message-content a,
-        .message-bubble.own .message-content a {
-          color: #c4b5fd;
-          text-decoration: underline;
-        }
-
-        .message-bubble.other .message-content a {
-          color: hsl(var(--primary));
-          text-decoration: underline;
-        }
-
-        .message-footer {
-          display: flex;
-          justify-content: flex-end;
-          align-items: center;
-          gap: 0.25rem;
-          margin-top: 0.15rem;
-        }
-
-        .message-time {
-          font-size: 0.65rem;
-          opacity: 0.75;
-        }
-
-        /* Edge-to-edge media in bubbles */
-        .message-bubble:has(.image-message),
-        .message-bubble:has(.gif-message),
-        .message-bubble:has(.video-message) {
-          padding: 0;
-          overflow: hidden;
-        }
-
-        .message-bubble:has(.image-message) .sender-name,
-        .message-bubble:has(.gif-message) .sender-name,
-        .message-bubble:has(.video-message) .sender-name {
-          padding: 0.5rem 0.75rem 0.15rem;
-        }
-
-        .message-bubble:has(.image-message) .message-footer,
-        .message-bubble:has(.gif-message) .message-footer,
-        .message-bubble:has(.video-message) .message-footer {
-          padding: 0.15rem 0.75rem 0.4rem;
-        }
-
-        .edited-tag {
-          font-style: italic;
-        }
-
-        .read-status {
-          font-size: 0.65rem;
-          font-weight: 600;
-          letter-spacing: -1px;
-        }
-
-        .read-status {
-          transition: color 0.3s ease, opacity 0.3s ease;
-        }
-
-        .read-status.sent {
-          opacity: 0.65;
-        }
-
-        .read-status.delivered {
-          opacity: 0.7;
-        }
-
-        .read-status.read {
-          color: hsl(200 100% 60%);
-          opacity: 1;
-        }
-
-        .video-message video {
-          width: 100%;
-          max-height: 300px;
-          display: block;
-        }
-
-        .message-caption {
-          margin: 0.25rem 0 0 0;
-          padding: 0 0.75rem;
-          font-size: 0.9rem;
-        }
-
-        .document-message {
-          display: flex;
-          align-items: center;
-        }
-
-        .document-link {
-          display: flex;
-          align-items: center;
-          gap: 0.5rem;
-          color: inherit;
-          text-decoration: none;
-        }
-
-        .document-link:hover {
-          text-decoration: underline;
-        }
-
-        .document-icon {
-          font-size: 1.5rem;
-        }
-
-        .document-name {
-          font-size: 0.9rem;
-          word-break: break-all;
-        }
-
-        .location-message {
-          display: flex;
-          align-items: center;
-          gap: 0.5rem;
-        }
-
-        .location-icon {
-          font-size: 1.25rem;
-        }
-
-        .deleted-bubble {
-          opacity: 0.6;
-        }
-
-        .deleted-message-text {
-          margin: 0;
-          font-style: italic;
-          font-size: 0.85rem;
-        }
-
-        .owner-deleted-banner {
-          display: flex;
-          align-items: center;
-          gap: 0.35rem;
-          font-size: 0.7rem;
-          font-weight: 600;
-          color: hsl(0 70% 50%);
-          background: hsl(0 70% 50% / 0.1);
-          border-radius: 0.35rem;
-          padding: 0.25rem 0.5rem;
-          margin-bottom: 0.35rem;
-        }
-
-        .forwarded-tag {
-          display: block;
-          font-size: 0.7rem;
-          font-style: italic;
-          opacity: 0.7;
-          margin-bottom: 0.25rem;
-        }
-
-        .message-gif {
-          width: 100%;
-          max-width: 300px;
-          max-height: 300px;
-          object-fit: contain;
-          display: block;
-        }
-
-        .gif-message {
-          min-width: 150px;
-        }
-
-        .gif-message .message-caption {
-          padding: 0.25rem 0.75rem;
-        }
-
-        .sticker-message {
-          font-size: 4rem;
-          line-height: 1.2;
-          display: block;
-          text-align: center;
-        }
-
-        .message-bubble.sticker-only {
-          background: transparent !important;
-          border: none !important;
-          padding: 0;
-        }
-
-        .message-bubble.own .mention-highlight {
-          font-weight: 600;
-          color: #c4b5fd;
-        }
-
-        .message-bubble.other .mention-highlight {
-          font-weight: 600;
-          color: hsl(var(--primary));
-        }
-      `}</style>
     </div>
   );
 };
 
-export default MessageBubble;
+export default memo(MessageBubble);
