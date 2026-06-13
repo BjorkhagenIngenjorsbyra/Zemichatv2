@@ -104,6 +104,8 @@ const Login: React.FC = () => {
                 required
                 className="auth-input"
                 fill="outline"
+                name="email"
+                autocomplete="email"
               />
             </div>
 
@@ -116,6 +118,8 @@ const Login: React.FC = () => {
                 required
                 className="auth-input"
                 fill="outline"
+                name="password"
+                autocomplete="current-password"
               />
             </div>
 

@@ -12,7 +12,9 @@ initSentry();
 let appMounted = false;
 
 function renderFallback(message: string) {
-  const container = document.getElementById('root');
+  // Fall back to <body> if #root is missing (corrupted index.html / WebView
+  // quirk) so the user still sees a message instead of a blank screen.
+  const container = document.getElementById('root') ?? document.body;
   if (container) {
     container.innerHTML =
       '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;padding:1rem;font-family:-apple-system,sans-serif;text-align:center;color:#0a0d17;background:#fff;">' +
@@ -60,11 +62,18 @@ async function bootstrap() {
   }
 
   const container = document.getElementById('root');
+  if (!container) {
+    // #root genuinely absent — createRoot would throw. Report and show a
+    // body-level fallback instead of a blank screen.
+    captureException(new Error('Root element #root not found'), { context: 'bootstrap.noRoot' });
+    renderFallback('Could not start. Please restart the app.');
+    return;
+  }
   // A non-fatal global error during the async bootstrap window may have
   // injected the fallback markup; clear it so React 18's createRoot mounts
   // into a clean container instead of alongside the "Could not start" text.
-  if (container) container.innerHTML = '';
-  const root = createRoot(container!);
+  container.innerHTML = '';
+  const root = createRoot(container);
   root.render(
     <React.StrictMode>
       <App />

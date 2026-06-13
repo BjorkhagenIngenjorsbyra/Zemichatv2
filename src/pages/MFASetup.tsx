@@ -196,6 +196,8 @@ const MFASetup: React.FC = () => {
                   placeholder="000000"
                   maxlength={6}
                   inputmode="numeric"
+                  autocomplete="one-time-code"
+                  aria-label={t('mfa.enterCode')}
                   className="code-input"
                 />
               </div>

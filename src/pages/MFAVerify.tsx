@@ -176,6 +176,8 @@ const MFAVerify: React.FC = () => {
                   placeholder="000000"
                   maxlength={6}
                   inputmode="numeric"
+                  autocomplete="one-time-code"
+                  aria-label={t('mfa.verifyTitle')}
                   className="code-input"
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' && verificationCode.length === 6) {
