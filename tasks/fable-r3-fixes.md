@@ -165,13 +165,27 @@ Status-nyckel: [x] fixad · [skip] redan fixad/falskt larm · [HOLD] eskalerad t
 - [x] MentionAutocomplete — role=listbox + role=option/aria-selected (full pil-navigation kräver parent-input-wiring → FÖLJD)
 - [x] FriendSettingsModal — role=dialog/aria-modal/Escape + show-real-name-toggeln nu `<button role="switch" aria-checked>` (button-defaults nollställda i CSS)
 
-## ÅTERSTÅR MEDEL (säkra, ej gjorda än) — nästa session
-- **Felhantering/korrekthet kvar (säkra):** CreateTeam referral-race + submitReferral-resultat (#372/#374), useSignedMediaUrl stale-URL-reset + .catch (#298 — hot path, försiktigt), NotificationContext app-resume refreshCounts + CHANNEL_ERROR (#296), main.tsx fallback-clear + Sentry-capture (#324/#326 — Sentry ej på än), useTypingList churn-diff (#286), App.tsx AuthCallbackHandler type=recovery (#90 — auth-nära, försiktigt), App.tsx tab-remount single-route-array (#88 — routing, regressionsrisk, ev. eskalera).
-- **a11y FÖLJD:** MentionAutocomplete full pil/Enter/Escape-navigation (kräver ChatInputToolbar-keydown-wiring + aria-activedescendant), MessageContextMenu/sheets full focus-trap.
-- **EmojiGifPanel** #27/#28/#29 medel — verifiera mot d9de747 (GifPicker-dedupen), troligen redan fixade → skip-verifiera.
-- **NewChat createChat-dedup** (#412 1:1-dubbletter) = datamodell (unik constraint/lookup) → eskalera.
-- **CSS FÖLJD:** ChoosePlan onboarding-CSS (delad m. CreateTeam.css).
+### Batch 16-18 — sista säkra felhantering/korrekthet (commits 87ffbc1, 9fb1225, fdafac5)
+- [x] useSignedMediaUrl — path-tracking-ref: rensa stale URL vid äkta path-byte (recycled/virtualized rad), .catch (#298)
+- [x] useTypingList — äkta inkrementell diff, unsub+prune borttagna, teardown bara vid unmount, order-insensitiv key (#286)
+- [x] CreateTeam — referral-validerings request-id-guard + feltoast på submitReferral/startTrial (#372/#374)
+- [x] NotificationContext — app-resume refreshCounts (appStateChange+visibility) + re-sync på (re)subscribe-status (#296)
+- [x] main.tsx — rensa #root före createRoot, appMounted-grind på global-error-fallback, Sentry.captureException i alla swallowed paths (#324/#326)
+- [x] App.tsx — AuthCallbackHandler hanterar type=recovery → /reset-password (behåller hash för supabase) (#90)
+- [skip] EmojiGifPanel #27/#28/#29 — REDAN fixade i d9de747 (requestSeq+try/finally+hasLoadedGifs), verifierat
 
-Princip nästa pass: ovan säkra felhantering/korrekthet, sen LÅG (177).
+## ✅ ALLA SÄKRA MEDEL KLARA — kvar i medel = ENDAST eskalerat (kräver Erik/enhetstest/beslut)
+Se "⚠️ ESKALERAT/HOLD"-sektionen ovan. Sammanfattning av vad som ÄR KVAR av de 172 medel:
+- **Betalning:** Paywall userCancelled/restore-feedback, ChoosePlan/MemberLimit (STOPPA-regel).
+- **Auth/MFA:** TwoFactorSetting flagg-flip, Login AAL2, MFASetup/MFAVerify (feature-flaggat AV + säkerhet).
+- **Barnsäkerhet:** QuietHoursManager-logik, TillkallaConfirmModal countdown-under-loading-BETEENDE (STOPPA-regel).
+- **RLS/server-verifiering:** SSRF #158, LocationMessage-koordinater #160, AddFriend-uppräkning #328, raderat-innehåll #262/#270, can_send_images server #258, add-member RLS #338, texter-gates #366.
+- **Datamodell:** ChatView atomisk poll-create #358, PollMessage poll_votes-realtime #186, NewChat 1:1-dedup #412.
+- **Paginering/perf (on-device-verify):** #30 ChatList Virtuoso, #32 ChatView, #37 OwnerChatView, App.tsx #88 tab-array-route, LinkPreview promise-cache, legal lazy-load, swipe-perf.
+- **Legal (compliance):** Privacy Shield→DPF #310-315, komplaint-myndighet #302.
+- **a11y FÖLJD:** MentionAutocomplete full pil-navigation, full focus-trap i sheets.
+- **CSS FÖLJD:** ChoosePlan onboarding-CSS.
+
+Nästa pass: LÅG-listan (177) — eller eskalerade medel när Erik kan enhetstesta/besluta.
 
 ## Låg (177) — efter medel
