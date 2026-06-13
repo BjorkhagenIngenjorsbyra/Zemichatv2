@@ -346,6 +346,7 @@
     "confirmYes": "JA, TILLKALLA",
     "confirmNo": "Avbryt",
     "sent": "Vuxen tillkallad",
+    "failed": "Larmet kunde inte skickas. Försök igen.",
     "alertReceived": "Tillkalla Vuxen från {{name}}",
     "viewLocation": "Visa plats",
     "acknowledge": "Bekräfta",

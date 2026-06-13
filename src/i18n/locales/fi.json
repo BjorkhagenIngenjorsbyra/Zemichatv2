@@ -346,6 +346,7 @@
     "confirmYes": "KYLLÄ, KUTSU",
     "confirmNo": "Peruuta",
     "sent": "Aikuinen kutsuttu",
+    "failed": "Hälytystä ei voitu lähettää. Yritä uudelleen.",
     "alertReceived": "Aikuisen kutsu käyttäjältä {{name}}",
     "viewLocation": "Näytä sijainti",
     "acknowledge": "Vahvista",

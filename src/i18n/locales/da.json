@@ -346,6 +346,7 @@
     "confirmYes": "JA, TILKALD",
     "confirmNo": "Annullér",
     "sent": "Voksen tilkaldt",
+    "failed": "Alarmen kunne ikke sendes. Prøv igen.",
     "alertReceived": "Tilkald en voksen fra {{name}}",
     "viewLocation": "Vis placering",
     "acknowledge": "Bekræft",

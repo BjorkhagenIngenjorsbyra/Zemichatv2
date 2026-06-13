@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { IonButton, IonIcon, IonSpinner } from '@ionic/react';
+import { IonButton, IonIcon, IonSpinner, useIonToast } from '@ionic/react';
 import { handLeftOutline } from 'ionicons/icons';
 import { TillkallaConfirmModal } from './TillkallaConfirmModal';
 import { sendTillkalla } from '../../services/tillkalla';
@@ -22,21 +22,36 @@ export const TillkallaButton: React.FC<TillkallaButtonProps> = ({
   size = 'default',
 }) => {
   const { t } = useTranslation();
+  const [presentToast] = useIonToast();
   const [showConfirm, setShowConfirm] = useState(false);
   const [isSending, setIsSending] = useState(false);
 
   const handleConfirm = async () => {
     setIsSending(true);
-
     const { error } = await sendTillkalla();
+    setIsSending(false);
 
     if (error) {
       console.error('Failed to send Tillkalla Vuxen alert:', error);
-    } else {
-      onAlertSent?.();
+      // Safety-critical: the child must KNOW the alert did not go through.
+      // Keep the confirm dialog open for an immediate retry and show a loud,
+      // long-lived error instead of silently closing.
+      presentToast({
+        message: t('tillkalla.failed'),
+        duration: 5000,
+        position: 'top',
+        color: 'danger',
+      });
+      return;
     }
 
-    setIsSending(false);
+    onAlertSent?.();
+    presentToast({
+      message: t('tillkalla.sent'),
+      duration: 2500,
+      position: 'top',
+      color: 'success',
+    });
     setShowConfirm(false);
   };
 
