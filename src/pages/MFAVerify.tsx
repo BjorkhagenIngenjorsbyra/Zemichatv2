@@ -248,7 +248,7 @@ const MFAVerify: React.FC = () => {
             color: hsl(var(--primary));
           }
 
-          h2 {
+          .mfa-verify-container h2 {
             text-align: center;
             font-size: 1.5rem;
             font-weight: 700;

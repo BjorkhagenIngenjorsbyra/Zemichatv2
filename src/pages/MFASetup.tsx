@@ -271,7 +271,7 @@ const MFASetup: React.FC = () => {
             color: hsl(var(--secondary));
           }
 
-          h2 {
+          .mfa-setup-container h2 {
             text-align: center;
             font-size: 1.5rem;
             font-weight: 700;

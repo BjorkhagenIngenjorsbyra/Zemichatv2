@@ -271,12 +271,12 @@ const Support: React.FC = () => {
 
           /* Override Ionic's default dark IonItem background that the
              accordion header inherits — looks broken on light theme. */
-          ion-accordion-group ion-item {
+          .support-container ion-accordion-group ion-item {
             --background: hsl(var(--card));
             --color: hsl(var(--foreground));
             --border-color: hsl(var(--border));
           }
-          ion-accordion {
+          .support-container ion-accordion {
             background: hsl(var(--card));
             border: 1px solid hsl(var(--border));
             border-radius: 0.75rem;

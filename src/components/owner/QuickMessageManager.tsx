@@ -440,7 +440,7 @@ export const QuickMessageManager: React.FC<QuickMessageManagerProps> = ({
           padding: 0.5rem 0;
         }
 
-        ion-reorder {
+        .quick-message-manager ion-reorder {
           cursor: grab;
         }
       `}</style>

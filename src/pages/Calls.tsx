@@ -70,6 +70,7 @@ const Calls: React.FC = () => {
         </IonToolbar>
         <IonToolbar>
           <IonSegment
+            className="calls-segment"
             value={activeTab}
             onIonChange={(e) => setActiveTab(e.detail.value as TabValue)}
           >
@@ -145,11 +146,11 @@ const Calls: React.FC = () => {
             padding: 0;
           }
 
-          ion-segment {
+          .calls-segment {
             --background: transparent;
           }
 
-          ion-segment-button {
+          .calls-segment ion-segment-button {
             --color: hsl(var(--muted-foreground));
             --color-checked: hsl(var(--primary));
             --indicator-color: hsl(var(--primary));

@@ -160,7 +160,7 @@ export const ChatSearchModal: React.FC<ChatSearchModalProps> = ({
   };
 
   return (
-    <IonModal isOpen={isOpen} onDidDismiss={onClose}>
+    <IonModal isOpen={isOpen} onDidDismiss={onClose} className="chat-search-modal">
       <IonHeader>
         <IonToolbar>
           <IonSearchbar
@@ -253,20 +253,20 @@ export const ChatSearchModal: React.FC<ChatSearchModalProps> = ({
         <style>{`
           /* Override Ionic's default dark modal background that comes from
              --ion-background-color = dark navy. Use the app's light theme. */
-          ion-modal {
+          ion-modal.chat-search-modal {
             --background: hsl(var(--background));
             --color: hsl(var(--foreground));
           }
-          ion-modal ion-content {
+          ion-modal.chat-search-modal ion-content {
             --background: hsl(var(--background));
             --color: hsl(var(--foreground));
           }
-          ion-modal ion-toolbar {
+          ion-modal.chat-search-modal ion-toolbar {
             --background: hsl(var(--background));
             --color: hsl(var(--foreground));
             --border-color: hsl(var(--border));
           }
-          ion-modal ion-searchbar {
+          ion-modal.chat-search-modal ion-searchbar {
             --background: hsl(var(--muted)) !important;
             --color: hsl(var(--foreground)) !important;
             --placeholder-color: hsl(var(--muted-foreground)) !important;
