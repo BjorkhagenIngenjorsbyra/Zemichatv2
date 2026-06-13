@@ -8,17 +8,26 @@ import { subscribeToTyping } from '../services/typingIndicator';
 export function useTypingList(chatIds: string[], currentUserId: string) {
   const [typingMap, setTypingMap] = useState<Map<string, string>>(new Map());
   const unsubsRef = useRef<Map<string, () => void>>(new Map());
+  const userRef = useRef(currentUserId);
+  // Order-insensitive key so a mere reorder of the same chats doesn't churn
+  // every typing subscription.
+  const key = [...chatIds].sort().join(',');
 
   useEffect(() => {
-    const newUnsubs = new Map<string, () => void>();
+    // If the current user changed, drop all subs so they re-subscribe fresh.
+    if (userRef.current !== currentUserId) {
+      for (const unsub of unsubsRef.current.values()) unsub();
+      unsubsRef.current.clear();
+      userRef.current = currentUserId;
+    }
 
+    const desired = new Set(chatIds);
+
+    // Subscribe only to chats we're not already subscribed to (true incremental
+    // diff — the previous version tore everything down on every change via the
+    // effect cleanup, making this branch dead code).
     for (const chatId of chatIds) {
-      // Skip if already subscribed
-      if (unsubsRef.current.has(chatId)) {
-        newUnsubs.set(chatId, unsubsRef.current.get(chatId)!);
-        continue;
-      }
-
+      if (unsubsRef.current.has(chatId)) continue;
       const unsub = subscribeToTyping(chatId, currentUserId, (typers) => {
         setTypingMap((prev) => {
           const next = new Map(prev);
@@ -30,26 +39,34 @@ export function useTypingList(chatIds: string[], currentUserId: string) {
           return next;
         });
       });
-
-      newUnsubs.set(chatId, unsub);
+      unsubsRef.current.set(chatId, unsub);
     }
 
-    // Unsubscribe from chats no longer in list
-    for (const [chatId, unsub] of unsubsRef.current) {
-      if (!newUnsubs.has(chatId)) {
+    // Unsubscribe from + prune chats no longer in the list (snapshot the
+    // entries so we can delete while iterating).
+    for (const [chatId, unsub] of [...unsubsRef.current]) {
+      if (!desired.has(chatId)) {
         unsub();
+        unsubsRef.current.delete(chatId);
+        setTypingMap((prev) => {
+          if (!prev.has(chatId)) return prev;
+          const next = new Map(prev);
+          next.delete(chatId);
+          return next;
+        });
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [key, currentUserId]);
 
-    unsubsRef.current = newUnsubs;
-
+  // Tear down all subscriptions only on unmount — NOT on every dep change.
+  useEffect(() => {
+    const subs = unsubsRef.current;
     return () => {
-      for (const unsub of unsubsRef.current.values()) {
-        unsub();
-      }
-      unsubsRef.current.clear();
+      for (const unsub of subs.values()) unsub();
+      subs.clear();
     };
-  }, [chatIds.join(','), currentUserId]);
+  }, []);
 
   return typingMap;
 }

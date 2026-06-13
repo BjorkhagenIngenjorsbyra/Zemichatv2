@@ -9,6 +9,7 @@ import {
   IonText,
   IonSpinner,
   IonIcon,
+  useIonToast,
 } from '@ionic/react';
 import { checkmarkCircleOutline, closeCircleOutline } from 'ionicons/icons';
 import { useAuthContext } from '../contexts/AuthContext';
@@ -23,6 +24,7 @@ import './CreateTeam.css';
 const CreateTeam: React.FC = () => {
   const { t } = useTranslation();
   const history = useHistory();
+  const [present] = useIonToast();
   const { authUser, hasProfile, refreshProfile, signOut } = useAuthContext();
   const { startTrial } = useSubscription();
   const [teamName, setTeamName] = useState('');
@@ -40,6 +42,9 @@ const CreateTeam: React.FC = () => {
 
   const redirectTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
   const validateTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
+  // Latest code in the input — a slow validateReferralCode response for an
+  // older code must not overwrite state for what's typed now.
+  const latestCodeRef = useRef('');
 
   useEffect(() => {
     if (hasProfile && !showConfetti && !showReferralStep) {
@@ -61,9 +66,15 @@ const CreateTeam: React.FC = () => {
   }, [authUser, history]);
 
   const handleFinish = useCallback(async () => {
-    await startTrial(PlanType.PRO);
-    history.replace('/chats');
-  }, [startTrial, history]);
+    // Only navigate once the trial is actually set — otherwise the user lands
+    // in the app without a plan and with no idea it failed.
+    const success = await startTrial(PlanType.PRO);
+    if (success) {
+      history.replace('/chats');
+    } else {
+      present({ message: t('errors.generic'), duration: 3000, color: 'danger' });
+    }
+  }, [startTrial, history, present, t]);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -110,6 +121,7 @@ const CreateTeam: React.FC = () => {
     setReferralCode(code);
     setReferralValid(null);
     setReferralTeamName(null);
+    latestCodeRef.current = code;
 
     if (validateTimer.current) clearTimeout(validateTimer.current);
 
@@ -117,6 +129,8 @@ const CreateTeam: React.FC = () => {
       setIsValidating(true);
       validateTimer.current = setTimeout(async () => {
         const { valid, teamName: name } = await validateReferralCode(code);
+        // Ignore a response that arrived after the user kept typing.
+        if (latestCodeRef.current !== code) return;
         setReferralValid(valid);
         setReferralTeamName(name);
         setIsValidating(false);
@@ -127,9 +141,18 @@ const CreateTeam: React.FC = () => {
   const handleContinueWithReferral = async () => {
     if (!referralValid || !referralCode) return;
     setIsSubmittingReferral(true);
-    await submitReferral(referralCode);
-    setIsSubmittingReferral(false);
-    await handleFinish();
+    try {
+      const { error: refError } = await submitReferral(referralCode);
+      if (refError) {
+        // Was silently swallowed — the user believed the referral applied.
+        console.error('Failed to submit referral:', refError);
+        present({ message: t('errors.generic'), duration: 3000, color: 'danger' });
+        return; // stay on the referral step
+      }
+      await handleFinish();
+    } finally {
+      setIsSubmittingReferral(false);
+    }
   };
 
   const handleSkipReferral = async () => {
