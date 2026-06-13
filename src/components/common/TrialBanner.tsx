@@ -51,7 +51,7 @@ const TrialBanner: React.FC = () => {
             setDismissed(true);
             localStorage.setItem('trial-banner-dismissed', 'true');
           }}
-          aria-label="Stäng"
+          aria-label={t('common.close')}
         >
           ✕
         </button>

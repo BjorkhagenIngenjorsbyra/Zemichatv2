@@ -66,7 +66,7 @@ const PollCreator: React.FC<PollCreatorProps> = ({ isOpen, onClose, onCreate }) 
     <div className="poll-creator-overlay">
       <div className="poll-creator">
         <div className="poll-creator-header">
-          <button className="poll-close-btn" onClick={onClose}>
+          <button className="poll-close-btn" onClick={onClose} aria-label={t('common.close')}>
             <IonIcon icon={close} />
           </button>
           <span className="poll-creator-title">{t('poll.createTitle')}</span>
@@ -109,6 +109,7 @@ const PollCreator: React.FC<PollCreatorProps> = ({ isOpen, onClose, onCreate }) 
                   <button
                     className="poll-remove-option"
                     onClick={() => handleRemoveOption(opt.id)}
+                    aria-label={t('common.delete')}
                   >
                     <IonIcon icon={trash} />
                   </button>

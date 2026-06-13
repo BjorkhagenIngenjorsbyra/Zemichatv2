@@ -59,6 +59,7 @@ const IncomingCallModal: React.FC = () => {
             color="danger"
             disabled={actionTaken}
             onClick={handleDecline}
+            aria-label={t('call.decline')}
           >
             <IonIcon icon={close} slot="icon-only" />
           </IonButton>
@@ -69,6 +70,7 @@ const IncomingCallModal: React.FC = () => {
             color="success"
             disabled={actionTaken}
             onClick={handleAnswer}
+            aria-label={t('call.answer')}
           >
             <IonIcon icon={isVideo ? videocam : call} slot="icon-only" />
           </IonButton>

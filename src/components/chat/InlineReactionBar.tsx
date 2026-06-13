@@ -28,16 +28,22 @@ const InlineReactionBar: React.FC<InlineReactionBarProps> = ({
       }
     };
 
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+
     // Delay listener to avoid immediate close from the same long-press event
     const timer = setTimeout(() => {
       document.addEventListener('mousedown', handleClickOutside);
       document.addEventListener('touchstart', handleClickOutside);
     }, 50);
+    document.addEventListener('keydown', handleKey);
 
     return () => {
       clearTimeout(timer);
       document.removeEventListener('mousedown', handleClickOutside);
       document.removeEventListener('touchstart', handleClickOutside);
+      document.removeEventListener('keydown', handleKey);
     };
   }, [onClose]);
 
@@ -87,7 +93,7 @@ const InlineReactionBar: React.FC<InlineReactionBarProps> = ({
             key={emoji}
             className="reaction-btn"
             onClick={() => handleSelect(emoji)}
-            aria-label={`React with ${emoji}`}
+            aria-label={t('a11y.reactWith', { emoji })}
           >
             {emoji}
           </button>

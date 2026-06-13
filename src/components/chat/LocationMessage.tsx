@@ -23,7 +23,19 @@ const LocationMessage: React.FC<LocationMessageProps> = ({ lat, lng }) => {
 
   return (
     <>
-      <div className="location-msg" onClick={() => setShowViewer(true)}>
+      <div
+        className="location-msg"
+        role="button"
+        tabIndex={0}
+        aria-label={t('location.shareLocation')}
+        onClick={() => setShowViewer(true)}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            setShowViewer(true);
+          }
+        }}
+      >
         {thumbFailed ? (
           <div className="location-thumb location-thumb-fallback">
             <span className="location-fallback-pin">📍</span>
