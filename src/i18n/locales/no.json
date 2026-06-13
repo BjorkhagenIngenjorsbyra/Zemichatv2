@@ -214,7 +214,19 @@
   },
   "gif": {
     "searchPlaceholder": "Søk GIF-er...",
-    "noResults": "Ingen GIF-er funnet"
+    "noResults": "Ingen GIF-er funnet",
+    "categories": {
+      "trending": "Populært",
+      "reactions": "Reaksjoner",
+      "love": "Kjærlighet",
+      "funny": "Morsomt",
+      "happy": "Glad",
+      "sad": "Trist",
+      "yes": "Ja",
+      "no": "Nei",
+      "thanks": "Takk",
+      "wow": "Wow"
+    }
   },
   "sticker": {
     "title": "Stickers"

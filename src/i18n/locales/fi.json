@@ -214,7 +214,19 @@
   },
   "gif": {
     "searchPlaceholder": "Etsi GIF...",
-    "noResults": "GIF-kuvia ei löytynyt"
+    "noResults": "GIF-kuvia ei löytynyt",
+    "categories": {
+      "trending": "Suosittua",
+      "reactions": "Reaktiot",
+      "love": "Rakkaus",
+      "funny": "Hauska",
+      "happy": "Iloinen",
+      "sad": "Surullinen",
+      "yes": "Kyllä",
+      "no": "Ei",
+      "thanks": "Kiitos",
+      "wow": "Vau"
+    }
   },
   "sticker": {
     "title": "Tarrat"

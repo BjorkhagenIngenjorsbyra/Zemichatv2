@@ -214,7 +214,19 @@
   },
   "gif": {
     "searchPlaceholder": "Sök GIF...",
-    "noResults": "Inga GIF:ar hittades"
+    "noResults": "Inga GIF:ar hittades",
+    "categories": {
+      "trending": "Trendigt",
+      "reactions": "Reaktioner",
+      "love": "Kärlek",
+      "funny": "Roligt",
+      "happy": "Glad",
+      "sad": "Ledsen",
+      "yes": "Ja",
+      "no": "Nej",
+      "thanks": "Tack",
+      "wow": "Wow"
+    }
   },
   "sticker": {
     "title": "Stickers"

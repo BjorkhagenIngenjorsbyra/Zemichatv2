@@ -17,17 +17,18 @@ interface EmojiGifPanelProps {
 
 type TabType = 'emoji' | 'gif';
 
+// `query` stays English (GIPHY search terms); `key` maps to a localized label.
 const QUICK_CATEGORIES = [
-  { label: 'Trending', query: '' },
-  { label: 'Reactions', query: 'reactions' },
-  { label: 'Love', query: 'love' },
-  { label: 'Funny', query: 'funny' },
-  { label: 'Happy', query: 'happy' },
-  { label: 'Sad', query: 'sad' },
-  { label: 'Yes', query: 'yes' },
-  { label: 'No', query: 'no' },
-  { label: 'Thanks', query: 'thank you' },
-  { label: 'Wow', query: 'wow' },
+  { key: 'trending', query: '' },
+  { key: 'reactions', query: 'reactions' },
+  { key: 'love', query: 'love' },
+  { key: 'funny', query: 'funny' },
+  { key: 'happy', query: 'happy' },
+  { key: 'sad', query: 'sad' },
+  { key: 'yes', query: 'yes' },
+  { key: 'no', query: 'no' },
+  { key: 'thanks', query: 'thank you' },
+  { key: 'wow', query: 'wow' },
 ];
 
 const DEFAULT_PANEL_HEIGHT = 280;
@@ -156,16 +157,20 @@ const EmojiGifPanel: React.FC<EmojiGifPanelProps> = ({
   return (
     <div className="emoji-gif-panel" style={{ height: `${panelHeight}px` }}>
       {/* Tab bar */}
-      <div className="egp-tabs">
+      <div className="egp-tabs" role="tablist">
         <button
           className={`egp-tab ${activeTab === 'emoji' ? 'active' : ''}`}
           onClick={() => handleTabSwitch('emoji')}
+          role="tab"
+          aria-selected={activeTab === 'emoji'}
         >
           {t('chat.emojis')}
         </button>
         <button
           className={`egp-tab ${activeTab === 'gif' ? 'active' : ''}`}
           onClick={() => handleTabSwitch('gif')}
+          role="tab"
+          aria-selected={activeTab === 'gif'}
         >
           {t('chat.gifs')}
         </button>
@@ -211,11 +216,12 @@ const EmojiGifPanel: React.FC<EmojiGifPanelProps> = ({
           <div className="egp-gif-categories">
             {QUICK_CATEGORIES.map((cat, i) => (
               <button
-                key={cat.label}
+                key={cat.key}
                 className={`egp-cat-chip ${i === activeCategory ? 'active' : ''}`}
                 onClick={() => handleCategoryClick(i)}
+                aria-pressed={i === activeCategory}
               >
-                {cat.label}
+                {t(`gif.categories.${cat.key}`)}
               </button>
             ))}
           </div>

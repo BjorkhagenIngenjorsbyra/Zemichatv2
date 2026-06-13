@@ -214,7 +214,19 @@
   },
   "gif": {
     "searchPlaceholder": "Search GIFs...",
-    "noResults": "No GIFs found"
+    "noResults": "No GIFs found",
+    "categories": {
+      "trending": "Trending",
+      "reactions": "Reactions",
+      "love": "Love",
+      "funny": "Funny",
+      "happy": "Happy",
+      "sad": "Sad",
+      "yes": "Yes",
+      "no": "No",
+      "thanks": "Thanks",
+      "wow": "Wow"
+    }
   },
   "sticker": {
     "title": "Stickers"
