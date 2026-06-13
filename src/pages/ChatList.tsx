@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { useHistory } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Virtuoso } from 'react-virtuoso';
@@ -65,10 +65,10 @@ const ChatList: React.FC = () => {
   const { profile } = useAuthContext();
   const [chats, setChats] = useState<ChatWithDetails[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const typingMap = useTypingList(
-    chats.map((c) => c.id),
-    profile?.id || ''
-  );
+  // Memoize the id list so useTypingList doesn't tear down and recreate every
+  // typing subscription on each render of this frequently re-rendering page.
+  const chatIds = useMemo(() => chats.map((c) => c.id), [chats]);
+  const typingMap = useTypingList(chatIds, profile?.id || '');
   const [showArchived, setShowArchived] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
   const contentRef = useRef<HTMLIonContentElement>(null);
@@ -81,21 +81,35 @@ const ChatList: React.FC = () => {
   const [previewMessages, setPreviewMessages] = useState<MessageWithSender[]>([]);
   const [previewEvent, setPreviewEvent] = useState<MouseEvent | null>(null);
   const longPressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Suppress the click that follows a long-press so the chat doesn't open
+  // underneath the preview popover.
+  const longPressFiredRef = useRef(false);
+  // Token so a late getChatMessages resolution can't repopulate the preview
+  // after it was dismissed or switched to another chat.
+  const previewReqRef = useRef(0);
 
   const handleHeaderClick = () => {
     contentRef.current?.scrollToTop(300);
   };
 
-  const handleChatLongPress = useCallback(async (chat: ChatWithDetails, event: React.MouseEvent | React.TouchEvent) => {
+  const openPreview = useCallback((chat: ChatWithDetails, event: MouseEvent | null) => {
     hapticMedium();
-    const nativeEvent = 'nativeEvent' in event ? event.nativeEvent as MouseEvent : null;
+    longPressFiredRef.current = true;
     setPreviewChat(chat);
-    setPreviewEvent(nativeEvent);
+    setPreviewEvent(event);
 
-    // Load recent messages for preview
-    const { messages: recentMsgs } = await getChatMessages(chat.id, 5);
-    setPreviewMessages(recentMsgs);
+    const reqId = ++previewReqRef.current;
+    getChatMessages(chat.id, 5)
+      .then(({ messages: recentMsgs }) => {
+        if (reqId === previewReqRef.current) setPreviewMessages(recentMsgs);
+      })
+      .catch((err) => console.error('Failed to load preview messages:', err));
   }, []);
+
+  const handleChatLongPress = useCallback((chat: ChatWithDetails, event: React.MouseEvent | React.TouchEvent) => {
+    const nativeEvent = 'nativeEvent' in event ? (event.nativeEvent as MouseEvent) : null;
+    openPreview(chat, nativeEvent);
+  }, [openPreview]);
 
   const handleLongPressStart = useCallback((chat: ChatWithDetails) => {
     longPressTimerRef.current = setTimeout(() => {
@@ -104,14 +118,9 @@ const ChatList: React.FC = () => {
         clientX: window.innerWidth / 2,
         clientY: window.innerHeight / 3,
       });
-      hapticMedium();
-      setPreviewChat(chat);
-      setPreviewEvent(syntheticEvent);
-      getChatMessages(chat.id, 5).then(({ messages: recentMsgs }) => {
-        setPreviewMessages(recentMsgs);
-      });
+      openPreview(chat, syntheticEvent);
     }, 500);
-  }, []);
+  }, [openPreview]);
 
   const handleLongPressEnd = useCallback(() => {
     if (longPressTimerRef.current) {
@@ -120,10 +129,22 @@ const ChatList: React.FC = () => {
     }
   }, []);
 
+  // Clear any pending long-press timer if the page unmounts mid-press.
+  useEffect(() => () => {
+    if (longPressTimerRef.current) clearTimeout(longPressTimerRef.current);
+  }, []);
+
   const loadChats = useCallback(async () => {
-    const { chats: chatList } = await getMyChats();
-    setChats(chatList);
-    setIsLoading(false);
+    try {
+      const { chats: chatList } = await getMyChats();
+      setChats(chatList);
+    } catch (err) {
+      // A thrown rejection previously left the skeleton spinning forever and
+      // (via handleRefresh) never completed the pull-to-refresh.
+      console.error('Failed to load chats:', err);
+    } finally {
+      setIsLoading(false);
+    }
   }, []);
 
   useEffect(() => {
@@ -218,6 +239,12 @@ const ChatList: React.FC = () => {
   };
 
   const openChat = (chatId: string) => {
+    // Swallow the click synthesized right after a long-press so we don't
+    // navigate into the chat underneath the just-opened preview popover.
+    if (longPressFiredRef.current) {
+      longPressFiredRef.current = false;
+      return;
+    }
     history.push(`/chat/${chatId}`);
   };
 
@@ -824,6 +851,9 @@ const ChatList: React.FC = () => {
           setPreviewChat(null);
           setPreviewMessages([]);
           setPreviewEvent(null);
+          // Reset so a desktop context-menu preview (no trailing click) can't
+          // suppress the next legitimate tap.
+          longPressFiredRef.current = false;
         }}
         className="chat-preview-popover"
       >

@@ -85,4 +85,24 @@ Status-nyckel: [x] fixad · [skip] redan fixad/falskt larm · [HOLD] eskalerad t
 - [x] EmailConfirmed — history.replace ut ur setCountdown-updater → countdown===0-effekt (ren updater, StrictMode-säker)
 - [skip] GroupAvatar tom members → krasch = FALSKT LARM (userDisplay-utils är null-säkra, ger 'U'+färg)
 
+### Batch 4 — friends felhantering (commit aad8660)
+- [x] errors.generic-nyckel tillagd i alla 5 locales (återanvänds nedan)
+- [x] AddToChatPicker — .catch på getMyChats m. distinkt load-error-state + danger-toast på addMemberToChat-fel
+- [x] Friends-sidan — feltoast på accept/reject/startChat/call (samma sväljda klass som #42 unfriend)
+- [x] FriendRequestCard — isProcessing-guard avaktiverar accept/reject efter första tap + awaitar handlern (ingen dubbel service-call)
+- [x] FriendSettingsModal — danger-toast + behåll modal öppen vid save-fel
+
+### Batch 5 — sidor felhantering 1 (commit 08c7e6d)
+- [x] Calls — try/catch/finally i loadCalls + monoton request-id-guard (out-of-order-svar kan ej skriva över aktiv flik; var: oändlig skeleton + fast pull-to-refresh)
+- [x] NewChat — try/catch/finally i loadContacts m. feltoast; validera ?add=-preselect mot vänlistan; toast på createChat-fel
+- [x] InviteSuper — visa delete-knapp även för utgångna inbjudningar (kunde aldrig tas bort)
+- [HOLD perf] Calls opaginerad getCallHistory + derive missed klientsidigt — eskalerad perf (samma klass som #32)
+
+### Batch 6 — owner/oversight (commit 17520ad)
+- [x] OwnerApprovals — try/catch/finally i loadData; processRequest-helper (bokföring+listborttagning+danger-toast) → approve/reject/denyFuture-fel syns nu
+- [x] OwnerChatView — try/catch/finally i loadData + distinkt error+retry-state (load-fel ≠ "inga meddelanden")
+- [x] OwnerOversight — try/catch/finally + error+retry-state; filteredChats→useMemo; URL-texter-filter seedas EN gång via ref (manuell segment-växling överlever pull-to-refresh)
+- [HOLD perf] OwnerChatView N+1 signed-urls (OversightImage) + getTexterChats opaginerad/N+1 messageCount — eskalerad perf (kräver batch-sign/aggregat-query)
+- [skip-ish] getMessageTypeIcon-dubblett OwnerChatView/OwnerOversight — låg drift-risk, lämnad (ev. util-extraktion senare)
+
 ## Låg (177) — efter medel

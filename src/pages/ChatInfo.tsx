@@ -16,6 +16,7 @@ import {
   IonIcon,
   IonAlert,
   IonInput,
+  useIonToast,
 } from '@ionic/react';
 import { personAddOutline, logOutOutline } from 'ionicons/icons';
 import { useAuthContext } from '../contexts/AuthContext';
@@ -45,8 +46,10 @@ const ChatInfo: React.FC = () => {
   const history = useHistory();
   const { chatId } = useParams<{ chatId: string }>();
   const { profile } = useAuthContext();
+  const [present] = useIonToast();
 
   const [chat, setChat] = useState<ChatWithDetails | null>(null);
+  const [loadError, setLoadError] = useState(false);
   const [sharedMedia, setSharedMedia] = useState<string[]>([]);
   // Resolve all shared-media signed URLs once per list change (deduped, cached)
   // instead of one useSignedMediaUrl hook per thumbnail — which fired N separate
@@ -76,21 +79,36 @@ const ChatInfo: React.FC = () => {
 
   const loadData = useCallback(async () => {
     if (!chatId) return;
+    setLoadError(false);
 
-    const [chatResult, mediaResult] = await Promise.all([
-      getChat(chatId),
-      getSharedMedia(chatId),
-    ]);
+    try {
+      const [chatResult, mediaResult] = await Promise.all([
+        getChat(chatId),
+        getSharedMedia(chatId),
+      ]);
 
-    if (!chatResult.chat) {
-      history.replace('/chats');
-      return;
+      if (chatResult.error) {
+        // Transient failure — don't kick the user out of the chat; offer retry.
+        console.error('Failed to load chat:', chatResult.error);
+        setLoadError(true);
+        return;
+      }
+
+      if (!chatResult.chat) {
+        // Affirmatively not a member / chat deleted.
+        history.replace('/chats');
+        return;
+      }
+
+      setChat(chatResult.chat);
+      setSharedMedia(mediaResult.urls);
+      setNewName(chatResult.chat.name || '');
+    } catch (err) {
+      console.error('Failed to load chat info:', err);
+      setLoadError(true);
+    } finally {
+      setIsLoading(false);
     }
-
-    setChat(chatResult.chat);
-    setSharedMedia(mediaResult.urls);
-    setNewName(chatResult.chat.name || '');
-    setIsLoading(false);
   }, [chatId, history]);
 
   useEffect(() => {
@@ -99,14 +117,27 @@ const ChatInfo: React.FC = () => {
 
   const handleSaveName = async () => {
     if (!chatId || !newName.trim()) return;
-    await updateChatName(chatId, newName.trim());
+    const { error } = await updateChatName(chatId, newName.trim());
+    if (error) {
+      // Only mutate local state on success — otherwise the UI diverges from
+      // the server and shows a rename that didn't persist.
+      console.error('Failed to update chat name:', error);
+      present({ message: t('errors.generic'), duration: 2500, color: 'danger' });
+      return;
+    }
     setChat((prev) => prev ? { ...prev, name: newName.trim() } : prev);
     setEditingName(false);
   };
 
   const handleLeave = async () => {
     if (!chatId) return;
-    await leaveChat(chatId);
+    const { error } = await leaveChat(chatId);
+    if (error) {
+      // Stay in the chat if the server rejected the leave.
+      console.error('Failed to leave chat:', error);
+      present({ message: t('errors.generic'), duration: 2500, color: 'danger' });
+      return;
+    }
     history.replace('/chats');
   };
 
@@ -131,6 +162,32 @@ const ChatInfo: React.FC = () => {
           </IonToolbar>
         </IonHeader>
         <IonContent />
+      </IonPage>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <IonPage>
+        <IonHeader>
+          <IonToolbar>
+            <IonButtons slot="start">
+              <IonBackButton defaultHref={`/chat/${chatId}`} />
+            </IonButtons>
+            <IonTitle>{t('chatInfo.title')}</IonTitle>
+          </IonToolbar>
+        </IonHeader>
+        <IonContent fullscreen>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: '1rem', padding: '2rem', textAlign: 'center' }}>
+            <p style={{ color: 'hsl(var(--muted-foreground))', margin: 0 }}>{t('errors.generic')}</p>
+            <button
+              onClick={() => { setIsLoading(true); loadData(); }}
+              style={{ background: 'hsl(var(--primary))', color: 'hsl(var(--primary-foreground))', border: 'none', borderRadius: '9999px', padding: '0.5rem 1.25rem', fontSize: '0.875rem', fontWeight: 600, fontFamily: 'inherit', cursor: 'pointer' }}
+            >
+              {t('errors.boundaryRetry')}
+            </button>
+          </div>
+        </IonContent>
       </IonPage>
     );
   }

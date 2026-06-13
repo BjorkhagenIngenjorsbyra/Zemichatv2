@@ -26,28 +26,42 @@ const Login: React.FC = () => {
     setError(null);
     setIsLoading(true);
 
-    const { error: signInError } = await signIn({ email, password });
+    try {
+      const { error: signInError } = await signIn({ email, password });
 
-    if (signInError) {
-      if (signInError.message === 'Account is deactivated') {
-        setError(t('texterLogin.accountDeactivated'));
-      } else if (signInError.message === 'Account is paused') {
-        setError(t('auth.accountPaused'));
-      } else {
-        setError(signInError.message);
+      if (signInError) {
+        if (signInError.message === 'Account is deactivated') {
+          setError(t('texterLogin.accountDeactivated'));
+        } else if (signInError.message === 'Account is paused') {
+          setError(t('auth.accountPaused'));
+        } else {
+          setError(signInError.message);
+        }
+        return;
       }
+
+      // Auto-claim pending invitation if one was stored during signup. Only
+      // drop the stored token once the claim actually succeeds — otherwise a
+      // transient failure would permanently lose the user's invitation.
+      const pendingToken = localStorage.getItem('zemichat-pending-invite-token');
+      if (pendingToken) {
+        const { error: claimError } = await claimInvitation(pendingToken);
+        if (claimError) {
+          console.warn('Invitation claim failed — keeping token for retry:', claimError);
+        } else {
+          localStorage.removeItem('zemichat-pending-invite-token');
+        }
+      }
+
+      history.replace('/chats');
+    } catch (err) {
+      // Network/runtime failure rather than a returned error object — without
+      // this the button would stay disabled with a spinner forever.
+      console.error('Login failed:', err);
+      setError(t('errors.generic'));
+    } finally {
       setIsLoading(false);
-      return;
     }
-
-    // Auto-claim pending invitation if one was stored during signup
-    const pendingToken = localStorage.getItem('zemichat-pending-invite-token');
-    if (pendingToken) {
-      localStorage.removeItem('zemichat-pending-invite-token');
-      await claimInvitation(pendingToken);
-    }
-
-    history.replace('/chats');
   };
 
   return (
