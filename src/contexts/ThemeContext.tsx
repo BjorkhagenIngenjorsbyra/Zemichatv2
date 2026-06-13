@@ -1,4 +1,6 @@
 import { createContext, useContext, useState, useEffect, useMemo, type ReactNode } from 'react';
+import { Capacitor } from '@capacitor/core';
+import { StatusBar, Style } from '@capacitor/status-bar';
 
 export type ThemeName = 'dark' | 'light' | 'ocean' | 'sunset' | 'forest' | 'candy';
 
@@ -118,6 +120,37 @@ const ThemeContext = createContext<ThemeContextValue>({
 
 export const useTheme = () => useContext(ThemeContext);
 
+/** Convert an "H S% L%" CSS-var string to a #rrggbb hex (StatusBar needs hex). */
+function hslStringToHex(hsl: string): string {
+  const [h, s, l] = hsl.split(/\s+/).map((p) => parseFloat(p));
+  const sN = s / 100;
+  const lN = l / 100;
+  const c = (1 - Math.abs(2 * lN - 1)) * sN;
+  const x = c * (1 - Math.abs(((h / 60) % 2) - 1));
+  const m = lN - c / 2;
+  let r = 0, g = 0, b = 0;
+  if (h < 60) { r = c; g = x; }
+  else if (h < 120) { r = x; g = c; }
+  else if (h < 180) { g = c; b = x; }
+  else if (h < 240) { g = x; b = c; }
+  else if (h < 300) { r = x; b = c; }
+  else { r = c; b = x; }
+  const toHex = (v: number) => Math.round((v + m) * 255).toString(16).padStart(2, '0');
+  return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+}
+
+/** Sync the native status bar to the active theme so its text/icons stay legible
+ *  after a theme switch (App.tsx only sets a dark bar once at startup, which is
+ *  invisible on the light themes). No-op on web. */
+function syncStatusBar(colors: ThemeColors) {
+  if (!Capacitor.isNativePlatform()) return;
+  const lightness = parseFloat(colors.background.split(/\s+/)[2]);
+  // Dark background → light content (Style.Dark); light background → dark content.
+  const style = Number.isFinite(lightness) && lightness >= 50 ? Style.Light : Style.Dark;
+  StatusBar.setStyle({ style }).catch(() => {});
+  StatusBar.setBackgroundColor({ color: hslStringToHex(colors.background) }).catch(() => {});
+}
+
 function applyTheme(name: ThemeName) {
   // Guard against an unknown theme name (stale localStorage value from a
   // renamed/removed theme) — a missing entry would throw on colors.background
@@ -151,6 +184,8 @@ function applyTheme(name: ThemeName) {
   root.style.setProperty('--ion-app-bg', colors.background);
   root.style.setProperty('--ion-app-fg', colors.foreground);
   root.style.setProperty('--ion-app-border', colors.border);
+
+  syncStatusBar(colors);
 }
 
 export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) => {

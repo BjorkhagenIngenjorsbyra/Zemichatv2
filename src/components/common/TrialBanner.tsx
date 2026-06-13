@@ -9,6 +9,16 @@ const TrialBanner: React.FC = () => {
   const location = useLocation();
   const [dismissed, setDismissed] = useState(() => localStorage.getItem('trial-banner-dismissed') === 'true');
 
+  // daysLeft is derived from Date.now() at render time. If the app stays open
+  // across midnight the count would otherwise go stale (e.g. stuck on "3 days"
+  // into the last day). Tick hourly so the banner re-evaluates and the
+  // dismiss-override (<= 3 days always shows) re-applies on the right day.
+  const [, forceTick] = useState(0);
+  useEffect(() => {
+    const id = setInterval(() => forceTick((n) => n + 1), 3_600_000);
+    return () => clearInterval(id);
+  }, []);
+
   // Only show banner on main tabs (not in chat view, dashboard, or sub-pages)
   const isMainTab = ['/chats', '/wall', '/friends', '/calls', '/settings'].includes(location.pathname);
 
