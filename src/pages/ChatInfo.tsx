@@ -239,15 +239,31 @@ const ChatInfo: React.FC = () => {
                   {t('common.save')}
                 </button>
               </div>
-            ) : (
-              <h2
-                className="info-name"
-                onClick={chat?.is_group && chat.created_by === profile?.id ? () => setEditingName(true) : undefined}
-                style={chat?.is_group && chat.created_by === profile?.id ? { cursor: 'pointer' } : undefined}
-              >
-                {getChatDisplayName()}
-              </h2>
-            )}
+            ) : (() => {
+              const canEditName = !!(chat?.is_group && chat.created_by === profile?.id);
+              return (
+                <h2
+                  className="info-name"
+                  onClick={canEditName ? () => setEditingName(true) : undefined}
+                  role={canEditName ? 'button' : undefined}
+                  tabIndex={canEditName ? 0 : undefined}
+                  onKeyDown={
+                    canEditName
+                      ? (e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            setEditingName(true);
+                          }
+                        }
+                      : undefined
+                  }
+                  aria-label={canEditName ? t('chatInfo.editGroupName') : undefined}
+                  style={canEditName ? { cursor: 'pointer' } : undefined}
+                >
+                  {getChatDisplayName()}
+                </h2>
+              );
+            })()}
 
             {/* 1-on-1: show last seen */}
             {!chat?.is_group && lastSeenText && (

@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 
 interface AttachmentSheetProps {
@@ -18,15 +19,36 @@ const AttachmentSheet: React.FC<AttachmentSheetProps> = ({
   onPoll,
 }) => {
   const { t } = useTranslation();
+  const firstOptionRef = useRef<HTMLButtonElement>(null);
+
+  // Close on Escape and move focus into the sheet on open so keyboard /
+  // screen-reader users can operate (and dismiss) it.
+  useEffect(() => {
+    if (!isOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    document.addEventListener('keydown', onKey);
+    const focusId = setTimeout(() => firstOptionRef.current?.focus(), 50);
+    return () => {
+      document.removeEventListener('keydown', onKey);
+      clearTimeout(focusId);
+    };
+  }, [isOpen, onClose]);
 
   if (!isOpen) return null;
 
   return (
     <>
-      <div className="attachment-backdrop" onClick={onClose} />
-      <div className="attachment-sheet">
+      <div className="attachment-backdrop" onClick={onClose} aria-hidden="true" />
+      <div
+        className="attachment-sheet"
+        role="dialog"
+        aria-modal="true"
+        aria-label={t('a11y.attach')}
+      >
         <div className="attachment-grid">
-          <button className="attachment-option" onClick={() => { onGallery(); onClose(); }}>
+          <button ref={firstOptionRef} className="attachment-option" onClick={() => { onGallery(); onClose(); }}>
             <span className="attachment-icon">🖼️</span>
             <span className="attachment-label">{t('chat.gallery')}</span>
           </button>
