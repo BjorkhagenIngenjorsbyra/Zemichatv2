@@ -120,10 +120,18 @@ const AuthCallbackHandler: React.FC = () => {
 
   useEffect(() => {
     const hash = window.location.hash;
-    if (hash && hash.includes('type=signup')) {
+    if (!hash) return;
+    if (hash.includes('type=signup')) {
       // Email verification callback — clear the hash and show confirmation
       window.location.hash = '';
       history.replace('/email-confirmed');
+    } else if (hash.includes('type=recovery')) {
+      // Password-reset deep link. Do NOT clear the hash here — supabase-js
+      // detectSessionInUrl needs to read the recovery token to establish the
+      // session before /reset-password can update the password. Previously
+      // this fell through to the catch-all and dumped the user on /welcome
+      // with the token unconsumed.
+      history.replace('/reset-password');
     }
   }, [history]);
 
