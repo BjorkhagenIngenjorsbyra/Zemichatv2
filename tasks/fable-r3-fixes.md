@@ -105,4 +105,31 @@ Status-nyckel: [x] fixad · [skip] redan fixad/falskt larm · [HOLD] eskalerad t
 - [HOLD perf] OwnerChatView N+1 signed-urls (OversightImage) + getTexterChats opaginerad/N+1 messageCount — eskalerad perf (kräver batch-sign/aggregat-query)
 - [skip-ish] getMessageTypeIcon-dubblett OwnerChatView/OwnerOversight — låg drift-risk, lämnad (ev. util-extraktion senare)
 
+### Batch 7 — core sidor felhantering (commit 314acf1)
+- [x] ChatList — try/finally i loadChats (ingen oändlig skeleton/fast refresher); memoiserade chatIds (typing-subs rivs ej per render); long-press suppr. trailing click (ingen navigate-under-popover), clear timer vid unmount, async preview-guard via token; openPreview-helper dedup:ar de två long-press-vägarna
+- [x] ChatInfo — distinkt load-error-skärm (retry) vs affirmativ not-found (redirect); handleSaveName/handleLeave kollar resultat, muterar lokalt/navigerar bara vid success, toast vid fel
+- [x] Login — try/catch/finally i handleSubmit (ingen permanent spinner); rensa pending-invite-token BARA efter lyckad claim
+- [HOLD] ChatList realtime listuppdateringar — eskalerad (samma on-device-verify-risk som paginering #30/#32)
+
+### Batch 8 — settings/owner-kontroller (commit 3cb0753)
+- [x] ActiveSessions — try/catch/finally i load + error+retry; removingId-guard (ingen dubbel removeSession) + toast vid fel
+- [x] TwoFactorSetting — .catch på isMFAEnabled (fallback disabled+toast ist.f. evig spinner); toast när disableMFA failar (var tyst). OBS: skärmen fortf. feature-flaggad AV
+- [x] QuickMessageManager — try/catch/finally i loadMessages m. distinkt load-error+retry (fel ≠ "inga meddelanden", undviker default-återskapning ovanpå befintliga); feltoast på add/edit/delete/addDefaults; reorder rullar tillbaka optimistisk ordning + toast vid persist-fel
+
+## ⚠️ ESKALERAT/HOLD — medel som EJ görs autonomt (kräver Erik/test/beslut)
+- **Betalning (STOPPA-regel):** Paywall userCancelled-flagga (#244, toast på avbrott), Paywall handleRestore "inga köp"-feedback (#246), ChoosePlan/CreateTeam startTrial-felhantering, MemberLimitDialog (subscription) — alla rör betalflöde → Erik.
+- **Auth/MFA (säkerhet):** TwoFactorSetting flagg-flip (Erik: vänta på e-poståterställning), Login MFA AAL2-check (#400), MFASetup double-invoke+recovery-koder (#402/#404), MFAVerify fail-open (#406), useAuth TOKEN_REFRESHED-churn (#292).
+- **Barnsäkerhet (STOPPA-regel):** QuietHoursManager felåterkoppling (tysta restriktioner — additiv men rör barnsäkerhetskontroll → Erik), TillkallaConfirmModal countdown-under-loading + onCancel-ref (panik-flöde — beteendeändring). Cosmetiska i18n-fixar i samma område (TillkallaAlertCard "Acknowledged", TillkallaConfirmModal "in 4s") = säkra, görs i kommande i18n-batch.
+- **RLS/server-verifiering (säkerhet):** LinkPreview SSRF (#158), LocationMessage klartext-koordinater (#160), AddFriend zemi-uppräkning rate-limit (#328), WallComments/WallPost raderat innehåll redaktion (#262/#270), NewPostModal can_send_images server-enforcement (#258), ChatInfo add-member RLS (#338), ChatView texter-gates RLS (#366) — kräver RLS/edge-granskning, ej blind klientfix.
+- **Datamodell/atomicitet (STOPPA-regel):** ChatView handlePollCreate atomisk (orphan poll-msg, kräver RPC/transaktion #358), PollMessage poll_votes-realtime (#186).
+- **Paginering/perf (on-device-verify):** Calls/ChatList realtime+paginering, OwnerChatView N+1 signed-urls, OwnerOversight opaginerad+N+1, LinkPreview promise-cache, legal lazy-load, MessageBubble/ChatView swipe-perf — eskalerade perf.
+- **Legal (compliance):** Privacy Shield→DPF-faktafix (#310-315), komplaint-myndighet-inkonsistens (#302), DPF-källor — RÖR EJ privacy/terms-dokument utan Eriks ok (compliance-känsligt).
+
+## ÅTERSTÅR MEDEL (säkra, ej gjorda än) — nästa session
+- i18n-hårdkodning: ChatInputToolbar disabled-prop oanvänd (#124), MessageContextMenu hardcoded "React with" (#192), TillkallaAlertCard/TillkallaConfirmModal-strängar (säkra cosmetiska).
+- Felhantering kvar: ChatSearchModal race+error+unbounded (#128-132), EmojiGifPanel (verifiera ej redan fixad i d9de747), ForwardPicker (klar?), AddParticipantPicker loading/error (#110), IncomingCallModal double-tap (#122), VoiceRecorder getUserMedia-toast (#202), NewPostModal toast (#256), WallPost handleReaction catch (#268), WallComments callback-ref (#260), Dashboard handleRefresh catch + role-gating Quick Actions (#380), CreateTeam referral-race (#372), NewChat createChat-dedup (datamodell), useSignedMediaUrl stale+catch (#298 — hot path, försiktigt), NotificationContext app-resume refresh (#296), ThemeContext klar.
+- CSS-extraktion-svep (per-instans <style> → CSS-fil): CallHistoryItem/CallLogMessage/VideoTile/ImageMessage/VoiceMessage/PollMessage(isOwn→klass)/MessageReactions/QuotedMessage/WallPost/FriendCard/FriendRequestCard/CreateTeam/ChatView — säkra men tråkiga, gör i svep.
+- a11y-svep: AttachmentSheet/MentionAutocomplete/MessageContextMenu/StickerPicker/FriendSettingsModal/ChatInfo h2 — dialog-roller+tangentbord.
+- Korrekthet: CallPiP slice→filter-by-id (#114), CallLogMessage metadata-källa (#118), MessageReactions key (#190), PollCreator stable ids (#194 — NÄSTA moderat), main.tsx fallback-clear+Sentry (#324/#326), LegalPage lang-normalisering (#392 — säker), useTypingList churn (#286).
+
 ## Låg (177) — efter medel
