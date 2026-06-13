@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useHistory, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
@@ -33,7 +33,6 @@ const NewChat: React.FC = () => {
   const location = useLocation();
   const [present] = useIonToast();
   const [contacts, setContacts] = useState<User[]>([]);
-  const [filteredContacts, setFilteredContacts] = useState<User[]>([]);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [searchText, setSearchText] = useState('');
   const [isLoading, setIsLoading] = useState(true);
@@ -47,7 +46,6 @@ const NewChat: React.FC = () => {
       const { friends } = await getMyFriends();
       const friendUsers = friends.map((f: FriendWithUser) => f.user);
       setContacts(friendUsers);
-      setFilteredContacts(friendUsers);
 
       // Only honor ?add= if it's an actual friend — a stale/hand-crafted URL
       // must not preselect a non-friend id that then gets passed to createChat.
@@ -66,19 +64,14 @@ const NewChat: React.FC = () => {
     loadContacts();
   }, [loadContacts]);
 
-  useEffect(() => {
-    if (!searchText.trim()) {
-      setFilteredContacts(contacts);
-      return;
-    }
-
+  const filteredContacts = useMemo(() => {
+    if (!searchText.trim()) return contacts;
     const search = searchText.toLowerCase();
-    const filtered = contacts.filter((c) => {
+    return contacts.filter((c) => {
       const name = c.display_name?.toLowerCase() || '';
       const zemi = c.zemi_number?.toLowerCase() || '';
       return name.includes(search) || zemi.includes(search);
     });
-    setFilteredContacts(filtered);
   }, [searchText, contacts]);
 
   const toggleContact = (contactId: string) => {

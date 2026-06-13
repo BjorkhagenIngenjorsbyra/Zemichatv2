@@ -47,8 +47,9 @@ const OwnerApprovals: React.FC = () => {
   const { t } = useTranslation();
   const [present] = useIonToast();
   const [texterGroups, setTexterGroups] = useState<TexterRequestGroup[]>([]);
-  const [totalCount, setTotalCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
+  // Derived from the grouped list — no separate counter to keep in sync.
+  const totalCount = texterGroups.reduce((n, g) => n + g.requests.length, 0);
   const [processingIds, setProcessingIds] = useState<Set<string>>(new Set());
   const [showDenyConfirm, setShowDenyConfirm] = useState<{
     request: PendingRequestWithUser;
@@ -59,7 +60,7 @@ const OwnerApprovals: React.FC = () => {
 
   const loadData = useCallback(async () => {
     try {
-      const { requestsByTexter, totalCount: count, error } = await getAllTexterPendingRequests();
+      const { requestsByTexter, error } = await getAllTexterPendingRequests();
 
       if (error) {
         console.error('Failed to load approvals:', error);
@@ -70,7 +71,6 @@ const OwnerApprovals: React.FC = () => {
       // Convert Map to array for rendering
       const groups: TexterRequestGroup[] = Array.from(requestsByTexter.values());
       setTexterGroups(groups);
-      setTotalCount(count);
     } catch (err) {
       // A thrown rejection previously left the skeleton loader up forever.
       console.error('Failed to load approvals:', err);
@@ -80,7 +80,7 @@ const OwnerApprovals: React.FC = () => {
     }
   }, [present, t]);
 
-  // Remove a handled request from the grouped list and decrement the badge.
+  // Remove a handled request from the grouped list (totalCount derives from it).
   const removeRequestFromList = useCallback((id: string) => {
     setTexterGroups((prev) =>
       prev
@@ -90,7 +90,6 @@ const OwnerApprovals: React.FC = () => {
         }))
         .filter((group) => group.requests.length > 0)
     );
-    setTotalCount((prev) => prev - 1);
   }, []);
 
   // Shared processing-set bookkeeping + error feedback for approve/reject so a

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useRef } from 'react';
 import { IonInput } from '@ionic/react';
 
 interface ZemiNumberInputProps {
@@ -19,21 +19,13 @@ export const ZemiNumberInput: React.FC<ZemiNumberInputProps> = ({
   placeholder = 'ZEMI-XXX-XXX',
   disabled = false,
 }) => {
-  const [displayValue, setDisplayValue] = useState('');
   const inputRef = useRef<HTMLIonInputElement>(null);
 
-  // Format the value for display
-  useEffect(() => {
-    const formatted = formatZemiNumber(value);
-    setDisplayValue(formatted);
-  }, [value]);
-
   const handleInput = (e: CustomEvent) => {
-    // Single source of truth for formatting (same as the value effect) so
-    // backspacing into the prefix doesn't re-grow the field.
-    const formatted = formatZemiNumber(e.detail.value || '');
-    setDisplayValue(formatted);
-    onChange(formatted);
+    // Single source of truth for formatting so backspacing into the prefix
+    // doesn't re-grow the field. The parent's `value` prop (controlled) is the
+    // only state — no derived displayValue.
+    onChange(formatZemiNumber(e.detail.value || ''));
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -46,7 +38,7 @@ export const ZemiNumberInput: React.FC<ZemiNumberInputProps> = ({
     <div className="zemi-input-container">
       <IonInput
         ref={inputRef}
-        value={displayValue}
+        value={formatZemiNumber(value)}
         onIonInput={handleInput}
         onKeyDown={handleKeyDown}
         placeholder={placeholder}

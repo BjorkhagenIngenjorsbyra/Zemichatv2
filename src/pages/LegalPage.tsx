@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   IonPage,
@@ -117,7 +117,6 @@ interface LegalPageProps {
 
 const LegalPage: React.FC<LegalPageProps> = ({ type }) => {
   const { i18n } = useTranslation();
-  const [html, setHtml] = useState('');
 
   // i18next often reports regional codes like 'en-US'/'sv-SE' which miss the
   // base-language map keys ('en','sv',...) and would silently fall back to
@@ -125,10 +124,12 @@ const LegalPage: React.FC<LegalPageProps> = ({ type }) => {
   const lang = (i18n.resolvedLanguage || i18n.language || 'sv').split('-')[0];
   const contentMap = type === 'privacy' ? privacyContent : termsContent;
 
-  useEffect(() => {
-    const content = contentMap[lang] || contentMap['sv'];
-    setHtml(stripCrossStoreReferences(content));
-  }, [lang, contentMap]);
+  // Pure, synchronous transform — useMemo avoids the extra render + empty-content
+  // first paint that the previous useState/useEffect caused.
+  const html = useMemo(
+    () => stripCrossStoreReferences(contentMap[lang] || contentMap['sv']),
+    [lang, contentMap]
+  );
 
   const title = type === 'privacy'
     ? { sv: 'Integritetspolicy', en: 'Privacy Policy', no: 'Personvernerklæring', da: 'Privatlivspolitik', fi: 'Tietosuojakäytäntö' }
