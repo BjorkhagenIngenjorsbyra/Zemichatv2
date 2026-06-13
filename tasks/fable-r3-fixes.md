@@ -174,7 +174,24 @@ Status-nyckel: [x] fixad · [skip] redan fixad/falskt larm · [HOLD] eskalerad t
 - [x] App.tsx — AuthCallbackHandler hanterar type=recovery → /reset-password (behåller hash för supabase) (#90)
 - [skip] EmojiGifPanel #27/#28/#29 — REDAN fixade i d9de747 (requestSeq+try/finally+hasLoadedGifs), verifierat
 
-## ✅ ALLA SÄKRA MEDEL KLARA — kvar i medel = ENDAST eskalerat (kräver Erik/enhetstest/beslut)
+## Batch 19-25 — HINK A + B (Eriks go "gör klart allt i hög+medel")
+Erik godkände: hink A allt, hink B RLS=implementera+verifiera-lokalt-EJ-deploya, perf/scroll=implementera-nu-enhetstesta-senare.
+### Hink A (KLART, commits e0e5ae5, 6f47d0d, 6e27a95, dbee932)
+- [x] Betalning: Paywall cancel-aware purchase (#244) + restore-feedback/restoreNoPurchases (#246) + ChoosePlan startTrial-fel (#370)
+- [x] Auth: MFAVerify fail-closed+retry (#406), enrollMFA stale-cleanup + MFASetup double-invoke-guard (#402), Login AAL2-gate (#400)
+- [x] Barnsäkerhet: QuietHoursManager revert+toast på save-fel (#230), TillkallaConfirmModal countdown-frys-under-loading + onCancel-ref + cancel-ur-updater (#250/#252)
+- [x] Datamodell: ChatView poll-create orphan-cleanup (#358), PollMessage poll_votes-realtime (#186), NewChat 1:1-dedup (#412)
+### Hink B RLS (commit 0030064 + verifieringar)
+- [skip-VERIFIED] #366 texter-gates: `messages` INSERT har `texter_can_send_type()` — REDAN enforced (psql-verifierat)
+- [skip-VERIFIED] #258 wall can_send_images: `wall_posts` INSERT har `can_post_wall_images()` — REDAN enforced
+- [skip-VERIFIED] #158 SSRF: fetch-link-preview edge fn fullt härdad (audit #21) — http(s)-only, DNS privat-IP-block, per-hop redirect-omvalidering, storleksgräns, rate-limit
+- [x] #160 LocationMessage onError-fallback (funktionell) + #158 LinkPreview https-guard (klient)
+- [HOLD-Erik] #160 privacy: barns koordinater i klartext till staticmap.openstreetmap.de — privacy-korrekt fix byter thumbnail-rendering = VISUELL ändring → Eriks designbeslut (lokal Leaflet vs egen edge-proxy vs lokalt pin-kort)
+- [HOLD-risk] #338 add-member friend-check: `chat_members_insert_creator` tillåter creator lägga GODTYCKLIG user_id (ej bara vänner). Äkta lucka MEN tightening kan bryta legitima flöden (team-interna chattar/owner-add-texter om de ej går via friendships) → kräver domänbekräftelse + fler-rolls-RLS-test innan migration
+- [HOLD-risk] #262/#270 raderat innehåll redaktion: wall_posts/wall_comments SELECT skickar `content` för raderade rader till icke-owners (bara klient-dolt). Kräver kolumn-redaktion via vy/SECURITY DEFINER — arkitektonisk, regressionsbenägen
+- [HOLD] #328 AddFriend zemi-uppräkning rate-limit: söket är direkt PostgREST-query (ej edge fn); rate-limit-infra finns för edge-fns men kräver flytta sök till edge fn
+
+## ✅ ALLA SÄKRA MEDEL + HINK A KLARA — kvar = djup-RLS (3, risk) + perf/scroll (4, enhetstest)
 Se "⚠️ ESKALERAT/HOLD"-sektionen ovan. Sammanfattning av vad som ÄR KVAR av de 172 medel:
 - **Betalning:** Paywall userCancelled/restore-feedback, ChoosePlan/MemberLimit (STOPPA-regel).
 - **Auth/MFA:** TwoFactorSetting flagg-flip, Login AAL2, MFASetup/MFAVerify (feature-flaggat AV + säkerhet).
