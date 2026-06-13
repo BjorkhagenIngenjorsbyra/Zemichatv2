@@ -11,7 +11,7 @@ Status-nyckel: [x] fixad · [skip] redan fixad/falskt larm · [HOLD] eskalerad t
 
 ## Hög allvarsgrad (37)
 
-- [ ] PrivateRoute.tsx — Redirect/Spinner istället för Route i Switch skuggar senare routes
+- [skip] PrivateRoute.tsx — FALSKT LARM. RRv5 <Switch> matchar på child.props.path (oavsett komponenttyp), så <PrivateRoute exact path="/create-team"> skuggar INTE /privacy/terms (egna <Route>, matchar rätt). Verifierat mot App.tsx. Render-prop-omskrivning = stilfix med IonRouterOutlet-regressionsrisk → rör ej.
 - [x] ShareTargetHandler.tsx — stale-closure i share-handler — handlerRef + stabil wrapper, init-effekt tom dep
 - [skip] TabLayout.tsx — wall-access fail-open — REDAN fail-closed (f6efc81, rad 47 `?? false`). Realtime-omkoll vid Owner-toggle ej gjord (mindre UX, ej säkerhet) — kvar som låg.
 - [ ] call/VideoGrid.tsx — remote video positionellt mappad (fel namn över fel stream)
