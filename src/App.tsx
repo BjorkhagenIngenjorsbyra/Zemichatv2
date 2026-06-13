@@ -244,20 +244,11 @@ const App: React.FC = () => (
               <TexterTour />
             </PrivateRoute>
 
-            {/* Tab pages - main navigation with bottom tab bar */}
-            <PrivateRoute path="/chats">
-              <TabLayout />
-            </PrivateRoute>
-            <PrivateRoute path="/wall">
-              <TabLayout />
-            </PrivateRoute>
-            <PrivateRoute path="/friends">
-              <TabLayout />
-            </PrivateRoute>
-            <PrivateRoute path="/calls">
-              <TabLayout />
-            </PrivateRoute>
-            <PrivateRoute path="/settings">
+            {/* Tab pages - main navigation with bottom tab bar. One route with
+                an array path keeps TabLayout mounted across tab switches; five
+                separate routes remounted it on every switch, dropping scroll
+                position/state and re-running data fetches + realtime subs (#88). */}
+            <PrivateRoute path={['/chats', '/wall', '/friends', '/calls', '/settings']}>
               <TabLayout />
             </PrivateRoute>
 
