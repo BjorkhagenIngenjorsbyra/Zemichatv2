@@ -32,7 +32,18 @@ Status-nyckel: [x] fixad · [skip] redan fixad/falskt larm · [HOLD] eskalerad t
 - [x] contexts/CallContext.tsx — incoming-call-subscription rivs/återskapas per state-change → activeCallRef + sub en gång per profile (cleanupCall stabil [])
 - [x] contexts/CallContext.tsx — ring-timeout uppdaterade ej call_log/push/signal/system-msg → DB-status-guard (MISSED) + cancel-push + deleteCallSignals + createCallMessage
 - [x] hooks/usePresence.ts — N kanaler + N+1 fetch + 30s-tick per rad → central presenceStore (en kanal, batchad .in()-fetch, en delad tick) via useSyncExternalStore. tsc/lint/unit gröna; behöver live-verifiering av presence (2 användare).
-- [ ] (resterande hög-fynd processas i ordning från rapporten)
+### Resterande hög (rapportens #27–37)
+- [ ] #27 SubscriptionContext.tsx — RevenueCat-init beror på profile-objektref, ej profile.id → re-init (perf)
+- [ ] #28 legal/privacy-sv.ts — inkonsekventa plannamn mellan legal-dokument (innehåll)
+- [ ] #29 ChatInfo.tsx — varje SharedMediaThumb kör useSignedMediaUrl separat → N requests (perf)
+- [ ] #30 ChatList.tsx — Virtuoso useWindowScroll inuti IonContent (scroll-mismatch) (perf)
+- [ ] #31 ChatView.tsx — getGalleryUrls(messages) i Virtuoso itemContent → körs per rad (perf)
+- [ ] #32 ChatView.tsx — loadChat utan paginering + reactions/read-receipts för ALLA (perf)
+- [x] #33 Dashboard.tsx — loadMembers/loadApprovalsCount/loadTillkallaAlerts svalde fel → error-logg + behåll state vid fel (Tillkalla=barnsäkerhet, klobbra ej till tom)
+- [x] #34 Friends.tsx — loadData utan felhantering (stuck spinner vid throw) → try/finally + per-result error-logg
+- [ ] #35 MFASetup.tsx — enrollMFA-fel → 'scan'-steg utan QR (auth — försiktigt)
+- [ ] #36 OwnerApprovals.tsx — handleDenyFuture ignorerar rejectTexterRequest-resultat (owner-flöde)
+- [ ] #37 OwnerChatView.tsx — loadData utan paginering (perf)
 
 ## Medel (172) — efter hög
 

@@ -76,18 +76,32 @@ const Friends: React.FC = () => {
   const [unfriendError, setUnfriendError] = useState<string | null>(null);
 
   const loadData = useCallback(async () => {
-    const [friendsResult, requestsResult, settingsResult] = await Promise.all([
-      getMyFriends(),
-      getPendingRequests(),
-      getAllFriendSettings(),
-    ]);
+    try {
+      const [friendsResult, requestsResult, settingsResult] = await Promise.all([
+        getMyFriends(),
+        getPendingRequests(),
+        getAllFriendSettings(),
+      ]);
 
-    setFriends(friendsResult.friends);
-    setIncomingRequests(requestsResult.incoming);
-    setOutgoingRequests(requestsResult.outgoing);
-    setFriendSettingsMap(settingsResult.settings);
+      // Apply each result independently and log (rather than swallow) failures,
+      // so one failing fetch doesn't blank the others.
+      if (friendsResult.error) console.error('[Friends] getMyFriends failed:', friendsResult.error);
+      else setFriends(friendsResult.friends);
 
-    setIsLoading(false);
+      if (requestsResult.error) console.error('[Friends] getPendingRequests failed:', requestsResult.error);
+      else {
+        setIncomingRequests(requestsResult.incoming);
+        setOutgoingRequests(requestsResult.outgoing);
+      }
+
+      if (settingsResult.error) console.error('[Friends] getAllFriendSettings failed:', settingsResult.error);
+      else setFriendSettingsMap(settingsResult.settings);
+    } catch (err) {
+      // Defensive: a rejection here previously left the spinner stuck forever.
+      console.error('[Friends] loadData failed:', err);
+    } finally {
+      setIsLoading(false);
+    }
   }, []);
 
   useEffect(() => {

@@ -54,20 +54,34 @@ const Dashboard: React.FC = () => {
   const isOwner = profile?.role === UserRole.OWNER;
 
   const loadMembers = useCallback(async () => {
-    const { members: teamMembers } = await getTeamMembers();
-    setMembers(teamMembers);
+    const { members: teamMembers, error } = await getTeamMembers();
+    if (error) {
+      console.error('[Dashboard] loadMembers failed:', error);
+    } else {
+      setMembers(teamMembers);
+    }
     setIsLoading(false);
   }, []);
 
   const loadApprovalsCount = useCallback(async () => {
     if (!isOwner) return;
-    const { totalCount } = await getAllTexterPendingRequests();
+    const { totalCount, error } = await getAllTexterPendingRequests();
+    if (error) {
+      console.error('[Dashboard] loadApprovalsCount failed:', error);
+      return;
+    }
     setPendingApprovalsCount(totalCount);
   }, [isOwner]);
 
   const loadTillkallaAlerts = useCallback(async () => {
     if (!isOwner) return;
-    const { alerts } = await getUnacknowledgedAlerts();
+    const { alerts, error } = await getUnacknowledgedAlerts();
+    if (error) {
+      // Child-safety surface: on a transient failure, log and keep whatever was
+      // already shown rather than silently clobbering the alert list to empty.
+      console.error('[Dashboard] loadTillkallaAlerts failed:', error);
+      return;
+    }
     setTillkallaAlerts(alerts);
   }, [isOwner]);
 
