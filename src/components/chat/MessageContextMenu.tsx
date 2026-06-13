@@ -147,7 +147,7 @@ const MessageContextMenu: React.FC<MessageContextMenuProps> = ({
               key={emoji}
               className="ctx-reaction-btn"
               onClick={() => handleReaction(emoji)}
-              aria-label={`React with ${emoji}`}
+              aria-label={t('a11y.reactWith', { emoji })}
             >
               {emoji}
             </button>

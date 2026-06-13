@@ -1,6 +1,6 @@
 import { useRef, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { IonIcon } from '@ionic/react';
+import { IonIcon, useIonToast } from '@ionic/react';
 import { happyOutline, attachOutline, cameraOutline, send } from 'ionicons/icons';
 import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
 import { Capacitor } from '@capacitor/core';
@@ -47,6 +47,7 @@ const ChatInputToolbar: React.FC<ChatInputToolbarProps> = ({
   onToggleAttachmentSheet,
   isEmojiPanelOpen,
   isSending,
+  disabled = false,
   placeholder,
   editingMessage,
   onEditCancel,
@@ -62,9 +63,13 @@ const ChatInputToolbar: React.FC<ChatInputToolbarProps> = ({
   onImageBlocked,
 }) => {
   const { t } = useTranslation();
+  const [present] = useIonToast();
   const textareaContainerRef = useRef<HTMLDivElement>(null);
   // Issue #35: dedup pointerdown vs synthetic click on the emoji button.
   const emojiHandledByPointerRef = useRef(false);
+  // A suspended Texter / Owner-disabled-feature parent passes disabled — gate
+  // every interactive control on it (combined with the in-flight send state).
+  const controlsDisabled = isSending || disabled;
 
   // Auto-grow textarea
   const adjustTextareaHeight = useCallback(() => {
@@ -108,6 +113,7 @@ const ChatInputToolbar: React.FC<ChatInputToolbarProps> = ({
   };
 
   const handleCameraClick = async () => {
+    if (controlsDisabled) return;
     if (imageBlocked) {
       onImageBlocked?.();
       return;
@@ -125,9 +131,12 @@ const ChatInputToolbar: React.FC<ChatInputToolbarProps> = ({
         if (photo.webPath) {
           const response = await fetch(photo.webPath);
           const blob = await response.blob();
-          const ext = photo.format || 'jpeg';
+          const ext = (photo.format || 'jpeg').toLowerCase();
+          // Normalize to a valid MIME type — 'image/jpg' is non-standard and
+          // can fail server-side MIME/content-type validation.
+          const mime = ext === 'jpg' ? 'image/jpeg' : `image/${ext}`;
           const file = new File([blob], `camera_${Date.now()}.${ext}`, {
-            type: `image/${ext}`,
+            type: mime,
           });
           onCameraCapture(file);
         }
@@ -145,8 +154,15 @@ const ChatInputToolbar: React.FC<ChatInputToolbarProps> = ({
         };
         input.click();
       }
-    } catch {
-      // User cancelled or permission denied
+    } catch (err) {
+      // A deliberate cancel throws with a "cancelled" message — stay silent for
+      // that, but surface real failures (fetch/blob/permission) that were
+      // previously swallowed entirely.
+      const msg = err instanceof Error ? err.message.toLowerCase() : '';
+      if (!msg.includes('cancel')) {
+        console.error('Camera capture failed:', err);
+        present({ message: t('errors.generic'), duration: 2500, color: 'danger' });
+      }
     }
   };
 
@@ -170,7 +186,7 @@ const ChatInputToolbar: React.FC<ChatInputToolbarProps> = ({
         type="button"
         className={`toolbar-icon-btn ${isEmojiPanelOpen ? 'active' : ''}`}
         onPointerDown={(e) => {
-          if (isSending) return;
+          if (controlsDisabled) return;
           // Keep textarea focus so iOS doesn't dismiss the keyboard mid-tap.
           e.preventDefault();
           emojiHandledByPointerRef.current = true;
@@ -184,10 +200,10 @@ const ChatInputToolbar: React.FC<ChatInputToolbarProps> = ({
             emojiHandledByPointerRef.current = false;
             return;
           }
-          if (isSending) return;
+          if (controlsDisabled) return;
           onToggleEmojiPanel();
         }}
-        disabled={isSending}
+        disabled={controlsDisabled}
         aria-label={t('chat.emojis')}
       >
         <IonIcon icon={happyOutline} />
@@ -211,6 +227,7 @@ const ChatInputToolbar: React.FC<ChatInputToolbarProps> = ({
           value={messageText}
           onChange={handleInputChange}
           onKeyDown={handleKeyDown}
+          disabled={controlsDisabled}
           rows={1}
         />
       </div>
@@ -219,7 +236,7 @@ const ChatInputToolbar: React.FC<ChatInputToolbarProps> = ({
       <button
         className="toolbar-icon-btn"
         onClick={onToggleAttachmentSheet}
-        disabled={isSending}
+        disabled={controlsDisabled}
         aria-label={t('a11y.attach')}
       >
         <IonIcon icon={attachOutline} />
@@ -229,7 +246,7 @@ const ChatInputToolbar: React.FC<ChatInputToolbarProps> = ({
       <button
         className="toolbar-icon-btn"
         onClick={handleCameraClick}
-        disabled={isSending}
+        disabled={controlsDisabled}
         aria-label={t('chat.camera')}
       >
         <IonIcon icon={cameraOutline} />
@@ -242,13 +259,13 @@ const ChatInputToolbar: React.FC<ChatInputToolbarProps> = ({
           data-testid="send-button"
           onMouseDown={(e) => e.preventDefault()}
           onClick={onSend}
-          disabled={!hasText || isSending}
+          disabled={!hasText || controlsDisabled}
           aria-label={t('chat.send')}
         >
           <IonIcon icon={send} />
         </button>
       ) : canSendVoice ? (
-        <VoiceRecorder onRecord={onVoiceRecord} disabled={isSending} />
+        <VoiceRecorder onRecord={onVoiceRecord} disabled={controlsDisabled} />
       ) : (
         <div style={{ width: '2.5rem' }} />
       )}

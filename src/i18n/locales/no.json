@@ -354,6 +354,8 @@
     "alertReceived": "Tilkall en voksen fra {{name}}",
     "viewLocation": "Vis posisjon",
     "acknowledge": "Bekreft",
+    "acknowledged": "Bekreftet",
+    "autoCancelIn": "Avbrytes om {{seconds}}s",
     "unacknowledged": "Ubekreftede varsler",
     "noAlerts": "Ingen varsler"
   },
@@ -880,6 +882,7 @@
     "attach": "Legg ved",
     "selectReaction": "Velg reaksjon",
     "moreReactions": "Flere reaksjoner",
+    "reactWith": "Reager med {{emoji}}",
     "cancel": "Avbryt",
     "sendVoiceMessage": "Send talemelding",
     "openDashboard": "Oversikt",

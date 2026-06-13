@@ -354,6 +354,8 @@
     "alertReceived": "Tillkalla Vuxen från {{name}}",
     "viewLocation": "Visa plats",
     "acknowledge": "Bekräfta",
+    "acknowledged": "Bekräftad",
+    "autoCancelIn": "Avbryts om {{seconds}}s",
     "unacknowledged": "Obekräftade larm",
     "noAlerts": "Inga larm"
   },
@@ -886,6 +888,7 @@
     "attach": "Bifoga",
     "selectReaction": "Välj reaktion",
     "moreReactions": "Fler reaktioner",
+    "reactWith": "Reagera med {{emoji}}",
     "cancel": "Avbryt",
     "sendVoiceMessage": "Skicka röstmeddelande",
     "openDashboard": "Översikt",

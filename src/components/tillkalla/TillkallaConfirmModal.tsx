@@ -71,7 +71,7 @@ export const TillkallaConfirmModal: React.FC<TillkallaConfirmModalProps> = ({
         <p className="modal-message">{t('tillkalla.confirmMessage')}</p>
 
         <div className="countdown">
-          <span>{t('common.cancel')} in {countdown}s</span>
+          <span>{t('tillkalla.autoCancelIn', { seconds: countdown })}</span>
         </div>
 
         <div className="button-container">

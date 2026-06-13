@@ -108,7 +108,7 @@ export const TillkallaAlertCard: React.FC<TillkallaAlertCardProps> = ({
           {isAcknowledged && (
             <span className="acknowledged-badge">
               <IonIcon icon={checkmarkCircleOutline} />
-              Acknowledged
+              {t('tillkalla.acknowledged')}
             </span>
           )}
         </div>

@@ -354,6 +354,8 @@
     "alertReceived": "Aikuisen kutsu käyttäjältä {{name}}",
     "viewLocation": "Näytä sijainti",
     "acknowledge": "Vahvista",
+    "acknowledged": "Vahvistettu",
+    "autoCancelIn": "Peruutetaan {{seconds}} s kuluttua",
     "unacknowledged": "Vahvistamattomat hälytykset",
     "noAlerts": "Ei hälytyksiä"
   },
@@ -880,6 +882,7 @@
     "attach": "Liitä",
     "selectReaction": "Valitse reaktio",
     "moreReactions": "Lisää reaktioita",
+    "reactWith": "Reagoi: {{emoji}}",
     "cancel": "Peruuta",
     "sendVoiceMessage": "Lähetä ääniviesti",
     "openDashboard": "Yleiskatsaus",

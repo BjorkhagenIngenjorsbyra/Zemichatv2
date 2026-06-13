@@ -354,6 +354,8 @@
     "alertReceived": "Call for an adult from {{name}}",
     "viewLocation": "View location",
     "acknowledge": "Acknowledge",
+    "acknowledged": "Acknowledged",
+    "autoCancelIn": "Cancels in {{seconds}}s",
     "unacknowledged": "Unacknowledged alerts",
     "noAlerts": "No alerts"
   },
@@ -880,6 +882,7 @@
     "attach": "Attach",
     "selectReaction": "Select reaction",
     "moreReactions": "More reactions",
+    "reactWith": "React with {{emoji}}",
     "cancel": "Cancel",
     "sendVoiceMessage": "Send voice message",
     "openDashboard": "Overview",
