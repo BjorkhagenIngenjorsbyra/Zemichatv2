@@ -9,6 +9,16 @@ betalning/datamodell-fundamentalt. Säkerhetsval = säkrare alternativet.
 
 Status-nyckel: [x] fixad · [skip] redan fixad/falskt larm · [HOLD] eskalerad till Erik
 
+## 📊 LÄGE 2026-06-13 (efter "lös allt inför produktion")
+**Hög (37):** klar utom #30/#32/#37 (paginering/Virtuoso — dev-server/enhetstest) + #35 (MFA feature-flaggad AV). #88 löst.
+**Medel (172):** alla säkra + Hink A (betalning/auth/barnsäkerhet/datamodell) + säker perf klara. Eskalerat kvar = djup-RLS #338/#262/#270/#328 (eget RLS-pass m. domänbekräftelse) + perf-scroll #32/#37 (dev-server) + Hink C produktbeslut (2FA-flagga, legal-myndighet, LocationMessage-privacy-visual).
+**Låg (177): ~57 klara.** KVAR-teman:
+- **CSS-extraktion av SINGLETON-sidor (ChatList/Dashboard/NewChat/Friends/ChoosePlan/OwnerApprovals/OwnerChatView): MEDVETET EJ GJORDA.** Insikt: statiska inline-`<style>`-strängar utan interpolation re-injiceras INTE av React (identiskt innehåll → ingen DOM-mutation), så "per-render-kostnad" i fyndet är överdrivet för singletons. Full extraktion = kosmetiskt MED reell global-kollisionsrisk (generiska klassnamn → globala). Den ÄKTA buggen (oskopade globala selektorer som läcker) är fixad riktat (OwnerOversight searchbar, ChatList ion-item ion-label). List-renderade komponenter (N instanser) var de äkta perf-vinsterna — de är extraherade. → lågt värde/hög risk, hoppas om ej Erik insisterar.
+- **a11y aria-labels som kräver nya locale-nycklar (×5):** VoiceMessage seek/play/pause, VoiceRecorder relabel (tap ej hold), EmojiGifPanel kategori-i18n+tab-roller, MemberLimitDialog rader, ImageMessage icon-buttons, ChatList archived aria-expanded. Görs i locale-key-batch.
+- **Refaktorer:** delad `<UserAvatar>` (4+ dubbletter), `formatDuration`/`formatSeconds`-util (4 kopior), MFACodeInput delad, MuteDuration delad typ, ChatInputToolbar prop-gruppering. Bigger refactors.
+- **Småperf/correctness kvar:** optimistic updates (ChatList pin/mute, Friends accept), ForwardPicker store-source, ChatView markChatAsRead-debounce, AddFriend combine-query/pending-accept, ChatSearchModal scroll-to-message, ErrorBoundary retry-limit, TrialBanner daysLeft-tick, usePresence/store-cancellation (verifiera obsolet), CallContext toggle-stability, i18n.lazy-load, ThemeContext StatusBar-sync, Home.tsx dead-code-check.
+- **Legal (hink C):** typos (fi/no), entities→UTF-8, Privacy-Shield→DPF, controller-identitet, Tillkalla-namn-gloss — Eriks beslut/granskning.
+
 ## ⚠️ ESKALERAT — väntar Eriks beslut (autonomt-läge 2026-06-13)
 - **PUSH:** Kan ej pusha grenen — GitHub-creds på Revit utgångna (token 401, gh-keyring ogiltig). Erik: färsk PAT (repo-scope) i `C:\Alva\config\github_token.txt` ELLER väck laptopen. 26+ commits ligger lokalt.
 - **MFASetup retry-UX (#35 follow-up):** full retry-knapp vid enroll-fel kräver refaktor av enroll-effekten till en återanropbar funktion + auth-test. Minimal felvisning + deadend-skydd är gjort; full retry väntar. (Låg prio — skärmen är feature-flaggad AV.)
