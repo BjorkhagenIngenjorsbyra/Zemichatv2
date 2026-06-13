@@ -10,6 +10,13 @@ interface LocationMessageProps {
 const LocationMessage: React.FC<LocationMessageProps> = ({ lat, lng }) => {
   const { t } = useTranslation();
   const [showViewer, setShowViewer] = useState(false);
+  // staticmap.openstreetmap.de is an unofficial third party with no SLA and is
+  // frequently down — fall back to a plain pin card instead of a broken image
+  // (the full interactive map still opens locally in LocationViewer on tap).
+  // NB: sending the child's exact coordinates to that service is a privacy
+  // concern escalated to Erik (the privacy-correct fix changes the thumbnail
+  // rendering, which is a visual change).
+  const [thumbFailed, setThumbFailed] = useState(false);
 
   // Use OpenStreetMap static map tile as thumbnail
   const tileUrl = `https://staticmap.openstreetmap.de/staticmap.php?center=${lat},${lng}&zoom=15&size=300x200&markers=${lat},${lng},red-pushpin`;
@@ -17,12 +24,19 @@ const LocationMessage: React.FC<LocationMessageProps> = ({ lat, lng }) => {
   return (
     <>
       <div className="location-msg" onClick={() => setShowViewer(true)}>
-        <img
-          src={tileUrl}
-          alt={t('location.shareLocation')}
-          className="location-thumb"
-          loading="lazy"
-        />
+        {thumbFailed ? (
+          <div className="location-thumb location-thumb-fallback">
+            <span className="location-fallback-pin">📍</span>
+          </div>
+        ) : (
+          <img
+            src={tileUrl}
+            alt={t('location.shareLocation')}
+            className="location-thumb"
+            loading="lazy"
+            onError={() => setThumbFailed(true)}
+          />
+        )}
         <div className="location-overlay">
           <span className="location-pin-icon">📍</span>
           <span>{t('location.shareLocation')}</span>
@@ -50,6 +64,17 @@ const LocationMessage: React.FC<LocationMessageProps> = ({ lat, lng }) => {
           height: 150px;
           object-fit: cover;
           display: block;
+        }
+
+        .location-thumb-fallback {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: hsl(var(--muted) / 0.4);
+        }
+
+        .location-fallback-pin {
+          font-size: 2.5rem;
         }
 
         .location-overlay {

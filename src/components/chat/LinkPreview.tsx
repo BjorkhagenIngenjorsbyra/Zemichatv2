@@ -71,7 +71,7 @@ const LinkPreview: React.FC<LinkPreviewProps> = ({ url, isOwn }) => {
       rel="noopener noreferrer"
       className={`link-preview ${isOwn ? 'own' : 'other'}`}
     >
-      {preview.imageUrl && (
+      {preview.imageUrl && /^https:\/\//i.test(preview.imageUrl) && (
         <img
           src={preview.imageUrl}
           alt=""
