@@ -213,4 +213,10 @@ Se "⚠️ ESKALERAT/HOLD"-sektionen ovan. Sammanfattning av vad som ÄR KVAR av
 
 Nästa pass: LÅG-listan (177) — eller eskalerade medel när Erik kan enhetstesta/besluta.
 
-## Låg (177) — efter medel
+## Låg (177) — PÅGÅR (Erik: "kör låg-listan under tiden")
+Långt svans-arbete, betas av i batchar. Klart hittills:
+- **Batch L1 correctness (commit 177343f):** SkeletonLoader Math.random→deterministisk (flimmer), GroupAvatar React-import, QuietHoursManager numerisk sort + död state, MentionAutocomplete filtrera undefined user, QuotedMessage gif/poll-cases + onKeyDown(Enter/Space), ChatView selectionStart `??` (cursor-pos 0-bug), FriendSettingsModal show_real_name-reset, ChoosePlan hoppa startTrial för FREE, ForgotPassword/InviteSuper email-trim/normalisering.
+- **Batch L2 timers (commit 3976fc8):** CreateTexterModal + AddFriend copied-timer i ref + cleanup på unmount/reset.
+- KVAR (~165): stora teman = CSS-extraktion-svep forts. (OnboardingSlides/ConfettiAnimation/ReportButton/ChoosePlan/Dashboard/NewChat/Friends/ChatList/OwnerChatView/OwnerApprovals/TillkallaAlertCard/WallComments/MFAVerify/MFASetup), a11y aria-labels + i18n-hårdkodning (många, svep), kvarvarande timeout-läckor (OnboardingSlides/ShareTargetHandler/ForwardPicker/MessageBubble-heart), derived-state→useMemo (NewChat/Friends/OwnerApprovals totalCount/LegalPage), shared <UserAvatar>-komponent (4+ dubbletter), legal-typos/Privacy-Shield/entities (= Hink C, Erik), småperf (optimistic updates, getOptimizedAvatarUrl i GroupAvatar). Inga av dessa är blockerande; betas av löpande.
+
+## (referens) Låg-rubrik
