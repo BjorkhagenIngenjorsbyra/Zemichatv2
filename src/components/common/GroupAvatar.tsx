@@ -1,5 +1,6 @@
 import React from 'react';
 import { getInitial, getAvatarColor } from '../../utils/userDisplay';
+import { getOptimizedAvatarUrl } from '../../utils/imageUrl';
 
 interface GroupAvatarProps {
   members: Array<{
@@ -25,7 +26,7 @@ const GroupAvatar: React.FC<GroupAvatarProps> = ({ members, size = 48 }) => {
       <div style={{ width: size, height: size, borderRadius: '50%', overflow: 'hidden' }}>
         {m?.avatar_url ? (
           <img
-            src={m.avatar_url}
+            src={getOptimizedAvatarUrl(m.avatar_url, Math.round(size))}
             alt=""
             loading="lazy"
             decoding="async"
@@ -71,7 +72,7 @@ const GroupAvatar: React.FC<GroupAvatarProps> = ({ members, size = 48 }) => {
         <div key={i} style={{ overflow: 'hidden' }}>
           {m.avatar_url ? (
             <img
-              src={m.avatar_url}
+              src={getOptimizedAvatarUrl(m.avatar_url, Math.round(miniSize))}
               alt=""
               loading="lazy"
               decoding="async"

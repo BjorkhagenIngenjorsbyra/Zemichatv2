@@ -258,6 +258,14 @@ const ChatList: React.FC = () => {
     history.push('/new-chat');
   };
 
+  // Patch a single chat's flags locally instead of refetching the whole list
+  // for a one-field toggle — the section split (pinned/active/archived) and
+  // mute icon both derive from these flags, so a local patch re-renders
+  // correctly without the network round-trip.
+  const patchChat = (chatId: string, changes: Partial<ChatWithDetails>) => {
+    setChats((prev) => prev.map((c) => (c.id === chatId ? { ...c, ...changes } : c)));
+  };
+
   const handlePin = async (chat: ChatWithDetails) => {
     if (chat.isPinned) {
       await unpinChat(chat.id);
@@ -269,7 +277,7 @@ const ChatList: React.FC = () => {
         return;
       }
     }
-    loadChats();
+    patchChat(chat.id, { isPinned: !chat.isPinned });
   };
 
   const handleArchive = async (chat: ChatWithDetails) => {
@@ -278,13 +286,13 @@ const ChatList: React.FC = () => {
     } else {
       await archiveChat(chat.id);
     }
-    loadChats();
+    patchChat(chat.id, { isArchived: !chat.isArchived });
   };
 
   const handleMute = async (chat: ChatWithDetails) => {
     if (chat.isMuted) {
       await unmuteChat(chat.id);
-      loadChats();
+      patchChat(chat.id, { isMuted: false });
     } else {
       setMuteTarget(chat);
     }
@@ -293,8 +301,8 @@ const ChatList: React.FC = () => {
   const handleMuteDuration = async (duration: 'hour' | '8hours' | 'week' | 'always') => {
     if (!muteTarget) return;
     await muteChat(muteTarget.id, duration);
+    patchChat(muteTarget.id, { isMuted: true });
     setMuteTarget(null);
-    loadChats();
   };
 
   const renderChatItem = (chat: ChatWithDetails, index: number) => {
