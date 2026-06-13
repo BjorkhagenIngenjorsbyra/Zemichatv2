@@ -191,7 +191,15 @@ Erik godkände: hink A allt, hink B RLS=implementera+verifiera-lokalt-EJ-deploya
 - [HOLD-risk] #262/#270 raderat innehåll redaktion: wall_posts/wall_comments SELECT skickar `content` för raderade rader till icke-owners (bara klient-dolt). Kräver kolumn-redaktion via vy/SECURITY DEFINER — arkitektonisk, regressionsbenägen
 - [HOLD] #328 AddFriend zemi-uppräkning rate-limit: söket är direkt PostgREST-query (ej edge fn); rate-limit-infra finns för edge-fns men kräver flytta sök till edge fn
 
-## ✅ ALLA SÄKRA MEDEL + HINK A KLARA — kvar = djup-RLS (3, risk) + perf/scroll (4, enhetstest)
+### Hink B perf/scroll (Erik: bygg nu/enhetstesta sen)
+- [x] SÄKRA perf (commit 472beda): MessageBubble signed-url-gating video/doc/gif (#168), LinkPreview promise-cache (#156), ChatView läskvitto-dedup via ref (#352)
+- [x] #88 tab-array-route (commit 304d9c2) — TabLayout mountas en gång; build-verifierat, enhetstesta tab-transitions
+- [INVESTIGERAT — nyans] #32 ChatView: initial-laddning REDAN capad (getChatMessages limit=50) → "unbounded" överdrivet. Kvar = scroll-ladda-äldre (Virtuoso firstItemIndex-prepend) = enhancement, hög blind-risk → dev-server-pass.
+- [INVESTIGERAT — transparenskonflikt] #37 OwnerChatView: getOversightMessages OBEGRÄNSAT, men att capa döljer gammalt innehåll för föräldern (krockar med transparensmodellen) → kan ej capas blint; kräver paginera-med-ladda-äldre + Eriks designbeslut.
+- [HOLD device] #30 ChatList Virtuoso useWindowScroll i IonContent → scroll-config, enhetstest.
+
+## ✅ ALLA SÄKRA MEDEL + HINK A + SÄKER PERF + #88 KLARA
+Kvar = djup-RLS (#338/#262/#270/#328, eget pass) + perf-scroll-enhancements (#32/#37/#30, dev-server/designbeslut) + Hink C produktbeslut (2FA-flagga, legal-myndighet, #160-privacy-visual).
 Se "⚠️ ESKALERAT/HOLD"-sektionen ovan. Sammanfattning av vad som ÄR KVAR av de 172 medel:
 - **Betalning:** Paywall userCancelled/restore-feedback, ChoosePlan/MemberLimit (STOPPA-regel).
 - **Auth/MFA:** TwoFactorSetting flagg-flip, Login AAL2, MFASetup/MFAVerify (feature-flaggat AV + säkerhet).
