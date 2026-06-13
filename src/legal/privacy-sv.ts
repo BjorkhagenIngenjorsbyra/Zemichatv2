@@ -55,7 +55,7 @@ export default `
 <table>
 <thead><tr><th>Data</th><th>Beskrivning</th></tr></thead>
 <tbody>
-<tr><td>Prenumerationsplan</td><td>Vilken plan ditt team har (free, basic, family, premium)</td></tr>
+<tr><td>Prenumerationsplan</td><td>Vilken plan ditt team har (free, basic, pro)</td></tr>
 <tr><td>Provperiod</td><td>Startdatum och utg&aring;ngsdatum f&ouml;r provperioden</td></tr>
 </tbody>
 </table>

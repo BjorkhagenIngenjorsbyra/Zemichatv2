@@ -55,7 +55,7 @@ export default `
 <table>
 <thead><tr><th>Tieto</th><th>Kuvaus</th></tr></thead>
 <tbody>
-<tr><td>Tilaussuunnitelma</td><td>Mik&auml; suunnitelma tiimilläsi on (free, basic, family, premium)</td></tr>
+<tr><td>Tilaussuunnitelma</td><td>Mik&auml; suunnitelma tiimilläsi on (free, basic, pro)</td></tr>
 <tr><td>Kokeilujakso</td><td>Kokeilujakson alkamis- ja p&auml;&auml;ttymispäivä</td></tr>
 </tbody>
 </table>

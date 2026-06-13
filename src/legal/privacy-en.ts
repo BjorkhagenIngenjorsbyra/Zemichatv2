@@ -55,7 +55,7 @@ export default `
 <table>
 <thead><tr><th>Data</th><th>Description</th></tr></thead>
 <tbody>
-<tr><td>Subscription plan</td><td>Which plan your team has (free, basic, family, premium)</td></tr>
+<tr><td>Subscription plan</td><td>Which plan your team has (free, basic, pro)</td></tr>
 <tr><td>Trial period</td><td>Start date and expiration date for the trial period</td></tr>
 </tbody>
 </table>

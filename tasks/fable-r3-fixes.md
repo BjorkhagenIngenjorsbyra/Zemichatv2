@@ -40,7 +40,7 @@ Status-nyckel: [x] fixad · [skip] redan fixad/falskt larm · [HOLD] eskalerad t
 - [x] hooks/usePresence.ts — N kanaler + N+1 fetch + 30s-tick per rad → central presenceStore (en kanal, batchad .in()-fetch, en delad tick) via useSyncExternalStore. tsc/lint/unit gröna; behöver live-verifiering av presence (2 användare).
 ### Resterande hög (rapportens #27–37)
 - [x] #27 SubscriptionContext.tsx — RevenueCat-init beror på profile-objektref → keyat på profile?.id (lokal const + dep), undviker re-init/re-login vid varje profiländring
-- [ ] #28 legal/privacy-sv.ts — inkonsekventa plannamn mellan legal-dokument (innehåll)
+- [x] #28 legal/privacy-*.ts — privacy listade planer "(free, basic, family, premium)" men riktiga planer (terms-docs + PLAN_FEATURES) är Free/Basic/Pro → rättat till "(free, basic, pro)" i alla 5 språk (faktakorrigering, ej legal-bedömning)
 - [x] #29 ChatInfo.tsx — N useSignedMediaUrl-hooks → en batchad resolveMediaUrls() på liständring (deduped/cached), thumb tar resolved url som prop
 - [HOLD] #30 ChatList.tsx — Virtuoso useWindowScroll inuti IonContent → ESKALERAT (ändrar scroll-beteende, kräver on-device-verifiering; blind risk för trasig listscroll)
 - [x] #31 ChatView.tsx — getGalleryUrls(messages) per rad i itemContent → useMemo (commit f0e28be)
