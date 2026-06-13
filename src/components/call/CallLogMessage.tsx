@@ -31,18 +31,32 @@ const CallLogMessage: React.FC<CallLogMessageProps> = ({
   } | null;
 
   const content = message.content || '';
-  const isVideo = content.includes('video') || metadata?.call_type === 'video';
-  const isFailed = content.includes('failed') || metadata?.call_status === 'failed';
-  // Viktigt: kontrollera 'failed' före 'missed' eftersom innehållet vid
-  // failed-status inte innehåller "missed", men metadata-fältet är
-  // ömsesidigt uteslutande så ordningen spelar ingen roll i praktiken.
-  const isMissed = !isFailed && (content.includes('missed') || metadata?.call_status === 'missed');
-  const isDeclined = content.includes('declined') || metadata?.call_status === 'declined';
-  const isEnded = content.includes('ended') || metadata?.call_status === 'answered';
 
-  // Extract duration if present
-  const durationMatch = content.match(/\|(\d+:\d+|\d+s)/);
-  const duration = durationMatch ? durationMatch[1] : null;
+  // media_metadata is written by the same code that writes content, so treat
+  // it as the single source of truth. Content parsing is only a legacy
+  // fallback for old messages that predate the metadata fields — and it breaks
+  // the moment the system-message wording is localized or rephrased.
+  const status = metadata?.call_status;
+  const isVideo = metadata?.call_type
+    ? metadata.call_type === 'video'
+    : content.includes('video');
+  const isFailed = status ? status === 'failed' : content.includes('failed');
+  const isMissed = status
+    ? status === 'missed'
+    : !isFailed && content.includes('missed');
+  const isDeclined = status ? status === 'declined' : content.includes('declined');
+  const isEnded = status ? status === 'answered' : content.includes('ended');
+
+  // Duration: format from metadata.duration_seconds when present, otherwise
+  // fall back to the legacy "|m:ss" suffix in the content.
+  const formatDuration = (totalSeconds: number): string => {
+    const mins = Math.floor(totalSeconds / 60);
+    const secs = totalSeconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
+  const duration = metadata?.duration_seconds != null
+    ? formatDuration(metadata.duration_seconds)
+    : (content.match(/\|(\d+:\d+|\d+s)/)?.[1] ?? null);
 
   const getIcon = () => {
     if (isFailed) {

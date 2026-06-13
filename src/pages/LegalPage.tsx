@@ -119,7 +119,10 @@ const LegalPage: React.FC<LegalPageProps> = ({ type }) => {
   const { i18n } = useTranslation();
   const [html, setHtml] = useState('');
 
-  const lang = i18n.language || 'sv';
+  // i18next often reports regional codes like 'en-US'/'sv-SE' which miss the
+  // base-language map keys ('en','sv',...) and would silently fall back to
+  // Swedish. Normalize to the base language before lookup.
+  const lang = (i18n.resolvedLanguage || i18n.language || 'sv').split('-')[0];
   const contentMap = type === 'privacy' ? privacyContent : termsContent;
 
   useEffect(() => {

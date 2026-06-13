@@ -3,11 +3,13 @@ import { useTranslation } from 'react-i18next';
 import { IonButton, IonIcon } from '@ionic/react';
 import { expand, call as callIcon } from 'ionicons/icons';
 import { useCallContext, useCallDuration } from '../../contexts/CallContext';
+import { useAuthContext } from '../../contexts/AuthContext';
 import { CallState } from '../../types/call';
 
 const CallPiP: React.FC = () => {
   const { t } = useTranslation();
   const { activeCall, toggleMinimize, endCall } = useCallContext();
+  const { profile } = useAuthContext();
   const callDuration = useCallDuration();
   const [isDragging, setIsDragging] = useState(false);
   const [position, setPosition] = useState({ x: 16, y: 100 });
@@ -22,8 +24,12 @@ const CallPiP: React.FC = () => {
 
   const isConnected = activeCall.state === CallState.CONNECTED;
 
-  // Get other participant(s) for display
-  const otherParticipants = activeCall.participants.slice(1);
+  // Get other participant(s) for display. Filter by the current user's id —
+  // NOT slice(1) — since the local user isn't reliably at index 0 (on the
+  // callee's side the initiator is first), which showed the user their own
+  // name/avatar. Mirrors CallView.
+  const currentUserId = profile?.id || '';
+  const otherParticipants = activeCall.participants.filter((p) => p.id !== currentUserId);
   const displayName = otherParticipants.length > 0
     ? otherParticipants[0].displayName
     : t('call.call');
