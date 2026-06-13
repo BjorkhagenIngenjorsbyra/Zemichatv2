@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { type User } from '../../types/database';
 
 interface MentionAutocompleteProps {
@@ -13,6 +14,7 @@ const MentionAutocomplete: React.FC<MentionAutocompleteProps> = ({
   onSelect,
   visible,
 }) => {
+  const { t } = useTranslation();
   if (!visible || members.length === 0) return null;
 
   const filtered = members.filter((m) => {
@@ -23,11 +25,13 @@ const MentionAutocomplete: React.FC<MentionAutocompleteProps> = ({
   if (filtered.length === 0) return null;
 
   return (
-    <div className="mention-autocomplete">
+    <div className="mention-autocomplete" role="listbox" aria-label={t('chat.mentionList', 'Mention a member')}>
       {filtered.slice(0, 5).map((m) => (
         <button
           key={m.user_id}
           className="mention-item"
+          role="option"
+          aria-selected="false"
           onClick={() => onSelect(m.user)}
         >
           <div className="mention-avatar">

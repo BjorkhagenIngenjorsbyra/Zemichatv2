@@ -49,6 +49,16 @@ export const FriendSettingsModal: React.FC<FriendSettingsModalProps> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, friend?.id]);
 
+  // Allow Escape to dismiss (the modal is a hand-rolled div overlay).
+  useEffect(() => {
+    if (!isOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [isOpen, onClose]);
+
   if (!isOpen || !friend) return null;
 
   const toggleCategory = (cat: string) => {
@@ -90,7 +100,13 @@ export const FriendSettingsModal: React.FC<FriendSettingsModalProps> = ({
 
   return (
     <div className="fs-backdrop" onClick={onClose}>
-      <div className="fs-modal" onClick={(e) => e.stopPropagation()}>
+      <div
+        className="fs-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-label={t('friends.settings')}
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* Header with avatar */}
         <div className="fs-header">
           <IonAvatar className="fs-avatar">
@@ -120,12 +136,19 @@ export const FriendSettingsModal: React.FC<FriendSettingsModalProps> = ({
 
         {/* Show real name toggle — only when nickname is set */}
         {nickname.trim() && (
-          <div className="fs-toggle-row" onClick={() => setShowRealName(!showRealName)}>
+          <button
+            type="button"
+            className="fs-toggle-row"
+            role="switch"
+            aria-checked={showRealName}
+            aria-label={t('friendSettings.showRealName')}
+            onClick={() => setShowRealName(!showRealName)}
+          >
             <span className="fs-toggle-label">{t('friendSettings.showRealName')}</span>
             <div className={`fs-toggle ${showRealName ? 'active' : ''}`}>
               <div className="fs-toggle-thumb" />
             </div>
-          </div>
+          </button>
         )}
 
         {/* Category chips */}
@@ -281,10 +304,17 @@ export const FriendSettingsModal: React.FC<FriendSettingsModalProps> = ({
           display: flex;
           align-items: center;
           justify-content: space-between;
+          width: 100%;
           padding: 0.6rem 0;
           margin-bottom: 1rem;
           cursor: pointer;
           -webkit-tap-highlight-color: transparent;
+          /* reset button defaults (was a div) */
+          background: none;
+          border: none;
+          font: inherit;
+          color: inherit;
+          text-align: left;
         }
 
         .fs-toggle-label {
