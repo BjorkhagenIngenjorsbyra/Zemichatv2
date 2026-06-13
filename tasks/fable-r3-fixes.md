@@ -152,13 +152,26 @@ Status-nyckel: [x] fixad · [skip] redan fixad/falskt larm · [HOLD] eskalerad t
 - **Paginering/perf (on-device-verify):** Calls/ChatList realtime+paginering, OwnerChatView N+1 signed-urls, OwnerOversight opaginerad+N+1, LinkPreview promise-cache, legal lazy-load, MessageBubble/ChatView swipe-perf — eskalerade perf.
 - **Legal (compliance):** Privacy Shield→DPF-faktafix (#310-315), komplaint-myndighet-inkonsistens (#302), DPF-källor — RÖR EJ privacy/terms-dokument utan Eriks ok (compliance-känsligt).
 
+### Batch 14 — CSS-extraktion-svep (commits 2904f8b, d8cd6d8, 7b6dab9, 82e9f1f, 8074c84)
+- [x] Per-instans `<style>` → co-located .css importerad en gång: CallHistoryItem, VideoTile, VoiceMessage, QuotedMessage, **PollMessage** (isOwn-interpolation → `.poll-message.own`-klass), FriendCard, FriendRequestCard, CreateTeam (två block, delad m. ChoosePlan kvar inline), ImageMessage, WallPost (scopat under `.wall-post-card` + `wall-fullscreen-*` för att ej krocka m. ImageMessage/MessageReactions), ChatView (scopat under `.chat-content`/`.chat-footer`, bare `ion-footer` borttagen). MessageBubble var redan klar.
+- **Verifierat med full `vite build` (✓ grön).** Ingen visuell förändring.
+- KVAR (CSS): ChoosePlan delar onboarding-CSS m. CreateTeam (kunde extraheras till delad onboarding.css — låg prio).
+
+### Batch 15 — a11y-svep (commits 7054159, f3f1088)
+- [x] AttachmentSheet — role=dialog/aria-modal/aria-label, fokus första option, Escape, backdrop aria-hidden
+- [x] StickerPicker — role=dialog+aria-label, close-aria-label, pack-tab accessible names (aria-label+aria-pressed), Escape, backdrop-dismiss
+- [x] MessageContextMenu — role=dialog/aria-modal/aria-label, initialfokus, Escape (menuRef ANVÄNDS redan)
+- [x] ChatInfo — gruppnamn-edit nu riktig button (role=button/tabIndex/Enter+Space/aria-label) ist.f. onClick på h2
+- [x] MentionAutocomplete — role=listbox + role=option/aria-selected (full pil-navigation kräver parent-input-wiring → FÖLJD)
+- [x] FriendSettingsModal — role=dialog/aria-modal/Escape + show-real-name-toggeln nu `<button role="switch" aria-checked>` (button-defaults nollställda i CSS)
+
 ## ÅTERSTÅR MEDEL (säkra, ej gjorda än) — nästa session
-- **CSS-extraktion-svep** (per-instans `<style>` → CSS-fil, importeras en gång): CallHistoryItem/VideoTile/ImageMessage/VoiceMessage/PollMessage(isOwn→klass, ej interpolation)/QuotedMessage/WallPost/FriendCard/FriendRequestCard/CreateTeam/ChatView. Säkra men tråkiga, gör i svep. (MessageBubble redan klar tidigare.)
-- **a11y-svep** (dialog-roller, fokus, Escape, tangentbord): AttachmentSheet (#136)/MentionAutocomplete (#184)/MessageContextMenu (#192 dialog-delen)/StickerPicker (#206)/FriendSettingsModal (#222)/ChatInfo h2 (#340).
 - **Felhantering/korrekthet kvar (säkra):** CreateTeam referral-race + submitReferral-resultat (#372/#374), useSignedMediaUrl stale-URL-reset + .catch (#298 — hot path, försiktigt), NotificationContext app-resume refreshCounts + CHANNEL_ERROR (#296), main.tsx fallback-clear + Sentry-capture (#324/#326 — Sentry ej på än), useTypingList churn-diff (#286), App.tsx AuthCallbackHandler type=recovery (#90 — auth-nära, försiktigt), App.tsx tab-remount single-route-array (#88 — routing, regressionsrisk, ev. eskalera).
+- **a11y FÖLJD:** MentionAutocomplete full pil/Enter/Escape-navigation (kräver ChatInputToolbar-keydown-wiring + aria-activedescendant), MessageContextMenu/sheets full focus-trap.
 - **EmojiGifPanel** #27/#28/#29 medel — verifiera mot d9de747 (GifPicker-dedupen), troligen redan fixade → skip-verifiera.
 - **NewChat createChat-dedup** (#412 1:1-dubbletter) = datamodell (unik constraint/lookup) → eskalera.
+- **CSS FÖLJD:** ChoosePlan onboarding-CSS (delad m. CreateTeam.css).
 
-Princip nästa pass: CSS-svep + a11y-svep ger flest fynd snabbt och säkert. Sen LÅG (177).
+Princip nästa pass: ovan säkra felhantering/korrekthet, sen LÅG (177).
 
 ## Låg (177) — efter medel
