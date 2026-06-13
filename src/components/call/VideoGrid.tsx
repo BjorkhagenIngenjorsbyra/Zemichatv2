@@ -1,5 +1,6 @@
 import { type CallParticipant } from '../../types/call';
 import type { IRemoteVideoTrack, ICameraVideoTrack, ILocalVideoTrack } from '../../services/agora';
+import { agoraUidForUser } from '../../services/agora';
 import VideoTile from './VideoTile';
 
 interface VideoGridProps {
@@ -21,12 +22,14 @@ const VideoGrid: React.FC<VideoGridProps> = ({
   const localParticipant = participants.find((p) => p.id === localUserId);
   const participantCount = participants.length;
 
-  // Agora delivers remote tracks keyed by its own numeric UID, which
-  // doesn't match our Supabase user UUIDs. Instead of fighting the
-  // mapping, we just hand out the available tracks in order — fine for
-  // 1:1 (the only case for v1.5.x), and good enough for small group
-  // calls until a proper agora_uid ↔ user_id mapping is wired up.
-  const remoteTracksList = Array.from(remoteVideoTracks.values());
+  // Agora delivers remote tracks keyed by its own numeric UID. That UID is
+  // derived deterministically from the user's UUID when the join token is
+  // minted (see agoraUidForUser / the agora-token edge function), so we can map
+  // each participant to *their own* track instead of handing them out by join
+  // order — which previously put a participant's name/avatar over another
+  // participant's video stream in group calls.
+  const trackForParticipant = (userId: string): IRemoteVideoTrack | undefined =>
+    remoteVideoTracks.get(String(agoraUidForUser(userId)));
 
   // Determine grid layout based on participant count
   const getGridClass = (): string => {
@@ -61,10 +64,10 @@ const VideoGrid: React.FC<VideoGridProps> = ({
 
       {/* Main video grid */}
       <div className="participants-grid">
-        {remoteParticipants.map((participant, idx) => (
+        {remoteParticipants.map((participant) => (
           <VideoTile
             key={participant.id}
-            videoTrack={remoteTracksList[idx]}
+            videoTrack={trackForParticipant(participant.id)}
             displayName={participant.displayName}
             avatarUrl={participant.avatarUrl}
             isMuted={!participant.hasAudio}
