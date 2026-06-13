@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { IonIcon } from '@ionic/react';
 import { play, pause } from 'ionicons/icons';
 import { useSignedMediaUrl } from '../../hooks/useSignedMediaUrl';
+import { formatSeconds } from '../../utils/datetime';
 import './VoiceMessage.css';
 
 interface VoiceMessageProps {
@@ -112,11 +113,6 @@ const VoiceMessage: React.FC<VoiceMessageProps> = ({
     setPlaybackRate(newRate);
   };
 
-  const formatTime = (seconds: number): string => {
-    const mins = Math.floor(seconds / 60);
-    const secs = Math.floor(seconds % 60);
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
-  };
 
   const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
 
@@ -158,7 +154,7 @@ const VoiceMessage: React.FC<VoiceMessageProps> = ({
 
         <div className="time-row">
           <span className="time-display">
-            {formatTime(currentTime)} / {formatTime(duration)}
+            {formatSeconds(currentTime)} / {formatSeconds(duration)}
           </span>
           <button
             className="rate-button"

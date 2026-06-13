@@ -57,3 +57,16 @@ export function formatTimeOrDate(dateStr: string): string {
   const isToday = date.toDateString() === new Date().toDateString();
   return isToday ? formatTimeShort(dateStr) : formatShortDate(dateStr);
 }
+
+/**
+ * Format a duration in seconds as "m:ss" (e.g. 75 → "1:15"). Shared by the
+ * call + voice-message UIs which each had their own copy. Guards NaN/Infinity
+ * (e.g. an unfinished media-duration read) to "0:00".
+ */
+export function formatSeconds(seconds: number): string {
+  if (!Number.isFinite(seconds) || seconds < 0) return '0:00';
+  const total = Math.floor(seconds);
+  const mins = Math.floor(total / 60);
+  const secs = total % 60;
+  return `${mins}:${secs.toString().padStart(2, '0')}`;
+}

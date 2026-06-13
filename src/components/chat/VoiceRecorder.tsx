@@ -2,6 +2,7 @@ import { useState, useRef, useCallback, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { IonIcon, IonSpinner, useIonToast } from '@ionic/react';
 import { mic, close, send } from 'ionicons/icons';
+import { formatSeconds } from '../../utils/datetime';
 
 interface VoiceRecorderProps {
   onRecord: (blob: Blob, duration: number, mimeType: string) => Promise<void>;
@@ -178,11 +179,6 @@ const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
     }
   }, [recordedBlob, recordedDuration, recordedMimeType, onRecord, present, t]);
 
-  const formatDuration = (seconds: number): string => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
-  };
 
   // Show recorded preview
   if (recordedBlob) {
@@ -199,7 +195,7 @@ const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
 
         <div className="recorded-info">
           <div className="recorded-indicator" />
-          <span className="recorded-duration">{formatDuration(recordedDuration)}</span>
+          <span className="recorded-duration">{formatSeconds(recordedDuration)}</span>
         </div>
 
         <button
@@ -300,7 +296,7 @@ const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
 
         <div className="recording-info">
           <div className="recording-indicator" />
-          <span className="recording-duration">{formatDuration(duration)}</span>
+          <span className="recording-duration">{formatSeconds(duration)}</span>
         </div>
 
         <button

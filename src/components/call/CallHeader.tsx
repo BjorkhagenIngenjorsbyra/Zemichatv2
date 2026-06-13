@@ -3,6 +3,7 @@ import { IonButton, IonIcon } from '@ionic/react';
 import { chevronDown, expandOutline } from 'ionicons/icons';
 import { useCallContext, useCallDuration } from '../../contexts/CallContext';
 import { CallState, CallType } from '../../types/call';
+import { formatSeconds } from '../../utils/datetime';
 
 interface CallHeaderProps {
   chatName?: string;
@@ -15,12 +16,6 @@ const CallHeader: React.FC<CallHeaderProps> = ({ chatName }) => {
 
   if (!activeCall) return null;
 
-  const formatDuration = (seconds: number): string => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
-  };
-
   const getStateLabel = (): string => {
     switch (activeCall.state) {
       case CallState.INITIATING:
@@ -30,7 +25,7 @@ const CallHeader: React.FC<CallHeaderProps> = ({ chatName }) => {
       case CallState.CONNECTING:
         return t('call.connecting');
       case CallState.CONNECTED:
-        return formatDuration(callDuration);
+        return formatSeconds(callDuration);
       case CallState.ENDED:
         return t('call.ended');
       default:

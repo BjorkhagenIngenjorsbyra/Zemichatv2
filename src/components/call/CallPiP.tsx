@@ -5,6 +5,7 @@ import { expand, call as callIcon } from 'ionicons/icons';
 import { useCallContext, useCallDuration } from '../../contexts/CallContext';
 import { useAuthContext } from '../../contexts/AuthContext';
 import { CallState } from '../../types/call';
+import { formatSeconds } from '../../utils/datetime';
 
 const CallPiP: React.FC = () => {
   const { t } = useTranslation();
@@ -15,12 +16,6 @@ const CallPiP: React.FC = () => {
   const [position, setPosition] = useState({ x: 16, y: 100 });
 
   if (!activeCall || !activeCall.isMinimized) return null;
-
-  const formatDuration = (seconds: number): string => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
-  };
 
   const isConnected = activeCall.state === CallState.CONNECTED;
 
@@ -86,7 +81,7 @@ const CallPiP: React.FC = () => {
         <div className="pip-overlay">
           <span className="pip-name">{displayName}</span>
           <span className="pip-status">
-            {isConnected ? formatDuration(callDuration) : t('call.connecting')}
+            {isConnected ? formatSeconds(callDuration) : t('call.connecting')}
           </span>
         </div>
 

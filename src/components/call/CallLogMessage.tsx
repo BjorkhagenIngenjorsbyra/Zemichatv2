@@ -8,6 +8,7 @@ import {
   warningOutline,
 } from 'ionicons/icons';
 import { type Message } from '../../types/database';
+import { formatSeconds } from '../../utils/datetime';
 
 interface CallLogMessageProps {
   message: Message;
@@ -49,13 +50,8 @@ const CallLogMessage: React.FC<CallLogMessageProps> = ({
 
   // Duration: format from metadata.duration_seconds when present, otherwise
   // fall back to the legacy "|m:ss" suffix in the content.
-  const formatDuration = (totalSeconds: number): string => {
-    const mins = Math.floor(totalSeconds / 60);
-    const secs = totalSeconds % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
-  };
   const duration = metadata?.duration_seconds != null
-    ? formatDuration(metadata.duration_seconds)
+    ? formatSeconds(metadata.duration_seconds)
     : (content.match(/\|(\d+:\d+|\d+s)/)?.[1] ?? null);
 
   const getIcon = () => {
