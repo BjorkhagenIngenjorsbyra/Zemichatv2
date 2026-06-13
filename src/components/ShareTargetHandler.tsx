@@ -113,7 +113,8 @@ const ShareTargetHandler: React.FC = () => {
       })
       .finally(() => setIsLoading(false));
 
-    setTimeout(() => searchbarRef.current?.setFocus(), 300);
+    const focusId = setTimeout(() => searchbarRef.current?.setFocus(), 300);
+    return () => clearTimeout(focusId);
   }, [isPickerOpen]);
 
   // ---- Helpers (reused from ForwardPicker pattern) ----

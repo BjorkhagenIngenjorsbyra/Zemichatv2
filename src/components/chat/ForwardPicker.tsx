@@ -51,9 +51,10 @@ const ForwardPicker: React.FC<ForwardPickerProps> = ({
           setIsLoading(false);
         });
 
-      setTimeout(() => {
+      const focusId = setTimeout(() => {
         searchbarRef.current?.setFocus();
       }, 300);
+      return () => clearTimeout(focusId);
     } else {
       setSearchQuery('');
       setChats([]);

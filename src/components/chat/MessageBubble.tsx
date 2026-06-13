@@ -67,6 +67,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
   const bubbleRef = useRef<HTMLDivElement>(null);
   const lastTapRef = useRef<number>(0);
   const longPressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const heartTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const SWIPE_THRESHOLD = 60;
   const DOUBLE_TAP_DELAY = 300;
   const LONG_PRESS_DELAY = 400;
@@ -91,7 +92,8 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
       hapticLight();
       onToggleReaction?.(message.id, 'â¤ï¸');
       setShowHeartAnim(true);
-      setTimeout(() => setShowHeartAnim(false), 600);
+      if (heartTimerRef.current) clearTimeout(heartTimerRef.current);
+      heartTimerRef.current = setTimeout(() => setShowHeartAnim(false), 600);
       lastTapRef.current = 0; // Reset to prevent triple-tap
     } else {
       lastTapRef.current = now;
@@ -114,7 +116,10 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
   }, [cancelLongPress, handleLongPress]);
 
   useEffect(() => {
-    return () => cancelLongPress();
+    return () => {
+      cancelLongPress();
+      if (heartTimerRef.current) clearTimeout(heartTimerRef.current);
+    };
   }, [cancelLongPress]);
 
   const swipeHandlers = useSwipeable({
