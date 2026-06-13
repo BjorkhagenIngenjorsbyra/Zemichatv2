@@ -111,6 +111,16 @@ export function CallProvider({ children }: CallProviderProps) {
   const durationTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const ringTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // Mirror of activeCall for the call-signal subscription handler, so it can
+  // read current call state without listing activeCall as an effect dependency
+  // (which would tear down and re-create the realtime channel on every call
+  // state change — mute/speaker/minimize — and could drop a RING/DECLINE signal
+  // in the resubscribe window).
+  const activeCallRef = useRef(activeCall);
+  useEffect(() => {
+    activeCallRef.current = activeCall;
+  }, [activeCall]);
+
   const clearCallError = useCallback(() => setCallError(null), []);
 
   /** Map server/SDK errors to user-friendly i18n keys */
@@ -325,6 +335,18 @@ export function CallProvider({ children }: CallProviderProps) {
 
     // 6. Start 30-second ring timeout
     ringTimeoutRef.current = setTimeout(async () => {
+      // The timeout is cleared on answer/connect/end, but guard against a
+      // last-moment answer race: only finalize as missed if the log is still in
+      // its initial MISSED state (answer/decline would have moved it on).
+      const { data: current } = await supabase
+        .from('call_logs')
+        .select('status')
+        .eq('id', callLog.id)
+        .maybeSingle();
+      if ((current as { status?: string } | null)?.status !== CallStatus.MISSED) {
+        return;
+      }
+
       setActiveCall((prev) => {
         if (prev && prev.state === CallState.RINGING) {
           return { ...prev, state: CallState.ENDED };
@@ -332,6 +354,16 @@ export function CallProvider({ children }: CallProviderProps) {
         return prev;
       });
       setCallError('call.noAnswer');
+
+      // Mirror endCall's teardown for an unanswered outgoing call: stop the
+      // callee's device ringing, clear the dangling RING signal, and leave a
+      // missed-call system message so it's visible in the chat and to the Owner.
+      // (Previously only local state changed — the callee could keep ringing and
+      // the signal row was left dangling.)
+      sendCallPush(chatId, callLog.id, callType, 'cancel');
+      await deleteCallSignals(callLog.id);
+      await createCallMessage(chatId, { ...callLog, status: CallStatus.MISSED } as CallLog);
+
       // Auto-cleanup after showing "no answer" for 2s
       setTimeout(() => cleanupCall(), 2500);
     }, RING_TIMEOUT_MS);
@@ -770,9 +802,13 @@ export function CallProvider({ children }: CallProviderProps) {
     if (!profile) return;
 
     const unsubscribe = subscribeToCallSignals(async (signal, caller) => {
+      // Read live call state from the ref, not a captured dependency, so this
+      // subscription stays mounted across call-state changes.
+      const currentCall = activeCallRef.current;
+
       // DECLINE-signal — vi är initiator och mottagaren har tackat nej.
       // Stoppa det utgående samtalet och visa "Avvisat".
-      if (signal.signal_type === SignalType.DECLINE && activeCall && activeCall.callLogId === signal.call_log_id) {
+      if (signal.signal_type === SignalType.DECLINE && currentCall && currentCall.callLogId === signal.call_log_id) {
         if (ringTimeoutRef.current) {
           clearTimeout(ringTimeoutRef.current);
           ringTimeoutRef.current = null;
@@ -783,7 +819,7 @@ export function CallProvider({ children }: CallProviderProps) {
         return;
       }
 
-      if (activeCall) return;
+      if (currentCall) return;
 
       // Look up call type from the call log (signal itself doesn't carry it)
       let detectedCallType = CallType.VOICE;
@@ -811,7 +847,7 @@ export function CallProvider({ children }: CallProviderProps) {
     });
 
     return unsubscribe;
-  }, [profile, activeCall]);
+  }, [profile, cleanupCall]);
 
   // ============================================================
   // NATIVE CALL ANSWER DETECTION

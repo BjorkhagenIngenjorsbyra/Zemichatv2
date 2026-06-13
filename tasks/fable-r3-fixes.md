@@ -22,15 +22,15 @@ Status-nyckel: [x] fixad · [skip] redan fixad/falskt larm · [HOLD] eskalerad t
 - [ ] chat/PollMessage.tsx — N+1 poll-fetch + icke-atomisk röstväxling
 - [x] chat/VoiceMessage.tsx — Infinity-duration (webm utan duration-header) — Number.isFinite-guard + metadata-prio
 - [x] chat/VoiceRecorder.tsx — cancel skickar ändå + ingen unmount-cleanup (mic kvar på) — cancelledRef + streamRef + cleanup-effect
-- [HOLD] friends/AddToChatPicker.tsx — 1:1→grupp-konvertering är AVSIKTLIG server-side (add_member_to_chat-funktionen sätter is_group=true medvetet). Inte en bugg. UX-tydlighet (varna att 1:1 blir grupp) = design/transparens-beslut → flaggat Erik, ej auto-ändrat.
+- [skip] friends/AddToChatPicker.tsx — 1:1→grupp-konvertering är AVSIKTLIG server-side (add_member_to_chat sätter is_group=true). Erik 2026-06-13: ingen varning behövs → inget att ändra (alt A).
 - [x] friends/FriendSettingsModal.tsx — reset-effekt wipe:ar pågående redigering — init-key-ref (en gång per öppning/friend)
 - [x] friends/ZemiNumberInput.tsx — går ej radera förbi prefix — robust formatZemiNumber (tom + partiell prefix), handleInput delegerar; 12 node-cases gröna
 - [ ] subscription/MemberLimitDialog.tsx — gräns bara klientsidig (TROL. redan #2 4018c35)
 - [ ] subscription/Paywall.tsx — hårdkodat pris istället för store-localized priceString
 - [x] tillkalla/TillkallaButton.tsx — tyst fel (BARNSÄKERHET, Erik godkände fixen) — danger-toast + behåll modal öppen för retry vid fel; success-toast; ny i18n `tillkalla.failed` ×5 språk
-- [ ] contexts/CallContext.tsx — callDuration i context → 1 re-render/s överallt
-- [ ] contexts/CallContext.tsx — incoming-call-subscription rivs/återskapas per state-change
-- [ ] contexts/CallContext.tsx — ring-timeout uppdaterar ej call_log/push/signal/system-msg
+- [ ] contexts/CallContext.tsx — callDuration i context → 1 re-render/s överallt (PERF — tas i perf-batch)
+- [x] contexts/CallContext.tsx — incoming-call-subscription rivs/återskapas per state-change → activeCallRef + sub en gång per profile (cleanupCall stabil [])
+- [x] contexts/CallContext.tsx — ring-timeout uppdaterade ej call_log/push/signal/system-msg → DB-status-guard (MISSED) + cancel-push + deleteCallSignals + createCallMessage
 - [ ] hooks/usePresence.ts — N kanaler + N+1 fetch + 30s-tick per rad
 - [ ] (resterande hög-fynd processas i ordning från rapporten)
 
