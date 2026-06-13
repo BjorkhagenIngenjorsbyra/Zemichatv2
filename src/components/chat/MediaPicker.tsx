@@ -1,4 +1,4 @@
-import { useState, useRef, useImperativeHandle, forwardRef } from 'react';
+import { useState, useRef, useEffect, useImperativeHandle, forwardRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { IonIcon, IonButton, IonSpinner } from '@ionic/react';
 import { close, send } from 'ionicons/icons';
@@ -32,6 +32,15 @@ const MediaPicker = forwardRef<MediaPickerHandle, MediaPickerProps>(({
 
   const [previewFile, setPreviewFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  // Keep the latest object URL so we can revoke it on unmount (otherwise a
+  // preview open at unmount leaks the blob URL).
+  const previewUrlRef = useRef<string | null>(null);
+  useEffect(() => {
+    previewUrlRef.current = previewUrl;
+  }, [previewUrl]);
+  useEffect(() => () => {
+    if (previewUrlRef.current) URL.revokeObjectURL(previewUrlRef.current);
+  }, []);
   const [caption, setCaption] = useState('');
   const [isSending, setIsSending] = useState(false);
 
@@ -61,7 +70,11 @@ const MediaPicker = forwardRef<MediaPickerHandle, MediaPickerProps>(({
     },
     showPreview: (file: File) => {
       setPreviewFile(file);
-      setPreviewUrl(URL.createObjectURL(file));
+      const url = URL.createObjectURL(file);
+      setPreviewUrl((prev) => {
+        if (prev) URL.revokeObjectURL(prev);
+        return url;
+      });
     },
   }));
 
@@ -69,7 +82,13 @@ const MediaPicker = forwardRef<MediaPickerHandle, MediaPickerProps>(({
     const file = e.target.files?.[0];
     if (file) {
       setPreviewFile(file);
-      setPreviewUrl(URL.createObjectURL(file));
+      const url = URL.createObjectURL(file);
+      // Revoke any previous preview URL before replacing it (avoids a leak when
+      // the user picks a new image while a preview is already open).
+      setPreviewUrl((prev) => {
+        if (prev) URL.revokeObjectURL(prev);
+        return url;
+      });
     }
     e.target.value = '';
   };
@@ -80,6 +99,8 @@ const MediaPicker = forwardRef<MediaPickerHandle, MediaPickerProps>(({
       setIsSending(true);
       try {
         await onDocumentSelect(file);
+      } catch (err) {
+        console.error('[MediaPicker] document upload failed:', err);
       } finally {
         setIsSending(false);
       }
@@ -94,6 +115,8 @@ const MediaPicker = forwardRef<MediaPickerHandle, MediaPickerProps>(({
     try {
       await onImageSelect(previewFile, caption.trim() || undefined);
       clearPreview();
+    } catch (err) {
+      console.error('[MediaPicker] image upload failed:', err);
     } finally {
       setIsSending(false);
     }

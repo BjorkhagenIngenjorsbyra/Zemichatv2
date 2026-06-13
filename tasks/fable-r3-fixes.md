@@ -13,6 +13,8 @@ Status-nyckel: [x] fixad · [skip] redan fixad/falskt larm · [HOLD] eskalerad t
 - **PUSH:** Kan ej pusha grenen — GitHub-creds på Revit utgångna (token 401, gh-keyring ogiltig). Erik: färsk PAT (repo-scope) i `C:\Alva\config\github_token.txt` ELLER väck laptopen. 26+ commits ligger lokalt.
 - **MFASetup retry-UX (#35 follow-up):** full retry-knapp vid enroll-fel kräver refaktor av enroll-effekten till en återanropbar funktion + auth-test. Minimal felvisning + deadend-skydd är gjort; full retry väntar. (Låg prio — skärmen är feature-flaggad AV.)
 - **Perf #30/#32/#37 (paginering + Virtuoso-scroll):** stora ändringar av core chat-/oversight-laddning och listscroll. Hög risk att regressa (meddelanden laddas ej, scroll hoppar, realtime tappar) om de byggs blint utan on-device-test. Görs bäst när stacken kan köras + verifieras manuellt. Ej gjorda autonomt.
+- **#48 MediaPicker preventDefault i onTouchMove** — osäkert om React-lyssnaren är passiv; korrekt fix (native non-passive listener) kräver enhets-test av pinch-zoom. Ej gjort blint.
+- **#49 MediaPicker fil-storlek/MIME-validering** — behöver beslut: maxstorlek (MB) + felmeddelande (i18n). accept-attribut begränsar redan MIME något. Server har troligen egen gräns.
 - (Övriga barnsäkerhet/betalning/datamodell-beslut hamnar här allt eftersom.)
 
 ## Hög allvarsgrad (37)
@@ -58,6 +60,11 @@ Status-nyckel: [x] fixad · [skip] redan fixad/falskt larm · [HOLD] eskalerad t
 - [x] #7 ReportButton.submit — try/catch/finally (stuck submitting vid throw)
 - [x] #30 ForwardPicker — getMyChats saknade .catch (unhandled rejection)
 - [x] #56 QuickMessageBar — getMyQuickMessages-fel ignorerat → try/catch/finally + error-logg
+### MediaPicker-batch
+- [x] #46 MediaPicker — object-URL-läcka (revoke prev före ny preview + unmount-cleanup via ref)
+- [x] #47 MediaPicker — upload-await utan catch (handleSendImage + handleDocumentChange → catch+logg)
+- [HOLD] #48 MediaPicker — e.preventDefault() i onTouchMove (ev. passiv lyssnare) — osäkert + kräver enhets-test av pinch-zoom → eskalerat
+- [HOLD] #49 MediaPicker — ingen klient-fil-storlek/MIME-validering → kräver beslut om maxgräns + i18n-meddelande → eskalerat
 ### Övrigt medel
 - [x] #43 MessageBubble.renderTextWithMentions — split(/(@\w+)/) missade å/ä/ö → /(@[\p{L}\p{N}_]+)/gu (render-sidans motsvarighet till input-fixen f00787b)
 - [skip] EmojiGifPanel #27/#28/#29 (medel: try/catch, gifs.length-effekt, race) — REDAN fixade i d9de747 (GifPicker-dedupen).
