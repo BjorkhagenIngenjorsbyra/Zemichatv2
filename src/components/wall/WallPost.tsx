@@ -6,6 +6,7 @@ import {
   IonButton,
   IonModal,
   IonAlert,
+  useIonToast,
 } from '@ionic/react';
 import {
   trashOutline,
@@ -42,6 +43,7 @@ const WallPostCard: React.FC<WallPostCardProps> = ({
 }) => {
   const { t } = useTranslation();
   const { profile } = useAuthContext();
+  const [present] = useIonToast();
   const [showComments, setShowComments] = useState(false);
   const [commentCount, setCommentCount] = useState(0);
   const [showFullImage, setShowFullImage] = useState(false);
@@ -78,7 +80,12 @@ const WallPostCard: React.FC<WallPostCardProps> = ({
   };
 
   const handleReaction = async (emoji: string) => {
-    await toggleWallReaction(post.id, emoji);
+    const { error } = await toggleWallReaction(post.id, emoji);
+    if (error) {
+      console.error('Failed to toggle wall reaction:', error);
+      present({ message: t('errors.generic'), duration: 2500, color: 'danger' });
+      return;
+    }
     onReactionsChanged();
   };
 
