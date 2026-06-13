@@ -146,10 +146,10 @@ export const TillkallaConfirmModal: React.FC<TillkallaConfirmModalProps> = ({
         .tillkalla-icon {
           font-size: 4rem;
           color: hsl(var(--destructive));
-          animation: pulse 1s ease-in-out infinite;
+          animation: tillkalla-pulse 1s ease-in-out infinite;
         }
 
-        @keyframes pulse {
+        @keyframes tillkalla-pulse {
           0%, 100% {
             transform: scale(1);
             opacity: 1;

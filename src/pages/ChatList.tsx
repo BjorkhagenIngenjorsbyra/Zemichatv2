@@ -780,13 +780,13 @@ const ChatList: React.FC = () => {
             height: 4px;
             border-radius: 50%;
             background: hsl(var(--primary));
-            animation: typing-bounce 1.4s infinite ease-in-out;
+            animation: chatlist-typing-bounce 1.4s infinite ease-in-out;
           }
 
           .typing-dots-inline span:nth-child(2) { animation-delay: 0.2s; }
           .typing-dots-inline span:nth-child(3) { animation-delay: 0.4s; }
 
-          @keyframes typing-bounce {
+          @keyframes chatlist-typing-bounce {
             0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
             30% { transform: translateY(-2px); opacity: 1; }
           }

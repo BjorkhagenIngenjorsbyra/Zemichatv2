@@ -147,7 +147,12 @@ const PollCreator: React.FC<PollCreatorProps> = ({ isOpen, onClose, onCreate }) 
           z-index: 300;
           display: flex;
           flex-direction: column;
-          animation: fadeIn 0.2s ease-out;
+          animation: poll-creator-fade-in 0.2s ease-out;
+        }
+
+        @keyframes poll-creator-fade-in {
+          from { opacity: 0; }
+          to { opacity: 1; }
         }
 
         .poll-creator {

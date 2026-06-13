@@ -119,10 +119,10 @@ const IncomingCallModal: React.FC = () => {
           border-radius: 50%;
           overflow: hidden;
           border: 4px solid hsl(var(--primary-foreground) / 0.3);
-          animation: pulse 2s infinite;
+          animation: incoming-call-pulse 2s infinite;
         }
 
-        @keyframes pulse {
+        @keyframes incoming-call-pulse {
           0%, 100% {
             box-shadow: 0 0 0 0 hsl(var(--primary-foreground) / 0.4);
           }

@@ -315,10 +315,10 @@ const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
             padding: 0.5rem;
             background: hsl(var(--destructive) / 0.1);
             border-radius: 1.5rem;
-            animation: pulse 1s infinite;
+            animation: voice-recording-pulse 1s infinite;
           }
 
-          @keyframes pulse {
+          @keyframes voice-recording-pulse {
             0%, 100% { opacity: 1; }
             50% { opacity: 0.8; }
           }

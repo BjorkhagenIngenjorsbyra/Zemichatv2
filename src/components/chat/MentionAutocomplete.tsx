@@ -64,10 +64,10 @@ const MentionAutocomplete: React.FC<MentionAutocompleteProps> = ({
           margin-bottom: 0.25rem;
           overflow: hidden;
           z-index: 50;
-          animation: fadeIn 0.15s ease-out;
+          animation: mention-fade-in 0.15s ease-out;
         }
 
-        @keyframes fadeIn {
+        @keyframes mention-fade-in {
           from { opacity: 0; transform: translateY(4px); }
           to { opacity: 1; transform: translateY(0); }
         }
