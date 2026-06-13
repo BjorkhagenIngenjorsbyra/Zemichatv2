@@ -29,33 +29,9 @@ export const ZemiNumberInput: React.FC<ZemiNumberInputProps> = ({
   }, [value]);
 
   const handleInput = (e: CustomEvent) => {
-    const inputValue = e.detail.value || '';
-
-    // Remove all non-alphanumeric characters and convert to uppercase
-    const cleaned = inputValue.replace(/[^A-Za-z0-9]/g, '').toUpperCase();
-
-    // Format as ZEMI-XXX-XXX
-    let formatted = '';
-
-    // Add ZEMI prefix if user types it or starts with Z
-    if (cleaned.startsWith('ZEMI')) {
-      formatted = 'ZEMI';
-      const rest = cleaned.slice(4);
-
-      if (rest.length > 0) {
-        formatted += '-' + rest.slice(0, 3);
-      }
-      if (rest.length > 3) {
-        formatted += '-' + rest.slice(3, 6);
-      }
-    } else if (cleaned.length > 0) {
-      // User is typing numbers directly - assume they want ZEMI- prefix
-      formatted = 'ZEMI-' + cleaned.slice(0, 3);
-      if (cleaned.length > 3) {
-        formatted += '-' + cleaned.slice(3, 6);
-      }
-    }
-
+    // Single source of truth for formatting (same as the value effect) so
+    // backspacing into the prefix doesn't re-grow the field.
+    const formatted = formatZemiNumber(e.detail.value || '');
     setDisplayValue(formatted);
     onChange(formatted);
   };
@@ -123,34 +99,28 @@ function formatZemiNumber(value: string): string {
   // Clean and uppercase
   const cleaned = value.replace(/[^A-Za-z0-9]/g, '').toUpperCase();
 
-  // Already formatted
+  // Empty after cleaning — allow the field to be cleared.
+  if (cleaned.length === 0) return '';
+
+  // Already fully formatted
   if (value.match(/^ZEMI-[A-Z0-9]{3}-[A-Z0-9]{3}$/)) {
     return value.toUpperCase();
   }
 
-  // Format
-  if (cleaned.startsWith('ZEMI')) {
-    const rest = cleaned.slice(4);
-    if (rest.length >= 6) {
-      return `ZEMI-${rest.slice(0, 3)}-${rest.slice(3, 6)}`;
-    } else if (rest.length >= 3) {
-      return `ZEMI-${rest.slice(0, 3)}-${rest.slice(3)}`;
-    } else if (rest.length > 0) {
-      return `ZEMI-${rest}`;
-    }
-    return 'ZEMI';
+  // A partial 'ZEMI' prefix still being typed or deleted (Z, ZE, ZEM, ZEMI):
+  // return it verbatim so backspace shrinks the field instead of re-growing it
+  // into 'ZEMI-ZEM'.
+  if ('ZEMI'.startsWith(cleaned)) {
+    return cleaned;
   }
 
-  // Just numbers
-  if (cleaned.length >= 6) {
-    return `ZEMI-${cleaned.slice(0, 3)}-${cleaned.slice(3, 6)}`;
-  } else if (cleaned.length >= 3) {
-    return `ZEMI-${cleaned.slice(0, 3)}-${cleaned.slice(3)}`;
-  } else if (cleaned.length > 0) {
-    return `ZEMI-${cleaned}`;
-  }
-
-  return '';
+  // Body is everything after a leading ZEMI, or the raw digits if the user
+  // typed the body directly (we then assume the ZEMI- prefix).
+  const body = cleaned.startsWith('ZEMI') ? cleaned.slice(4) : cleaned;
+  let formatted = 'ZEMI';
+  if (body.length > 0) formatted += '-' + body.slice(0, 3);
+  if (body.length > 3) formatted += '-' + body.slice(3, 6);
+  return formatted;
 }
 
 /**

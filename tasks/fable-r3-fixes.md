@@ -15,7 +15,7 @@ Status-nyckel: [x] fixad · [skip] redan fixad/falskt larm · [HOLD] eskalerad t
 - [ ] ShareTargetHandler.tsx — stale-closure i share-handler
 - [ ] TabLayout.tsx — wall-access fail-open för Texter + ingen realtime
 - [ ] call/VideoGrid.tsx — remote video positionellt mappad (fel namn över fel stream)
-- [ ] chat/ChatInputToolbar.tsx — @mention \w bryter å/ä/ö (TROL. redan f00787b)
+- [skip] chat/ChatInputToolbar.tsx — @mention \w bryter å/ä/ö — REDAN FIXAD (f00787b, rad 91 använder /@([\p{L}\p{N}_]*)$/u)
 - [ ] chat/EmojiGifPanel.tsx + GifPicker.tsx — duplicerad GIF-flik (refaktor)
 - [ ] chat/ImageMessage.tsx — spara till galleri funkar ej native + tap-to-close kapar knappar
 - [ ] chat/MessageBubble.tsx — ej memoizerad + 300-rad <style> per instans
@@ -23,8 +23,8 @@ Status-nyckel: [x] fixad · [skip] redan fixad/falskt larm · [HOLD] eskalerad t
 - [x] chat/VoiceMessage.tsx — Infinity-duration (webm utan duration-header) — Number.isFinite-guard + metadata-prio
 - [x] chat/VoiceRecorder.tsx — cancel skickar ändå + ingen unmount-cleanup (mic kvar på) — cancelledRef + streamRef + cleanup-effect
 - [ ] friends/AddToChatPicker.tsx — 1:1-chattar listas → injektion gör om till grupp
-- [ ] friends/FriendSettingsModal.tsx — reset-effekt wipe:ar pågående redigering
-- [ ] friends/ZemiNumberInput.tsx — går ej radera förbi prefix + caret hoppar
+- [x] friends/FriendSettingsModal.tsx — reset-effekt wipe:ar pågående redigering — init-key-ref (en gång per öppning/friend)
+- [x] friends/ZemiNumberInput.tsx — går ej radera förbi prefix — robust formatZemiNumber (tom + partiell prefix), handleInput delegerar; 12 node-cases gröna
 - [ ] subscription/MemberLimitDialog.tsx — gräns bara klientsidig (TROL. redan #2 4018c35)
 - [ ] subscription/Paywall.tsx — hårdkodat pris istället för store-localized priceString
 - [ ] tillkalla/TillkallaButton.tsx — tyst fel = barn tror hjälp kommer (BARNSÄKERHET)

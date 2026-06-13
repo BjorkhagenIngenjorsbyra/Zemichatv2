@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { IonAvatar, useIonToast } from '@ionic/react';
 import { useTranslation } from 'react-i18next';
 import { type User, FRIEND_CATEGORIES } from '../../types/database';
@@ -30,13 +30,24 @@ export const FriendSettingsModal: React.FC<FriendSettingsModalProps> = ({
   const [categories, setCategories] = useState<string[]>(initialCategories);
   const [isSaving, setIsSaving] = useState(false);
 
+  // Initialize form state once per open-session for a given friend. The
+  // initial* props default to fresh literals (e.g. initialCategories = []), so
+  // depending on them would re-run this effect on every parent re-render and
+  // wipe the user's in-progress edits. Keying on friend.id (read of the initial
+  // values happens only at that transition) fixes that.
+  const initKeyRef = useRef<string | null>(null);
   useEffect(() => {
-    if (isOpen) {
+    const key = isOpen && friend ? friend.id : null;
+    if (key && key !== initKeyRef.current) {
+      initKeyRef.current = key;
       setNickname(initialNickname);
       setShowRealName(initialShowRealName);
       setCategories(initialCategories);
+    } else if (!key) {
+      initKeyRef.current = null;
     }
-  }, [isOpen, initialNickname, initialShowRealName, initialCategories]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen, friend?.id]);
 
   if (!isOpen || !friend) return null;
 
