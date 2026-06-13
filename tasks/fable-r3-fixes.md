@@ -116,6 +116,33 @@ Status-nyckel: [x] fixad · [skip] redan fixad/falskt larm · [HOLD] eskalerad t
 - [x] TwoFactorSetting — .catch på isMFAEnabled (fallback disabled+toast ist.f. evig spinner); toast när disableMFA failar (var tyst). OBS: skärmen fortf. feature-flaggad AV
 - [x] QuickMessageManager — try/catch/finally i loadMessages m. distinkt load-error+retry (fel ≠ "inga meddelanden", undviker default-återskapning ovanpå befintliga); feltoast på add/edit/delete/addDefaults; reorder rullar tillbaka optimistisk ordning + toast vid persist-fel
 
+### Batch 9 — isolerade korrekthetsfixar (commit d550dea)
+- [x] LegalPage — normalisera i18n.language till baskod (en-US→en) före content/title-lookup (regional locale föll tyst till sv)
+- [x] MessageReactions — key emoji-span på emoji+count+hasReacted (ändras vid swap) så pop-animationen faktiskt re-mountar (#34 var no-op)
+- [x] CallPiP — härled motpart via filter på current user-id (speglar CallView) ist.f. slice(1) som visade callee sitt eget namn/avatar
+- [x] CallLogMessage — media_metadata = sanningskälla för typ/status/duration; content-substring bara legacy-fallback (bröt vid lokaliserad/omformulerad systemtext)
+
+### Batch 10 — chat/call race/double-tap/key (commit 7fecbf5)
+- [x] ChatSearchModal — monoton request-id-guard (stale-svar skriver ej över) + distinkt error+retry-state. #132 (unbounded) = redan LIMIT 50/100 serverside → skip
+- [x] AddParticipantPicker — fetch på open/chat (ej på fresh currentParticipantIds-array varje render) + useMemo-filter; loading+error-state (fetch-in-flight/fel lästes som "call full")
+- [x] IncomingCallModal — actionTaken-guard avaktiverar answer/decline efter första tap (ingen dubbel join/answer-race), reset per samtal
+- [x] PollCreator — stabila per-option-ids (key på id, ej index) så borttagen mittenrad behåller fokus/IME; dedupe trimmade options före create + i validering
+
+### Batch 11 — wall (commit 328769b)
+- [x] NewPostModal — danger-toast på upload/createWallPost-fel, behåll modal för retry (inlägg "försvann" tyst)
+- [x] WallComments — onCommentCountChange i ref (inline parent-callback re-skapar ej loadComments varje render → refetch-loop); toast på delete-fel
+- [x] WallPost — kolla toggleWallReaction-resultat, toast vid fel ist.f. unhandled rejection
+
+### Batch 12 — dashboard/voice (commit 86a9c2a)
+- [x] Dashboard — try/finally så pull-to-refresh alltid slutförs; grinda owner Quick Actions på isOwner (Super/Texter såg owner-UI); #382 head:true-count = skip (kräver service-ändring)
+- [x] VoiceRecorder — surfacing av getUserMedia-fel: dedikerat mic-permission-meddelande (ny voice.micDenied ×5 locales) vs generiskt; toast när sändning failar (båda var tysta)
+
+### Batch 13 — i18n-hårdkodning + disabled-prop (commit a2ed3d8)
+- [x] TillkallaAlertCard "Acknowledged" → tillkalla.acknowledged (×5)
+- [x] TillkallaConfirmModal "Cancel in {n}s" → tillkalla.autoCancelIn (×5). Countdown-under-loading-BETEENDE = fortf. eskalerat (barnsäkerhet)
+- [x] MessageContextMenu hardcoded "React with {emoji}" → a11y.reactWith (×5). menuRef ANVÄNDS faktiskt (ref={menuRef}) → den delen av fyndet falsk
+- [x] ChatInputToolbar — wire:a faktiskt disabled-propen (textarea/emoji/attach/kamera/röst/send var fullt interaktiva för suspenderad Texter); normalisera kamera-MIME (jpg→jpeg) + toast på riktiga kamerafel
+
 ## ⚠️ ESKALERAT/HOLD — medel som EJ görs autonomt (kräver Erik/test/beslut)
 - **Betalning (STOPPA-regel):** Paywall userCancelled-flagga (#244, toast på avbrott), Paywall handleRestore "inga köp"-feedback (#246), ChoosePlan/CreateTeam startTrial-felhantering, MemberLimitDialog (subscription) — alla rör betalflöde → Erik.
 - **Auth/MFA (säkerhet):** TwoFactorSetting flagg-flip (Erik: vänta på e-poståterställning), Login MFA AAL2-check (#400), MFASetup double-invoke+recovery-koder (#402/#404), MFAVerify fail-open (#406), useAuth TOKEN_REFRESHED-churn (#292).
@@ -126,10 +153,12 @@ Status-nyckel: [x] fixad · [skip] redan fixad/falskt larm · [HOLD] eskalerad t
 - **Legal (compliance):** Privacy Shield→DPF-faktafix (#310-315), komplaint-myndighet-inkonsistens (#302), DPF-källor — RÖR EJ privacy/terms-dokument utan Eriks ok (compliance-känsligt).
 
 ## ÅTERSTÅR MEDEL (säkra, ej gjorda än) — nästa session
-- i18n-hårdkodning: ChatInputToolbar disabled-prop oanvänd (#124), MessageContextMenu hardcoded "React with" (#192), TillkallaAlertCard/TillkallaConfirmModal-strängar (säkra cosmetiska).
-- Felhantering kvar: ChatSearchModal race+error+unbounded (#128-132), EmojiGifPanel (verifiera ej redan fixad i d9de747), ForwardPicker (klar?), AddParticipantPicker loading/error (#110), IncomingCallModal double-tap (#122), VoiceRecorder getUserMedia-toast (#202), NewPostModal toast (#256), WallPost handleReaction catch (#268), WallComments callback-ref (#260), Dashboard handleRefresh catch + role-gating Quick Actions (#380), CreateTeam referral-race (#372), NewChat createChat-dedup (datamodell), useSignedMediaUrl stale+catch (#298 — hot path, försiktigt), NotificationContext app-resume refresh (#296), ThemeContext klar.
-- CSS-extraktion-svep (per-instans <style> → CSS-fil): CallHistoryItem/CallLogMessage/VideoTile/ImageMessage/VoiceMessage/PollMessage(isOwn→klass)/MessageReactions/QuotedMessage/WallPost/FriendCard/FriendRequestCard/CreateTeam/ChatView — säkra men tråkiga, gör i svep.
-- a11y-svep: AttachmentSheet/MentionAutocomplete/MessageContextMenu/StickerPicker/FriendSettingsModal/ChatInfo h2 — dialog-roller+tangentbord.
-- Korrekthet: CallPiP slice→filter-by-id (#114), CallLogMessage metadata-källa (#118), MessageReactions key (#190), PollCreator stable ids (#194 — NÄSTA moderat), main.tsx fallback-clear+Sentry (#324/#326), LegalPage lang-normalisering (#392 — säker), useTypingList churn (#286).
+- **CSS-extraktion-svep** (per-instans `<style>` → CSS-fil, importeras en gång): CallHistoryItem/VideoTile/ImageMessage/VoiceMessage/PollMessage(isOwn→klass, ej interpolation)/QuotedMessage/WallPost/FriendCard/FriendRequestCard/CreateTeam/ChatView. Säkra men tråkiga, gör i svep. (MessageBubble redan klar tidigare.)
+- **a11y-svep** (dialog-roller, fokus, Escape, tangentbord): AttachmentSheet (#136)/MentionAutocomplete (#184)/MessageContextMenu (#192 dialog-delen)/StickerPicker (#206)/FriendSettingsModal (#222)/ChatInfo h2 (#340).
+- **Felhantering/korrekthet kvar (säkra):** CreateTeam referral-race + submitReferral-resultat (#372/#374), useSignedMediaUrl stale-URL-reset + .catch (#298 — hot path, försiktigt), NotificationContext app-resume refreshCounts + CHANNEL_ERROR (#296), main.tsx fallback-clear + Sentry-capture (#324/#326 — Sentry ej på än), useTypingList churn-diff (#286), App.tsx AuthCallbackHandler type=recovery (#90 — auth-nära, försiktigt), App.tsx tab-remount single-route-array (#88 — routing, regressionsrisk, ev. eskalera).
+- **EmojiGifPanel** #27/#28/#29 medel — verifiera mot d9de747 (GifPicker-dedupen), troligen redan fixade → skip-verifiera.
+- **NewChat createChat-dedup** (#412 1:1-dubbletter) = datamodell (unik constraint/lookup) → eskalera.
+
+Princip nästa pass: CSS-svep + a11y-svep ger flest fynd snabbt och säkert. Sen LÅG (177).
 
 ## Låg (177) — efter medel
