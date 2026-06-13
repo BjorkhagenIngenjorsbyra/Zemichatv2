@@ -133,6 +133,10 @@ const Friends: React.FC = () => {
     if (!error) {
       await loadData();
       refreshCounts();
+    } else {
+      // Same swallowed-failure class as the unfriend fix (#42): give feedback
+      // instead of letting the user tap a dead button.
+      setUnfriendError(t('errors.generic'));
     }
   };
 
@@ -141,6 +145,8 @@ const Friends: React.FC = () => {
     if (!error) {
       setIncomingRequests((prev) => prev.filter((r) => r.id !== friendshipId));
       refreshCounts();
+    } else {
+      setUnfriendError(t('errors.generic'));
     }
   };
 
@@ -151,6 +157,8 @@ const Friends: React.FC = () => {
     });
     if (!error && chat) {
       history.push(`/chat/${chat.id}`);
+    } else {
+      setUnfriendError(t('errors.generic'));
     }
   };
 
@@ -162,6 +170,8 @@ const Friends: React.FC = () => {
     if (!error && chat) {
       history.push(`/chat/${chat.id}`);
       await initiateCall(chat.id, type === 'video' ? CallType.VIDEO : CallType.VOICE);
+    } else {
+      setUnfriendError(t('errors.generic'));
     }
   };
 

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   IonItem,
@@ -16,8 +16,8 @@ interface FriendRequestCardProps {
   addressee: User;
   friendshipId: string;
   direction: 'incoming' | 'outgoing';
-  onAccept?: (friendshipId: string) => void;
-  onReject?: (friendshipId: string) => void;
+  onAccept?: (friendshipId: string) => void | Promise<void>;
+  onReject?: (friendshipId: string) => void | Promise<void>;
   showOwnerApprovalNote?: boolean;
 }
 
@@ -34,6 +34,28 @@ export const FriendRequestCard: React.FC<FriendRequestCardProps> = ({
   showOwnerApprovalNote = false,
 }) => {
   const { t } = useTranslation();
+  // Guard against double-taps firing accept/reject twice (duplicate service calls).
+  const [isProcessing, setIsProcessing] = useState(false);
+
+  const handleAccept = async () => {
+    if (isProcessing || !onAccept) return;
+    setIsProcessing(true);
+    try {
+      await onAccept(friendshipId);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handleReject = async () => {
+    if (isProcessing || !onReject) return;
+    setIsProcessing(true);
+    try {
+      await onReject(friendshipId);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
 
   // For incoming requests, show the requester. For outgoing, show the addressee.
   const displayUser = direction === 'incoming' ? requester : addressee;
@@ -78,7 +100,8 @@ export const FriendRequestCard: React.FC<FriendRequestCardProps> = ({
               fill="outline"
               color="medium"
               size="small"
-              onClick={() => onReject(friendshipId)}
+              disabled={isProcessing}
+              onClick={handleReject}
               className="reject-button"
               aria-label={t('a11y.rejectFriendRequest')}
             >
@@ -90,7 +113,8 @@ export const FriendRequestCard: React.FC<FriendRequestCardProps> = ({
               fill="solid"
               color="primary"
               size="small"
-              onClick={() => onAccept(friendshipId)}
+              disabled={isProcessing}
+              onClick={handleAccept}
               className="accept-button"
               aria-label={t('a11y.acceptFriendRequest')}
             >

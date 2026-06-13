@@ -1,5 +1,6 @@
 {
   "errors": {
+    "generic": "Jotain meni pieleen. Yritä uudelleen.",
     "boundaryMessage": "Jotain meni pieleen. Yritä uudelleen.",
     "boundaryRetry": "Yritä uudelleen",
     "boundaryHome": "Etusivulle"

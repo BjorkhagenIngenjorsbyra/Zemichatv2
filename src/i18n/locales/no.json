@@ -1,5 +1,6 @@
 {
   "errors": {
+    "generic": "Noe gikk galt. Prøv igjen.",
     "boundaryMessage": "Noe gikk galt. Prøv igjen.",
     "boundaryRetry": "Prøv igjen",
     "boundaryHome": "Til startsiden"

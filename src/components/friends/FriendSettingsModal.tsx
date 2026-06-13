@@ -75,6 +75,16 @@ export const FriendSettingsModal: React.FC<FriendSettingsModalProps> = ({
         color: 'success',
       });
       onClose();
+    } else {
+      // Surface the failure and keep the modal open so the user can retry,
+      // instead of silently dropping the save.
+      console.error('Failed to save friend settings:', error);
+      presentToast({
+        message: t('errors.generic'),
+        duration: 2500,
+        position: 'bottom',
+        color: 'danger',
+      });
     }
   };
 

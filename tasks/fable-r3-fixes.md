@@ -78,4 +78,11 @@ Status-nyckel: [x] fixad · [skip] redan fixad/falskt larm · [HOLD] eskalerad t
 - [skip] EmojiGifPanel #27/#28/#29 (medel: try/catch, gifs.length-effekt, race) — REDAN fixade i d9de747 (GifPicker-dedupen).
 - (Resten av medel ej påbörjade — teman: per-instans <style> (CallHistoryItem/VideoTile/ImageMessage/VoiceMessage/PollMessage), saknad felhantering (CreateTexterModal/ReportButton/ChatSearchModal/ForwardPicker/QuickMessageBar m.fl.), a11y (AttachmentSheet/MentionAutocomplete/MessageContextMenu), säkerhet (LinkPreview SSRF #37, LocationMessage-koordinater #38 — granska noga). Bearbeta i ordning nästa session.)
 
+### Batch 3 — isolerade krasch/stale-state-fixar (commit a25371d)
+- [x] ThemeContext — stored theme validerad mot THEMES + applyTheme fallback dark (obsolet localStorage-värde white-screen:ade boot)
+- [x] OfflineBanner — "back online"-timeout i ref, clear vid status-byte+unmount (stale timeout dolde banner medan fortf. offline)
+- [x] TrialBanner — registrera --ion-safe-area-top-cleanup BARA när satt (osynlig banner strippade ej override)
+- [x] EmailConfirmed — history.replace ut ur setCountdown-updater → countdown===0-effekt (ren updater, StrictMode-säker)
+- [skip] GroupAvatar tom members → krasch = FALSKT LARM (userDisplay-utils är null-säkra, ger 'U'+färg)
+
 ## Låg (177) — efter medel
