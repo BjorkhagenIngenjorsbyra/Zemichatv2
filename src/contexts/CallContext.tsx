@@ -77,6 +77,11 @@ const RING_TIMEOUT_MS = 30_000;
 
 const CallContext = createContext<CallContextValue | null>(null);
 
+// Separate context for the per-second call duration. Kept out of the main
+// CallContext value so the once-a-second tick doesn't re-render every component
+// that only needs actions/activeCall (Fable r3 perf finding).
+const CallDurationContext = createContext<number>(0);
+
 // ============================================================
 // PROVIDER
 // ============================================================
@@ -1021,7 +1026,6 @@ export function CallProvider({ children }: CallProviderProps) {
       activeCall,
       incomingCall,
       isAgoraReady,
-      callDuration,
       callError,
       localVideoTrack: videoTrackRef.current,
       screenShareTrack: screenTrackRef.current,
@@ -1041,7 +1045,6 @@ export function CallProvider({ children }: CallProviderProps) {
       activeCall,
       incomingCall,
       isAgoraReady,
-      callDuration,
       callError,
       remoteUsers,
       initiateCall,
@@ -1059,7 +1062,9 @@ export function CallProvider({ children }: CallProviderProps) {
 
   return (
     <CallContext.Provider value={value}>
-      {children}
+      <CallDurationContext.Provider value={callDuration}>
+        {children}
+      </CallDurationContext.Provider>
     </CallContext.Provider>
   );
 }
@@ -1079,4 +1084,12 @@ export function useCallContext(): CallContextValue {
 export function useRemoteUsers() {
   const { remoteUsers } = useCallContext();
   return remoteUsers;
+}
+
+/**
+ * Live call duration in seconds. Separate from useCallContext so the per-second
+ * tick only re-renders components that actually show the timer.
+ */
+export function useCallDuration(): number {
+  return useContext(CallDurationContext);
 }

@@ -28,7 +28,7 @@ Status-nyckel: [x] fixad · [skip] redan fixad/falskt larm · [HOLD] eskalerad t
 - [ ] subscription/MemberLimitDialog.tsx — gräns bara klientsidig (TROL. redan #2 4018c35)
 - [x] subscription/Paywall.tsx — hårdkodat pris → store priceString (Erik godkände); storePriceFor() från currentOffering, fallback bara medan offerings laddar; mock priceString utan period (period läggs vid render)
 - [x] tillkalla/TillkallaButton.tsx — tyst fel (BARNSÄKERHET, Erik godkände fixen) — danger-toast + behåll modal öppen för retry vid fel; success-toast; ny i18n `tillkalla.failed` ×5 språk
-- [ ] contexts/CallContext.tsx — callDuration i context → 1 re-render/s överallt (PERF — tas i perf-batch)
+- [x] contexts/CallContext.tsx — callDuration i context → 1 re-render/s överallt → eget CallDurationContext + useCallDuration(); CallHeader+CallPiP migrerade; callDuration ur CallContextState. tsc/unit gröna.
 - [x] contexts/CallContext.tsx — incoming-call-subscription rivs/återskapas per state-change → activeCallRef + sub en gång per profile (cleanupCall stabil [])
 - [x] contexts/CallContext.tsx — ring-timeout uppdaterade ej call_log/push/signal/system-msg → DB-status-guard (MISSED) + cancel-push + deleteCallSignals + createCallMessage
 - [x] hooks/usePresence.ts — N kanaler + N+1 fetch + 30s-tick per rad → central presenceStore (en kanal, batchad .in()-fetch, en delad tick) via useSyncExternalStore. tsc/lint/unit gröna; behöver live-verifiering av presence (2 användare).

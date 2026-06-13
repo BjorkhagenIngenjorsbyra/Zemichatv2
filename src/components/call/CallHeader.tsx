@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { IonButton, IonIcon } from '@ionic/react';
 import { chevronDown, expandOutline } from 'ionicons/icons';
-import { useCallContext } from '../../contexts/CallContext';
+import { useCallContext, useCallDuration } from '../../contexts/CallContext';
 import { CallState, CallType } from '../../types/call';
 
 interface CallHeaderProps {
@@ -10,7 +10,8 @@ interface CallHeaderProps {
 
 const CallHeader: React.FC<CallHeaderProps> = ({ chatName }) => {
   const { t } = useTranslation();
-  const { activeCall, callDuration, toggleMinimize } = useCallContext();
+  const { activeCall, toggleMinimize } = useCallContext();
+  const callDuration = useCallDuration();
 
   if (!activeCall) return null;
 

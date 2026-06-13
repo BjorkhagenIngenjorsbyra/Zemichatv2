@@ -109,7 +109,9 @@ export interface CallContextState {
   activeCall: ActiveCall | null;
   incomingCall: IncomingCall | null;
   isAgoraReady: boolean;
-  callDuration: number;
+  // callDuration is intentionally NOT here — it ticks every second and is
+  // served via a separate CallDurationContext (useCallDuration) so the main
+  // call context value stays stable during a connected call.
 }
 
 export interface CallContextActions {

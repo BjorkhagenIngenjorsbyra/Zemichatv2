@@ -2,12 +2,13 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { IonButton, IonIcon } from '@ionic/react';
 import { expand, call as callIcon } from 'ionicons/icons';
-import { useCallContext } from '../../contexts/CallContext';
+import { useCallContext, useCallDuration } from '../../contexts/CallContext';
 import { CallState } from '../../types/call';
 
 const CallPiP: React.FC = () => {
   const { t } = useTranslation();
-  const { activeCall, callDuration, toggleMinimize, endCall } = useCallContext();
+  const { activeCall, toggleMinimize, endCall } = useCallContext();
+  const callDuration = useCallDuration();
   const [isDragging, setIsDragging] = useState(false);
   const [position, setPosition] = useState({ x: 16, y: 100 });
 
