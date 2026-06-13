@@ -105,6 +105,8 @@ export function CallProvider({ children }: CallProviderProps) {
   const audioTrackRef = useRef<IMicrophoneAudioTrack | null>(null);
   const videoTrackRef = useRef<ICameraVideoTrack | null>(null);
   const screenTrackRef = useRef<ILocalVideoTrack | null>(null);
+  // Once-per-call guard for the 55-minute video-call time warning.
+  const videoWarningShownRef = useRef(false);
 
   // Remote users
   const [remoteUsers, setRemoteUsers] = useState<Map<string, {
@@ -988,14 +990,22 @@ export function CallProvider({ children }: CallProviderProps) {
   // VIDEO CALL MAX DURATION
   // ============================================================
 
+  // Reset the once-per-call warning flag when a new call starts.
+  useEffect(() => {
+    videoWarningShownRef.current = false;
+  }, [activeCall?.callLogId]);
+
   useEffect(() => {
     if (!activeCall || activeCall.state !== CallState.CONNECTED) return;
     if (activeCall.callType !== CallType.VIDEO) return;
 
     if (callDuration >= VIDEO_CALL_MAX_DURATION_SECONDS) {
       endCall();
-    } else if (callDuration >= VIDEO_CALL_WARNING_SECONDS && callDuration < VIDEO_CALL_WARNING_SECONDS + 1) {
-      // Show warning once at the 55-minute mark
+    } else if (callDuration >= VIDEO_CALL_WARNING_SECONDS && !videoWarningShownRef.current) {
+      // Fire once when we cross the 55-minute mark — guarding on a ref instead
+      // of the exact second, so a throttled/skipped background tick can't miss
+      // the one-second window.
+      videoWarningShownRef.current = true;
       setCallError('call.videoTimeWarning');
     }
   }, [activeCall, callDuration, endCall]);

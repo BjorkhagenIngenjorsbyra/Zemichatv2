@@ -710,8 +710,10 @@ const ChatList: React.FC = () => {
           }
 
           /* Force the IonLabel parent to honour overflow on its children
-             so chat name + preview can ellipsis correctly inside IonItem. */
-          ion-item ion-label {
+             so chat name + preview can ellipsis correctly inside IonItem.
+             Scoped to .chat-item — an unscoped ion-item ion-label rule would
+             leak onto every other page's items while this page stays mounted. */
+          .chat-item ion-label {
             min-width: 0;
             overflow: hidden;
           }
