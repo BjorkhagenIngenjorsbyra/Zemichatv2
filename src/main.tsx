@@ -2,10 +2,14 @@ import React from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App';
 import i18n, { detectDeviceLanguage, initI18n } from './i18n';
-import { initSentry } from './services/sentry';
+import { initSentry, captureException } from './services/sentry';
 
 // Init Sentry first so any error during the rest of bootstrap is reported.
 initSentry();
+
+// Set once the React app has actually mounted, so the global error handler
+// below doesn't paint the fallback over a running app on a late runtime error.
+let appMounted = false;
 
 function renderFallback(message: string) {
   const container = document.getElementById('root');
@@ -23,12 +27,16 @@ function renderFallback(message: string) {
 // the user never sees a blank white screen on iOS/Android.
 window.addEventListener('error', (e) => {
   console.error('Global error:', e.error || e.message);
-  if (!document.getElementById('root')?.hasChildNodes()) {
+  captureException(e.error || e.message, { context: 'window.error' });
+  // Only paint the fallback if the app hasn't mounted yet — otherwise a late
+  // error from a third-party script would clobber a working UI.
+  if (!appMounted && !document.getElementById('root')?.hasChildNodes()) {
     renderFallback('Could not start. Please restart the app.');
   }
 });
 window.addEventListener('unhandledrejection', (e) => {
   console.error('Unhandled rejection:', e.reason);
+  captureException(e.reason, { context: 'unhandledrejection' });
 });
 
 async function bootstrap() {
@@ -36,12 +44,14 @@ async function bootstrap() {
     await detectDeviceLanguage();
   } catch (e) {
     console.warn('Language detection failed, using default:', e);
+    captureException(e, { context: 'bootstrap.detectDeviceLanguage' });
   }
 
   try {
     await initI18n();
   } catch (e) {
     console.warn('i18n init failed, using fallback:', e);
+    captureException(e, { context: 'bootstrap.initI18n' });
   }
 
   // Expose i18n on window for E2E tests (dev only)
@@ -50,15 +60,21 @@ async function bootstrap() {
   }
 
   const container = document.getElementById('root');
+  // A non-fatal global error during the async bootstrap window may have
+  // injected the fallback markup; clear it so React 18's createRoot mounts
+  // into a clean container instead of alongside the "Could not start" text.
+  if (container) container.innerHTML = '';
   const root = createRoot(container!);
   root.render(
     <React.StrictMode>
       <App />
     </React.StrictMode>
   );
+  appMounted = true;
 }
 
 bootstrap().catch((e) => {
   console.error('Bootstrap failed:', e);
+  captureException(e, { context: 'bootstrap' });
   renderFallback('Failed to load app. Please restart.');
 });
