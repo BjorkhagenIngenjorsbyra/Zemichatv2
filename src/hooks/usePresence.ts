@@ -1,79 +1,48 @@
 // Zemichat v2 – Hook to observe a user's online / last-seen status
 
-import { useState, useEffect } from 'react';
+import { useCallback, useSyncExternalStore } from 'react';
 import { useTranslation } from 'react-i18next';
-import { supabase } from '../services/supabase';
 import { isUserOnline, formatLastSeen } from '../services/presence';
+import {
+  subscribePresence,
+  getPresenceSnapshot,
+  type PresenceSnapshot,
+} from '../services/presenceStore';
 
 interface PresenceInfo {
   isOnline: boolean;
   lastSeenText: string;
 }
 
+const EMPTY: PresenceSnapshot = { lastSeenAt: null };
+
 /**
- * Subscribe to a user's `last_seen_at` via Supabase Realtime
- * and return live online-status + formatted text.
+ * Live online-status + formatted "last seen" text for a user.
+ *
+ * Backed by a single shared presence store (one realtime channel + one batched
+ * fetch + one 30s tick for all observed users) instead of a per-instance
+ * channel/fetch/timer — see services/presenceStore.
  */
 export function usePresence(userId: string | null | undefined): PresenceInfo {
   const { t } = useTranslation();
-  const [lastSeenAt, setLastSeenAt] = useState<string | null>(null);
 
-  // Initial fetch
-  useEffect(() => {
-    if (!userId) return;
+  const subscribe = useCallback(
+    (onChange: () => void) => {
+      if (!userId) return () => {};
+      return subscribePresence(userId, onChange);
+    },
+    [userId]
+  );
 
-    const fetchInitial = async () => {
-      const { data } = await supabase
-        .from('users')
-        .select('last_seen_at')
-        .eq('id', userId)
-        .maybeSingle();
+  const getSnapshot = useCallback(
+    () => (userId ? getPresenceSnapshot(userId) : EMPTY),
+    [userId]
+  );
 
-      if (data) {
-        setLastSeenAt((data as { last_seen_at: string | null }).last_seen_at);
-      }
-    };
-
-    fetchInitial();
-  }, [userId]);
-
-  // Realtime subscription
-  useEffect(() => {
-    if (!userId) return;
-
-    const channel = supabase
-      .channel(`presence-${userId}`)
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'users',
-          filter: `id=eq.${userId}`,
-        },
-        (payload) => {
-          const newLastSeen = (payload.new as { last_seen_at: string | null }).last_seen_at;
-          if (newLastSeen) {
-            setLastSeenAt(newLastSeen);
-          }
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [userId]);
-
-  // Recalculate every 30 seconds for "X minutes ago" freshness
-  const [, setTick] = useState(0);
-  useEffect(() => {
-    const timer = setInterval(() => setTick((n) => n + 1), 30_000);
-    return () => clearInterval(timer);
-  }, []);
+  const snapshot = useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
 
   return {
-    isOnline: isUserOnline(lastSeenAt),
-    lastSeenText: formatLastSeen(lastSeenAt, t),
+    isOnline: isUserOnline(snapshot.lastSeenAt),
+    lastSeenText: formatLastSeen(snapshot.lastSeenAt, t),
   };
 }

@@ -31,7 +31,7 @@ Status-nyckel: [x] fixad · [skip] redan fixad/falskt larm · [HOLD] eskalerad t
 - [ ] contexts/CallContext.tsx — callDuration i context → 1 re-render/s överallt (PERF — tas i perf-batch)
 - [x] contexts/CallContext.tsx — incoming-call-subscription rivs/återskapas per state-change → activeCallRef + sub en gång per profile (cleanupCall stabil [])
 - [x] contexts/CallContext.tsx — ring-timeout uppdaterade ej call_log/push/signal/system-msg → DB-status-guard (MISSED) + cancel-push + deleteCallSignals + createCallMessage
-- [ ] hooks/usePresence.ts — N kanaler + N+1 fetch + 30s-tick per rad
+- [x] hooks/usePresence.ts — N kanaler + N+1 fetch + 30s-tick per rad → central presenceStore (en kanal, batchad .in()-fetch, en delad tick) via useSyncExternalStore. tsc/lint/unit gröna; behöver live-verifiering av presence (2 användare).
 - [ ] (resterande hög-fynd processas i ordning från rapporten)
 
 ## Medel (172) — efter hög
