@@ -37,6 +37,8 @@ import {
 } from '../services/friend';
 import { type User } from '../types/database';
 import { SkeletonLoader, EmptyStateIllustration } from '../components/common';
+import { getInitial, getAvatarColor } from '../utils/userDisplay';
+import { getOptimizedAvatarUrl } from '../utils/imageUrl';
 
 interface TexterRequestGroup {
   texter: User;
@@ -212,14 +214,14 @@ const OwnerApprovals: React.FC = () => {
                   <IonAvatar className="texter-avatar">
                     {group.texter.avatar_url ? (
                       <img
-                        src={group.texter.avatar_url}
+                        src={getOptimizedAvatarUrl(group.texter.avatar_url, 48)}
                         alt={group.texter.display_name || ''}
                         loading="lazy"
                         decoding="async"
                       />
                     ) : (
-                      <div className="avatar-placeholder small">
-                        {group.texter.display_name?.charAt(0)?.toUpperCase() || '?'}
+                      <div className="avatar-placeholder small" style={{ background: getAvatarColor(group.texter) }}>
+                        {getInitial(group.texter)}
                       </div>
                     )}
                   </IonAvatar>
@@ -242,16 +244,14 @@ const OwnerApprovals: React.FC = () => {
                         <IonAvatar slot="start" className="requester-avatar">
                           {request.requester.avatar_url ? (
                             <img
-                              src={request.requester.avatar_url}
+                              src={getOptimizedAvatarUrl(request.requester.avatar_url, 48)}
                               alt={request.requester.display_name || ''}
                               loading="lazy"
                               decoding="async"
                             />
                           ) : (
-                            <div className="avatar-placeholder">
-                              {request.requester.display_name
-                                ?.charAt(0)
-                                ?.toUpperCase() || '?'}
+                            <div className="avatar-placeholder" style={{ background: getAvatarColor(request.requester) }}>
+                              {getInitial(request.requester)}
                             </div>
                           )}
                         </IonAvatar>

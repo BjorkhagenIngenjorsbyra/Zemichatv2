@@ -10,6 +10,8 @@ import {
 } from '@ionic/react';
 import { checkmark, close, timeOutline } from 'ionicons/icons';
 import { type User, UserRole } from '../../types/database';
+import { getInitial, getAvatarColor } from '../../utils/userDisplay';
+import { getOptimizedAvatarUrl } from '../../utils/imageUrl';
 import './FriendRequestCard.css';
 
 interface FriendRequestCardProps {
@@ -68,10 +70,10 @@ export const FriendRequestCard: React.FC<FriendRequestCardProps> = ({
     <IonItem className="request-card" data-testid={`request-card-${friendshipId}`}>
       <IonAvatar slot="start" className="request-avatar">
         {displayUser.avatar_url ? (
-          <img src={displayUser.avatar_url} alt={displayUser.display_name || ''} loading="lazy" decoding="async" />
+          <img src={getOptimizedAvatarUrl(displayUser.avatar_url, 48)} alt={displayUser.display_name || ''} loading="lazy" decoding="async" />
         ) : (
-          <div className="avatar-placeholder">
-            {displayUser.display_name?.charAt(0)?.toUpperCase() || '?'}
+          <div className="avatar-placeholder" style={{ background: getAvatarColor(displayUser) }}>
+            {getInitial(displayUser)}
           </div>
         )}
       </IonAvatar>
