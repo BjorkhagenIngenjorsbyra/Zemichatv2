@@ -51,6 +51,21 @@ const Paywall: React.FC<PaywallProps> = ({ blocking = false }) => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [purchaseError, setPurchaseError] = useState<string | null>(null);
 
+  // Store-localized price for a plan from the fetched offering. Falling back to
+  // the hardcoded PLAN_PRICING table (only while offerings load) would otherwise
+  // show a price that can differ from what the user is actually charged — wrong
+  // currency/storefront, or stale if store pricing changed (App Store review
+  // risk). RevenueCat's priceString is just the amount; the period is appended
+  // at render.
+  const storePriceFor = (planType: PlanType): string | null => {
+    if (!currentOffering) return null;
+    const productId = PLAN_PRICING[planType].productId;
+    const pkg = currentOffering.availablePackages.find(
+      (p) => p.product.identifier === productId
+    );
+    return pkg?.product.priceString ?? null;
+  };
+
   // Paywall is interactive when:
   //  - offerings have loaded (currentOffering present)
   //  - context is not in a global loading state
@@ -205,10 +220,20 @@ const Paywall: React.FC<PaywallProps> = ({ blocking = false }) => {
                 )}
                 <h3>{plan.name}</h3>
                 <div className="price">
-                  <span className="amount">{plan.price}</span>
-                  <span className="period">
-                    {` kr/${t('paywall.month')}`}
-                  </span>
+                  {(() => {
+                    const storePrice = storePriceFor(PLAN_ID_TO_TYPE[plan.id]);
+                    return storePrice ? (
+                      <>
+                        <span className="amount">{storePrice}</span>
+                        <span className="period">{`/${t('paywall.month')}`}</span>
+                      </>
+                    ) : (
+                      <>
+                        <span className="amount">{plan.price}</span>
+                        <span className="period">{` kr/${t('paywall.month')}`}</span>
+                      </>
+                    );
+                  })()}
                 </div>
                 <ul className="features">
                   {plan.features.map((feature, i) => (

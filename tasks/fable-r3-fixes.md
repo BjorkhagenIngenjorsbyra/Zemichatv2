@@ -26,7 +26,7 @@ Status-nyckel: [x] fixad · [skip] redan fixad/falskt larm · [HOLD] eskalerad t
 - [x] friends/FriendSettingsModal.tsx — reset-effekt wipe:ar pågående redigering — init-key-ref (en gång per öppning/friend)
 - [x] friends/ZemiNumberInput.tsx — går ej radera förbi prefix — robust formatZemiNumber (tom + partiell prefix), handleInput delegerar; 12 node-cases gröna
 - [ ] subscription/MemberLimitDialog.tsx — gräns bara klientsidig (TROL. redan #2 4018c35)
-- [ ] subscription/Paywall.tsx — hårdkodat pris istället för store-localized priceString
+- [x] subscription/Paywall.tsx — hårdkodat pris → store priceString (Erik godkände); storePriceFor() från currentOffering, fallback bara medan offerings laddar; mock priceString utan period (period läggs vid render)
 - [x] tillkalla/TillkallaButton.tsx — tyst fel (BARNSÄKERHET, Erik godkände fixen) — danger-toast + behåll modal öppen för retry vid fel; success-toast; ny i18n `tillkalla.failed` ×5 språk
 - [ ] contexts/CallContext.tsx — callDuration i context → 1 re-render/s överallt (PERF — tas i perf-batch)
 - [x] contexts/CallContext.tsx — incoming-call-subscription rivs/återskapas per state-change → activeCallRef + sub en gång per profile (cleanupCall stabil [])
