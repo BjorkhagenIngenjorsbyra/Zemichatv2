@@ -85,7 +85,10 @@ const AddFriend: React.FC = () => {
     const { user, error: searchError } = await searchUserByZemiNumber(zemiNumber);
 
     if (searchError) {
-      setError(searchError.message);
+      // Don't render raw server/PostgREST text (untranslated, can leak RLS
+      // internals) — log it, show a generic message.
+      console.error('User search failed:', searchError);
+      setError(t('errors.generic'));
       setIsSearching(false);
       return;
     }
@@ -115,7 +118,8 @@ const AddFriend: React.FC = () => {
     const { error: sendError } = await sendFriendRequest(searchResult.id);
 
     if (sendError) {
-      setError(sendError.message);
+      console.error('Send friend request failed:', sendError);
+      setError(t('errors.generic'));
       setIsSending(false);
       return;
     }

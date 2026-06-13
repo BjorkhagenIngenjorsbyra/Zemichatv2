@@ -769,7 +769,10 @@ export function CallProvider({ children }: CallProviderProps) {
           screenTrackRef.current.close();
           screenTrackRef.current = null;
 
-          if (videoTrackRef.current && activeCall?.isVideoEnabled) {
+          // Read the CURRENT video state via the ref — this handler fires later
+          // and the closed-over activeCall.isVideoEnabled may be stale if the
+          // user toggled video during the share.
+          if (videoTrackRef.current && activeCallRef.current?.isVideoEnabled) {
             await publishTracks(clientRef.current!, null, videoTrackRef.current);
           }
 
