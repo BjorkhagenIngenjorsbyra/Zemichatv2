@@ -12,6 +12,7 @@ import {
   IonReorder,
   IonReorderGroup,
   ItemReorderEventDetail,
+  useIonToast,
 } from '@ionic/react';
 import { addOutline, createOutline, trashOutline, reorderThreeOutline } from 'ionicons/icons';
 import {
@@ -35,8 +36,10 @@ export const QuickMessageManager: React.FC<QuickMessageManagerProps> = ({
   userId,
 }) => {
   const { t } = useTranslation();
+  const [present] = useIonToast();
   const [messages, setMessages] = useState<QuickMessage[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editValue, setEditValue] = useState('');
   const [newMessage, setNewMessage] = useState('');
@@ -44,10 +47,23 @@ export const QuickMessageManager: React.FC<QuickMessageManagerProps> = ({
   const [deleteTarget, setDeleteTarget] = useState<QuickMessage | null>(null);
   const [isSaving, setIsSaving] = useState(false);
 
+  const showError = useCallback(() => {
+    present({ message: t('errors.generic'), duration: 2500, color: 'danger' });
+  }, [present, t]);
+
   const loadMessages = useCallback(async () => {
-    const { messages: quickMsgs } = await getQuickMessagesForUser(userId);
-    setMessages(quickMsgs);
-    setIsLoading(false);
+    setLoadError(false);
+    try {
+      const { messages: quickMsgs } = await getQuickMessagesForUser(userId);
+      setMessages(quickMsgs);
+    } catch (err) {
+      // Distinguish a load failure from a genuinely empty list, so the owner
+      // isn't invited to recreate defaults on top of existing (unloaded) rows.
+      console.error('Failed to load quick messages:', err);
+      setLoadError(true);
+    } finally {
+      setIsLoading(false);
+    }
   }, [userId]);
 
   useEffect(() => {
@@ -60,8 +76,13 @@ export const QuickMessageManager: React.FC<QuickMessageManagerProps> = ({
 
     const suggestions = t('quickMessages.suggestions', { returnObjects: true }) as string[];
     if (Array.isArray(suggestions)) {
-      await createDefaultQuickMessages(userId, suggestions);
-      await loadMessages();
+      const { error } = await createDefaultQuickMessages(userId, suggestions);
+      if (error) {
+        console.error('Failed to create default quick messages:', error);
+        showError();
+      } else {
+        await loadMessages();
+      }
     }
 
     setIsSaving(false);
@@ -77,6 +98,9 @@ export const QuickMessageManager: React.FC<QuickMessageManagerProps> = ({
       setMessages((prev) => [...prev, message]);
       setNewMessage('');
       setIsAdding(false);
+    } else {
+      console.error('Failed to add quick message:', error);
+      showError();
     }
 
     setIsSaving(false);
@@ -99,10 +123,15 @@ export const QuickMessageManager: React.FC<QuickMessageManagerProps> = ({
           m.id === editingId ? { ...m, content: editValue.trim() } : m
         )
       );
+      setEditingId(null);
+      setEditValue('');
+    } else {
+      // Keep the edit row open so the owner can retry rather than silently
+      // discarding the change.
+      console.error('Failed to update quick message:', error);
+      showError();
     }
 
-    setEditingId(null);
-    setEditValue('');
     setIsSaving(false);
   };
 
@@ -119,6 +148,9 @@ export const QuickMessageManager: React.FC<QuickMessageManagerProps> = ({
 
     if (!error) {
       setMessages((prev) => prev.filter((m) => m.id !== deleteTarget.id));
+    } else {
+      console.error('Failed to delete quick message:', error);
+      showError();
     }
 
     setDeleteTarget(null);
@@ -128,7 +160,8 @@ export const QuickMessageManager: React.FC<QuickMessageManagerProps> = ({
   const handleReorder = async (event: CustomEvent<ItemReorderEventDetail>) => {
     const { from, to } = event.detail;
 
-    // Reorder locally first
+    // Keep the pre-reorder order so we can roll back if the persist fails.
+    const previous = messages;
     const reordered = [...messages];
     const [moved] = reordered.splice(from, 1);
     reordered.splice(to, 0, moved);
@@ -137,9 +170,15 @@ export const QuickMessageManager: React.FC<QuickMessageManagerProps> = ({
     // Complete the reorder animation
     event.detail.complete();
 
-    // Save to database
+    // Save to database; revert the optimistic order on failure so the UI
+    // doesn't show an order the server doesn't have.
     const ids = reordered.map((m) => m.id);
-    await reorderQuickMessages(ids);
+    const { error } = await reorderQuickMessages(ids);
+    if (error) {
+      console.error('Failed to persist reorder:', error);
+      setMessages(previous);
+      showError();
+    }
   };
 
   return (
@@ -195,6 +234,18 @@ export const QuickMessageManager: React.FC<QuickMessageManagerProps> = ({
       {isLoading ? (
         <div className="loading-state">
           <IonSpinner name="crescent" />
+        </div>
+      ) : loadError ? (
+        <div className="empty-state">
+          <p>{t('errors.generic')}</p>
+          <IonButton
+            fill="outline"
+            size="small"
+            onClick={() => { setIsLoading(true); loadMessages(); }}
+            className="add-defaults-button"
+          >
+            {t('errors.boundaryRetry')}
+          </IonButton>
         </div>
       ) : messages.length === 0 ? (
         <div className="empty-state">

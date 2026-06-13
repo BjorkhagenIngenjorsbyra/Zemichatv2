@@ -32,8 +32,16 @@ export const TwoFactorSetting: React.FC = () => {
 
   useEffect(() => {
     if (!TWO_FACTOR_UI_ENABLED || !isOwnerOrSuper) return;
-    isMFAEnabled().then(({ enabled: e }) => setEnabled(e));
-  }, [isOwnerOrSuper]);
+    isMFAEnabled()
+      .then(({ enabled: e }) => setEnabled(e))
+      .catch((err) => {
+        // Don't leave the status stuck on the spinner; fall back to "disabled"
+        // (shows the Enable button) and surface the failure.
+        console.error('Failed to read MFA status:', err);
+        setEnabled(false);
+        setToast(t('errors.generic'));
+      });
+  }, [isOwnerOrSuper, t]);
 
   if (!TWO_FACTOR_UI_ENABLED || !isOwnerOrSuper) return null;
 
@@ -44,6 +52,10 @@ export const TwoFactorSetting: React.FC = () => {
     if (!error) {
       setEnabled(false);
       setToast(t('mfa.disabledToast'));
+    } else {
+      // Was silent — MFA stayed enabled but the UI gave no feedback.
+      console.error('Failed to disable MFA:', error);
+      setToast(t('errors.generic'));
     }
   };
 
