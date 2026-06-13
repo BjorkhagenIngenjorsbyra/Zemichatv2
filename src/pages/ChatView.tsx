@@ -130,6 +130,10 @@ const ChatView: React.FC = () => {
   // ref is what other code reads — kept in sync via the setter)
   const [, setIsNearBottom] = useState(true);
   const isNearBottomRef = useRef(true);
+  // Ids we've already sent a read receipt for this session — avoids a network
+  // write per message on every scroll range change (server dedupes too, but
+  // each call still costs a round-trip).
+  const receiptedIdsRef = useRef<Set<string>>(new Set());
   const [newMessageCount, setNewMessageCount] = useState(0);
 
   // Send animation
@@ -887,16 +891,18 @@ const ChatView: React.FC = () => {
               atBottomStateChange={handleAtBottomStateChange}
               atBottomThreshold={200}
               rangeChanged={({ startIndex, endIndex }) => {
-                // Mark visible inbound messages as read. Cheap no-op when
-                // already read (insertReadReceipts dedupes server-side).
+                // Mark visible inbound messages as read — but only ones we
+                // haven't already receipted this session, so scrolling up and
+                // down a long chat doesn't refire writes for the same messages.
                 const ids: string[] = [];
                 for (let i = startIndex; i <= endIndex; i++) {
                   const m = messages[i];
-                  if (m && m.sender_id !== profile?.id) {
+                  if (m && m.sender_id !== profile?.id && !receiptedIdsRef.current.has(m.id)) {
                     ids.push(m.id);
                   }
                 }
                 if (ids.length > 0) {
+                  ids.forEach((id) => receiptedIdsRef.current.add(id));
                   insertReadReceipts(ids);
                 }
               }}

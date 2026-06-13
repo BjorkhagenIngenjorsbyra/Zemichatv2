@@ -150,9 +150,12 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
   };
 
   // Resolve media path to signed URL once per render (audit fix #18).
-  // Only matters for video/document/gif â€” image and voice resolve inside
-  // their own components.
-  const resolvedMediaUrl = useSignedMediaUrl(message.media_url);
+  // Only matters for video/document/gif — image and voice resolve inside their
+  // own components, so gate the input by type to avoid a duplicate signing
+  // request for every image/voice message.
+  const needsSignedUrl =
+    message.type === 'video' || message.type === 'document' || message.type === 'gif';
+  const resolvedMediaUrl = useSignedMediaUrl(needsSignedUrl ? message.media_url : null);
 
   const renderContent = () => {
     switch (message.type) {
