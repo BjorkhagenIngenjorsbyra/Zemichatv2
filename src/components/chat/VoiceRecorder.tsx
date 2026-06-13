@@ -293,7 +293,7 @@ const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
         <button
           className="cancel-button"
           onClick={cancelRecording}
-          aria-label={t('chat.slideToCancel')}
+          aria-label={t('a11y.cancelRecording')}
         >
           <IonIcon icon={close} />
         </button>
@@ -306,7 +306,7 @@ const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
         <button
           className="stop-button"
           onClick={stopRecording}
-          aria-label={t('chat.releaseToSend')}
+          aria-label={t('a11y.stopRecording')}
         >
           <IonIcon icon={send} />
         </button>
@@ -389,7 +389,7 @@ const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
       className="mic-button"
       onClick={startRecording}
       disabled={disabled || isPreparing}
-      aria-label={t('chat.holdToRecord')}
+      aria-label={t('a11y.recordVoice')}
     >
       {isPreparing ? (
         <IonSpinner name="crescent" />

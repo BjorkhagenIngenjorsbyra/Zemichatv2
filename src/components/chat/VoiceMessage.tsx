@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { IonIcon } from '@ionic/react';
 import { play, pause } from 'ionicons/icons';
 import { useSignedMediaUrl } from '../../hooks/useSignedMediaUrl';
@@ -14,6 +15,7 @@ const VoiceMessage: React.FC<VoiceMessageProps> = ({
   mediaUrl,
   mediaMetadata,
 }) => {
+  const { t } = useTranslation();
   const audioRef = useRef<HTMLAudioElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
@@ -133,7 +135,7 @@ const VoiceMessage: React.FC<VoiceMessageProps> = ({
       <button
         className="play-button"
         onClick={togglePlay}
-        aria-label={isPlaying ? 'Pause' : 'Play'}
+        aria-label={isPlaying ? t('a11y.pauseVoice') : t('a11y.playVoice')}
       >
         <IonIcon icon={isPlaying ? pause : play} />
       </button>
@@ -143,6 +145,7 @@ const VoiceMessage: React.FC<VoiceMessageProps> = ({
           <input
             type="range"
             className="progress-slider"
+            aria-label={t('a11y.seek')}
             min={0}
             max={duration || 100}
             value={currentTime}
@@ -160,7 +163,7 @@ const VoiceMessage: React.FC<VoiceMessageProps> = ({
           <button
             className="rate-button"
             onClick={togglePlaybackRate}
-            aria-label={`Playback speed: ${playbackRate}x`}
+            aria-label={t('a11y.playbackSpeed', { rate: playbackRate })}
           >
             {playbackRate}x
           </button>
