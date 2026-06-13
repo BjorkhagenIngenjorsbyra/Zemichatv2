@@ -78,7 +78,9 @@ const InviteSuper: React.FC = () => {
     setInviteLink(null);
     setIsCreating(true);
 
-    const recipientEmail = email;
+    // Normalize so the stored invite email matches the recipient's account
+    // email at claim time (mobile autocorrect adds trailing spaces / caps).
+    const recipientEmail = email.trim().toLowerCase();
 
     const { invitation, error: createError } = await createInvitation(recipientEmail, displayName.trim() || undefined);
 

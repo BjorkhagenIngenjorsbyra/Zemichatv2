@@ -69,15 +69,20 @@ export const FriendSettingsModal: React.FC<FriendSettingsModalProps> = ({
 
   const handleSave = async () => {
     setIsSaving(true);
+    const trimmedNickname = nickname.trim();
+    // The "show real name" toggle is only meaningful when a nickname is set
+    // (its row is hidden otherwise). Don't persist a stale show_real_name=true
+    // with no nickname — an invisible, unreachable setting.
+    const effectiveShowRealName = trimmedNickname ? showRealName : false;
     const { error } = await upsertFriendSettings(friend.id, {
-      nickname: nickname.trim(),
+      nickname: trimmedNickname,
       categories,
-      show_real_name: showRealName,
+      show_real_name: effectiveShowRealName,
     });
     setIsSaving(false);
 
     if (!error) {
-      onSaved(friend.id, nickname.trim(), showRealName, categories);
+      onSaved(friend.id, trimmedNickname, effectiveShowRealName, categories);
       presentToast({
         message: t('friendSettings.saved'),
         duration: 1500,

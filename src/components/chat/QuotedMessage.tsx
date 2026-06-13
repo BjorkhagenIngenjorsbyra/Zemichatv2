@@ -33,6 +33,10 @@ const QuotedMessage: React.FC<QuotedMessageProps> = ({
         return `📄 ${t('message.document')}`;
       case 'location':
         return `📍 ${t('message.location')}`;
+      case 'gif':
+        return `🖼️ ${t('message.gif')}`;
+      case 'poll':
+        return `📊 ${t('message.poll')}`;
       default:
         return '';
     }
@@ -49,7 +53,12 @@ const QuotedMessage: React.FC<QuotedMessageProps> = ({
       onClick={onClick}
       role="button"
       tabIndex={0}
-      onKeyPress={(e) => e.key === 'Enter' && onClick?.()}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onClick?.();
+        }
+      }}
     >
       <div className="quote-line" />
       <div className="quote-content">

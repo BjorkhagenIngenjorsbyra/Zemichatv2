@@ -17,9 +17,13 @@ const MentionAutocomplete: React.FC<MentionAutocompleteProps> = ({
   const { t } = useTranslation();
   if (!visible || members.length === 0) return null;
 
+  // Drop members whose joined user object is missing so onSelect never
+  // receives undefined (its signature is non-nullable).
+  const lowerQuery = query.toLowerCase();
   const filtered = members.filter((m) => {
-    const name = m.user?.display_name?.toLowerCase() || '';
-    return name.includes(query.toLowerCase());
+    if (!m.user) return false;
+    const name = m.user.display_name?.toLowerCase() || '';
+    return name.includes(lowerQuery);
   });
 
   if (filtered.length === 0) return null;

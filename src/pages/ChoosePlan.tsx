@@ -31,6 +31,12 @@ const ChoosePlan: React.FC = () => {
   const [isProcessing, setIsProcessing] = useState(false);
 
   const handleSelectPlan = async (planType: PlanType) => {
+    // The free tier isn't a trial — starting a "trial" of FREE would make the
+    // returning-user/paywall logic treat a free user as trialing.
+    if (planType === PlanType.FREE) {
+      history.replace('/chats');
+      return;
+    }
     setIsProcessing(true);
     try {
       const success = await startTrial(planType);

@@ -11,7 +11,6 @@ import {
 } from '@ionic/react';
 import { timeOutline } from 'ionicons/icons';
 import { getTexterSettings, updateTexterSettings } from '../../services/members';
-import { type TexterSettings } from '../../types/database';
 
 interface QuietHoursManagerProps {
   userId: string;
@@ -43,7 +42,6 @@ export const QuietHoursManager: React.FC<QuietHoursManagerProps> = ({
 }) => {
   const { t } = useTranslation();
   const [present] = useIonToast();
-  const [, setSettings] = useState<TexterSettings | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [isEnabled, setIsEnabled] = useState(false);
@@ -53,7 +51,6 @@ export const QuietHoursManager: React.FC<QuietHoursManagerProps> = ({
 
   const loadSettings = useCallback(async () => {
     const { settings: texterSettings } = await getTexterSettings(userId);
-    setSettings(texterSettings);
 
     if (texterSettings) {
       const hasQuietHours = !!texterSettings.quiet_hours_start;
@@ -140,7 +137,7 @@ export const QuietHoursManager: React.FC<QuietHoursManagerProps> = ({
     const prev = selectedDays;
     const newDays = selectedDays.includes(day)
       ? selectedDays.filter((d) => d !== day)
-      : [...selectedDays, day].sort();
+      : [...selectedDays, day].sort((a, b) => a - b);
 
     setSelectedDays(newDays);
 

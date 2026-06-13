@@ -1,3 +1,4 @@
+import React from 'react';
 import { getInitial, getAvatarColor } from '../../utils/userDisplay';
 
 interface GroupAvatarProps {

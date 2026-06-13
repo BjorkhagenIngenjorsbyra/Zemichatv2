@@ -60,18 +60,28 @@ const MemberListSkeleton: React.FC<{ count: number }> = ({ count }) => (
   </div>
 );
 
+// Deterministic bone dimensions — using Math.random() during render reshuffled
+// every skeleton on each parent re-render (visible flicker) and broke render
+// purity / StrictMode double-render expectations.
+const MESSAGE_BONE_DIMS = [
+  { w: '48%', h: '2.6rem' },
+  { w: '60%', h: '2.0rem' },
+  { w: '40%', h: '3.0rem' },
+  { w: '55%', h: '2.3rem' },
+  { w: '38%', h: '2.8rem' },
+  { w: '52%', h: '2.1rem' },
+  { w: '45%', h: '3.2rem' },
+  { w: '58%', h: '2.4rem' },
+];
+
 const MessagesSkeleton: React.FC<{ count: number }> = ({ count }) => (
   <div style={{ padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
     {Array.from({ length: count }, (_, i) => {
       const isOwn = i % 3 !== 0;
-      const width = `${35 + Math.random() * 30}%`;
+      const dim = MESSAGE_BONE_DIMS[i % MESSAGE_BONE_DIMS.length];
       return (
         <div key={i} style={{ display: 'flex', justifyContent: isOwn ? 'flex-end' : 'flex-start' }}>
-          <Bone
-            width={width}
-            height={`${2 + Math.random() * 1.5}rem`}
-            borderRadius="1rem"
-          />
+          <Bone width={dim.w} height={dim.h} borderRadius="1rem" />
         </div>
       );
     })}

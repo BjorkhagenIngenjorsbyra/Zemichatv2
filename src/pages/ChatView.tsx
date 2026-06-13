@@ -649,8 +649,9 @@ const ChatView: React.FC = () => {
   const handleEmojiInsert = (emoji: string) => {
     const textarea = inputRef.current;
     if (textarea) {
-      const start = textarea.selectionStart || messageText.length;
-      const end = textarea.selectionEnd || messageText.length;
+      // ?? not || — selectionStart of 0 (cursor at start) is valid, but falsy.
+      const start = textarea.selectionStart ?? messageText.length;
+      const end = textarea.selectionEnd ?? messageText.length;
       const newText = messageText.slice(0, start) + emoji + messageText.slice(end);
       setMessageText(newText);
       // Move cursor after inserted emoji
@@ -722,7 +723,7 @@ const ChatView: React.FC = () => {
   const handleMentionSelect = (user: { display_name: string | null }) => {
     const name = user.display_name || '';
     // Replace the @query with @name
-    const cursorPos = inputRef.current?.selectionStart || messageText.length;
+    const cursorPos = inputRef.current?.selectionStart ?? messageText.length;
     const textUpToCursor = messageText.slice(0, cursorPos);
     const rest = messageText.slice(cursorPos);
     const newText = textUpToCursor.replace(/@\w*$/, `@${name} `) + rest;
