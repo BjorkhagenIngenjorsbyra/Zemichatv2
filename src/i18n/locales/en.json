@@ -6,7 +6,8 @@
     "boundaryHome": "Go to start"
   },
   "voice": {
-    "micDenied": "Microphone access is required to record. Enable it in your device settings."
+    "micDenied": "Microphone access is required to record. Enable it in your device settings.",
+    "unavailable": "Voice message unavailable"
   },
   "sessions": {
     "title": "Active devices",
@@ -253,7 +254,9 @@
   },
   "image": {
     "save": "Save image",
-    "share": "Share"
+    "share": "Share",
+    "unavailable": "Image unavailable",
+    "loadFailed": "Failed to load image"
   },
   "actions": {
     "pin": "Pin",
@@ -912,6 +915,7 @@
     "searchMessages": "Search messages",
     "close": "Close",
     "previousImage": "Previous image",
-    "nextImage": "Next image"
+    "nextImage": "Next image",
+    "preview": "Preview"
   }
 }

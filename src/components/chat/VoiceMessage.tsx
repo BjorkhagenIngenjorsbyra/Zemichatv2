@@ -119,7 +119,7 @@ const VoiceMessage: React.FC<VoiceMessageProps> = ({
   if (!mediaUrl) {
     return (
       <div className="voice-error">
-        <span>Voice message unavailable</span>
+        <span>{t('voice.unavailable')}</span>
       </div>
     );
   }

@@ -326,7 +326,7 @@ const ImageMessage: React.FC<ImageMessageProps> = ({
   if (!mediaUrl) {
     return (
       <div className="image-error">
-        <span>Image unavailable</span>
+        <span>{t('image.unavailable')}</span>
       </div>
     );
   }
@@ -347,7 +347,7 @@ const ImageMessage: React.FC<ImageMessageProps> = ({
 
         {hasError ? (
           <div className="image-error">
-            <span>Failed to load image</span>
+            <span>{t('image.loadFailed')}</span>
           </div>
         ) : thumbUrl ? (
           <img

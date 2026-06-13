@@ -6,7 +6,8 @@
     "boundaryHome": "Til startsiden"
   },
   "voice": {
-    "micDenied": "Mikrofontilgang kreves for å ta opp. Aktiver den i enhetens innstillinger."
+    "micDenied": "Mikrofontilgang kreves for å ta opp. Aktiver den i enhetens innstillinger.",
+    "unavailable": "Talemeldingen er ikke tilgjengelig"
   },
   "sessions": {
     "title": "Aktive enheter",
@@ -253,7 +254,9 @@
   },
   "image": {
     "save": "Lagre bilde",
-    "share": "Del"
+    "share": "Del",
+    "unavailable": "Bildet er ikke tilgjengelig",
+    "loadFailed": "Kunne ikke laste inn bildet"
   },
   "actions": {
     "pin": "Fest",
@@ -912,6 +915,7 @@
     "searchMessages": "Søk meldinger",
     "close": "Lukk",
     "previousImage": "Forrige bilde",
-    "nextImage": "Neste bilde"
+    "nextImage": "Neste bilde",
+    "preview": "Forhåndsvisning"
   }
 }

@@ -6,7 +6,8 @@
     "boundaryHome": "Etusivulle"
   },
   "voice": {
-    "micDenied": "Tallennus vaatii mikrofonin käyttöoikeuden. Ota se käyttöön laitteen asetuksissa."
+    "micDenied": "Tallennus vaatii mikrofonin käyttöoikeuden. Ota se käyttöön laitteen asetuksissa.",
+    "unavailable": "Ääniviesti ei ole saatavilla"
   },
   "sessions": {
     "title": "Aktiiviset laitteet",
@@ -253,7 +254,9 @@
   },
   "image": {
     "save": "Tallenna kuva",
-    "share": "Jaa"
+    "share": "Jaa",
+    "unavailable": "Kuva ei ole saatavilla",
+    "loadFailed": "Kuvan lataaminen epäonnistui"
   },
   "actions": {
     "pin": "Kiinnitä",
@@ -912,6 +915,7 @@
     "searchMessages": "Hae viestejä",
     "close": "Sulje",
     "previousImage": "Edellinen kuva",
-    "nextImage": "Seuraava kuva"
+    "nextImage": "Seuraava kuva",
+    "preview": "Esikatselu"
   }
 }

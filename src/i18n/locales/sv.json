@@ -6,7 +6,8 @@
     "boundaryHome": "Till startsidan"
   },
   "voice": {
-    "micDenied": "Mikrofonåtkomst krävs för att spela in. Aktivera den i enhetens inställningar."
+    "micDenied": "Mikrofonåtkomst krävs för att spela in. Aktivera den i enhetens inställningar.",
+    "unavailable": "Röstmeddelandet är inte tillgängligt"
   },
   "sessions": {
     "title": "Aktiva enheter",
@@ -253,7 +254,9 @@
   },
   "image": {
     "save": "Spara bild",
-    "share": "Dela"
+    "share": "Dela",
+    "unavailable": "Bilden är inte tillgänglig",
+    "loadFailed": "Det gick inte att läsa in bilden"
   },
   "actions": {
     "pin": "Fäst",
@@ -918,6 +921,7 @@
     "searchMessages": "Sök meddelanden",
     "close": "Stäng",
     "previousImage": "Föregående bild",
-    "nextImage": "Nästa bild"
+    "nextImage": "Nästa bild",
+    "preview": "Förhandsvisning"
   }
 }

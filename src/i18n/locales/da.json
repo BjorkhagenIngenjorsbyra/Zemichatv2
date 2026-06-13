@@ -6,7 +6,8 @@
     "boundaryHome": "Til forsiden"
   },
   "voice": {
-    "micDenied": "Mikrofonadgang kræves for at optage. Aktivér den i enhedens indstillinger."
+    "micDenied": "Mikrofonadgang kræves for at optage. Aktivér den i enhedens indstillinger.",
+    "unavailable": "Talebeskeden er ikke tilgængelig"
   },
   "sessions": {
     "title": "Aktive enheder",
@@ -253,7 +254,9 @@
   },
   "image": {
     "save": "Gem billede",
-    "share": "Del"
+    "share": "Del",
+    "unavailable": "Billedet er ikke tilgængeligt",
+    "loadFailed": "Billedet kunne ikke indlæses"
   },
   "actions": {
     "pin": "Fastgør",
@@ -912,6 +915,7 @@
     "searchMessages": "Søg beskeder",
     "close": "Luk",
     "previousImage": "Forrige billede",
-    "nextImage": "Næste billede"
+    "nextImage": "Næste billede",
+    "preview": "Forhåndsvisning"
   }
 }

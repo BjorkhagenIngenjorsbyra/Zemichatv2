@@ -235,7 +235,7 @@ const MediaPicker = forwardRef<MediaPickerHandle, MediaPickerProps>(({
           >
             <img
               src={previewUrl}
-              alt="Preview"
+              alt={t('a11y.preview')}
               className="preview-image"
               style={{
                 transform: `translate(${previewTranslate.x}px, ${previewTranslate.y}px) scale(${previewScale})`,
