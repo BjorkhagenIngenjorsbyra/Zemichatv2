@@ -246,6 +246,23 @@ const ChatView: React.FC = () => {
   const loadReactionsRef = useRef(loadReactions);
   loadReactionsRef.current = loadReactions;
 
+  // Coalesce read-marking: a burst of incoming messages in a busy chat would
+  // otherwise fire one markChatAsRead DB write (+ count refresh) per message.
+  // Debounce so rapid arrivals collapse into a single write.
+  const markReadTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const scheduleMarkChatAsRead = useCallback(() => {
+    if (markReadTimerRef.current) clearTimeout(markReadTimerRef.current);
+    markReadTimerRef.current = setTimeout(() => {
+      markReadTimerRef.current = null;
+      markChatAsRead(chatId).then(() => refreshCounts());
+    }, 800);
+  }, [chatId, refreshCounts]);
+  const scheduleMarkReadRef = useRef(scheduleMarkChatAsRead);
+  scheduleMarkReadRef.current = scheduleMarkChatAsRead;
+  useEffect(() => () => {
+    if (markReadTimerRef.current) clearTimeout(markReadTimerRef.current);
+  }, []);
+
   const loadReadReceipts = useCallback(async (messageIds: string[]) => {
     if (messageIds.length === 0) return;
 
@@ -340,7 +357,7 @@ const ChatView: React.FC = () => {
 
         if (newMessage.sender_id !== profile?.id) {
           playReceiveSound();
-          markChatAsRead(chatId).then(() => refreshCounts());
+          scheduleMarkReadRef.current();
         }
       },
       // Handle message updates (edit, delete-for-all)
