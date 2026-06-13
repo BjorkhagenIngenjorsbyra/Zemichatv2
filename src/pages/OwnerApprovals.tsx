@@ -137,28 +137,34 @@ const OwnerApprovals: React.FC = () => {
   const handleDenyFuture = async (request: PendingRequestWithUser) => {
     setProcessingIds((prev) => new Set(prev).add(request.id));
 
-    // First reject the request
-    await rejectTexterRequest(request.id);
+    // First reject the request. Only proceed to deny future requests if the
+    // reject actually succeeded — otherwise we'd report "denied" while the
+    // pending request is still live.
+    const { error: rejectError } = await rejectTexterRequest(request.id);
 
-    // Then deny future requests
-    const { error } = await denyFutureRequests(
-      request.addressee_id,
-      request.requester_id
-    );
-
-    if (error) {
-      console.error('Failed to deny future:', error);
+    if (rejectError) {
+      console.error('Failed to reject request before denying future:', rejectError);
     } else {
-      // Remove from list
-      setTexterGroups((prev) =>
-        prev
-          .map((group) => ({
-            ...group,
-            requests: group.requests.filter((r) => r.id !== request.id),
-          }))
-          .filter((group) => group.requests.length > 0)
+      // Then deny future requests
+      const { error } = await denyFutureRequests(
+        request.addressee_id,
+        request.requester_id
       );
-      setTotalCount((prev) => prev - 1);
+
+      if (error) {
+        console.error('Failed to deny future:', error);
+      } else {
+        // Remove from list
+        setTexterGroups((prev) =>
+          prev
+            .map((group) => ({
+              ...group,
+              requests: group.requests.filter((r) => r.id !== request.id),
+            }))
+            .filter((group) => group.requests.length > 0)
+        );
+        setTotalCount((prev) => prev - 1);
+      }
     }
 
     setProcessingIds((prev) => {

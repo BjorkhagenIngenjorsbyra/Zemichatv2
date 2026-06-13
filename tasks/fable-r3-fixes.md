@@ -9,6 +9,11 @@ betalning/datamodell-fundamentalt. Säkerhetsval = säkrare alternativet.
 
 Status-nyckel: [x] fixad · [skip] redan fixad/falskt larm · [HOLD] eskalerad till Erik
 
+## ⚠️ ESKALERAT — väntar Eriks beslut (autonomt-läge 2026-06-13)
+- **PUSH:** Kan ej pusha grenen — GitHub-creds på Revit utgångna (token 401, gh-keyring ogiltig). Erik: färsk PAT (repo-scope) i `C:\Alva\config\github_token.txt` ELLER väck laptopen. 26+ commits ligger lokalt.
+- **MFASetup retry-UX (#35 follow-up):** full retry-knapp vid enroll-fel kräver refaktor av enroll-effekten till en återanropbar funktion + auth-test. Minimal felvisning + deadend-skydd är gjort; full retry väntar. (Låg prio — skärmen är feature-flaggad AV.)
+- (Övriga barnsäkerhet/betalning/datamodell-beslut hamnar här allt eftersom.)
+
 ## Hög allvarsgrad (37)
 
 - [skip] PrivateRoute.tsx — FALSKT LARM. RRv5 <Switch> matchar på child.props.path (oavsett komponenttyp), så <PrivateRoute exact path="/create-team"> skuggar INTE /privacy/terms (egna <Route>, matchar rätt). Verifierat mot App.tsx. Render-prop-omskrivning = stilfix med IonRouterOutlet-regressionsrisk → rör ej.
@@ -33,7 +38,7 @@ Status-nyckel: [x] fixad · [skip] redan fixad/falskt larm · [HOLD] eskalerad t
 - [x] contexts/CallContext.tsx — ring-timeout uppdaterade ej call_log/push/signal/system-msg → DB-status-guard (MISSED) + cancel-push + deleteCallSignals + createCallMessage
 - [x] hooks/usePresence.ts — N kanaler + N+1 fetch + 30s-tick per rad → central presenceStore (en kanal, batchad .in()-fetch, en delad tick) via useSyncExternalStore. tsc/lint/unit gröna; behöver live-verifiering av presence (2 användare).
 ### Resterande hög (rapportens #27–37)
-- [ ] #27 SubscriptionContext.tsx — RevenueCat-init beror på profile-objektref, ej profile.id → re-init (perf)
+- [x] #27 SubscriptionContext.tsx — RevenueCat-init beror på profile-objektref → keyat på profile?.id (lokal const + dep), undviker re-init/re-login vid varje profiländring
 - [ ] #28 legal/privacy-sv.ts — inkonsekventa plannamn mellan legal-dokument (innehåll)
 - [ ] #29 ChatInfo.tsx — varje SharedMediaThumb kör useSignedMediaUrl separat → N requests (perf)
 - [ ] #30 ChatList.tsx — Virtuoso useWindowScroll inuti IonContent (scroll-mismatch) (perf)
@@ -41,8 +46,8 @@ Status-nyckel: [x] fixad · [skip] redan fixad/falskt larm · [HOLD] eskalerad t
 - [ ] #32 ChatView.tsx — loadChat utan paginering + reactions/read-receipts för ALLA (perf)
 - [x] #33 Dashboard.tsx — loadMembers/loadApprovalsCount/loadTillkallaAlerts svalde fel → error-logg + behåll state vid fel (Tillkalla=barnsäkerhet, klobbra ej till tom)
 - [x] #34 Friends.tsx — loadData utan felhantering (stuck spinner vid throw) → try/finally + per-result error-logg
-- [ ] #35 MFASetup.tsx — enrollMFA-fel → 'scan'-steg utan QR (auth — försiktigt)
-- [ ] #36 OwnerApprovals.tsx — handleDenyFuture ignorerar rejectTexterRequest-resultat (owner-flöde)
+- [x] #35 MFASetup.tsx — enrollMFA-fel → 'scan'-steg utan QR/fel → visar nu felet på scan-steget + Next blockerad utan factorId (deadend-skydd). Screen feature-flaggad AV. FÖLJD (eskalerat): full retry-knapp-UX kräver refaktor av enroll-effekten + auth-test.
+- [x] #36 OwnerApprovals.tsx — handleDenyFuture ignorerade rejectTexterRequest-resultat → deny-future körs nu BARA om reject lyckades (annars logg), annars hade vi rapporterat "nekad" med levande pending-request
 - [ ] #37 OwnerChatView.tsx — loadData utan paginering (perf)
 
 ## Medel (172) — efter hög

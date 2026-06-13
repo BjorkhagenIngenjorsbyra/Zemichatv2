@@ -89,8 +89,12 @@ export function SubscriptionProvider({ children }: SubscriptionProviderProps) {
   const [paywallFeature, setPaywallFeature] = useState<string | null>(null);
 
   // Initialize RevenueCat when user logs in
+  // Key on profile.id, not the whole profile object: AuthContext hands out a
+  // fresh profile reference on any profile change, which would otherwise
+  // re-initialize and re-login RevenueCat on every such update.
+  const profileId = profile?.id;
   useEffect(() => {
-    if (!isAuthenticated || !profile) {
+    if (!isAuthenticated || !profileId) {
       setStatus(null);
       setIsLoading(false);
       return;
@@ -101,13 +105,13 @@ export function SubscriptionProvider({ children }: SubscriptionProviderProps) {
       setError(null);
 
       // Initialize SDK
-      const { error: initError } = await initializeRevenueCat(profile.id);
+      const { error: initError } = await initializeRevenueCat(profileId);
       if (initError) {
         console.error('Failed to initialize RevenueCat:', initError);
       }
 
       // Login to RevenueCat
-      const { error: loginError } = await loginRevenueCat(profile.id);
+      const { error: loginError } = await loginRevenueCat(profileId);
       if (loginError) {
         console.error('Failed to login to RevenueCat:', loginError);
       }
@@ -136,7 +140,7 @@ export function SubscriptionProvider({ children }: SubscriptionProviderProps) {
     };
 
     init();
-  }, [isAuthenticated, profile]);
+  }, [isAuthenticated, profileId]);
 
   // Cleanup on logout
   useEffect(() => {

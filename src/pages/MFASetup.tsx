@@ -151,7 +151,20 @@ const MFASetup: React.FC = () => {
                 </div>
               </div>
 
-              <IonButton expand="block" onClick={() => setStep('verify')} className="continue-button">
+              {error && (
+                <IonText color="danger" className="error-text">
+                  <p>{error}</p>
+                </IonText>
+              )}
+
+              {/* Block proceeding when enrollment failed (no factor / QR) — the
+                  verify step would otherwise dead-end with no factor to confirm. */}
+              <IonButton
+                expand="block"
+                onClick={() => setStep('verify')}
+                className="continue-button"
+                disabled={!factorId}
+              >
                 {t('common.next')}
               </IonButton>
 
