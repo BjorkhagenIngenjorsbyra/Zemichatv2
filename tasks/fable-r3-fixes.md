@@ -16,7 +16,7 @@ Status-nyckel: [x] fixad · [skip] redan fixad/falskt larm · [HOLD] eskalerad t
 - [skip] TabLayout.tsx — wall-access fail-open — REDAN fail-closed (f6efc81, rad 47 `?? false`). Realtime-omkoll vid Owner-toggle ej gjord (mindre UX, ej säkerhet) — kvar som låg.
 - [ ] call/VideoGrid.tsx — remote video positionellt mappad (fel namn över fel stream)
 - [skip] chat/ChatInputToolbar.tsx — @mention \w bryter å/ä/ö — REDAN FIXAD (f00787b, rad 91 använder /@([\p{L}\p{N}_]*)$/u)
-- [ ] chat/EmojiGifPanel.tsx + GifPicker.tsx — duplicerad GIF-flik (refaktor)
+- [x] chat/EmojiGifPanel.tsx + GifPicker.tsx — duplicerad GIF-flik → GifPicker var DÖD KOD (bara i barrel, ej monterad) → raderad + ur index.ts. Fixade GIF-buggarna i live-komponenten EmojiGifPanel: stuck-spinner (try/finally), stale-response (requestSeq-guard), tom-sökning-klobbras-av-trending (hasLoadedGifs-gate), debounce-läcka vid unmount (cleanup).
 - [x] chat/ImageMessage.tsx — tap-to-close kapade knappar (target.closest('button')-guard) + native spara via Filesystem+Share (galleri-direktspar → ISSUES L1)
 - [x] chat/MessageBubble.tsx — 300-rad <style> per instans → extraherat till MessageBubble.css (importeras en gång) + React.memo. FÖLJD: ChatView bör skicka stabila callbacks/memoizerad galleryUrls för full memo-vinst (medel).
 - [x] chat/PollMessage.tsx — icke-atomisk röstväxling → cast_poll_vote-RPC (migration 20260613110000, SECURITY INVOKER, advisory-lock per poll+user, single-choice clear+insert i en transaktion). Verifierat psql: switch→1, multi→2, re-vote idempotent→1. (N+1 poll-fetch = kvar, perf/medel — egen cache.)
