@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { IonIcon } from '@ionic/react';
 import { close, add, trash } from 'ionicons/icons';
@@ -9,45 +9,56 @@ interface PollCreatorProps {
   onCreate: (question: string, options: string[], allowsMultiple: boolean) => void;
 }
 
+interface PollOption {
+  id: string;
+  text: string;
+}
+
+/** Unique, trimmed, non-empty option texts (drops blanks and duplicates). */
+const uniqueNonEmpty = (opts: PollOption[]): string[] =>
+  [...new Set(opts.map((o) => o.text.trim()).filter((o) => o.length > 0))];
+
 const PollCreator: React.FC<PollCreatorProps> = ({ isOpen, onClose, onCreate }) => {
   const { t } = useTranslation();
+  // Stable ids so removing a middle row doesn't shift focus/IME state onto a
+  // different option (keying by array index re-associates inputs on removal).
+  const idRef = useRef(0);
+  const makeOption = (): PollOption => ({ id: `opt-${idRef.current++}`, text: '' });
   const [question, setQuestion] = useState('');
-  const [options, setOptions] = useState(['', '']);
+  const [options, setOptions] = useState<PollOption[]>(() => [makeOption(), makeOption()]);
   const [allowsMultiple, setAllowsMultiple] = useState(false);
 
   const handleAddOption = () => {
     if (options.length < 10) {
-      setOptions([...options, '']);
+      setOptions([...options, makeOption()]);
     }
   };
 
-  const handleRemoveOption = (index: number) => {
+  const handleRemoveOption = (id: string) => {
     if (options.length > 2) {
-      setOptions(options.filter((_, i) => i !== index));
+      setOptions(options.filter((o) => o.id !== id));
     }
   };
 
-  const handleOptionChange = (index: number, value: string) => {
-    const updated = [...options];
-    updated[index] = value;
-    setOptions(updated);
+  const handleOptionChange = (id: string, value: string) => {
+    setOptions((prev) => prev.map((o) => (o.id === id ? { ...o, text: value } : o)));
   };
 
   const handleCreate = () => {
     const trimmedQuestion = question.trim();
-    const trimmedOptions = options.map((o) => o.trim()).filter((o) => o.length > 0);
+    const finalOptions = uniqueNonEmpty(options);
 
-    if (!trimmedQuestion || trimmedOptions.length < 2) return;
+    if (!trimmedQuestion || finalOptions.length < 2) return;
 
-    onCreate(trimmedQuestion, trimmedOptions, allowsMultiple);
+    onCreate(trimmedQuestion, finalOptions, allowsMultiple);
     // Reset form
     setQuestion('');
-    setOptions(['', '']);
+    setOptions([makeOption(), makeOption()]);
     setAllowsMultiple(false);
     onClose();
   };
 
-  const isValid = question.trim().length > 0 && options.filter((o) => o.trim().length > 0).length >= 2;
+  const isValid = question.trim().length > 0 && uniqueNonEmpty(options).length >= 2;
 
   if (!isOpen) return null;
 
@@ -85,19 +96,19 @@ const PollCreator: React.FC<PollCreatorProps> = ({ isOpen, onClose, onCreate }) 
           <div className="poll-field">
             <label className="poll-label">{t('poll.options')}</label>
             {options.map((opt, i) => (
-              <div key={i} className="poll-option-row">
+              <div key={opt.id} className="poll-option-row">
                 <input
                   type="text"
                   className="poll-input"
                   placeholder={`${t('poll.option')} ${i + 1}`}
-                  value={opt}
-                  onChange={(e) => handleOptionChange(i, e.target.value)}
+                  value={opt.text}
+                  onChange={(e) => handleOptionChange(opt.id, e.target.value)}
                   maxLength={100}
                 />
                 {options.length > 2 && (
                   <button
                     className="poll-remove-option"
-                    onClick={() => handleRemoveOption(i)}
+                    onClick={() => handleRemoveOption(opt.id)}
                   >
                     <IonIcon icon={trash} />
                   </button>

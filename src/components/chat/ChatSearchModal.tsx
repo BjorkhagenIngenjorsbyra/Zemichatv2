@@ -41,27 +41,49 @@ export const ChatSearchModal: React.FC<ChatSearchModalProps> = ({
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<SearchResultMessage[]>([]);
   const [isSearching, setIsSearching] = useState(false);
+  const [searchError, setSearchError] = useState(false);
   const searchTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
   const searchbarRef = useRef<HTMLIonSearchbarElement>(null);
+  // Monotonic request id: ignore any response that isn't the latest, so a slow
+  // earlier query can't overwrite fresher results (the 300ms debounce only
+  // partially masks this).
+  const reqSeqRef = useRef(0);
 
   const performSearch = useCallback(
     async (searchQuery: string) => {
       if (!searchQuery || searchQuery.trim().length < 2) {
+        reqSeqRef.current++; // invalidate any in-flight request
         setResults([]);
+        setSearchError(false);
         return;
       }
 
+      const seq = ++reqSeqRef.current;
       setIsSearching(true);
+      setSearchError(false);
 
-      const { results: searchResults, error } = chatId
-        ? await searchInChat(chatId, searchQuery)
-        : await searchGlobal(searchQuery);
+      try {
+        const { results: searchResults, error } = chatId
+          ? await searchInChat(chatId, searchQuery)
+          : await searchGlobal(searchQuery);
 
-      if (!error) {
-        setResults(searchResults);
+        if (seq !== reqSeqRef.current) return; // a newer query superseded this one
+
+        if (error) {
+          console.error('Search failed:', error);
+          setResults([]);
+          setSearchError(true);
+        } else {
+          setResults(searchResults);
+        }
+      } catch (err) {
+        if (seq !== reqSeqRef.current) return;
+        console.error('Search threw:', err);
+        setResults([]);
+        setSearchError(true);
+      } finally {
+        if (seq === reqSeqRef.current) setIsSearching(false);
       }
-
-      setIsSearching(false);
     },
     [chatId]
   );
@@ -92,6 +114,7 @@ export const ChatSearchModal: React.FC<ChatSearchModalProps> = ({
     } else {
       setQuery('');
       setResults([]);
+      setSearchError(false);
     }
   }, [isOpen]);
 
@@ -165,6 +188,13 @@ export const ChatSearchModal: React.FC<ChatSearchModalProps> = ({
         ) : query.trim().length < 2 ? (
           <div className="search-hint">
             <p>{t('search.placeholder')}</p>
+          </div>
+        ) : searchError ? (
+          <div className="search-empty">
+            <p>{t('errors.generic')}</p>
+            <IonButton fill="outline" size="small" onClick={() => performSearch(query)}>
+              {t('errors.boundaryRetry')}
+            </IonButton>
           </div>
         ) : results.length === 0 ? (
           <div className="search-empty">
