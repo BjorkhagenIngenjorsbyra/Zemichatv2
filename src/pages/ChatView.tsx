@@ -1116,6 +1116,7 @@ const ChatView: React.FC = () => {
         isOpen={showSearch}
         onClose={() => setShowSearch(false)}
         chatId={chatId}
+        onSelectMessage={(m) => handleJumpToMessage(m.id)}
       />
 
       <MessageContextMenu
