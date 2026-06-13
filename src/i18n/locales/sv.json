@@ -5,6 +5,9 @@
     "boundaryRetry": "Försök igen",
     "boundaryHome": "Till startsidan"
   },
+  "voice": {
+    "micDenied": "Mikrofonåtkomst krävs för att spela in. Aktivera den i enhetens inställningar."
+  },
   "sessions": {
     "title": "Aktiva enheter",
     "none": "Inga andra enheter",

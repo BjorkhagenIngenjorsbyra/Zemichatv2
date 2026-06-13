@@ -5,6 +5,9 @@
     "boundaryRetry": "Try again",
     "boundaryHome": "Go to start"
   },
+  "voice": {
+    "micDenied": "Microphone access is required to record. Enable it in your device settings."
+  },
   "sessions": {
     "title": "Active devices",
     "none": "No other devices",

@@ -1,6 +1,6 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { IonIcon, IonSpinner } from '@ionic/react';
+import { IonIcon, IonSpinner, useIonToast } from '@ionic/react';
 import { mic, close, send } from 'ionicons/icons';
 
 interface VoiceRecorderProps {
@@ -13,6 +13,7 @@ const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
   disabled = false,
 }) => {
   const { t } = useTranslation();
+  const [present] = useIonToast();
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
   const startTimeRef = useRef<number>(0);
@@ -108,11 +109,21 @@ const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
       setIsRecording(true);
       setDuration(0);
     } catch (error) {
+      // Was silent — mic-permission denial (common on iOS/Android) left the
+      // user with a brief spinner and no explanation. Surface it.
       console.error('Failed to start recording:', error);
+      const isPermission =
+        error instanceof DOMException &&
+        (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError');
+      present({
+        message: isPermission ? t('voice.micDenied') : t('errors.generic'),
+        duration: 3000,
+        color: 'danger',
+      });
     } finally {
       setIsPreparing(false);
     }
-  }, [disabled, isRecording]);
+  }, [disabled, isRecording, present, t]);
 
   const stopRecording = useCallback(() => {
     if (!isRecording || !mediaRecorderRef.current) return;
@@ -161,10 +172,11 @@ const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
       setRecordedDuration(0);
     } catch (error) {
       console.error('Failed to send recording:', error);
+      present({ message: t('errors.generic'), duration: 2500, color: 'danger' });
     } finally {
       setIsSending(false);
     }
-  }, [recordedBlob, recordedDuration, recordedMimeType, onRecord]);
+  }, [recordedBlob, recordedDuration, recordedMimeType, onRecord, present, t]);
 
   const formatDuration = (seconds: number): string => {
     const mins = Math.floor(seconds / 60);

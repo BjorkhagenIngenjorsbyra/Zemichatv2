@@ -112,9 +112,13 @@ const Dashboard: React.FC = () => {
   }, [profile, history]);
 
   const handleRefresh = async (event: CustomEvent<RefresherEventDetail>) => {
-    await Promise.all([loadMembers(), loadApprovalsCount(), loadTillkallaAlerts()]);
-    await refreshProfile();
-    event.detail.complete();
+    try {
+      await Promise.all([loadMembers(), loadApprovalsCount(), loadTillkallaAlerts()]);
+      await refreshProfile();
+    } finally {
+      // Always end the pull-to-refresh spinner, even if a loader rejected.
+      event.detail.complete();
+    }
   };
 
   const handleTexterCreated = () => {
@@ -172,7 +176,10 @@ const Dashboard: React.FC = () => {
             </div>
           )}
 
-          {/* Owner Management Actions */}
+          {/* Owner Management Actions — Owner-only. RLS blocks the underlying
+              actions regardless, but a Super/Texter landing here shouldn't see
+              owner management UI at all. */}
+          {isOwner && (
           <div className="section">
             <h3 className="section-title">{t('dashboard.quickActions')}</h3>
             <IonList className="action-list" data-testid="dashboard-actions">
@@ -217,6 +224,7 @@ const Dashboard: React.FC = () => {
               </IonItem>
             </IonList>
           </div>
+          )}
 
           {/* Team Members */}
           <div className="section">

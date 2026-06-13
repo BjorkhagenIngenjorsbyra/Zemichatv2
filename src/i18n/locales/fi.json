@@ -5,6 +5,9 @@
     "boundaryRetry": "Yritä uudelleen",
     "boundaryHome": "Etusivulle"
   },
+  "voice": {
+    "micDenied": "Tallennus vaatii mikrofonin käyttöoikeuden. Ota se käyttöön laitteen asetuksissa."
+  },
   "sessions": {
     "title": "Aktiiviset laitteet",
     "none": "Ei muita laitteita",

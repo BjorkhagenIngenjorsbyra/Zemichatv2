@@ -5,6 +5,9 @@
     "boundaryRetry": "Prøv igen",
     "boundaryHome": "Til forsiden"
   },
+  "voice": {
+    "micDenied": "Mikrofonadgang kræves for at optage. Aktivér den i enhedens indstillinger."
+  },
   "sessions": {
     "title": "Aktive enheder",
     "none": "Ingen andre enheder",

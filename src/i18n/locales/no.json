@@ -5,6 +5,9 @@
     "boundaryRetry": "Prøv igjen",
     "boundaryHome": "Til startsiden"
   },
+  "voice": {
+    "micDenied": "Mikrofontilgang kreves for å ta opp. Aktiver den i enhetens innstillinger."
+  },
   "sessions": {
     "title": "Aktive enheter",
     "none": "Ingen andre enheter",
