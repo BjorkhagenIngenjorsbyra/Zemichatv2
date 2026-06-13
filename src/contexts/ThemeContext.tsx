@@ -119,7 +119,10 @@ const ThemeContext = createContext<ThemeContextValue>({
 export const useTheme = () => useContext(ThemeContext);
 
 function applyTheme(name: ThemeName) {
-  const colors = THEMES[name];
+  // Guard against an unknown theme name (stale localStorage value from a
+  // renamed/removed theme) — a missing entry would throw on colors.background
+  // and white-screen the app before any UI renders.
+  const colors = THEMES[name] ?? THEMES.dark;
   const root = document.documentElement;
 
   root.style.setProperty('--background', colors.background);
@@ -152,7 +155,10 @@ function applyTheme(name: ThemeName) {
 
 export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [theme, setThemeState] = useState<ThemeName>(() => {
-    return (localStorage.getItem('zemichat-theme') as ThemeName) || 'dark';
+    // Validate against THEMES so a tampered/obsolete stored value can't crash
+    // applyTheme on startup.
+    const stored = localStorage.getItem('zemichat-theme');
+    return stored && stored in THEMES ? (stored as ThemeName) : 'dark';
   });
 
   useEffect(() => {

@@ -22,12 +22,13 @@ const TrialBanner: React.FC = () => {
 
   // Override --ion-safe-area-top so Ionic headers push down below the banner
   useEffect(() => {
-    if (isVisible) {
-      document.documentElement.style.setProperty(
-        '--ion-safe-area-top',
-        'calc(32px + env(safe-area-inset-top, 0px))'
-      );
-    }
+    // Only register the cleanup when this banner actually sets the override,
+    // so we never strip --ion-safe-area-top when the banner was never visible.
+    if (!isVisible) return;
+    document.documentElement.style.setProperty(
+      '--ion-safe-area-top',
+      'calc(32px + env(safe-area-inset-top, 0px))'
+    );
     return () => {
       document.documentElement.style.removeProperty('--ion-safe-area-top');
     };

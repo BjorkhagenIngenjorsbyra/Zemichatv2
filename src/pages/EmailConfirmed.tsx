@@ -9,20 +9,20 @@ const EmailConfirmed: React.FC = () => {
   const history = useHistory();
   const [countdown, setCountdown] = useState(3);
 
+  // Keep the state updater pure — just tick down. Navigation is a side effect
+  // and belongs in its own effect (StrictMode may invoke updaters twice).
   useEffect(() => {
     const timer = setInterval(() => {
-      setCountdown((prev) => {
-        if (prev <= 1) {
-          clearInterval(timer);
-          history.replace('/login');
-          return 0;
-        }
-        return prev - 1;
-      });
+      setCountdown((prev) => (prev <= 0 ? 0 : prev - 1));
     }, 1000);
-
     return () => clearInterval(timer);
-  }, [history]);
+  }, []);
+
+  useEffect(() => {
+    if (countdown <= 0) {
+      history.replace('/login');
+    }
+  }, [countdown, history]);
 
   return (
     <IonPage>
