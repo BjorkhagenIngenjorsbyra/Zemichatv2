@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { getDisplayName, getAvatarColor, getInitial } from '../utils/userDisplay';
@@ -38,47 +38,61 @@ const OwnerOversight: React.FC = () => {
   const { t } = useTranslation();
   const location = useLocation();
   const [chats, setChats] = useState<TexterChatOverview[]>([]);
-  const [filteredChats, setFilteredChats] = useState<TexterChatOverview[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [searchText, setSearchText] = useState('');
   const [filter, setFilter] = useState<'all' | string>('all');
   const [texterNames, setTexterNames] = useState<Map<string, string>>(new Map());
+  // The URL texter filter should seed the initial filter only — not snap back
+  // every time loadChats runs (e.g. pull-to-refresh after a manual segment switch).
+  const filterInitializedRef = useRef(false);
 
   // Get texter filter from URL params
   const urlParams = new URLSearchParams(location.search);
   const texterIdFromUrl = urlParams.get('texter');
 
   const loadChats = useCallback(async () => {
-    const { chats: chatData, error } = await getTexterChats();
+    setLoadError(false);
+    try {
+      const { chats: chatData, error } = await getTexterChats();
 
-    if (error) {
-      console.error('Failed to load Texter chats:', error);
-    }
-
-    setChats(chatData);
-
-    // Build texter names map for filter
-    const names = new Map<string, string>();
-    for (const chat of chatData) {
-      if (!names.has(chat.texter.id)) {
-        names.set(chat.texter.id, chat.texter.display_name || chat.texter.zemi_number);
+      if (error) {
+        // For oversight, never present a load failure as "no chats" — that
+        // wrongly reassures the parent there is nothing to monitor.
+        console.error('Failed to load Texter chats:', error);
+        setLoadError(true);
+        return;
       }
-    }
-    setTexterNames(names);
 
-    // Set initial filter from URL if present
-    if (texterIdFromUrl && names.has(texterIdFromUrl)) {
-      setFilter(texterIdFromUrl);
-    }
+      setChats(chatData);
 
-    setIsLoading(false);
+      // Build texter names map for filter
+      const names = new Map<string, string>();
+      for (const chat of chatData) {
+        if (!names.has(chat.texter.id)) {
+          names.set(chat.texter.id, chat.texter.display_name || chat.texter.zemi_number);
+        }
+      }
+      setTexterNames(names);
+
+      // Seed the filter from the URL once, then leave the user's choice alone.
+      if (!filterInitializedRef.current && texterIdFromUrl && names.has(texterIdFromUrl)) {
+        setFilter(texterIdFromUrl);
+      }
+      filterInitializedRef.current = true;
+    } catch (err) {
+      console.error('Failed to load Texter chats:', err);
+      setLoadError(true);
+    } finally {
+      setIsLoading(false);
+    }
   }, [texterIdFromUrl]);
 
   useEffect(() => {
     loadChats();
   }, [loadChats]);
 
-  useEffect(() => {
+  const filteredChats = useMemo(() => {
     let result = chats;
 
     // Filter by texter
@@ -102,7 +116,7 @@ const OwnerOversight: React.FC = () => {
       );
     }
 
-    setFilteredChats(result);
+    return result;
   }, [chats, filter, searchText]);
 
   const handleRefresh = async (event: CustomEvent<RefresherEventDetail>) => {
@@ -249,6 +263,16 @@ const OwnerOversight: React.FC = () => {
 
         {isLoading ? (
           <SkeletonLoader variant="oversight-list" />
+        ) : loadError ? (
+          <div className="empty-state">
+            <h3>{t('errors.generic')}</h3>
+            <button
+              className="oversight-retry-btn"
+              onClick={() => { setIsLoading(true); loadChats(); }}
+            >
+              {t('errors.boundaryRetry')}
+            </button>
+          </div>
         ) : filteredChats.length === 0 ? (
           <div className="empty-state">
             <EmptyStateIllustration type="no-chats" />
@@ -369,6 +393,19 @@ const OwnerOversight: React.FC = () => {
           .empty-state p {
             margin: 0;
             color: hsl(var(--muted-foreground));
+          }
+
+          .oversight-retry-btn {
+            margin-top: 1rem;
+            background: hsl(var(--primary));
+            color: hsl(var(--primary-foreground));
+            border: none;
+            border-radius: 9999px;
+            padding: 0.5rem 1.25rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
           }
 
           .chat-list {
