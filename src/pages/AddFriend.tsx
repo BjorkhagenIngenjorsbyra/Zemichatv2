@@ -29,10 +29,11 @@ import {
   searchUserByZemiNumber,
   sendFriendRequest,
   getFriendshipStatus,
+  acceptFriendRequest,
 } from '../services/friend';
 import { ZemiNumberInput, isValidZemiNumber } from '../components/friends';
 import { getAvatarColor, getInitial } from '../utils/userDisplay';
-import { type User } from '../types/database';
+import { type User, UserRole } from '../types/database';
 
 const AddFriend: React.FC = () => {
   const { t } = useTranslation();
@@ -44,6 +45,10 @@ const AddFriend: React.FC = () => {
   const [friendshipStatus, setFriendshipStatus] = useState<
     'none' | 'pending_outgoing' | 'pending_incoming' | 'accepted' | 'denied'
   >('none');
+  const [friendshipId, setFriendshipId] = useState<string | null>(null);
+  // Texters' friend requests are gated by Owner approval, so they must not
+  // accept directly here — mirror the Friends page (onAccept disabled for Texter).
+  const canAccept = profile?.role !== UserRole.TEXTER;
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
@@ -80,6 +85,7 @@ const AddFriend: React.FC = () => {
     setError(null);
     setSearchResult(null);
     setFriendshipStatus('none');
+    setFriendshipId(null);
     setSuccessMessage(null);
 
     const { user, error: searchError } = await searchUserByZemiNumber(zemiNumber);
@@ -102,11 +108,33 @@ const AddFriend: React.FC = () => {
     setSearchResult(user);
 
     // Check existing friendship status
-    const { status } = await getFriendshipStatus(user.id);
+    const { status, friendship } = await getFriendshipStatus(user.id);
     setFriendshipStatus(status);
+    setFriendshipId(friendship?.id ?? null);
 
     setIsSearching(false);
   }, [zemiNumber, profile?.zemi_number, t]);
+
+  const handleAcceptIncoming = async () => {
+    if (!friendshipId) return;
+
+    setIsSending(true);
+    setError(null);
+    setSuccessMessage(null);
+
+    const { error: acceptError } = await acceptFriendRequest(friendshipId);
+
+    if (acceptError) {
+      console.error('Accept friend request failed:', acceptError);
+      setError(t('errors.generic'));
+      setIsSending(false);
+      return;
+    }
+
+    setFriendshipStatus('accepted');
+    setSuccessMessage(t('friends.requestSentSuccess'));
+    setIsSending(false);
+  };
 
   const handleSendRequest = async () => {
     if (!searchResult) return;
@@ -264,7 +292,23 @@ const AddFriend: React.FC = () => {
                   <p className="result-zemi">{searchResult.zemi_number}</p>
                 </div>
 
-                {statusDisplay ? (
+                {friendshipStatus === 'pending_incoming' && canAccept && friendshipId ? (
+                  <IonButton
+                    onClick={handleAcceptIncoming}
+                    disabled={isSending}
+                    className="send-request-button"
+                    color="success"
+                  >
+                    {isSending ? (
+                      <IonSpinner name="crescent" />
+                    ) : (
+                      <>
+                        <IonIcon icon={checkmarkOutline} slot="start" />
+                        {t('a11y.acceptFriendRequest')}
+                      </>
+                    )}
+                  </IonButton>
+                ) : statusDisplay ? (
                   <div className="status-display">
                     <IonBadge color={statusDisplay.color}>
                       <IonIcon icon={statusDisplay.icon} />
