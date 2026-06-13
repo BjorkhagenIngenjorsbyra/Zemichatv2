@@ -43,6 +43,10 @@ const ForwardPicker: React.FC<ForwardPickerProps> = ({
         .then(({ chats: fetchedChats }) => {
           setChats(fetchedChats.filter((c) => !c.isArchived));
         })
+        .catch((err) => {
+          // Without this, a rejected getMyChats was an unhandled rejection.
+          console.error('[ForwardPicker] getMyChats failed:', err);
+        })
         .finally(() => {
           setIsLoading(false);
         });

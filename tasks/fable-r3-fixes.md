@@ -52,6 +52,13 @@ Status-nyckel: [x] fixad · [skip] redan fixad/falskt larm · [HOLD] eskalerad t
 - [HOLD] #37 OwnerChatView.tsx — loadData utan paginering → ESKALERAT (samma som #32, core oversight-laddning; hög regressionsrisk blint)
 
 ## Medel (172) — efter hög
+### Felhantering-batch 1
+- [x] #4 CreateTexterModal.copyCredentials — clipboard.writeText try/catch
+- [x] #5 CreateTexterModal.handleSubmit — try/catch/finally runt createTexter (stuck-loading + tyst fel)
+- [x] #7 ReportButton.submit — try/catch/finally (stuck submitting vid throw)
+- [x] #30 ForwardPicker — getMyChats saknade .catch (unhandled rejection)
+- [x] #56 QuickMessageBar — getMyQuickMessages-fel ignorerat → try/catch/finally + error-logg
+### Övrigt medel
 - [x] #43 MessageBubble.renderTextWithMentions — split(/(@\w+)/) missade å/ä/ö → /(@[\p{L}\p{N}_]+)/gu (render-sidans motsvarighet till input-fixen f00787b)
 - [skip] EmojiGifPanel #27/#28/#29 (medel: try/catch, gifs.length-effekt, race) — REDAN fixade i d9de747 (GifPicker-dedupen).
 - (Resten av medel ej påbörjade — teman: per-instans <style> (CallHistoryItem/VideoTile/ImageMessage/VoiceMessage/PollMessage), saknad felhantering (CreateTexterModal/ReportButton/ChatSearchModal/ForwardPicker/QuickMessageBar m.fl.), a11y (AttachmentSheet/MentionAutocomplete/MessageContextMenu), säkerhet (LinkPreview SSRF #37, LocationMessage-koordinater #38 — granska noga). Bearbeta i ordning nästa session.)

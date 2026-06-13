@@ -22,9 +22,18 @@ export const QuickMessageBar: React.FC<QuickMessageBarProps> = ({
 
   useEffect(() => {
     const loadMessages = async () => {
-      const { messages: quickMsgs } = await getMyQuickMessages();
-      setMessages(quickMsgs);
-      setIsLoading(false);
+      try {
+        const { messages: quickMsgs, error } = await getMyQuickMessages();
+        if (error) {
+          console.error('[QuickMessageBar] getMyQuickMessages failed:', error);
+        } else {
+          setMessages(quickMsgs);
+        }
+      } catch (err) {
+        console.error('[QuickMessageBar] loadMessages threw:', err);
+      } finally {
+        setIsLoading(false);
+      }
     };
 
     loadMessages();
