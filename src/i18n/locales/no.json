@@ -522,6 +522,7 @@
     "callEnding": "Samtalen avsluttes...",
     "maxDurationReached": "Maksimal samtaletid nådd",
     "noAnswer": "Ingen svar",
+    "groupFull": "Samtalen er full (maks 6 deltakere).",
     "unavailable": "Ikke tilgjengelig",
     "error": "Noe gikk galt. Prøv igjen senere.",
     "microphoneError": "Kunne ikke få tilgang til mikrofonen. Sjekk nettlesertillatelsene.",

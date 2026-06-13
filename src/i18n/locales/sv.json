@@ -522,6 +522,7 @@
     "callEnding": "Samtalet avslutas...",
     "maxDurationReached": "Maximal samtalstid uppnådd",
     "noAnswer": "Inget svar",
+    "groupFull": "Samtalet är fullt (max 6 deltagare).",
     "unavailable": "Inte tillgänglig",
     "error": "Något gick fel. Försök igen senare.",
     "microphoneError": "Mikrofonen är inte tillåten. Gå till telefonens inställningar → Zemichat → Behörigheter och slå på Mikrofon.",

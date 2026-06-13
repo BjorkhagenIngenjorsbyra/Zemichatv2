@@ -147,6 +147,9 @@ export function CallProvider({ children }: CallProviderProps) {
     // Server-side authorization (Texter call disabled, not a chat member)
     if (msg.includes('not a member')) return 'call.permissionDenied';
     if (msg.includes('call permission denied')) return 'call.permissionDenied';
+    // Server-side group-call cap (mirrors the client pre-check; fires when the
+    // chat grew past MAX_GROUP_CALL_PARTICIPANTS between pre-check and token mint).
+    if (msg.includes('group is full')) return 'call.groupFull';
 
     // Generic permission/microphone wording from createLocalTracks etc.
     if (msg.includes('notallowederror') || msg.includes('permission denied') || msg.includes('permission_denied')) {

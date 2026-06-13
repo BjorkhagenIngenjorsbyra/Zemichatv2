@@ -522,6 +522,7 @@
     "callEnding": "Opkaldet afsluttes...",
     "maxDurationReached": "Maksimal opkaldstid nået",
     "noAnswer": "Intet svar",
+    "groupFull": "Opkaldet er fuldt (maks. 6 deltagere).",
     "unavailable": "Ikke tilgængelig",
     "error": "Noget gik galt. Prøv igen senere.",
     "microphoneError": "Kunne ikke få adgang til mikrofonen. Tjek browsertilladelserne.",

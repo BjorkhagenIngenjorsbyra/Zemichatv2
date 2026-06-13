@@ -652,6 +652,22 @@ END;
 $$ LANGUAGE plpgsql;
 ```
 
+### Deltagartak för gruppsamtal (`chat_call_within_capacity`)
+```sql
+-- Server-side-grind för Agora-deltagartaket. Kanalen == chat_id, så taket
+-- enforce:as genom att räkna chattens aktiva medlemmar. SECURITY DEFINER,
+-- låst till service_role; anropas av agora-token edge-funktionen innan en
+-- join-token utfärdas. Mirror av MAX_GROUP_CALL_PARTICIPANTS (6) i
+-- src/types/call.ts. Se ADR 2026-06-13-1.
+CREATE OR REPLACE FUNCTION public.chat_call_within_capacity(p_chat_id uuid)
+RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER SET search_path = public AS $$
+  SELECT count(distinct user_id) <= 6
+  FROM public.chat_members
+  WHERE chat_id = p_chat_id AND left_at IS NULL;
+$$;
+-- GRANT EXECUTE endast till service_role (revoke från public/anon/authenticated).
+```
+
 ### Uppdatera updated_at automatiskt
 ```sql
 CREATE OR REPLACE FUNCTION update_updated_at()

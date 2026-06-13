@@ -522,6 +522,7 @@
     "callEnding": "Call ending...",
     "maxDurationReached": "Maximum call duration reached",
     "noAnswer": "No answer",
+    "groupFull": "The call is full (max 6 participants).",
     "unavailable": "Unavailable",
     "error": "Something went wrong. Please try again later.",
     "microphoneError": "Microphone is not allowed. Open phone Settings → Zemichat → Permissions and enable Microphone.",
