@@ -24,15 +24,14 @@ import { getSharedMedia, updateChatName, leaveChat } from '../services/chatInfo'
 import { usePresence } from '../hooks/usePresence';
 import { type User } from '../types/database';
 import { getAvatarColor, getInitial } from '../utils/userDisplay';
-import { useSignedMediaUrl } from '../hooks/useSignedMediaUrl';
+import { resolveMediaUrls } from '../services/storage';
 import ReportButton from '../components/ReportButton';
 
 /**
  * Thumbnail that resolves a chat-media storage path to a signed URL.
  * chat-media is private (audit fix #18).
  */
-const SharedMediaThumb: React.FC<{ path: string }> = ({ path }) => {
-  const url = useSignedMediaUrl(path);
+const SharedMediaThumb: React.FC<{ url: string | null }> = ({ url }) => {
   if (!url) return <div className="media-thumb media-thumb-loading" />;
   return (
     <div className="media-thumb">
@@ -49,6 +48,19 @@ const ChatInfo: React.FC = () => {
 
   const [chat, setChat] = useState<ChatWithDetails | null>(null);
   const [sharedMedia, setSharedMedia] = useState<string[]>([]);
+  // Resolve all shared-media signed URLs once per list change (deduped, cached)
+  // instead of one useSignedMediaUrl hook per thumbnail — which fired N separate
+  // resolutions and re-ran whenever a thumb remounted on scroll.
+  const [resolvedMedia, setResolvedMedia] = useState<Map<string, string>>(new Map());
+  useEffect(() => {
+    let cancelled = false;
+    resolveMediaUrls(sharedMedia).then((m) => {
+      if (!cancelled) setResolvedMedia(m);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [sharedMedia]);
   const [isLoading, setIsLoading] = useState(true);
   const [editingName, setEditingName] = useState(false);
   const [newName, setNewName] = useState('');
@@ -246,8 +258,8 @@ const ChatInfo: React.FC = () => {
               <p className="empty-text">{t('chatInfo.noSharedMedia')}</p>
             ) : (
               <div className="media-grid">
-                {sharedMedia.map((url, index) => (
-                  <SharedMediaThumb key={index} path={url} />
+                {sharedMedia.map((path, index) => (
+                  <SharedMediaThumb key={index} url={resolvedMedia.get(path) ?? null} />
                 ))}
               </div>
             )}

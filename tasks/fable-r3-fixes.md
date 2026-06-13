@@ -12,6 +12,7 @@ Status-nyckel: [x] fixad · [skip] redan fixad/falskt larm · [HOLD] eskalerad t
 ## ⚠️ ESKALERAT — väntar Eriks beslut (autonomt-läge 2026-06-13)
 - **PUSH:** Kan ej pusha grenen — GitHub-creds på Revit utgångna (token 401, gh-keyring ogiltig). Erik: färsk PAT (repo-scope) i `C:\Alva\config\github_token.txt` ELLER väck laptopen. 26+ commits ligger lokalt.
 - **MFASetup retry-UX (#35 follow-up):** full retry-knapp vid enroll-fel kräver refaktor av enroll-effekten till en återanropbar funktion + auth-test. Minimal felvisning + deadend-skydd är gjort; full retry väntar. (Låg prio — skärmen är feature-flaggad AV.)
+- **Perf #30/#32/#37 (paginering + Virtuoso-scroll):** stora ändringar av core chat-/oversight-laddning och listscroll. Hög risk att regressa (meddelanden laddas ej, scroll hoppar, realtime tappar) om de byggs blint utan on-device-test. Görs bäst när stacken kan köras + verifieras manuellt. Ej gjorda autonomt.
 - (Övriga barnsäkerhet/betalning/datamodell-beslut hamnar här allt eftersom.)
 
 ## Hög allvarsgrad (37)
@@ -40,15 +41,15 @@ Status-nyckel: [x] fixad · [skip] redan fixad/falskt larm · [HOLD] eskalerad t
 ### Resterande hög (rapportens #27–37)
 - [x] #27 SubscriptionContext.tsx — RevenueCat-init beror på profile-objektref → keyat på profile?.id (lokal const + dep), undviker re-init/re-login vid varje profiländring
 - [ ] #28 legal/privacy-sv.ts — inkonsekventa plannamn mellan legal-dokument (innehåll)
-- [ ] #29 ChatInfo.tsx — varje SharedMediaThumb kör useSignedMediaUrl separat → N requests (perf)
-- [ ] #30 ChatList.tsx — Virtuoso useWindowScroll inuti IonContent (scroll-mismatch) (perf)
-- [ ] #31 ChatView.tsx — getGalleryUrls(messages) i Virtuoso itemContent → körs per rad (perf)
-- [ ] #32 ChatView.tsx — loadChat utan paginering + reactions/read-receipts för ALLA (perf)
+- [x] #29 ChatInfo.tsx — N useSignedMediaUrl-hooks → en batchad resolveMediaUrls() på liständring (deduped/cached), thumb tar resolved url som prop
+- [HOLD] #30 ChatList.tsx — Virtuoso useWindowScroll inuti IonContent → ESKALERAT (ändrar scroll-beteende, kräver on-device-verifiering; blind risk för trasig listscroll)
+- [x] #31 ChatView.tsx — getGalleryUrls(messages) per rad i itemContent → useMemo (commit f0e28be)
+- [HOLD] #32 ChatView.tsx — loadChat utan paginering → ESKALERAT (stor ändring av core chat-laddning + realtime + scroll; hög regressionsrisk blint)
 - [x] #33 Dashboard.tsx — loadMembers/loadApprovalsCount/loadTillkallaAlerts svalde fel → error-logg + behåll state vid fel (Tillkalla=barnsäkerhet, klobbra ej till tom)
 - [x] #34 Friends.tsx — loadData utan felhantering (stuck spinner vid throw) → try/finally + per-result error-logg
 - [x] #35 MFASetup.tsx — enrollMFA-fel → 'scan'-steg utan QR/fel → visar nu felet på scan-steget + Next blockerad utan factorId (deadend-skydd). Screen feature-flaggad AV. FÖLJD (eskalerat): full retry-knapp-UX kräver refaktor av enroll-effekten + auth-test.
 - [x] #36 OwnerApprovals.tsx — handleDenyFuture ignorerade rejectTexterRequest-resultat → deny-future körs nu BARA om reject lyckades (annars logg), annars hade vi rapporterat "nekad" med levande pending-request
-- [ ] #37 OwnerChatView.tsx — loadData utan paginering (perf)
+- [HOLD] #37 OwnerChatView.tsx — loadData utan paginering → ESKALERAT (samma som #32, core oversight-laddning; hög regressionsrisk blint)
 
 ## Medel (172) — efter hög
 
