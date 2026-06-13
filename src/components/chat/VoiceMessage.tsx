@@ -34,7 +34,12 @@ const VoiceMessage: React.FC<VoiceMessageProps> = ({
     };
 
     const handleLoadedMetadata = () => {
-      setDuration(audio.duration || metadata?.duration || 0);
+      // Chrome's MediaRecorder webm blobs carry no duration header, so
+      // audio.duration is Infinity here (and Infinity is truthy, so a plain
+      // `||` fallback doesn't catch it). Prefer the duration captured at record
+      // time; only fall back to audio.duration when it is finite.
+      const audioDur = Number.isFinite(audio.duration) ? audio.duration : 0;
+      setDuration(metadata?.duration || audioDur);
     };
 
     const handleEnded = () => {

@@ -16,6 +16,11 @@ const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
   const startTimeRef = useRef<number>(0);
+  // Keep the live stream so unmount cleanup can release the mic, and a flag so a
+  // cancel (which stops the recorder, firing onstop async) discards the blob
+  // instead of surfacing a preview the user explicitly cancelled.
+  const streamRef = useRef<MediaStream | null>(null);
+  const cancelledRef = useRef(false);
 
   const [isRecording, setIsRecording] = useState(false);
   const [isPreparing, setIsPreparing] = useState(false);
@@ -69,7 +74,9 @@ const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
       const mediaRecorder = new MediaRecorder(stream, { mimeType });
 
       mediaRecorderRef.current = mediaRecorder;
+      streamRef.current = stream;
       chunksRef.current = [];
+      cancelledRef.current = false;
 
       mediaRecorder.ondataavailable = (event) => {
         if (event.data.size > 0) {
@@ -78,15 +85,22 @@ const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
       };
 
       mediaRecorder.onstop = () => {
+        // Always release the mic first.
+        stream.getTracks().forEach((track) => track.stop());
+        streamRef.current = null;
+
+        // A cancelled recording must not surface a preview.
+        if (cancelledRef.current) {
+          cancelledRef.current = false;
+          return;
+        }
+
         const blob = new Blob(chunksRef.current, { type: mimeType });
         const recordingDuration = Math.floor((Date.now() - startTimeRef.current) / 1000);
 
         setRecordedBlob(blob);
         setRecordedDuration(recordingDuration);
         setRecordedMimeType(mimeType.split(';')[0]);
-
-        // Stop all tracks
-        stream.getTracks().forEach((track) => track.stop());
       };
 
       mediaRecorder.start(100); // Collect data every 100ms
@@ -109,6 +123,8 @@ const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
 
   const cancelRecording = useCallback(() => {
     if (mediaRecorderRef.current && isRecording) {
+      // Mark cancelled BEFORE stop() so the async onstop discards the blob.
+      cancelledRef.current = true;
       mediaRecorderRef.current.stop();
     }
     setIsRecording(false);
@@ -116,6 +132,24 @@ const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
     setRecordedDuration(0);
     setDuration(0);
   }, [isRecording]);
+
+  // Release the mic if the component unmounts mid-recording (e.g. user navigates
+  // away from the chat) — otherwise the MediaRecorder stays live and the OS
+  // recording indicator stays on. Critical for a kids-focused app.
+  useEffect(() => {
+    return () => {
+      const mr = mediaRecorderRef.current;
+      if (mr && mr.state !== 'inactive') {
+        try {
+          mr.stop();
+        } catch {
+          // already stopped — ignore
+        }
+      }
+      streamRef.current?.getTracks().forEach((track) => track.stop());
+      streamRef.current = null;
+    };
+  }, []);
 
   const sendRecording = useCallback(async () => {
     if (!recordedBlob) return;
