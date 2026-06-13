@@ -7,6 +7,7 @@ import {
   IonToggle,
   IonIcon,
   IonSpinner,
+  useIonToast,
 } from '@ionic/react';
 import { timeOutline } from 'ionicons/icons';
 import { getTexterSettings, updateTexterSettings } from '../../services/members';
@@ -41,6 +42,7 @@ export const QuietHoursManager: React.FC<QuietHoursManagerProps> = ({
   userId,
 }) => {
   const { t } = useTranslation();
+  const [present] = useIonToast();
   const [, setSettings] = useState<TexterSettings | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -75,27 +77,36 @@ export const QuietHoursManager: React.FC<QuietHoursManagerProps> = ({
     loadSettings();
   }, [loadSettings]);
 
+  // This is a child-safety control: if a save silently fails, the Owner would
+  // believe a quiet-hours restriction is active when it isn't. Revert the
+  // optimistic change and surface the failure on error.
+  const saveFailed = () => {
+    present({ message: t('errors.generic'), duration: 3000, color: 'danger' });
+  };
+
   const handleToggleEnabled = async (enabled: boolean) => {
+    const prev = isEnabled;
     setIsEnabled(enabled);
     setIsSaving(true);
 
-    if (enabled) {
-      // Enable with current settings
-      await updateTexterSettings(userId, {
-        quiet_hours_start: startTime,
-        quiet_hours_end: endTime,
-        quiet_hours_days: selectedDays,
-      });
-    } else {
-      // Disable by clearing values
-      await updateTexterSettings(userId, {
-        quiet_hours_start: null,
-        quiet_hours_end: null,
-        quiet_hours_days: null,
-      });
-    }
+    const { error } = enabled
+      ? await updateTexterSettings(userId, {
+          quiet_hours_start: startTime,
+          quiet_hours_end: endTime,
+          quiet_hours_days: selectedDays,
+        })
+      : await updateTexterSettings(userId, {
+          quiet_hours_start: null,
+          quiet_hours_end: null,
+          quiet_hours_days: null,
+        });
 
     setIsSaving(false);
+    if (error) {
+      console.error('Failed to update quiet hours:', error);
+      setIsEnabled(prev);
+      saveFailed();
+    }
   };
 
   const handleSaveTime = async (type: 'start' | 'end', time: string) => {
@@ -103,6 +114,7 @@ export const QuietHoursManager: React.FC<QuietHoursManagerProps> = ({
     const timeOnly = (time || '').substring(0, 5);
     if (!/^\d{2}:\d{2}$/.test(timeOnly)) return;
 
+    const prev = type === 'start' ? startTime : endTime;
     if (type === 'start') {
       setStartTime(timeOnly);
     } else {
@@ -111,14 +123,21 @@ export const QuietHoursManager: React.FC<QuietHoursManagerProps> = ({
 
     if (isEnabled) {
       setIsSaving(true);
-      await updateTexterSettings(userId, {
+      const { error } = await updateTexterSettings(userId, {
         [type === 'start' ? 'quiet_hours_start' : 'quiet_hours_end']: timeOnly,
       });
       setIsSaving(false);
+      if (error) {
+        console.error('Failed to update quiet hours time:', error);
+        if (type === 'start') setStartTime(prev);
+        else setEndTime(prev);
+        saveFailed();
+      }
     }
   };
 
   const handleToggleDay = async (day: number) => {
+    const prev = selectedDays;
     const newDays = selectedDays.includes(day)
       ? selectedDays.filter((d) => d !== day)
       : [...selectedDays, day].sort();
@@ -127,10 +146,15 @@ export const QuietHoursManager: React.FC<QuietHoursManagerProps> = ({
 
     if (isEnabled) {
       setIsSaving(true);
-      await updateTexterSettings(userId, {
+      const { error } = await updateTexterSettings(userId, {
         quiet_hours_days: newDays,
       });
       setIsSaving(false);
+      if (error) {
+        console.error('Failed to update quiet hours days:', error);
+        setSelectedDays(prev);
+        saveFailed();
+      }
     }
   };
 
