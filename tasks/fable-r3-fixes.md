@@ -69,6 +69,10 @@ Status-nyckel: [x] fixad · [skip] redan fixad/falskt larm · [HOLD] eskalerad t
 - [x] #8 ShareTargetHandler — delad caption sattes på VARJE bild → bara första bilden
 - [x] #9 ShareTargetHandler — getMyChats picker-effekt saknade .catch → tillagd
 - [skip] #10 ShareTargetHandler — post-login pending-share-effekt "körs på varje ändring": clearShareIntent() efter hantering gör omkörningar till no-ops → låg/ofarlig, lämnad
+### Korrekthet-batch 2
+- [x] #57 VoiceMessage — audio.play() promise ej fångad → .catch + setIsPlaying(false)
+- [x] #44 MessageBubble.openEditHistory — getMessageEdits-fel ignorerat → error-guard
+- [ ] #55 PollCreator — option-rader keyed by index (options är string[]); korrekt fix = {id,text}[]-refaktor (add/remove/submit) → NÄSTA (moderat)
 ### Övrigt medel
 - [x] #43 MessageBubble.renderTextWithMentions — split(/(@\w+)/) missade å/ä/ö → /(@[\p{L}\p{N}_]+)/gu (render-sidans motsvarighet till input-fixen f00787b)
 - [skip] EmojiGifPanel #27/#28/#29 (medel: try/catch, gifs.length-effekt, race) — REDAN fixade i d9de747 (GifPicker-dedupen).

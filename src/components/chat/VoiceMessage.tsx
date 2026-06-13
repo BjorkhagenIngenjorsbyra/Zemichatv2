@@ -77,7 +77,13 @@ const VoiceMessage: React.FC<VoiceMessageProps> = ({
     if (isPlaying) {
       audio.pause();
     } else {
-      audio.play();
+      // play() rejects if the media can't start (autoplay policy, decode error,
+      // src not ready) — catch it so it isn't an unhandled rejection and the UI
+      // doesn't get stuck showing a "playing" state.
+      audio.play().catch((err) => {
+        console.error('[VoiceMessage] play failed:', err);
+        setIsPlaying(false);
+      });
     }
   };
 

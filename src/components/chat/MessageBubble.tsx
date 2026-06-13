@@ -260,7 +260,11 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
   // The history is captured server-side by a trigger and gated by RLS, so an
   // edit can't be used to hide content from the overseeing Owner (PRD 8.4).
   const openEditHistory = async () => {
-    const { edits } = await getMessageEdits(message.id);
+    const { edits, error } = await getMessageEdits(message.id);
+    if (error) {
+      console.error('[MessageBubble] getMessageEdits failed:', error);
+      return;
+    }
     setEditHistory(edits);
     setShowEditHistory(true);
   };
