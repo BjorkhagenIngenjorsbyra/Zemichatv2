@@ -49,8 +49,8 @@ interface SubscriptionContextValue {
 
   // Actions
   refreshStatus: () => Promise<void>;
-  purchase: (pkg: RevenueCatPackage) => Promise<boolean>;
-  restore: () => Promise<boolean>;
+  purchase: (pkg: RevenueCatPackage) => Promise<{ success: boolean; userCancelled: boolean }>;
+  restore: () => Promise<{ success: boolean; restored: boolean }>;
   startTrial: (planType?: PlanType) => Promise<boolean>;
   showPaywall: (feature?: string) => void;
   hidePaywall: () => void;
@@ -195,7 +195,7 @@ export function SubscriptionProvider({ children }: SubscriptionProviderProps) {
     setIsLoading(false);
   }, []);
 
-  const purchase = useCallback(async (pkg: RevenueCatPackage): Promise<boolean> => {
+  const purchase = useCallback(async (pkg: RevenueCatPackage): Promise<{ success: boolean; userCancelled: boolean }> => {
     setIsLoading(true);
     const { success, status: newStatus, error: purchaseError } = await purchasePackage(pkg);
     if (purchaseError) {
@@ -205,23 +205,27 @@ export function SubscriptionProvider({ children }: SubscriptionProviderProps) {
       setError(null);
     }
     setIsLoading(false);
-    return success;
+    // The service reports a deliberate cancel as success:false with no error —
+    // surface that so the paywall doesn't show a failure toast on cancel.
+    return { success, userCancelled: !success && !purchaseError };
   }, []);
 
-  const restore = useCallback(async (): Promise<boolean> => {
+  const restore = useCallback(async (): Promise<{ success: boolean; restored: boolean }> => {
     setIsLoading(true);
     const { status: newStatus, error: restoreError } = await restorePurchases();
     if (restoreError) {
       setError(restoreError);
       setIsLoading(false);
-      return false;
+      return { success: false, restored: false };
     }
     if (newStatus) {
       setStatus(newStatus);
       setError(null);
     }
     setIsLoading(false);
-    return true;
+    // restored = an active entitlement actually came back (the common
+    // "nothing to restore" case must give explicit feedback, not silence).
+    return { success: true, restored: !!newStatus?.isActive };
   }, []);
 
   const startTrial = useCallback(async (planType?: PlanType): Promise<boolean> => {

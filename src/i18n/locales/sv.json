@@ -435,6 +435,7 @@
     "planPlusRinga": "Plus med samtal",
     "subscribe": "Prenumerera på {{plan}}",
     "restorePurchases": "Återställ köp",
+    "restoreNoPurchases": "Inga tidigare köp att återställa hittades.",
     "termsText": "Betalning debiteras ditt App Store- eller Google Play-konto. Prenumerationen förnyas automatiskt om den inte avbryts minst 24 timmar före periodens slut.",
     "termsTextIos": "Betalning debiteras ditt App Store-konto. Prenumerationen förnyas automatiskt om den inte avbryts minst 24 timmar före periodens slut. Du hanterar prenumerationen i App Store-inställningarna.",
     "termsTextAndroid": "Betalning debiteras ditt Google Play-konto. Prenumerationen förnyas automatiskt om den inte avbryts minst 24 timmar före periodens slut. Du hanterar prenumerationen i Google Play-inställningarna.",

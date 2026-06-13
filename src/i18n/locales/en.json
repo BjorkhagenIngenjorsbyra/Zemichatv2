@@ -435,6 +435,7 @@
     "planPlusRinga": "Plus with calls",
     "subscribe": "Subscribe to {{plan}}",
     "restorePurchases": "Restore Purchases",
+    "restoreNoPurchases": "No previous purchases found to restore.",
     "termsText": "Payment will be charged to your App Store or Google Play account. Subscription automatically renews unless cancelled at least 24 hours before the end of the current period.",
     "termsTextIos": "Payment will be charged to your App Store account. Subscription automatically renews unless cancelled at least 24 hours before the end of the current period. Manage your subscription in App Store settings.",
     "termsTextAndroid": "Payment will be charged to your Google Play account. Subscription automatically renews unless cancelled at least 24 hours before the end of the current period. Manage your subscription in Google Play settings.",

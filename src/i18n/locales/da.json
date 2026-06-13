@@ -435,6 +435,7 @@
     "planPlusRinga": "Plus med opkald",
     "subscribe": "Abonner på {{plan}}",
     "restorePurchases": "Gendan køb",
+    "restoreNoPurchases": "Ingen tidligere køb at gendanne blev fundet.",
     "termsText": "Betaling debiteres din App Store- eller Google Play-konto. Abonnementet fornyes automatisk, medmindre det opsiges mindst 24 timer før periodens udløb.",
     "termsTextIos": "Betaling debiteres din App Store-konto. Abonnementet fornyes automatisk, medmindre det opsiges mindst 24 timer før periodens udløb. Du administrerer abonnementet i App Store-indstillingerne.",
     "termsTextAndroid": "Betaling debiteres din Google Play-konto. Abonnementet fornyes automatisk, medmindre det opsiges mindst 24 timer før periodens udløb. Du administrerer abonnementet i Google Play-indstillingerne.",

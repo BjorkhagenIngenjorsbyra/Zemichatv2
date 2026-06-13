@@ -435,6 +435,7 @@
     "planPlusRinga": "Plus puheluilla",
     "subscribe": "Tilaa {{plan}}",
     "restorePurchases": "Palauta ostokset",
+    "restoreNoPurchases": "Palautettavia aiempia ostoksia ei löytynyt.",
     "termsText": "Maksu veloitetaan App Store- tai Google Play -tililtäsi. Tilaus uusiutuu automaattisesti, ellei sitä peruuteta vähintään 24 tuntia ennen jakson päättymistä.",
     "termsTextIos": "Maksu veloitetaan App Store -tililtäsi. Tilaus uusiutuu automaattisesti, ellei sitä peruuteta vähintään 24 tuntia ennen jakson päättymistä. Hallinnoit tilausta App Store -asetuksissa.",
     "termsTextAndroid": "Maksu veloitetaan Google Play -tililtäsi. Tilaus uusiutuu automaattisesti, ellei sitä peruuteta vähintään 24 tuntia ennen jakson päättymistä. Hallinnoit tilausta Google Play -asetuksissa.",

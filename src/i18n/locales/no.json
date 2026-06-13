@@ -435,6 +435,7 @@
     "planPlusRinga": "Plus med samtaler",
     "subscribe": "Abonner på {{plan}}",
     "restorePurchases": "Gjenopprett kjøp",
+    "restoreNoPurchases": "Fant ingen tidligere kjøp å gjenopprette.",
     "termsText": "Betaling belastes din App Store- eller Google Play-konto. Abonnementet fornyes automatisk med mindre det avbrytes minst 24 timer før periodens slutt.",
     "termsTextIos": "Betaling belastes din App Store-konto. Abonnementet fornyes automatisk med mindre det avbrytes minst 24 timer før periodens slutt. Du administrerer abonnementet i App Store-innstillingene.",
     "termsTextAndroid": "Betaling belastes din Google Play-konto. Abonnementet fornyes automatisk med mindre det avbrytes minst 24 timer før periodens slutt. Du administrerer abonnementet i Google Play-innstillingene.",

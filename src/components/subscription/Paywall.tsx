@@ -112,14 +112,12 @@ const Paywall: React.FC<PaywallProps> = ({ blocking = false }) => {
         return;
       }
 
-      const success = await purchase(pkg);
+      const { success, userCancelled } = await purchase(pkg);
       if (success) {
         hidePaywall();
-      } else {
-        // RevenueCat returned false. This typically means the user cancelled,
-        // but it can also mean a sandbox/StoreKit error. Show a generic
-        // failure message — cancellation is harmless, surfacing it briefly
-        // is better than a dead button.
+      } else if (!userCancelled) {
+        // Only show a failure on a real error — a deliberate cancel is not a
+        // failure and shouldn't pop an error toast.
         setPurchaseError(t('paywall.errorPurchaseFailed'));
       }
     } catch (err) {
@@ -134,7 +132,17 @@ const Paywall: React.FC<PaywallProps> = ({ blocking = false }) => {
     setPurchaseError(null);
     setIsProcessing(true);
     try {
-      await restore();
+      const { success, restored } = await restore();
+      if (!success) {
+        setPurchaseError(t('errors.generic'));
+      } else if (restored) {
+        // An entitlement came back — close the paywall.
+        hidePaywall();
+      } else {
+        // Restore succeeded but there was nothing to restore (the common case)
+        // — give explicit feedback instead of an unresponsive-looking paywall.
+        setPurchaseError(t('paywall.restoreNoPurchases'));
+      }
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'unknown error';
       setPurchaseError(t('paywall.errorRestoreFailed', { error: msg }));
