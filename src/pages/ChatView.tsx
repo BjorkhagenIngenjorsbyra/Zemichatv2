@@ -670,14 +670,27 @@ const ChatView: React.FC = () => {
       type: MessageType.POLL,
     });
 
-    if (pollMsg) {
-      await createPoll({
-        chatId,
-        messageId: pollMsg.id,
-        question,
-        options,
-        allowsMultiple,
-      });
+    if (!pollMsg) {
+      setPermissionToast(t('errors.generic'));
+      return;
+    }
+
+    const { error } = await createPoll({
+      chatId,
+      messageId: pollMsg.id,
+      question,
+      options,
+      allowsMultiple,
+    });
+
+    if (error) {
+      // The poll rows failed to insert — remove the orphaned POLL message so it
+      // isn't an empty hole in everyone's chat, and tell the user it failed.
+      console.error('Failed to create poll:', error);
+      await deleteMessageForAll(pollMsg.id).catch((e) =>
+        console.error('Failed to clean up orphaned poll message:', e)
+      );
+      setPermissionToast(t('errors.generic'));
     }
   };
 

@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuthContext } from '../../contexts/AuthContext';
 import { getPollByMessageId, castPollVote, unvotePoll } from '../../services/poll';
+import { supabase } from '../../services/supabase';
 import type { PollWithOptions } from '../../types/database';
 import './PollMessage.css';
 
@@ -26,6 +27,24 @@ const PollMessage: React.FC<PollMessageProps> = ({ messageId, isOwn }) => {
   useEffect(() => {
     loadPoll();
   }, [loadPoll]);
+
+  // Reflect other participants' votes in near-real-time instead of only after a
+  // remount or the local user's own vote. (No-op if poll_votes isn't in the
+  // realtime publication; harmless either way.)
+  useEffect(() => {
+    if (!poll?.id) return;
+    const channel = supabase
+      .channel(`poll-votes-${poll.id}`)
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'poll_votes', filter: `poll_id=eq.${poll.id}` },
+        () => loadPoll()
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [poll?.id, loadPoll]);
 
   const handleVote = async (optionId: string) => {
     if (!poll || isVoting) return;

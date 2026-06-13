@@ -23,7 +23,7 @@ import {
 } from '@ionic/react';
 import { personOutline, personAddOutline } from 'ionicons/icons';
 import { getMyFriends, type FriendWithUser } from '../services/friend';
-import { createChat } from '../services/chat';
+import { createChat, getMyChats } from '../services/chat';
 import { getAvatarColor, getInitial } from '../utils/userDisplay';
 import type { User } from '../types/database';
 
@@ -100,6 +100,26 @@ const NewChat: React.FC = () => {
 
     const memberIds = Array.from(selectedIds);
     const isGroup = memberIds.length > 1;
+
+    // For a 1:1 chat, navigate to the existing thread with that friend instead
+    // of inserting a duplicate (#412). Best-effort: skip on lookup failure.
+    if (!isGroup) {
+      try {
+        const friendId = memberIds[0];
+        const { chats } = await getMyChats();
+        const existing = chats.find((c) => {
+          if (c.is_group) return false;
+          const active = c.members.filter((m) => !m.left_at);
+          return active.length === 2 && active.some((m) => m.user_id === friendId);
+        });
+        if (existing) {
+          history.replace(`/chat/${existing.id}`);
+          return;
+        }
+      } catch (err) {
+        console.error('Existing-chat lookup failed, creating new:', err);
+      }
+    }
 
     const { chat, error } = await createChat({
       memberIds,
