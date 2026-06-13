@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useHistory } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
@@ -29,11 +29,23 @@ const Calls: React.FC = () => {
   const [activeTab, setActiveTab] = useState<TabValue>('all');
   const [calls, setCalls] = useState<CallHistoryEntry[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  // Monotonic request id so an out-of-order response from a previous tab can't
+  // overwrite the current tab's list during rapid segment switching.
+  const reqIdRef = useRef(0);
 
   const loadCalls = useCallback(async () => {
-    const { calls: result } = await getCallHistory(activeTab);
-    setCalls(result);
-    setIsLoading(false);
+    const reqId = ++reqIdRef.current;
+    try {
+      const { calls: result } = await getCallHistory(activeTab);
+      if (reqId !== reqIdRef.current) return;
+      setCalls(result);
+    } catch (err) {
+      if (reqId !== reqIdRef.current) return;
+      console.error('Failed to load call history:', err);
+      setCalls([]);
+    } finally {
+      if (reqId === reqIdRef.current) setIsLoading(false);
+    }
   }, [activeTab]);
 
   useEffect(() => {

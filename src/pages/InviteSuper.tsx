@@ -245,7 +245,7 @@ const InviteSuper: React.FC = () => {
                           {status.label}
                         </p>
                       </IonLabel>
-                      {!inv.claimed_at && new Date(inv.expires_at) >= new Date() && (
+                      {!inv.claimed_at && (
                         <IonButton
                           fill="clear"
                           color="danger"

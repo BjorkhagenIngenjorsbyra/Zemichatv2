@@ -19,6 +19,7 @@ import {
   IonButton,
   IonCheckbox,
   IonFooter,
+  useIonToast,
 } from '@ionic/react';
 import { personOutline, personAddOutline } from 'ionicons/icons';
 import { getMyFriends, type FriendWithUser } from '../services/friend';
@@ -30,6 +31,7 @@ const NewChat: React.FC = () => {
   const { t } = useTranslation();
   const history = useHistory();
   const location = useLocation();
+  const [present] = useIonToast();
   const [contacts, setContacts] = useState<User[]>([]);
   const [filteredContacts, setFilteredContacts] = useState<User[]>([]);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -41,16 +43,24 @@ const NewChat: React.FC = () => {
   const preselectedId = new URLSearchParams(location.search).get('add');
 
   const loadContacts = useCallback(async () => {
-    const { friends } = await getMyFriends();
-    const friendUsers = friends.map((f: FriendWithUser) => f.user);
-    setContacts(friendUsers);
-    setFilteredContacts(friendUsers);
-    setIsLoading(false);
+    try {
+      const { friends } = await getMyFriends();
+      const friendUsers = friends.map((f: FriendWithUser) => f.user);
+      setContacts(friendUsers);
+      setFilteredContacts(friendUsers);
 
-    if (preselectedId) {
-      setSelectedIds(new Set([preselectedId]));
+      // Only honor ?add= if it's an actual friend — a stale/hand-crafted URL
+      // must not preselect a non-friend id that then gets passed to createChat.
+      if (preselectedId && friendUsers.some((u) => u.id === preselectedId)) {
+        setSelectedIds(new Set([preselectedId]));
+      }
+    } catch (err) {
+      console.error('Failed to load contacts:', err);
+      present({ message: t('errors.generic'), duration: 2500, color: 'danger' });
+    } finally {
+      setIsLoading(false);
     }
-  }, [preselectedId]);
+  }, [preselectedId, present, t]);
 
   useEffect(() => {
     loadContacts();
@@ -98,12 +108,16 @@ const NewChat: React.FC = () => {
 
     if (error) {
       console.error('Failed to create chat:', error);
+      present({ message: t('errors.generic'), duration: 2500, color: 'danger' });
       setIsCreating(false);
       return;
     }
 
     if (chat) {
       history.replace(`/chat/${chat.id}`);
+    } else {
+      // No error but no chat returned — don't leave the button spinning.
+      setIsCreating(false);
     }
   };
 
