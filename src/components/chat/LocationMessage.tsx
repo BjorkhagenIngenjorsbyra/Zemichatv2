@@ -10,16 +10,12 @@ interface LocationMessageProps {
 const LocationMessage: React.FC<LocationMessageProps> = ({ lat, lng }) => {
   const { t } = useTranslation();
   const [showViewer, setShowViewer] = useState(false);
-  // staticmap.openstreetmap.de is an unofficial third party with no SLA and is
-  // frequently down — fall back to a plain pin card instead of a broken image
-  // (the full interactive map still opens locally in LocationViewer on tap).
-  // NB: sending the child's exact coordinates to that service is a privacy
-  // concern escalated to Erik (the privacy-correct fix changes the thumbnail
-  // rendering, which is a visual change).
-  const [thumbFailed, setThumbFailed] = useState(false);
-
-  // Use OpenStreetMap static map tile as thumbnail
-  const tileUrl = `https://staticmap.openstreetmap.de/staticmap.php?center=${lat},${lng}&zoom=15&size=300x200&markers=${lat},${lng},red-pushpin`;
+  // Child-safety / privacy (Fable r3 #38): we deliberately do NOT request a
+  // static-map thumbnail from any third party. Doing so would transmit the
+  // child's exact coordinates to an external service on every render of the
+  // message, for everyone who can see it. Instead we render a local pin card;
+  // the actual map is drawn locally (Leaflet) inside LocationViewer, and only
+  // when the user taps to open it.
 
   return (
     <>
@@ -36,19 +32,9 @@ const LocationMessage: React.FC<LocationMessageProps> = ({ lat, lng }) => {
           }
         }}
       >
-        {thumbFailed ? (
-          <div className="location-thumb location-thumb-fallback">
-            <span className="location-fallback-pin">📍</span>
-          </div>
-        ) : (
-          <img
-            src={tileUrl}
-            alt={t('location.shareLocation')}
-            className="location-thumb"
-            loading="lazy"
-            onError={() => setThumbFailed(true)}
-          />
-        )}
+        <div className="location-thumb location-thumb-fallback">
+          <span className="location-fallback-pin">📍</span>
+        </div>
         <div className="location-overlay">
           <span className="location-pin-icon">📍</span>
           <span>{t('location.shareLocation')}</span>
