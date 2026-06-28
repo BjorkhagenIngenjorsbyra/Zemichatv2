@@ -562,7 +562,7 @@ const Settings: React.FC = () => {
                 <span className="profile-value mono">{profile?.zemi_number}</span>
               </div>
               <div className="profile-row">
-                <span className="profile-label">{t('texter.role', 'Roll')}</span>
+                <span className="profile-label">{t('roles.label')}</span>
                 <span className={`role-badge ${profile?.role}`}>
                   {profile?.role === 'owner'
                     ? t('roles.teamOwner')

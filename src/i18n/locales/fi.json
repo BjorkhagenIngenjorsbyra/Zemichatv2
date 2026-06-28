@@ -124,7 +124,8 @@
     "owner": "Owner",
     "super": "Super",
     "texter": "Texter",
-    "teamOwner": "Team Owner"
+    "teamOwner": "Team Owner",
+    "label": "Rooli"
   },
   "texter": {
     "createTitle": "Luo Texter",
@@ -196,6 +197,7 @@
     "reply": "Vastaa",
     "react": "Reagoi",
     "edited": "muokattu",
+    "original": "Alkuperäinen teksti:",
     "gif": "GIF",
     "sticker": "Tarra",
     "poll": "Äänestys"
@@ -365,6 +367,7 @@
     "confirmMessage": "Tämä hälyttää aikuisen.",
     "confirmYes": "KYLLÄ, KUTSU",
     "confirmNo": "Peruuta",
+    "autoCancelIn": "Peruuntuu automaattisesti {{count}} s kuluttua",
     "sent": "Aikuinen kutsuttu",
     "failed": "Hälytystä ei voitu lähettää. Yritä uudelleen.",
     "alertReceived": "Aikuisen kutsu käyttäjältä {{name}}",

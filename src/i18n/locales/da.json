@@ -124,7 +124,8 @@
     "owner": "Owner",
     "super": "Super",
     "texter": "Texter",
-    "teamOwner": "Team Owner"
+    "teamOwner": "Team Owner",
+    "label": "Rolle"
   },
   "texter": {
     "createTitle": "Opret Texter",
@@ -196,6 +197,7 @@
     "reply": "Svar",
     "react": "Reager",
     "edited": "redigeret",
+    "original": "Oprindelig tekst:",
     "gif": "GIF",
     "sticker": "Sticker",
     "poll": "Afstemning"
@@ -365,6 +367,7 @@
     "confirmMessage": "Dette advarer en voksen.",
     "confirmYes": "JA, TILKALD",
     "confirmNo": "Annullér",
+    "autoCancelIn": "Annulleres automatisk om {{count}} s",
     "sent": "Voksen tilkaldt",
     "failed": "Alarmen kunne ikke sendes. Prøv igen.",
     "alertReceived": "Tilkald en voksen fra {{name}}",
