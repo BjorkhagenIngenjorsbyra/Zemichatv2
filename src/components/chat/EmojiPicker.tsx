@@ -1,4 +1,3 @@
-import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { hapticLight } from '../../utils/haptics';
 import ReactEmojiPicker, { EmojiClickData, EmojiStyle, Theme } from 'emoji-picker-react';
@@ -10,17 +9,8 @@ interface EmojiPickerProps {
 
 const EmojiPicker: React.FC<EmojiPickerProps> = ({ onSelect, onClose }) => {
   const { t } = useTranslation();
-  const pickerRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (pickerRef.current && !pickerRef.current.contains(e.target as Node)) {
-        onClose();
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [onClose]);
+  // Dismissal is handled by the backdrop onClick + inner stopPropagation; a
+  // separate document mousedown listener was redundant (#485).
 
   const handleSelect = (emojiData: EmojiClickData) => {
     hapticLight();
@@ -31,7 +21,6 @@ const EmojiPicker: React.FC<EmojiPickerProps> = ({ onSelect, onClose }) => {
   return (
     <div className="full-emoji-backdrop" onClick={onClose}>
       <div
-        ref={pickerRef}
         className="full-emoji-picker"
         onClick={(e) => e.stopPropagation()}
         role="dialog"
@@ -42,7 +31,7 @@ const EmojiPicker: React.FC<EmojiPickerProps> = ({ onSelect, onClose }) => {
           theme={Theme.AUTO}
           /* Use native system emojis instead of CDN PNG sprites — see #5. */
           emojiStyle={EmojiStyle.NATIVE}
-          searchPlaceholder="Sök emoji..."
+          searchPlaceholder={t('common.search')}
           width="100%"
           height={350}
           previewConfig={{ showPreview: false }}

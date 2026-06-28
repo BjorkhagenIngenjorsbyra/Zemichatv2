@@ -17,17 +17,18 @@ interface EmojiGifPanelProps {
 
 type TabType = 'emoji' | 'gif';
 
+// `query` stays English (GIPHY search terms); `key` maps to a localized label.
 const QUICK_CATEGORIES = [
-  { label: 'Trending', query: '' },
-  { label: 'Reactions', query: 'reactions' },
-  { label: 'Love', query: 'love' },
-  { label: 'Funny', query: 'funny' },
-  { label: 'Happy', query: 'happy' },
-  { label: 'Sad', query: 'sad' },
-  { label: 'Yes', query: 'yes' },
-  { label: 'No', query: 'no' },
-  { label: 'Thanks', query: 'thank you' },
-  { label: 'Wow', query: 'wow' },
+  { key: 'trending', query: '' },
+  { key: 'reactions', query: 'reactions' },
+  { key: 'love', query: 'love' },
+  { key: 'funny', query: 'funny' },
+  { key: 'happy', query: 'happy' },
+  { key: 'sad', query: 'sad' },
+  { key: 'yes', query: 'yes' },
+  { key: 'no', query: 'no' },
+  { key: 'thanks', query: 'thank you' },
+  { key: 'wow', query: 'wow' },
 ];
 
 const DEFAULT_PANEL_HEIGHT = 280;
@@ -48,31 +49,55 @@ const EmojiGifPanel: React.FC<EmojiGifPanelProps> = ({
   const [activeCategory, setActiveCategory] = useState(0);
   const [gifs, setGifs] = useState<GifResult[]>([]);
   const [isLoadingGifs, setIsLoadingGifs] = useState(false);
+  const [hasLoadedGifs, setHasLoadedGifs] = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  // Bumped per GIF request so a slow earlier response can't overwrite a newer one.
+  const requestSeq = useRef(0);
 
-  const loadTrending = useCallback(async () => {
-    setIsLoadingGifs(true);
-    const { gifs: trending } = await getTrendingGifs(30, i18n.language);
-    setGifs(trending);
-    setIsLoadingGifs(false);
-  }, [i18n.language]);
+  // Run a GIF fetch with: a request-id guard (drops stale responses), try/finally
+  // (a failed fetch can no longer leave the spinner stuck), and a hasLoaded flag
+  // (so a legitimately-empty result isn't clobbered by the trending auto-load).
+  const runGifFetch = useCallback(
+    async (fetcher: () => Promise<{ gifs: GifResult[] }>) => {
+      const seq = ++requestSeq.current;
+      setIsLoadingGifs(true);
+      try {
+        const { gifs: results } = await fetcher();
+        if (seq === requestSeq.current) setGifs(results);
+      } catch (err) {
+        console.error('[Zemichat] GIF load failed:', err);
+        if (seq === requestSeq.current) setGifs([]);
+      } finally {
+        if (seq === requestSeq.current) {
+          setIsLoadingGifs(false);
+          setHasLoadedGifs(true);
+        }
+      }
+    },
+    []
+  );
 
-  const loadCategory = useCallback(async (categoryQuery: string) => {
-    if (!categoryQuery) {
-      loadTrending();
-      return;
-    }
-    setIsLoadingGifs(true);
-    const { gifs: results } = await searchGifs(categoryQuery, 30, i18n.language);
-    setGifs(results);
-    setIsLoadingGifs(false);
-  }, [i18n.language, loadTrending]);
+  const loadTrending = useCallback(
+    () => runGifFetch(() => getTrendingGifs(30, i18n.language)),
+    [runGifFetch, i18n.language]
+  );
 
+  const loadCategory = useCallback(
+    (categoryQuery: string) =>
+      categoryQuery
+        ? runGifFetch(() => searchGifs(categoryQuery, 30, i18n.language))
+        : loadTrending(),
+    [runGifFetch, i18n.language, loadTrending]
+  );
+
+  // Auto-load trending the first time the GIF tab is shown. Gated on
+  // hasLoadedGifs (not gifs.length) so an empty search result isn't immediately
+  // replaced by trending.
   useEffect(() => {
-    if (isOpen && activeTab === 'gif' && gifs.length === 0) {
+    if (isOpen && activeTab === 'gif' && !hasLoadedGifs && !isLoadingGifs) {
       loadTrending();
     }
-  }, [isOpen, activeTab, loadTrending, gifs.length]);
+  }, [isOpen, activeTab, hasLoadedGifs, isLoadingGifs, loadTrending]);
 
   const handleGifSearch = useCallback((value: string) => {
     setGifQuery(value);
@@ -88,13 +113,10 @@ const EmojiGifPanel: React.FC<EmojiGifPanelProps> = ({
       return;
     }
 
-    debounceRef.current = setTimeout(async () => {
-      setIsLoadingGifs(true);
-      const { gifs: results } = await searchGifs(value.trim(), 30, i18n.language);
-      setGifs(results);
-      setIsLoadingGifs(false);
+    debounceRef.current = setTimeout(() => {
+      runGifFetch(() => searchGifs(value.trim(), 30, i18n.language));
     }, 400);
-  }, [i18n.language, loadTrending]);
+  }, [i18n.language, loadTrending, runGifFetch]);
 
   const handleCategoryClick = (index: number) => {
     setActiveCategory(index);
@@ -119,27 +141,36 @@ const EmojiGifPanel: React.FC<EmojiGifPanelProps> = ({
   };
 
   const handleTabSwitch = (tab: TabType) => {
+    // Trending auto-loads via the effect the first time the GIF tab opens.
     setActiveTab(tab);
-    if (tab === 'gif' && gifs.length === 0) {
-      loadTrending();
-    }
   };
+
+  // Clear any pending debounced search on unmount.
+  useEffect(() => {
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
+  }, []);
 
   if (!isOpen) return null;
 
   return (
     <div className="emoji-gif-panel" style={{ height: `${panelHeight}px` }}>
       {/* Tab bar */}
-      <div className="egp-tabs">
+      <div className="egp-tabs" role="tablist">
         <button
           className={`egp-tab ${activeTab === 'emoji' ? 'active' : ''}`}
           onClick={() => handleTabSwitch('emoji')}
+          role="tab"
+          aria-selected={activeTab === 'emoji'}
         >
           {t('chat.emojis')}
         </button>
         <button
           className={`egp-tab ${activeTab === 'gif' ? 'active' : ''}`}
           onClick={() => handleTabSwitch('gif')}
+          role="tab"
+          aria-selected={activeTab === 'gif'}
         >
           {t('chat.gifs')}
         </button>
@@ -185,11 +216,12 @@ const EmojiGifPanel: React.FC<EmojiGifPanelProps> = ({
           <div className="egp-gif-categories">
             {QUICK_CATEGORIES.map((cat, i) => (
               <button
-                key={cat.label}
+                key={cat.key}
                 className={`egp-cat-chip ${i === activeCategory ? 'active' : ''}`}
                 onClick={() => handleCategoryClick(i)}
+                aria-pressed={i === activeCategory}
               >
-                {cat.label}
+                {t(`gif.categories.${cat.key}`)}
               </button>
             ))}
           </div>

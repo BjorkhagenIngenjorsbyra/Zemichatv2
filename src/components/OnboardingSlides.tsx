@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { IonButton } from '@ionic/react';
 import { useSwipeable } from 'react-swipeable';
 import { ConfettiAnimation } from './ConfettiAnimation';
@@ -31,6 +31,10 @@ export const OnboardingSlides: React.FC<OnboardingSlidesProps> = ({
   const [currentIndex, setCurrentIndex] = useState(0);
   const [direction, setDirection] = useState<'left' | 'right'>('right');
   const [isAnimating, setIsAnimating] = useState(false);
+  const animTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => () => {
+    if (animTimerRef.current) clearTimeout(animTimerRef.current);
+  }, []);
 
   const isLastSlide = currentIndex === slides.length - 1;
   const slide = slides[currentIndex];
@@ -41,7 +45,8 @@ export const OnboardingSlides: React.FC<OnboardingSlidesProps> = ({
       setDirection(index > currentIndex ? 'right' : 'left');
       setIsAnimating(true);
       setCurrentIndex(index);
-      setTimeout(() => setIsAnimating(false), 400);
+      if (animTimerRef.current) clearTimeout(animTimerRef.current);
+      animTimerRef.current = setTimeout(() => setIsAnimating(false), 400);
     },
     [currentIndex, isAnimating, slides.length]
   );

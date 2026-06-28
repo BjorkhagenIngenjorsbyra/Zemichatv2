@@ -1,8 +1,13 @@
 {
   "errors": {
+    "generic": "Noget gik galt. Prøv igen.",
     "boundaryMessage": "Noget gik galt. Prøv igen.",
     "boundaryRetry": "Prøv igen",
     "boundaryHome": "Til forsiden"
+  },
+  "voice": {
+    "micDenied": "Mikrofonadgang kræves for at optage. Aktivér den i enhedens indstillinger.",
+    "unavailable": "Talebeskeden er ikke tilgængelig"
   },
   "sessions": {
     "title": "Aktive enheder",
@@ -28,6 +33,7 @@
     "next": "Næste",
     "done": "Færdig",
     "close": "Luk",
+    "justNow": "Lige nu",
     "confirm": "Bekræft",
     "or": "eller",
     "and": "og",
@@ -209,7 +215,19 @@
   },
   "gif": {
     "searchPlaceholder": "Søg GIF...",
-    "noResults": "Ingen GIF'er fundet"
+    "noResults": "Ingen GIF'er fundet",
+    "categories": {
+      "trending": "Populært",
+      "reactions": "Reaktioner",
+      "love": "Kærlighed",
+      "funny": "Sjovt",
+      "happy": "Glad",
+      "sad": "Trist",
+      "yes": "Ja",
+      "no": "Nej",
+      "thanks": "Tak",
+      "wow": "Wow"
+    }
   },
   "sticker": {
     "title": "Stickers"
@@ -236,7 +254,9 @@
   },
   "image": {
     "save": "Gem billede",
-    "share": "Del"
+    "share": "Del",
+    "unavailable": "Billedet er ikke tilgængeligt",
+    "loadFailed": "Billedet kunne ikke indlæses"
   },
   "actions": {
     "pin": "Fastgør",
@@ -346,9 +366,12 @@
     "confirmYes": "JA, TILKALD",
     "confirmNo": "Annullér",
     "sent": "Voksen tilkaldt",
+    "failed": "Alarmen kunne ikke sendes. Prøv igen.",
     "alertReceived": "Tilkald en voksen fra {{name}}",
     "viewLocation": "Vis placering",
     "acknowledge": "Bekræft",
+    "acknowledged": "Bekræftet",
+    "autoCancelIn": "Annulleres om {{seconds}}s",
     "unacknowledged": "Ubekræftede alarmer",
     "noAlerts": "Ingen alarmer"
   },
@@ -428,6 +451,7 @@
     "planPlusRinga": "Plus med opkald",
     "subscribe": "Abonner på {{plan}}",
     "restorePurchases": "Gendan køb",
+    "restoreNoPurchases": "Ingen tidligere køb at gendanne blev fundet.",
     "termsText": "Betaling debiteres din App Store- eller Google Play-konto. Abonnementet fornyes automatisk, medmindre det opsiges mindst 24 timer før periodens udløb.",
     "termsTextIos": "Betaling debiteres din App Store-konto. Abonnementet fornyes automatisk, medmindre det opsiges mindst 24 timer før periodens udløb. Du administrerer abonnementet i App Store-indstillingerne.",
     "termsTextAndroid": "Betaling debiteres din Google Play-konto. Abonnementet fornyes automatisk, medmindre det opsiges mindst 24 timer før periodens udløb. Du administrerer abonnementet i Google Play-indstillingerne.",
@@ -522,6 +546,7 @@
     "callEnding": "Opkaldet afsluttes...",
     "maxDurationReached": "Maksimal opkaldstid nået",
     "noAnswer": "Intet svar",
+    "groupFull": "Opkaldet er fuldt (maks. 6 deltagere).",
     "unavailable": "Ikke tilgængelig",
     "error": "Noget gik galt. Prøv igen senere.",
     "microphoneError": "Kunne ikke få adgang til mikrofonen. Tjek browsertilladelserne.",
@@ -874,12 +899,23 @@
     "attach": "Vedhæft",
     "selectReaction": "Vælg reaktion",
     "moreReactions": "Flere reaktioner",
+    "reactWith": "Reager med {{emoji}}",
+    "seek": "Spol",
+    "playVoice": "Afspil talebesked",
+    "pauseVoice": "Sæt talebesked på pause",
+    "playbackSpeed": "Afspilningshastighed {{rate}}x",
+    "recordVoice": "Optag talebesked",
+    "stopRecording": "Stop optagelse",
+    "cancelRecording": "Annullér optagelse",
     "cancel": "Annullér",
     "sendVoiceMessage": "Send talebesked",
     "openDashboard": "Oversigt",
     "acceptFriendRequest": "Godkend venneanmodning",
     "rejectFriendRequest": "Afvis venneanmodning",
     "searchMessages": "Søg beskeder",
-    "close": "Luk"
+    "close": "Luk",
+    "previousImage": "Forrige billede",
+    "nextImage": "Næste billede",
+    "preview": "Forhåndsvisning"
   }
 }

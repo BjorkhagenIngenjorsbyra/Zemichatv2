@@ -93,21 +93,29 @@ const ReportButton: React.FC<ReportButtonProps> = ({
     const trimmed = description.trim();
     const desc = trimmed.length > 0 ? trimmed : undefined;
 
-    let res;
-    if (target.kind === 'message') {
-      res = await reportMessage(target.messageId, category, desc);
-    } else if (target.kind === 'chat') {
-      res = await reportChat(target.chatId, category, desc);
-    } else {
-      res = await reportUser(target.userId, category, desc);
-    }
+    try {
+      let res;
+      if (target.kind === 'message') {
+        res = await reportMessage(target.messageId, category, desc);
+      } else if (target.kind === 'chat') {
+        res = await reportChat(target.chatId, category, desc);
+      } else {
+        res = await reportUser(target.userId, category, desc);
+      }
 
-    setSubmitting(false);
-    if (res.error) {
+      if (res.error) {
+        setErrorMessage(t('report.errorGeneric'));
+        return;
+      }
+      setSubmitted(true);
+    } catch (err) {
+      // A thrown report call previously left the button stuck submitting with no
+      // feedback — surface the generic error and re-enable retry.
+      console.error('[ReportButton] submit threw:', err);
       setErrorMessage(t('report.errorGeneric'));
-      return;
+    } finally {
+      setSubmitting(false);
     }
-    setSubmitted(true);
   };
 
   return (

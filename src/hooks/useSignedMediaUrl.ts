@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   getCachedMediaUrl,
   resolveMediaUrl,
@@ -45,11 +45,16 @@ export function useSignedMediaUrl(
   const [resolved, setResolved] = useState<string | null>(() =>
     getCachedMediaUrl(pathOrUrl, transform)
   );
+  // The path the current `resolved` value belongs to. Used to tell a real
+  // path change (recycled/virtualized row, message whose media changed) from a
+  // transform-only change or a plain rerender.
+  const resolvedForPathRef = useRef<string | null | undefined>(pathOrUrl);
 
   useEffect(() => {
     let cancelled = false;
     if (!pathOrUrl) {
       setResolved(null);
+      resolvedForPathRef.current = pathOrUrl;
       return;
     }
 
@@ -59,17 +64,28 @@ export function useSignedMediaUrl(
     const cached = getCachedMediaUrl(pathOrUrl, transform);
     if (cached) {
       setResolved(cached);
+      resolvedForPathRef.current = pathOrUrl;
       return;
     }
 
-    // Don't reset to null when we already had a value — that's what
-    // caused the flicker. We just kick off the resolution and overwrite
-    // when it returns.
-    resolveMediaUrl(pathOrUrl, transform).then((url) => {
-      if (!cancelled) {
-        setResolved(url);
-      }
-    });
+    // Keep the previous value only when the PATH is unchanged (transform-only
+    // change / rerender) — that's the intended anti-flicker. When the path
+    // actually changed to a different uncached value, clear it first so a
+    // recycled row doesn't display the previous image until the new URL lands.
+    if (resolvedForPathRef.current !== pathOrUrl) {
+      setResolved(null);
+    }
+    resolvedForPathRef.current = pathOrUrl;
+
+    resolveMediaUrl(pathOrUrl, transform)
+      .then((url) => {
+        if (!cancelled) setResolved(url);
+      })
+      .catch(() => {
+        // A rejected signing promise was previously an unhandled rejection that
+        // left the stale URL on screen forever.
+        if (!cancelled) setResolved(null);
+      });
 
     return () => {
       cancelled = true;

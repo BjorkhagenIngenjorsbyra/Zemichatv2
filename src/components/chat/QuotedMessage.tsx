@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { type Message, type User } from '../../types/database';
+import './QuotedMessage.css';
 
 interface QuotedMessageProps {
   message: Message & { sender?: User };
@@ -32,6 +33,10 @@ const QuotedMessage: React.FC<QuotedMessageProps> = ({
         return `📄 ${t('message.document')}`;
       case 'location':
         return `📍 ${t('message.location')}`;
+      case 'gif':
+        return `🖼️ ${t('message.gif')}`;
+      case 'poll':
+        return `📊 ${t('message.poll')}`;
       default:
         return '';
     }
@@ -48,7 +53,12 @@ const QuotedMessage: React.FC<QuotedMessageProps> = ({
       onClick={onClick}
       role="button"
       tabIndex={0}
-      onKeyPress={(e) => e.key === 'Enter' && onClick?.()}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onClick?.();
+        }
+      }}
     >
       <div className="quote-line" />
       <div className="quote-content">
@@ -66,92 +76,6 @@ const QuotedMessage: React.FC<QuotedMessageProps> = ({
           decoding="async"
         />
       )}
-
-      <style>{`
-        .quoted-message {
-          display: flex;
-          gap: 0.5rem;
-          padding: 0.5rem;
-          margin-bottom: 0.5rem;
-          border-radius: 0.5rem;
-          cursor: pointer;
-          transition: background 0.15s;
-        }
-
-        .quoted-message.own {
-          background: hsl(var(--primary-foreground) / 0.1);
-        }
-
-        .quoted-message.other {
-          background: hsl(var(--muted) / 0.3);
-        }
-
-        .quoted-message:hover {
-          opacity: 0.8;
-        }
-
-        .quote-line {
-          width: 3px;
-          border-radius: 2px;
-          flex-shrink: 0;
-        }
-
-        .quoted-message.own .quote-line {
-          background: hsl(var(--primary-foreground));
-        }
-
-        .quoted-message.other .quote-line {
-          background: hsl(var(--primary));
-        }
-
-        .quote-content {
-          display: flex;
-          flex-direction: column;
-          min-width: 0;
-          flex: 1 1 0;
-          overflow: hidden;
-        }
-
-        .quote-sender {
-          font-size: 0.75rem;
-          font-weight: 600;
-          margin-bottom: 0.125rem;
-        }
-
-        .quoted-message.own .quote-sender {
-          color: hsl(var(--primary-foreground));
-        }
-
-        .quoted-message.other .quote-sender {
-          color: hsl(var(--primary));
-        }
-
-        .quote-text {
-          font-size: 0.8rem;
-          line-height: 1.3;
-          opacity: 0.8;
-          /* WhatsApp-style wrapping: max 3 rows then ellipsis.
-             overflow-wrap:anywhere + word-break:break-word handle long
-             URLs / unbroken strings without overflowing the bubble. */
-          overflow-wrap: anywhere;
-          word-break: break-word;
-          display: -webkit-box;
-          -webkit-line-clamp: 3;
-          line-clamp: 3;
-          -webkit-box-orient: vertical;
-          overflow: hidden;
-          text-overflow: ellipsis;
-        }
-
-        .quote-thumb {
-          width: 2.5rem;
-          height: 2.5rem;
-          object-fit: cover;
-          border-radius: 0.4rem;
-          flex-shrink: 0;
-          align-self: center;
-        }
-      `}</style>
     </div>
   );
 };

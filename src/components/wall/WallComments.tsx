@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   IonButton,
@@ -35,12 +35,19 @@ const WallComments: React.FC<WallCommentsProps> = ({ postId, onCommentCountChang
 
   const isOwner = profile?.role === UserRole.OWNER;
 
+  // Hold the count callback in a ref so an inline arrow from the parent doesn't
+  // re-create loadComments every render and trigger a refetch-render loop.
+  const onCountChangeRef = useRef(onCommentCountChange);
+  useEffect(() => {
+    onCountChangeRef.current = onCommentCountChange;
+  }, [onCommentCountChange]);
+
   const loadComments = useCallback(async () => {
     const { comments: data } = await getPostComments(postId);
     setComments(data);
     setIsLoading(false);
-    onCommentCountChange?.(data.filter((c) => !c.deleted_at).length);
-  }, [postId, onCommentCountChange]);
+    onCountChangeRef.current?.(data.filter((c) => !c.deleted_at).length);
+  }, [postId]);
 
   useEffect(() => {
     loadComments();
@@ -68,7 +75,17 @@ const WallComments: React.FC<WallCommentsProps> = ({ postId, onCommentCountChang
   };
 
   const handleDelete = async (commentId: string) => {
-    await deleteComment(commentId);
+    const { error } = await deleteComment(commentId);
+    if (error) {
+      console.error('Failed to delete comment:', error);
+      presentToast({
+        message: t('errors.generic'),
+        duration: 2500,
+        color: 'danger',
+        position: 'top',
+      });
+      return;
+    }
     await loadComments();
   };
 
@@ -80,7 +97,7 @@ const WallComments: React.FC<WallCommentsProps> = ({ postId, onCommentCountChang
     const diffHrs = Math.floor(diffMs / 3600000);
     const diffDays = Math.floor(diffMs / 86400000);
 
-    if (diffMin < 1) return 'nu';
+    if (diffMin < 1) return t('common.justNow');
     if (diffMin < 60) return `${diffMin}m`;
     if (diffHrs < 24) return `${diffHrs}h`;
     if (diffDays < 7) return `${diffDays}d`;

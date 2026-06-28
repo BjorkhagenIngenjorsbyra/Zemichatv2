@@ -1,7 +1,8 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { IonIcon, IonSpinner } from '@ionic/react';
+import { IonIcon, IonSpinner, useIonToast } from '@ionic/react';
 import { mic, close, send } from 'ionicons/icons';
+import { formatSeconds } from '../../utils/datetime';
 
 interface VoiceRecorderProps {
   onRecord: (blob: Blob, duration: number, mimeType: string) => Promise<void>;
@@ -13,9 +14,15 @@ const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
   disabled = false,
 }) => {
   const { t } = useTranslation();
+  const [present] = useIonToast();
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
   const startTimeRef = useRef<number>(0);
+  // Keep the live stream so unmount cleanup can release the mic, and a flag so a
+  // cancel (which stops the recorder, firing onstop async) discards the blob
+  // instead of surfacing a preview the user explicitly cancelled.
+  const streamRef = useRef<MediaStream | null>(null);
+  const cancelledRef = useRef(false);
 
   const [isRecording, setIsRecording] = useState(false);
   const [isPreparing, setIsPreparing] = useState(false);
@@ -69,7 +76,9 @@ const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
       const mediaRecorder = new MediaRecorder(stream, { mimeType });
 
       mediaRecorderRef.current = mediaRecorder;
+      streamRef.current = stream;
       chunksRef.current = [];
+      cancelledRef.current = false;
 
       mediaRecorder.ondataavailable = (event) => {
         if (event.data.size > 0) {
@@ -78,15 +87,22 @@ const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
       };
 
       mediaRecorder.onstop = () => {
+        // Always release the mic first.
+        stream.getTracks().forEach((track) => track.stop());
+        streamRef.current = null;
+
+        // A cancelled recording must not surface a preview.
+        if (cancelledRef.current) {
+          cancelledRef.current = false;
+          return;
+        }
+
         const blob = new Blob(chunksRef.current, { type: mimeType });
         const recordingDuration = Math.floor((Date.now() - startTimeRef.current) / 1000);
 
         setRecordedBlob(blob);
         setRecordedDuration(recordingDuration);
         setRecordedMimeType(mimeType.split(';')[0]);
-
-        // Stop all tracks
-        stream.getTracks().forEach((track) => track.stop());
       };
 
       mediaRecorder.start(100); // Collect data every 100ms
@@ -94,11 +110,21 @@ const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
       setIsRecording(true);
       setDuration(0);
     } catch (error) {
+      // Was silent — mic-permission denial (common on iOS/Android) left the
+      // user with a brief spinner and no explanation. Surface it.
       console.error('Failed to start recording:', error);
+      const isPermission =
+        error instanceof DOMException &&
+        (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError');
+      present({
+        message: isPermission ? t('voice.micDenied') : t('errors.generic'),
+        duration: 3000,
+        color: 'danger',
+      });
     } finally {
       setIsPreparing(false);
     }
-  }, [disabled, isRecording]);
+  }, [disabled, isRecording, present, t]);
 
   const stopRecording = useCallback(() => {
     if (!isRecording || !mediaRecorderRef.current) return;
@@ -109,6 +135,8 @@ const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
 
   const cancelRecording = useCallback(() => {
     if (mediaRecorderRef.current && isRecording) {
+      // Mark cancelled BEFORE stop() so the async onstop discards the blob.
+      cancelledRef.current = true;
       mediaRecorderRef.current.stop();
     }
     setIsRecording(false);
@@ -116,6 +144,24 @@ const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
     setRecordedDuration(0);
     setDuration(0);
   }, [isRecording]);
+
+  // Release the mic if the component unmounts mid-recording (e.g. user navigates
+  // away from the chat) — otherwise the MediaRecorder stays live and the OS
+  // recording indicator stays on. Critical for a kids-focused app.
+  useEffect(() => {
+    return () => {
+      const mr = mediaRecorderRef.current;
+      if (mr && mr.state !== 'inactive') {
+        try {
+          mr.stop();
+        } catch {
+          // already stopped — ignore
+        }
+      }
+      streamRef.current?.getTracks().forEach((track) => track.stop());
+      streamRef.current = null;
+    };
+  }, []);
 
   const sendRecording = useCallback(async () => {
     if (!recordedBlob) return;
@@ -127,16 +173,12 @@ const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
       setRecordedDuration(0);
     } catch (error) {
       console.error('Failed to send recording:', error);
+      present({ message: t('errors.generic'), duration: 2500, color: 'danger' });
     } finally {
       setIsSending(false);
     }
-  }, [recordedBlob, recordedDuration, recordedMimeType, onRecord]);
+  }, [recordedBlob, recordedDuration, recordedMimeType, onRecord, present, t]);
 
-  const formatDuration = (seconds: number): string => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
-  };
 
   // Show recorded preview
   if (recordedBlob) {
@@ -153,7 +195,7 @@ const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
 
         <div className="recorded-info">
           <div className="recorded-indicator" />
-          <span className="recorded-duration">{formatDuration(recordedDuration)}</span>
+          <span className="recorded-duration">{formatSeconds(recordedDuration)}</span>
         </div>
 
         <button
@@ -247,20 +289,20 @@ const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
         <button
           className="cancel-button"
           onClick={cancelRecording}
-          aria-label={t('chat.slideToCancel')}
+          aria-label={t('a11y.cancelRecording')}
         >
           <IonIcon icon={close} />
         </button>
 
         <div className="recording-info">
           <div className="recording-indicator" />
-          <span className="recording-duration">{formatDuration(duration)}</span>
+          <span className="recording-duration">{formatSeconds(duration)}</span>
         </div>
 
         <button
           className="stop-button"
           onClick={stopRecording}
-          aria-label={t('chat.releaseToSend')}
+          aria-label={t('a11y.stopRecording')}
         >
           <IonIcon icon={send} />
         </button>
@@ -273,10 +315,10 @@ const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
             padding: 0.5rem;
             background: hsl(var(--destructive) / 0.1);
             border-radius: 1.5rem;
-            animation: pulse 1s infinite;
+            animation: voice-recording-pulse 1s infinite;
           }
 
-          @keyframes pulse {
+          @keyframes voice-recording-pulse {
             0%, 100% { opacity: 1; }
             50% { opacity: 0.8; }
           }
@@ -343,7 +385,7 @@ const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
       className="mic-button"
       onClick={startRecording}
       disabled={disabled || isPreparing}
-      aria-label={t('chat.holdToRecord')}
+      aria-label={t('a11y.recordVoice')}
     >
       {isPreparing ? (
         <IonSpinner name="crescent" />

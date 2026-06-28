@@ -1,8 +1,13 @@
 {
   "errors": {
+    "generic": "Jotain meni pieleen. Yritä uudelleen.",
     "boundaryMessage": "Jotain meni pieleen. Yritä uudelleen.",
     "boundaryRetry": "Yritä uudelleen",
     "boundaryHome": "Etusivulle"
+  },
+  "voice": {
+    "micDenied": "Tallennus vaatii mikrofonin käyttöoikeuden. Ota se käyttöön laitteen asetuksissa.",
+    "unavailable": "Ääniviesti ei ole saatavilla"
   },
   "sessions": {
     "title": "Aktiiviset laitteet",
@@ -28,6 +33,7 @@
     "next": "Seuraava",
     "done": "Valmis",
     "close": "Sulje",
+    "justNow": "Juuri nyt",
     "confirm": "Vahvista",
     "or": "tai",
     "and": "ja",
@@ -209,7 +215,19 @@
   },
   "gif": {
     "searchPlaceholder": "Etsi GIF...",
-    "noResults": "GIF-kuvia ei löytynyt"
+    "noResults": "GIF-kuvia ei löytynyt",
+    "categories": {
+      "trending": "Suosittua",
+      "reactions": "Reaktiot",
+      "love": "Rakkaus",
+      "funny": "Hauska",
+      "happy": "Iloinen",
+      "sad": "Surullinen",
+      "yes": "Kyllä",
+      "no": "Ei",
+      "thanks": "Kiitos",
+      "wow": "Vau"
+    }
   },
   "sticker": {
     "title": "Tarrat"
@@ -236,7 +254,9 @@
   },
   "image": {
     "save": "Tallenna kuva",
-    "share": "Jaa"
+    "share": "Jaa",
+    "unavailable": "Kuva ei ole saatavilla",
+    "loadFailed": "Kuvan lataaminen epäonnistui"
   },
   "actions": {
     "pin": "Kiinnitä",
@@ -346,9 +366,12 @@
     "confirmYes": "KYLLÄ, KUTSU",
     "confirmNo": "Peruuta",
     "sent": "Aikuinen kutsuttu",
+    "failed": "Hälytystä ei voitu lähettää. Yritä uudelleen.",
     "alertReceived": "Aikuisen kutsu käyttäjältä {{name}}",
     "viewLocation": "Näytä sijainti",
     "acknowledge": "Vahvista",
+    "acknowledged": "Vahvistettu",
+    "autoCancelIn": "Peruutetaan {{seconds}} s kuluttua",
     "unacknowledged": "Vahvistamattomat hälytykset",
     "noAlerts": "Ei hälytyksiä"
   },
@@ -428,6 +451,7 @@
     "planPlusRinga": "Plus puheluilla",
     "subscribe": "Tilaa {{plan}}",
     "restorePurchases": "Palauta ostokset",
+    "restoreNoPurchases": "Palautettavia aiempia ostoksia ei löytynyt.",
     "termsText": "Maksu veloitetaan App Store- tai Google Play -tililtäsi. Tilaus uusiutuu automaattisesti, ellei sitä peruuteta vähintään 24 tuntia ennen jakson päättymistä.",
     "termsTextIos": "Maksu veloitetaan App Store -tililtäsi. Tilaus uusiutuu automaattisesti, ellei sitä peruuteta vähintään 24 tuntia ennen jakson päättymistä. Hallinnoit tilausta App Store -asetuksissa.",
     "termsTextAndroid": "Maksu veloitetaan Google Play -tililtäsi. Tilaus uusiutuu automaattisesti, ellei sitä peruuteta vähintään 24 tuntia ennen jakson päättymistä. Hallinnoit tilausta Google Play -asetuksissa.",
@@ -522,6 +546,7 @@
     "callEnding": "Puhelu päättyy...",
     "maxDurationReached": "Puhelun enimmäiskesto saavutettu",
     "noAnswer": "Ei vastausta",
+    "groupFull": "Puhelu on täynnä (enintään 6 osallistujaa).",
     "unavailable": "Ei tavoitettavissa",
     "error": "Jokin meni pieleen. Yritä myöhemmin uudelleen.",
     "microphoneError": "Mikrofonia ei voitu käyttää. Tarkista selaimen käyttöoikeudet.",
@@ -874,12 +899,23 @@
     "attach": "Liitä",
     "selectReaction": "Valitse reaktio",
     "moreReactions": "Lisää reaktioita",
+    "reactWith": "Reagoi: {{emoji}}",
+    "seek": "Kelaa",
+    "playVoice": "Toista ääniviesti",
+    "pauseVoice": "Keskeytä ääniviesti",
+    "playbackSpeed": "Toistonopeus {{rate}}x",
+    "recordVoice": "Nauhoita ääniviesti",
+    "stopRecording": "Lopeta nauhoitus",
+    "cancelRecording": "Peruuta nauhoitus",
     "cancel": "Peruuta",
     "sendVoiceMessage": "Lähetä ääniviesti",
     "openDashboard": "Yleiskatsaus",
     "acceptFriendRequest": "Hyväksy kaveripyyntö",
     "rejectFriendRequest": "Hylkää kaveripyyntö",
     "searchMessages": "Hae viestejä",
-    "close": "Sulje"
+    "close": "Sulje",
+    "previousImage": "Edellinen kuva",
+    "nextImage": "Seuraava kuva",
+    "preview": "Esikatselu"
   }
 }

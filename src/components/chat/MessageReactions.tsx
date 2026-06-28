@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { type GroupedReaction } from '../../services/reaction';
 
 interface MessageReactionsProps {
@@ -9,6 +10,7 @@ const MessageReactions: React.FC<MessageReactionsProps> = ({
   reactions,
   onToggle,
 }) => {
+  const { t } = useTranslation();
   if (reactions.length === 0) {
     return null;
   }
@@ -20,12 +22,20 @@ const MessageReactions: React.FC<MessageReactionsProps> = ({
           key={reaction.emoji}
           className={`reaction-chip ${reaction.hasReacted ? 'active' : ''}`}
           onClick={() => onToggle?.(reaction.emoji)}
-          title={reaction.users.map((u) => u.display_name || 'User').join(', ')}
+          aria-label={t('a11y.reactWith', { emoji: reaction.emoji })}
+          aria-pressed={reaction.hasReacted}
+          title={reaction.users.map((u) => u.display_name || t('dashboard.unnamed')).join(', ')}
         >
-          {/* Keying the emoji span by the emoji makes React re-mount it when
-              the user swaps their reaction (issue #34), so the CSS pop-in
-              animation fires — WhatsApp-style swap feedback. */}
-          <span key={reaction.emoji} className="reaction-emoji">{reaction.emoji}</span>
+          {/* Key the emoji span by values that actually change on a swap
+              (count + hasReacted), not the emoji itself — otherwise the key is
+              identical to the implicit position and React never re-mounts it,
+              so the CSS pop-in animation (issue #34) never fires. */}
+          <span
+            key={`${reaction.emoji}-${reaction.count}-${reaction.hasReacted}`}
+            className="reaction-emoji"
+          >
+            {reaction.emoji}
+          </span>
           <span className="reaction-count">{reaction.count}</span>
         </button>
       ))}

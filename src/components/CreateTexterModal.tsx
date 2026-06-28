@@ -1,4 +1,4 @@
-import { useState, FormEvent } from 'react';
+import { useState, useRef, useEffect, FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   IonModal,
@@ -43,6 +43,10 @@ export const CreateTexterModal: React.FC<CreateTexterModalProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const [createdTexter, setCreatedTexter] = useState<CreatedTexter | null>(null);
   const [copied, setCopied] = useState(false);
+  const copiedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => () => {
+    if (copiedTimerRef.current) clearTimeout(copiedTimerRef.current);
+  }, []);
 
   const resetForm = () => {
     setDisplayName('');
@@ -51,6 +55,7 @@ export const CreateTexterModal: React.FC<CreateTexterModalProps> = ({
     setError(null);
     setCreatedTexter(null);
     setCopied(false);
+    if (copiedTimerRef.current) clearTimeout(copiedTimerRef.current);
   };
 
   const handleClose = () => {
@@ -79,27 +84,34 @@ export const CreateTexterModal: React.FC<CreateTexterModalProps> = ({
 
     setIsLoading(true);
 
-    const { zemiNumber, error: createError } = await createTexter({
-      displayName: displayName.trim(),
-      password,
-      teamId,
-    });
+    try {
+      const { zemiNumber, error: createError } = await createTexter({
+        displayName: displayName.trim(),
+        password,
+        teamId,
+      });
 
-    setIsLoading(false);
+      if (createError) {
+        setError(createError.message);
+        return;
+      }
 
-    if (createError) {
-      setError(createError.message);
-      return;
+      // Show success with credentials
+      setCreatedTexter({
+        displayName: displayName.trim(),
+        zemiNumber: zemiNumber!,
+        password,
+      });
+
+      onCreated();
+    } catch (err) {
+      // createTexter threw (network/unexpected) — surface it instead of leaving
+      // the button stuck in its loading state with no feedback.
+      console.error('[CreateTexter] createTexter threw:', err);
+      setError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setIsLoading(false);
     }
-
-    // Show success with credentials
-    setCreatedTexter({
-      displayName: displayName.trim(),
-      zemiNumber: zemiNumber!,
-      password,
-    });
-
-    onCreated();
   };
 
   const copyCredentials = async () => {
@@ -109,9 +121,16 @@ export const CreateTexterModal: React.FC<CreateTexterModalProps> = ({
 ${t('texter.zemiNumber')}: ${createdTexter.zemiNumber}
 ${t('texter.password')}: ${createdTexter.password}`;
 
-    await navigator.clipboard.writeText(text);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+      if (copiedTimerRef.current) clearTimeout(copiedTimerRef.current);
+      copiedTimerRef.current = setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      // Clipboard can reject (permissions / insecure context) — don't throw an
+      // unhandled rejection; the credentials are still shown on screen to copy.
+      console.error('[CreateTexter] clipboard write failed:', err);
+    }
   };
 
   return (

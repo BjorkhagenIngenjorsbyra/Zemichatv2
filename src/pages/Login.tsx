@@ -11,6 +11,7 @@ import {
 } from '@ionic/react';
 import { signIn } from '../services/auth';
 import { claimInvitation } from '../services/invitations';
+import { getMFAAssuranceLevel } from '../services/mfa';
 import '../theme/auth-forms.css';
 
 const Login: React.FC = () => {
@@ -26,28 +27,51 @@ const Login: React.FC = () => {
     setError(null);
     setIsLoading(true);
 
-    const { error: signInError } = await signIn({ email, password });
+    try {
+      const { error: signInError } = await signIn({ email, password });
 
-    if (signInError) {
-      if (signInError.message === 'Account is deactivated') {
-        setError(t('texterLogin.accountDeactivated'));
-      } else if (signInError.message === 'Account is paused') {
-        setError(t('auth.accountPaused'));
-      } else {
-        setError(signInError.message);
+      if (signInError) {
+        if (signInError.message === 'Account is deactivated') {
+          setError(t('texterLogin.accountDeactivated'));
+        } else if (signInError.message === 'Account is paused') {
+          setError(t('auth.accountPaused'));
+        } else {
+          setError(signInError.message);
+        }
+        return;
       }
+
+      // Auto-claim pending invitation if one was stored during signup. Only
+      // drop the stored token once the claim actually succeeds — otherwise a
+      // transient failure would permanently lose the user's invitation.
+      const pendingToken = localStorage.getItem('zemichat-pending-invite-token');
+      if (pendingToken) {
+        const { error: claimError } = await claimInvitation(pendingToken);
+        if (claimError) {
+          console.warn('Invitation claim failed — keeping token for retry:', claimError);
+        } else {
+          localStorage.removeItem('zemichat-pending-invite-token');
+        }
+      }
+
+      // If the account has MFA enrolled, the session is still at AAL1 after
+      // password sign-in — route to verification instead of straight into the
+      // app, otherwise MFA is effectively skipped on this path.
+      const { currentLevel, nextLevel } = await getMFAAssuranceLevel();
+      if (nextLevel === 'aal2' && currentLevel !== 'aal2') {
+        history.replace('/mfa-verify');
+        return;
+      }
+
+      history.replace('/chats');
+    } catch (err) {
+      // Network/runtime failure rather than a returned error object — without
+      // this the button would stay disabled with a spinner forever.
+      console.error('Login failed:', err);
+      setError(t('errors.generic'));
+    } finally {
       setIsLoading(false);
-      return;
     }
-
-    // Auto-claim pending invitation if one was stored during signup
-    const pendingToken = localStorage.getItem('zemichat-pending-invite-token');
-    if (pendingToken) {
-      localStorage.removeItem('zemichat-pending-invite-token');
-      await claimInvitation(pendingToken);
-    }
-
-    history.replace('/chats');
   };
 
   return (
@@ -80,6 +104,8 @@ const Login: React.FC = () => {
                 required
                 className="auth-input"
                 fill="outline"
+                name="email"
+                autocomplete="email"
               />
             </div>
 
@@ -92,6 +118,8 @@ const Login: React.FC = () => {
                 required
                 className="auth-input"
                 fill="outline"
+                name="password"
+                autocomplete="current-password"
               />
             </div>
 

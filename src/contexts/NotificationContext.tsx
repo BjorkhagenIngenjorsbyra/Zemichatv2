@@ -1,4 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useMemo, useRef, type ReactNode } from 'react';
+import { App as CapacitorApp } from '@capacitor/app';
+import { Capacitor } from '@capacitor/core';
 import { useAuthContext } from './AuthContext';
 import { supabase } from '../services/supabase';
 import {
@@ -69,6 +71,34 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
     refreshCounts();
   }, [profile?.id, refreshCounts]);
 
+  // Realtime websockets drop while the app is backgrounded and channels can
+  // miss events on rejoin, leaving badges stale indefinitely. Refresh all
+  // counts when the app returns to the foreground (native app-state + web
+  // visibility).
+  useEffect(() => {
+    if (!profile?.id) return;
+
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') refreshCounts();
+    };
+    document.addEventListener('visibilitychange', onVisible);
+
+    let removeNative: (() => void) | undefined;
+    if (Capacitor.isNativePlatform()) {
+      const listener = CapacitorApp.addListener('appStateChange', ({ isActive }) => {
+        if (isActive) refreshCounts();
+      });
+      removeNative = () => {
+        listener.then((h) => h.remove());
+      };
+    }
+
+    return () => {
+      document.removeEventListener('visibilitychange', onVisible);
+      removeNative?.();
+    };
+  }, [profile?.id, refreshCounts]);
+
   // Realtime: chat_members changes → refresh unread counts (debounced)
   useEffect(() => {
     if (!profile?.id) return;
@@ -91,7 +121,11 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
           }, 300);
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        // Re-sync on (re)subscribe so a reconnect after a dropped socket
+        // doesn't leave the count stale.
+        if (status === 'SUBSCRIBED') refreshUnreadCounts();
+      });
 
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current);
@@ -117,7 +151,9 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
           refreshFriendCounts();
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        if (status === 'SUBSCRIBED') refreshFriendCounts();
+      });
 
     return () => {
       supabase.removeChannel(channel);
@@ -138,7 +174,11 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
           table: 'wall_posts',
           filter: `team_id=eq.${profile.team_id}`,
         },
-        () => {
+        (payload) => {
+          // Don't light the user's own Wall tab for a post they just authored
+          // (Fable round-3: the badge lit up on your own post and never cleared).
+          const row = payload.new as { author_id?: string };
+          if (row.author_id && row.author_id === profile.id) return;
           setWallHasNew(true);
         }
       )
@@ -147,7 +187,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [profile?.team_id]);
+  }, [profile?.team_id, profile?.id]);
 
   // App badge: sync with totalUnreadMessages
   useEffect(() => {

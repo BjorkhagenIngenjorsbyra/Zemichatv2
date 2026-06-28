@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { IonButton, IonIcon } from '@ionic/react';
 import { call, close, videocam } from 'ionicons/icons';
@@ -8,10 +9,29 @@ const IncomingCallModal: React.FC = () => {
   const { t } = useTranslation();
   const { incomingCall, answerCall, declineCall } = useCallContext();
 
+  // Prevent a double-tap (or answer-then-decline race) from firing two async
+  // answer/decline flows. Reset per incoming call so a new call is actionable.
+  const [actionTaken, setActionTaken] = useState(false);
+  useEffect(() => {
+    setActionTaken(false);
+  }, [incomingCall?.callLogId]);
+
   if (!incomingCall) return null;
 
   const isVideo = incomingCall.callType === CallType.VIDEO;
   const callTypeLabel = isVideo ? t('call.incomingVideoCall') : t('call.incomingVoiceCall');
+
+  const handleAnswer = () => {
+    if (actionTaken) return;
+    setActionTaken(true);
+    answerCall();
+  };
+
+  const handleDecline = () => {
+    if (actionTaken) return;
+    setActionTaken(true);
+    declineCall();
+  };
 
   return (
     <div className="incoming-call-overlay">
@@ -37,7 +57,9 @@ const IncomingCallModal: React.FC = () => {
             className="action-button decline"
             fill="solid"
             color="danger"
-            onClick={declineCall}
+            disabled={actionTaken}
+            onClick={handleDecline}
+            aria-label={t('call.decline')}
           >
             <IonIcon icon={close} slot="icon-only" />
           </IonButton>
@@ -46,7 +68,9 @@ const IncomingCallModal: React.FC = () => {
             className="action-button answer"
             fill="solid"
             color="success"
-            onClick={answerCall}
+            disabled={actionTaken}
+            onClick={handleAnswer}
+            aria-label={t('call.answer')}
           >
             <IonIcon icon={isVideo ? videocam : call} slot="icon-only" />
           </IonButton>
@@ -95,10 +119,10 @@ const IncomingCallModal: React.FC = () => {
           border-radius: 50%;
           overflow: hidden;
           border: 4px solid hsl(var(--primary-foreground) / 0.3);
-          animation: pulse 2s infinite;
+          animation: incoming-call-pulse 2s infinite;
         }
 
-        @keyframes pulse {
+        @keyframes incoming-call-pulse {
           0%, 100% {
             box-shadow: 0 0 0 0 hsl(var(--primary-foreground) / 0.4);
           }

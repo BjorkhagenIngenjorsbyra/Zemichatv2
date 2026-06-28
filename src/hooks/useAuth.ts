@@ -124,15 +124,18 @@ export function useAuth(): AuthState {
     }
   }, [authUser, isLoading, refreshProfile]);
 
-  // Start/stop presence updates based on profile
+  // Start/stop presence updates based on whether a user is logged in. Keyed on
+  // profile?.id (not the profile object) so a profile refresh doesn't restart
+  // presence on every change.
   useEffect(() => {
-    if (profile) {
+    if (profile?.id) {
       startPresenceUpdates();
     } else {
       stopPresenceUpdates();
     }
     return () => stopPresenceUpdates();
-  }, [profile]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [profile?.id]);
 
   const signOut = useCallback(async () => {
     // Cleanup push notifications before signing out

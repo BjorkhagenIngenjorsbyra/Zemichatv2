@@ -8,7 +8,12 @@ interface Props {
 
 interface State {
   hasError: boolean;
+  retryCount: number;
 }
+
+/** After this many failed retries, stop offering "retry" and steer the user to
+ *  a hard reset — a deterministic render error would otherwise loop forever. */
+const MAX_RETRIES = 3;
 
 /**
  * Catches uncaught render errors so a single broken page never blanks the whole
@@ -19,9 +24,9 @@ interface State {
  * component and must keep working even if a child threw mid-render.
  */
 export class ErrorBoundary extends Component<Props, State> {
-  state: State = { hasError: false };
+  state: State = { hasError: false, retryCount: 0 };
 
-  static getDerivedStateFromError(): State {
+  static getDerivedStateFromError(): Partial<State> {
     return { hasError: true };
   }
 
@@ -30,7 +35,7 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   private handleRetry = (): void => {
-    this.setState({ hasError: false });
+    this.setState((prev) => ({ hasError: false, retryCount: prev.retryCount + 1 }));
   };
 
   private handleHome = (): void => {
@@ -70,20 +75,22 @@ export class ErrorBoundary extends Component<Props, State> {
           {t('errors.boundaryMessage', 'Något gick fel. Försök igen.')}
         </p>
         <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
-          <button
-            onClick={this.handleRetry}
-            style={{
-              padding: '0.6rem 1.1rem',
-              borderRadius: '0.6rem',
-              border: 'none',
-              background: '#0E6272',
-              color: '#fff',
-              fontSize: '0.95rem',
-              cursor: 'pointer',
-            }}
-          >
-            {t('errors.boundaryRetry', 'Försök igen')}
-          </button>
+          {this.state.retryCount < MAX_RETRIES && (
+            <button
+              onClick={this.handleRetry}
+              style={{
+                padding: '0.6rem 1.1rem',
+                borderRadius: '0.6rem',
+                border: 'none',
+                background: '#0E6272',
+                color: '#fff',
+                fontSize: '0.95rem',
+                cursor: 'pointer',
+              }}
+            >
+              {t('errors.boundaryRetry', 'Försök igen')}
+            </button>
+          )}
           <button
             onClick={this.handleHome}
             style={{

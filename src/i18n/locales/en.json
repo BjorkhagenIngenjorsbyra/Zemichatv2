@@ -1,8 +1,13 @@
 {
   "errors": {
+    "generic": "Something went wrong. Please try again.",
     "boundaryMessage": "Something went wrong. Please try again.",
     "boundaryRetry": "Try again",
     "boundaryHome": "Go to start"
+  },
+  "voice": {
+    "micDenied": "Microphone access is required to record. Enable it in your device settings.",
+    "unavailable": "Voice message unavailable"
   },
   "sessions": {
     "title": "Active devices",
@@ -28,6 +33,7 @@
     "next": "Next",
     "done": "Done",
     "close": "Close",
+    "justNow": "Just now",
     "confirm": "Confirm",
     "or": "or",
     "and": "and",
@@ -209,7 +215,19 @@
   },
   "gif": {
     "searchPlaceholder": "Search GIFs...",
-    "noResults": "No GIFs found"
+    "noResults": "No GIFs found",
+    "categories": {
+      "trending": "Trending",
+      "reactions": "Reactions",
+      "love": "Love",
+      "funny": "Funny",
+      "happy": "Happy",
+      "sad": "Sad",
+      "yes": "Yes",
+      "no": "No",
+      "thanks": "Thanks",
+      "wow": "Wow"
+    }
   },
   "sticker": {
     "title": "Stickers"
@@ -236,7 +254,9 @@
   },
   "image": {
     "save": "Save image",
-    "share": "Share"
+    "share": "Share",
+    "unavailable": "Image unavailable",
+    "loadFailed": "Failed to load image"
   },
   "actions": {
     "pin": "Pin",
@@ -346,9 +366,12 @@
     "confirmYes": "YES, CALL",
     "confirmNo": "Cancel",
     "sent": "Adult alerted",
+    "failed": "The alert could not be sent. Please try again.",
     "alertReceived": "Call for an adult from {{name}}",
     "viewLocation": "View location",
     "acknowledge": "Acknowledge",
+    "acknowledged": "Acknowledged",
+    "autoCancelIn": "Cancels in {{seconds}}s",
     "unacknowledged": "Unacknowledged alerts",
     "noAlerts": "No alerts"
   },
@@ -428,6 +451,7 @@
     "planPlusRinga": "Plus with calls",
     "subscribe": "Subscribe to {{plan}}",
     "restorePurchases": "Restore Purchases",
+    "restoreNoPurchases": "No previous purchases found to restore.",
     "termsText": "Payment will be charged to your App Store or Google Play account. Subscription automatically renews unless cancelled at least 24 hours before the end of the current period.",
     "termsTextIos": "Payment will be charged to your App Store account. Subscription automatically renews unless cancelled at least 24 hours before the end of the current period. Manage your subscription in App Store settings.",
     "termsTextAndroid": "Payment will be charged to your Google Play account. Subscription automatically renews unless cancelled at least 24 hours before the end of the current period. Manage your subscription in Google Play settings.",
@@ -522,6 +546,7 @@
     "callEnding": "Call ending...",
     "maxDurationReached": "Maximum call duration reached",
     "noAnswer": "No answer",
+    "groupFull": "The call is full (max 6 participants).",
     "unavailable": "Unavailable",
     "error": "Something went wrong. Please try again later.",
     "microphoneError": "Microphone is not allowed. Open phone Settings → Zemichat → Permissions and enable Microphone.",
@@ -874,12 +899,23 @@
     "attach": "Attach",
     "selectReaction": "Select reaction",
     "moreReactions": "More reactions",
+    "reactWith": "React with {{emoji}}",
+    "seek": "Seek",
+    "playVoice": "Play voice message",
+    "pauseVoice": "Pause voice message",
+    "playbackSpeed": "Playback speed {{rate}}x",
+    "recordVoice": "Record voice message",
+    "stopRecording": "Stop recording",
+    "cancelRecording": "Cancel recording",
     "cancel": "Cancel",
     "sendVoiceMessage": "Send voice message",
     "openDashboard": "Overview",
     "acceptFriendRequest": "Accept friend request",
     "rejectFriendRequest": "Reject friend request",
     "searchMessages": "Search messages",
-    "close": "Close"
+    "close": "Close",
+    "previousImage": "Previous image",
+    "nextImage": "Next image",
+    "preview": "Preview"
   }
 }

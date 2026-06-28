@@ -13,8 +13,30 @@ interface LinkPreviewProps {
   isOwn: boolean;
 }
 
-// Simple in-memory cache for link previews
-const previewCache = new Map<string, LinkPreviewData | null>();
+// In-memory cache keyed by URL. Stores the in-flight PROMISE (not the resolved
+// value) so that when several messages with the same re-shared link mount at
+// once, they share a single edge-function call instead of each firing one.
+const previewCache = new Map<string, Promise<LinkPreviewData | null>>();
+
+function loadPreview(url: string): Promise<LinkPreviewData | null> {
+  const cached = previewCache.get(url);
+  if (cached) return cached;
+
+  const promise = (async (): Promise<LinkPreviewData | null> => {
+    try {
+      const { data, error } = await supabase.functions.invoke('fetch-link-preview', {
+        body: { url },
+      });
+      if (error || !data) return null;
+      return data as LinkPreviewData;
+    } catch {
+      return null;
+    }
+  })();
+
+  previewCache.set(url, promise);
+  return promise;
+}
 
 const LinkPreview: React.FC<LinkPreviewProps> = ({ url, isOwn }) => {
   const [preview, setPreview] = useState<LinkPreviewData | null>(null);
@@ -23,42 +45,13 @@ const LinkPreview: React.FC<LinkPreviewProps> = ({ url, isOwn }) => {
   useEffect(() => {
     let cancelled = false;
 
-    async function fetchPreview() {
-      // Check cache first
-      if (previewCache.has(url)) {
-        const cached = previewCache.get(url);
-        if (!cancelled) {
-          setPreview(cached || null);
-          setIsLoading(false);
-        }
-        return;
+    loadPreview(url).then((data) => {
+      if (!cancelled) {
+        setPreview(data);
+        setIsLoading(false);
       }
+    });
 
-      try {
-        const { data, error } = await supabase.functions.invoke('fetch-link-preview', {
-          body: { url },
-        });
-
-        if (error || !data) {
-          previewCache.set(url, null);
-          if (!cancelled) setIsLoading(false);
-          return;
-        }
-
-        const previewData = data as LinkPreviewData;
-        previewCache.set(url, previewData);
-
-        if (!cancelled) {
-          setPreview(previewData);
-          setIsLoading(false);
-        }
-      } catch {
-        previewCache.set(url, null);
-        if (!cancelled) setIsLoading(false);
-      }
-    }
-
-    fetchPreview();
     return () => { cancelled = true; };
   }, [url]);
 
@@ -71,7 +64,7 @@ const LinkPreview: React.FC<LinkPreviewProps> = ({ url, isOwn }) => {
       rel="noopener noreferrer"
       className={`link-preview ${isOwn ? 'own' : 'other'}`}
     >
-      {preview.imageUrl && (
+      {preview.imageUrl && /^https:\/\//i.test(preview.imageUrl) && (
         <img
           src={preview.imageUrl}
           alt=""

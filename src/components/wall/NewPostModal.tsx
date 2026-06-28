@@ -11,6 +11,7 @@ import {
   IonIcon,
   IonTextarea,
   IonSpinner,
+  useIonToast,
 } from '@ionic/react';
 import { closeOutline, imageOutline, closeCircle } from 'ionicons/icons';
 import { useAuthContext } from '../../contexts/AuthContext';
@@ -27,6 +28,7 @@ interface NewPostModalProps {
 const NewPostModal: React.FC<NewPostModalProps> = ({ isOpen, onClose, onPostCreated }) => {
   const { t } = useTranslation();
   const { profile } = useAuthContext();
+  const [present] = useIonToast();
   const [content, setContent] = useState('');
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -81,7 +83,10 @@ const NewPostModal: React.FC<NewPostModalProps> = ({ isOpen, onClose, onPostCrea
       if (imageFile) {
         const result = await uploadWallImage(imageFile);
         if (result.error) {
-          setIsSubmitting(false);
+          // Was silent — the post appeared to vanish. Keep the modal intact
+          // (content + image preview) so the user can retry.
+          console.error('Failed to upload wall image:', result.error);
+          present({ message: t('errors.generic'), duration: 2500, color: 'danger' });
           return;
         }
         mediaUrl = result.url;
@@ -100,6 +105,9 @@ const NewPostModal: React.FC<NewPostModalProps> = ({ isOpen, onClose, onPostCrea
         removeImage();
         onPostCreated();
         onClose();
+      } else {
+        console.error('Failed to create wall post:', error);
+        present({ message: t('errors.generic'), duration: 2500, color: 'danger' });
       }
     } finally {
       setIsSubmitting(false);

@@ -10,19 +10,31 @@ interface LocationMessageProps {
 const LocationMessage: React.FC<LocationMessageProps> = ({ lat, lng }) => {
   const { t } = useTranslation();
   const [showViewer, setShowViewer] = useState(false);
-
-  // Use OpenStreetMap static map tile as thumbnail
-  const tileUrl = `https://staticmap.openstreetmap.de/staticmap.php?center=${lat},${lng}&zoom=15&size=300x200&markers=${lat},${lng},red-pushpin`;
+  // Child-safety / privacy (Fable r3 #38): we deliberately do NOT request a
+  // static-map thumbnail from any third party. Doing so would transmit the
+  // child's exact coordinates to an external service on every render of the
+  // message, for everyone who can see it. Instead we render a local pin card;
+  // the actual map is drawn locally (Leaflet) inside LocationViewer, and only
+  // when the user taps to open it.
 
   return (
     <>
-      <div className="location-msg" onClick={() => setShowViewer(true)}>
-        <img
-          src={tileUrl}
-          alt={t('location.shareLocation')}
-          className="location-thumb"
-          loading="lazy"
-        />
+      <div
+        className="location-msg"
+        role="button"
+        tabIndex={0}
+        aria-label={t('location.shareLocation')}
+        onClick={() => setShowViewer(true)}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            setShowViewer(true);
+          }
+        }}
+      >
+        <div className="location-thumb location-thumb-fallback">
+          <span className="location-fallback-pin">📍</span>
+        </div>
         <div className="location-overlay">
           <span className="location-pin-icon">📍</span>
           <span>{t('location.shareLocation')}</span>
@@ -50,6 +62,17 @@ const LocationMessage: React.FC<LocationMessageProps> = ({ lat, lng }) => {
           height: 150px;
           object-fit: cover;
           display: block;
+        }
+
+        .location-thumb-fallback {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: hsl(var(--muted) / 0.4);
+        }
+
+        .location-fallback-pin {
+          font-size: 2.5rem;
         }
 
         .location-overlay {

@@ -20,13 +20,23 @@ export const ActiveSessions: React.FC = () => {
   const [currentId, setCurrentId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [signingOut, setSigningOut] = useState(false);
+  const [removingId, setRemovingId] = useState<string | null>(null);
+  const [loadError, setLoadError] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
 
   const load = useCallback(async () => {
-    const { sessions: rows, currentId: cur } = await listSessions();
-    setSessions(rows);
-    setCurrentId(cur);
-    setLoading(false);
+    setLoadError(false);
+    try {
+      const { sessions: rows, currentId: cur } = await listSessions();
+      setSessions(rows);
+      setCurrentId(cur);
+    } catch (err) {
+      // A thrown rejection previously left the spinner running forever.
+      console.error('Failed to load sessions:', err);
+      setLoadError(true);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
   useEffect(() => {
@@ -42,8 +52,21 @@ export const ActiveSessions: React.FC = () => {
   };
 
   const handleRemove = async (id: string) => {
-    await removeSession(id);
-    await load();
+    if (removingId) return; // guard against double-tap firing removeSession twice
+    setRemovingId(id);
+    try {
+      const { error } = await removeSession(id);
+      if (error) {
+        setToast(t('sessions.signOutError'));
+        return;
+      }
+      await load();
+    } catch (err) {
+      console.error('Failed to remove session:', err);
+      setToast(t('sessions.signOutError'));
+    } finally {
+      setRemovingId(null);
+    }
   };
 
   const others = sessions.filter((s) => s.id !== currentId);
@@ -55,6 +78,13 @@ export const ActiveSessions: React.FC = () => {
         {loading ? (
           <div style={{ display: 'flex', justifyContent: 'center', padding: '1rem' }}>
             <IonSpinner name="crescent" />
+          </div>
+        ) : loadError ? (
+          <div style={{ textAlign: 'center', padding: '0.5rem' }}>
+            <p style={{ color: 'hsl(var(--muted-foreground))', margin: '0 0 0.5rem' }}>{t('errors.generic')}</p>
+            <IonButton fill="outline" size="small" onClick={() => { setLoading(true); load(); }}>
+              {t('errors.boundaryRetry')}
+            </IonButton>
           </div>
         ) : sessions.length === 0 ? (
           <p style={{ color: 'hsl(var(--muted-foreground))', margin: 0 }}>{t('sessions.none')}</p>
@@ -91,9 +121,14 @@ export const ActiveSessions: React.FC = () => {
                       fill="clear"
                       size="small"
                       onClick={() => handleRemove(s.id)}
+                      disabled={removingId === s.id}
                       aria-label={t('sessions.remove')}
                     >
-                      <IonIcon slot="icon-only" icon={logOutOutline} />
+                      {removingId === s.id ? (
+                        <IonSpinner slot="icon-only" name="crescent" />
+                      ) : (
+                        <IonIcon slot="icon-only" icon={logOutOutline} />
+                      )}
                     </IonButton>
                   )}
                 </div>

@@ -54,6 +54,20 @@ const MessageContextMenu: React.FC<MessageContextMenuProps> = ({
     }
   }, [isOpen]);
 
+  // Allow Escape to dismiss + move focus into the menu on open.
+  useEffect(() => {
+    if (!isOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    document.addEventListener('keydown', onKey);
+    const focusId = setTimeout(() => menuRef.current?.focus(), 50);
+    return () => {
+      document.removeEventListener('keydown', onKey);
+      clearTimeout(focusId);
+    };
+  }, [isOpen, onClose]);
+
   if (!isOpen || !message) {
     return null;
   }
@@ -138,6 +152,10 @@ const MessageContextMenu: React.FC<MessageContextMenuProps> = ({
       <div
         ref={menuRef}
         className="ctx-menu"
+        role="dialog"
+        aria-modal="true"
+        aria-label={t('contextMenu.title', 'Message actions')}
+        tabIndex={-1}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Reaction row */}
@@ -147,7 +165,7 @@ const MessageContextMenu: React.FC<MessageContextMenuProps> = ({
               key={emoji}
               className="ctx-reaction-btn"
               onClick={() => handleReaction(emoji)}
-              aria-label={`React with ${emoji}`}
+              aria-label={t('a11y.reactWith', { emoji })}
             >
               {emoji}
             </button>

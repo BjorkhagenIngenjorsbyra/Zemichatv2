@@ -1,8 +1,9 @@
 import { useTranslation } from 'react-i18next';
 import { IonButton, IonIcon } from '@ionic/react';
 import { chevronDown, expandOutline } from 'ionicons/icons';
-import { useCallContext } from '../../contexts/CallContext';
+import { useCallContext, useCallDuration } from '../../contexts/CallContext';
 import { CallState, CallType } from '../../types/call';
+import { formatSeconds } from '../../utils/datetime';
 
 interface CallHeaderProps {
   chatName?: string;
@@ -10,15 +11,10 @@ interface CallHeaderProps {
 
 const CallHeader: React.FC<CallHeaderProps> = ({ chatName }) => {
   const { t } = useTranslation();
-  const { activeCall, callDuration, toggleMinimize } = useCallContext();
+  const { activeCall, toggleMinimize } = useCallContext();
+  const callDuration = useCallDuration();
 
   if (!activeCall) return null;
-
-  const formatDuration = (seconds: number): string => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
-  };
 
   const getStateLabel = (): string => {
     switch (activeCall.state) {
@@ -29,7 +25,7 @@ const CallHeader: React.FC<CallHeaderProps> = ({ chatName }) => {
       case CallState.CONNECTING:
         return t('call.connecting');
       case CallState.CONNECTED:
-        return formatDuration(callDuration);
+        return formatSeconds(callDuration);
       case CallState.ENDED:
         return t('call.ended');
       default:

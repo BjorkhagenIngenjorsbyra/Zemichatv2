@@ -9,6 +9,7 @@ import {
   IonText,
   IonSpinner,
   IonIcon,
+  useIonToast,
 } from '@ionic/react';
 import { checkmarkCircleOutline, closeCircleOutline } from 'ionicons/icons';
 import { useAuthContext } from '../contexts/AuthContext';
@@ -18,10 +19,12 @@ import { PlanType } from '../types/database';
 import { validateReferralCode, submitReferral } from '../services/referral';
 import { ConfettiAnimation } from '../components/ConfettiAnimation';
 import { hapticSuccess } from '../utils/haptics';
+import './CreateTeam.css';
 
 const CreateTeam: React.FC = () => {
   const { t } = useTranslation();
   const history = useHistory();
+  const [present] = useIonToast();
   const { authUser, hasProfile, refreshProfile, signOut } = useAuthContext();
   const { startTrial } = useSubscription();
   const [teamName, setTeamName] = useState('');
@@ -39,6 +42,9 @@ const CreateTeam: React.FC = () => {
 
   const redirectTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
   const validateTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
+  // Latest code in the input — a slow validateReferralCode response for an
+  // older code must not overwrite state for what's typed now.
+  const latestCodeRef = useRef('');
 
   useEffect(() => {
     if (hasProfile && !showConfetti && !showReferralStep) {
@@ -60,9 +66,15 @@ const CreateTeam: React.FC = () => {
   }, [authUser, history]);
 
   const handleFinish = useCallback(async () => {
-    await startTrial(PlanType.PRO);
-    history.replace('/chats');
-  }, [startTrial, history]);
+    // Only navigate once the trial is actually set — otherwise the user lands
+    // in the app without a plan and with no idea it failed.
+    const success = await startTrial(PlanType.PRO);
+    if (success) {
+      history.replace('/chats');
+    } else {
+      present({ message: t('errors.generic'), duration: 3000, color: 'danger' });
+    }
+  }, [startTrial, history, present, t]);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -109,6 +121,7 @@ const CreateTeam: React.FC = () => {
     setReferralCode(code);
     setReferralValid(null);
     setReferralTeamName(null);
+    latestCodeRef.current = code;
 
     if (validateTimer.current) clearTimeout(validateTimer.current);
 
@@ -116,6 +129,8 @@ const CreateTeam: React.FC = () => {
       setIsValidating(true);
       validateTimer.current = setTimeout(async () => {
         const { valid, teamName: name } = await validateReferralCode(code);
+        // Ignore a response that arrived after the user kept typing.
+        if (latestCodeRef.current !== code) return;
         setReferralValid(valid);
         setReferralTeamName(name);
         setIsValidating(false);
@@ -126,9 +141,18 @@ const CreateTeam: React.FC = () => {
   const handleContinueWithReferral = async () => {
     if (!referralValid || !referralCode) return;
     setIsSubmittingReferral(true);
-    await submitReferral(referralCode);
-    setIsSubmittingReferral(false);
-    await handleFinish();
+    try {
+      const { error: refError } = await submitReferral(referralCode);
+      if (refError) {
+        // Was silently swallowed — the user believed the referral applied.
+        console.error('Failed to submit referral:', refError);
+        present({ message: t('errors.generic'), duration: 3000, color: 'danger' });
+        return; // stay on the referral step
+      }
+      await handleFinish();
+    } finally {
+      setIsSubmittingReferral(false);
+    }
   };
 
   const handleSkipReferral = async () => {
@@ -197,101 +221,6 @@ const CreateTeam: React.FC = () => {
               </button>
             </div>
           </div>
-
-          <style>{`
-            .create-team-container {
-              display: flex;
-              flex-direction: column;
-              min-height: 100%;
-              max-width: 480px;
-              margin: 0 auto;
-              padding: 2rem;
-            }
-
-            .create-team-header {
-              text-align: center;
-              margin-bottom: 2rem;
-            }
-
-            .create-team-title {
-              font-size: 2rem;
-              font-weight: 800;
-              color: hsl(var(--foreground));
-              margin: 0 0 0.75rem 0;
-              letter-spacing: -0.02em;
-            }
-
-            .input-group {
-              display: flex;
-              flex-direction: column;
-              gap: 0.5rem;
-            }
-
-            .input-label {
-              font-size: 0.875rem;
-              font-weight: 600;
-              color: hsl(var(--foreground));
-              margin-left: 0.25rem;
-            }
-
-            .create-team-input {
-              --background: hsl(var(--card));
-              --color: hsl(var(--foreground));
-              --placeholder-color: hsl(var(--muted-foreground));
-              --border-color: hsl(var(--border));
-              --border-radius: 1rem;
-            }
-
-            .create-team-button {
-              --background: hsl(var(--primary));
-              --color: hsl(var(--primary-foreground));
-              height: 3rem;
-              margin-top: 0.5rem;
-            }
-
-            .referral-form {
-              display: flex;
-              flex-direction: column;
-              gap: 1.5rem;
-            }
-
-            .referral-status {
-              display: flex;
-              align-items: center;
-              gap: 0.5rem;
-              font-size: 0.875rem;
-              padding: 0.5rem 0;
-            }
-
-            .referral-valid {
-              color: hsl(var(--secondary));
-            }
-
-            .referral-valid ion-icon {
-              font-size: 1.25rem;
-              color: hsl(var(--secondary));
-            }
-
-            .referral-invalid {
-              color: hsl(var(--destructive));
-            }
-
-            .referral-invalid ion-icon {
-              font-size: 1.25rem;
-              color: hsl(var(--destructive));
-            }
-
-            .skip-link {
-              background: none;
-              border: none;
-              color: hsl(var(--muted-foreground));
-              font-size: 0.9rem;
-              text-align: center;
-              cursor: pointer;
-              padding: 0.5rem;
-              text-decoration: underline;
-            }
-          `}</style>
         </IonContent>
       </IonPage>
     );
@@ -361,114 +290,6 @@ const CreateTeam: React.FC = () => {
         </div>
 
         <ConfettiAnimation active={showConfetti} duration={2000} />
-
-        <style>{`
-          .create-team-container {
-            display: flex;
-            flex-direction: column;
-            min-height: 100%;
-            max-width: 480px;
-            margin: 0 auto;
-            padding: 2rem;
-          }
-
-          .create-team-header {
-            text-align: center;
-            margin-bottom: 2rem;
-          }
-
-          .create-team-title {
-            font-size: 2rem;
-            font-weight: 800;
-            color: hsl(var(--foreground));
-            margin: 0 0 0.75rem 0;
-            letter-spacing: -0.02em;
-          }
-
-          .create-team-subtitle {
-            font-size: 1rem;
-            color: hsl(var(--muted-foreground));
-            margin: 0;
-            line-height: 1.5;
-          }
-
-          .create-team-form {
-            display: flex;
-            flex-direction: column;
-            gap: 1.5rem;
-          }
-
-          .create-team-error {
-            background: hsl(var(--destructive) / 0.1);
-            border: 1px solid hsl(var(--destructive) / 0.3);
-            border-radius: 0.75rem;
-            padding: 0.75rem 1rem;
-          }
-
-          .input-group {
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-          }
-
-          .input-label {
-            font-size: 0.875rem;
-            font-weight: 600;
-            color: hsl(var(--foreground));
-            margin-left: 0.25rem;
-          }
-
-          .create-team-input {
-            --background: hsl(var(--card));
-            --color: hsl(var(--foreground));
-            --placeholder-color: hsl(var(--muted-foreground));
-            --border-color: hsl(var(--border));
-            --border-radius: 1rem;
-          }
-
-          .info-box {
-            background: hsl(var(--card));
-            border: 1px solid hsl(var(--border));
-            border-radius: 1rem;
-            padding: 1.25rem;
-          }
-
-          .info-box p {
-            margin: 0 0 0.75rem 0;
-            font-size: 0.9rem;
-            color: hsl(var(--foreground));
-          }
-
-          .info-box ul {
-            margin: 0;
-            padding-left: 1.25rem;
-          }
-
-          .info-box li {
-            font-size: 0.875rem;
-            color: hsl(var(--muted-foreground));
-            line-height: 1.6;
-          }
-
-          .create-team-button {
-            --background: hsl(var(--primary));
-            --color: hsl(var(--primary-foreground));
-            height: 3rem;
-            margin-top: 0.5rem;
-          }
-
-          .create-team-signout-link {
-            background: none;
-            border: none;
-            color: hsl(var(--muted-foreground));
-            font-size: 0.875rem;
-            text-align: center;
-            cursor: pointer;
-            padding: 0.75rem;
-            text-decoration: underline;
-            width: 100%;
-          }
-        `}</style>
       </IonContent>
     </IonPage>
   );

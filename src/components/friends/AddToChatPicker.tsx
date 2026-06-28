@@ -14,6 +14,7 @@ import {
   IonButtons,
   IonButton,
   IonSpinner,
+  useIonToast,
 } from '@ionic/react';
 import { getMyChats, addMemberToChat, type ChatWithDetails } from '../../services/chat';
 import { useAuthContext } from '../../contexts/AuthContext';
@@ -35,15 +36,18 @@ const AddToChatPicker: React.FC<AddToChatPickerProps> = ({
 }) => {
   const { t } = useTranslation();
   const { profile } = useAuthContext();
+  const [present] = useIonToast();
   const [chats, setChats] = useState<ChatWithDetails[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [loadError, setLoadError] = useState(false);
   const [isAdding, setIsAdding] = useState<string | null>(null);
   const searchbarRef = useRef<HTMLIonSearchbarElement>(null);
 
   useEffect(() => {
     if (isOpen && userId) {
       setIsLoading(true);
+      setLoadError(false);
       getMyChats()
         .then(({ chats: fetchedChats }) => {
           // Filter: only group chats (or chats that can become groups)
@@ -55,6 +59,12 @@ const AddToChatPicker: React.FC<AddToChatPickerProps> = ({
           });
           setChats(available);
         })
+        .catch((err) => {
+          // Distinguish a fetch failure from a genuinely empty list so the
+          // empty state doesn't masquerade as "no chats available".
+          console.error('Failed to load chats:', err);
+          setLoadError(true);
+        })
         .finally(() => {
           setIsLoading(false);
         });
@@ -65,6 +75,7 @@ const AddToChatPicker: React.FC<AddToChatPickerProps> = ({
     } else {
       setSearchQuery('');
       setChats([]);
+      setLoadError(false);
       setIsAdding(null);
     }
   }, [isOpen, userId]);
@@ -124,6 +135,7 @@ const AddToChatPicker: React.FC<AddToChatPickerProps> = ({
 
     if (error) {
       console.error('Failed to add member to chat:', error);
+      present({ message: t('errors.generic'), duration: 2500, color: 'danger' });
       setIsAdding(null);
       return;
     }
@@ -164,6 +176,10 @@ const AddToChatPicker: React.FC<AddToChatPickerProps> = ({
         {isLoading ? (
           <div className="atc-loading">
             <IonSpinner name="crescent" />
+          </div>
+        ) : loadError ? (
+          <div className="atc-empty">
+            <p>{t('errors.generic')}</p>
           </div>
         ) : filteredChats.length === 0 ? (
           <div className="atc-empty">

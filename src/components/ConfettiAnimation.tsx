@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 
 interface ConfettiAnimationProps {
   active: boolean;
@@ -31,7 +31,20 @@ export const ConfettiAnimation: React.FC<ConfettiAnimationProps> = ({
     []
   );
 
-  if (!active) return null;
+  // Self-unmount after the animation finishes so the 24 fixed-position
+  // particles don't linger in the DOM indefinitely (the parent often leaves
+  // `active` true). Max particle delay is ~0.8s.
+  const [done, setDone] = useState(false);
+  useEffect(() => {
+    if (!active) {
+      setDone(false);
+      return;
+    }
+    const id = setTimeout(() => setDone(true), duration + 800);
+    return () => clearTimeout(id);
+  }, [active, duration]);
+
+  if (!active || done) return null;
 
   return (
     <div className="confetti-container" aria-hidden="true">
@@ -53,14 +66,14 @@ export const ConfettiAnimation: React.FC<ConfettiAnimationProps> = ({
         }
         @keyframes confettiFall {
           0% {
-            transform: translateY(0) rotate(0deg);
+            transform: translateY(0) rotate(var(--rot, 0deg));
             opacity: 1;
           }
           75% {
             opacity: 1;
           }
           100% {
-            transform: translateY(100vh) rotate(720deg);
+            transform: translateY(100vh) rotate(calc(var(--rot, 0deg) + 720deg));
             opacity: 0;
           }
         }
@@ -76,7 +89,9 @@ export const ConfettiAnimation: React.FC<ConfettiAnimationProps> = ({
             width: p.shape === 2 ? p.size * 0.5 : p.size,
             height: p.size,
             borderRadius: p.shape === 1 ? '50%' : '2px',
-            transform: `rotate(${p.rotation}deg)`,
+            // Fed into the keyframes via a CSS var so the per-particle start
+            // rotation isn't overwritten by the animation's transform.
+            ['--rot' as string]: `${p.rotation}deg`,
           }}
         />
       ))}

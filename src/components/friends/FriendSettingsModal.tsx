@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { IonAvatar, useIonToast } from '@ionic/react';
 import { useTranslation } from 'react-i18next';
 import { type User, FRIEND_CATEGORIES } from '../../types/database';
@@ -30,13 +30,34 @@ export const FriendSettingsModal: React.FC<FriendSettingsModalProps> = ({
   const [categories, setCategories] = useState<string[]>(initialCategories);
   const [isSaving, setIsSaving] = useState(false);
 
+  // Initialize form state once per open-session for a given friend. The
+  // initial* props default to fresh literals (e.g. initialCategories = []), so
+  // depending on them would re-run this effect on every parent re-render and
+  // wipe the user's in-progress edits. Keying on friend.id (read of the initial
+  // values happens only at that transition) fixes that.
+  const initKeyRef = useRef<string | null>(null);
   useEffect(() => {
-    if (isOpen) {
+    const key = isOpen && friend ? friend.id : null;
+    if (key && key !== initKeyRef.current) {
+      initKeyRef.current = key;
       setNickname(initialNickname);
       setShowRealName(initialShowRealName);
       setCategories(initialCategories);
+    } else if (!key) {
+      initKeyRef.current = null;
     }
-  }, [isOpen, initialNickname, initialShowRealName, initialCategories]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen, friend?.id]);
+
+  // Allow Escape to dismiss (the modal is a hand-rolled div overlay).
+  useEffect(() => {
+    if (!isOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [isOpen, onClose]);
 
   if (!isOpen || !friend) return null;
 
@@ -48,15 +69,20 @@ export const FriendSettingsModal: React.FC<FriendSettingsModalProps> = ({
 
   const handleSave = async () => {
     setIsSaving(true);
+    const trimmedNickname = nickname.trim();
+    // The "show real name" toggle is only meaningful when a nickname is set
+    // (its row is hidden otherwise). Don't persist a stale show_real_name=true
+    // with no nickname — an invisible, unreachable setting.
+    const effectiveShowRealName = trimmedNickname ? showRealName : false;
     const { error } = await upsertFriendSettings(friend.id, {
-      nickname: nickname.trim(),
+      nickname: trimmedNickname,
       categories,
-      show_real_name: showRealName,
+      show_real_name: effectiveShowRealName,
     });
     setIsSaving(false);
 
     if (!error) {
-      onSaved(friend.id, nickname.trim(), showRealName, categories);
+      onSaved(friend.id, trimmedNickname, effectiveShowRealName, categories);
       presentToast({
         message: t('friendSettings.saved'),
         duration: 1500,
@@ -64,12 +90,28 @@ export const FriendSettingsModal: React.FC<FriendSettingsModalProps> = ({
         color: 'success',
       });
       onClose();
+    } else {
+      // Surface the failure and keep the modal open so the user can retry,
+      // instead of silently dropping the save.
+      console.error('Failed to save friend settings:', error);
+      presentToast({
+        message: t('errors.generic'),
+        duration: 2500,
+        position: 'bottom',
+        color: 'danger',
+      });
     }
   };
 
   return (
     <div className="fs-backdrop" onClick={onClose}>
-      <div className="fs-modal" onClick={(e) => e.stopPropagation()}>
+      <div
+        className="fs-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-label={t('friends.settings')}
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* Header with avatar */}
         <div className="fs-header">
           <IonAvatar className="fs-avatar">
@@ -99,12 +141,19 @@ export const FriendSettingsModal: React.FC<FriendSettingsModalProps> = ({
 
         {/* Show real name toggle — only when nickname is set */}
         {nickname.trim() && (
-          <div className="fs-toggle-row" onClick={() => setShowRealName(!showRealName)}>
+          <button
+            type="button"
+            className="fs-toggle-row"
+            role="switch"
+            aria-checked={showRealName}
+            aria-label={t('friendSettings.showRealName')}
+            onClick={() => setShowRealName(!showRealName)}
+          >
             <span className="fs-toggle-label">{t('friendSettings.showRealName')}</span>
             <div className={`fs-toggle ${showRealName ? 'active' : ''}`}>
               <div className="fs-toggle-thumb" />
             </div>
-          </div>
+          </button>
         )}
 
         {/* Category chips */}
@@ -260,10 +309,17 @@ export const FriendSettingsModal: React.FC<FriendSettingsModalProps> = ({
           display: flex;
           align-items: center;
           justify-content: space-between;
+          width: 100%;
           padding: 0.6rem 0;
           margin-bottom: 1rem;
           cursor: pointer;
           -webkit-tap-highlight-color: transparent;
+          /* reset button defaults (was a div) */
+          background: none;
+          border: none;
+          font: inherit;
+          color: inherit;
+          text-align: left;
         }
 
         .fs-toggle-label {

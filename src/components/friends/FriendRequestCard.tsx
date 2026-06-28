@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   IonItem,
@@ -10,14 +10,17 @@ import {
 } from '@ionic/react';
 import { checkmark, close, timeOutline } from 'ionicons/icons';
 import { type User, UserRole } from '../../types/database';
+import { getInitial, getAvatarColor } from '../../utils/userDisplay';
+import { getOptimizedAvatarUrl } from '../../utils/imageUrl';
+import './FriendRequestCard.css';
 
 interface FriendRequestCardProps {
   requester: User;
   addressee: User;
   friendshipId: string;
   direction: 'incoming' | 'outgoing';
-  onAccept?: (friendshipId: string) => void;
-  onReject?: (friendshipId: string) => void;
+  onAccept?: (friendshipId: string) => void | Promise<void>;
+  onReject?: (friendshipId: string) => void | Promise<void>;
   showOwnerApprovalNote?: boolean;
 }
 
@@ -34,6 +37,28 @@ export const FriendRequestCard: React.FC<FriendRequestCardProps> = ({
   showOwnerApprovalNote = false,
 }) => {
   const { t } = useTranslation();
+  // Guard against double-taps firing accept/reject twice (duplicate service calls).
+  const [isProcessing, setIsProcessing] = useState(false);
+
+  const handleAccept = async () => {
+    if (isProcessing || !onAccept) return;
+    setIsProcessing(true);
+    try {
+      await onAccept(friendshipId);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handleReject = async () => {
+    if (isProcessing || !onReject) return;
+    setIsProcessing(true);
+    try {
+      await onReject(friendshipId);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
 
   // For incoming requests, show the requester. For outgoing, show the addressee.
   const displayUser = direction === 'incoming' ? requester : addressee;
@@ -45,10 +70,10 @@ export const FriendRequestCard: React.FC<FriendRequestCardProps> = ({
     <IonItem className="request-card" data-testid={`request-card-${friendshipId}`}>
       <IonAvatar slot="start" className="request-avatar">
         {displayUser.avatar_url ? (
-          <img src={displayUser.avatar_url} alt={displayUser.display_name || ''} loading="lazy" decoding="async" />
+          <img src={getOptimizedAvatarUrl(displayUser.avatar_url, 48)} alt={displayUser.display_name || ''} loading="lazy" decoding="async" />
         ) : (
-          <div className="avatar-placeholder">
-            {displayUser.display_name?.charAt(0)?.toUpperCase() || '?'}
+          <div className="avatar-placeholder" style={{ background: getAvatarColor(displayUser) }}>
+            {getInitial(displayUser)}
           </div>
         )}
       </IonAvatar>
@@ -78,7 +103,8 @@ export const FriendRequestCard: React.FC<FriendRequestCardProps> = ({
               fill="outline"
               color="medium"
               size="small"
-              onClick={() => onReject(friendshipId)}
+              disabled={isProcessing}
+              onClick={handleReject}
               className="reject-button"
               aria-label={t('a11y.rejectFriendRequest')}
             >
@@ -90,7 +116,8 @@ export const FriendRequestCard: React.FC<FriendRequestCardProps> = ({
               fill="solid"
               color="primary"
               size="small"
-              onClick={() => onAccept(friendshipId)}
+              disabled={isProcessing}
+              onClick={handleAccept}
               className="accept-button"
               aria-label={t('a11y.acceptFriendRequest')}
             >
@@ -105,82 +132,6 @@ export const FriendRequestCard: React.FC<FriendRequestCardProps> = ({
           {t('friends.pending')}
         </IonBadge>
       )}
-
-      <style>{`
-        .request-card {
-          --background: hsl(var(--card));
-          --border-color: hsl(var(--border));
-          --padding-start: 1rem;
-          --padding-end: 1rem;
-          --inner-padding-end: 0;
-        }
-
-        .request-card::part(native) {
-          padding-top: 0.75rem;
-          padding-bottom: 0.75rem;
-        }
-
-        .request-avatar {
-          width: 48px;
-          height: 48px;
-        }
-
-        .avatar-placeholder {
-          width: 100%;
-          height: 100%;
-          background: hsl(var(--primary));
-          color: hsl(var(--primary-foreground));
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 1.25rem;
-          font-weight: 700;
-          border-radius: 50%;
-        }
-
-        .request-name {
-          font-weight: 600;
-          font-size: 1rem;
-          color: hsl(var(--foreground));
-          margin: 0 0 0.25rem 0;
-        }
-
-        .request-zemi {
-          font-family: monospace;
-          font-size: 0.85rem;
-          color: hsl(var(--foreground) / 0.7);
-          margin: 0;
-        }
-
-        .request-status {
-          display: flex;
-          align-items: center;
-          gap: 0.25rem;
-          margin-top: 0.25rem;
-          font-size: 0.8rem;
-          color: hsl(var(--foreground) / 0.65);
-        }
-
-        .request-status ion-icon {
-          font-size: 0.875rem;
-        }
-
-        .request-actions {
-          display: flex;
-          gap: 0.5rem;
-        }
-
-        .reject-button,
-        .accept-button {
-          --border-radius: 50%;
-          width: 36px;
-          height: 36px;
-        }
-
-        .pending-badge {
-          font-size: 0.7rem;
-        }
-      `}</style>
     </IonItem>
   );
 };

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   IonModal,
@@ -12,6 +12,7 @@ import {
   IonItem,
   IonLabel,
   IonAvatar,
+  IonSpinner,
 } from '@ionic/react';
 import { supabase } from '../../services/supabase';
 import type { User } from '../../types/database';
@@ -32,29 +33,56 @@ const AddParticipantPicker: React.FC<AddParticipantPickerProps> = ({
   onSelect,
 }) => {
   const { t } = useTranslation();
-  const [availableMembers, setAvailableMembers] = useState<User[]>([]);
+  const [allMembers, setAllMembers] = useState<User[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [loadError, setLoadError] = useState(false);
 
+  // Fetch on open/chat change only — NOT on currentParticipantIds identity,
+  // which the parent often passes as a fresh array each render (would hammer
+  // Supabase during an active call). Filtering happens in the memo below.
   useEffect(() => {
     if (!isOpen || !chatId) return;
+    let cancelled = false;
+    setIsLoading(true);
+    setLoadError(false);
 
-    const fetchMembers = async () => {
-      const { data } = await supabase
-        .from('chat_members')
-        .select('user_id, users:user_id(*)')
-        .eq('chat_id', chatId)
-        .is('left_at', null);
+    (async () => {
+      try {
+        const { data, error } = await supabase
+          .from('chat_members')
+          .select('user_id, users:user_id(id, display_name, avatar_url)')
+          .eq('chat_id', chatId)
+          .is('left_at', null);
 
-      if (!data) return;
+        if (cancelled) return;
+        if (error || !data) {
+          console.error('Failed to load chat members:', error);
+          setLoadError(true);
+          return;
+        }
 
-      const members = (data as unknown as Array<{ user_id: string; users: User }>)
-        .map((m) => m.users)
-        .filter((u) => !currentParticipantIds.includes(u.id));
+        const members = (data as unknown as Array<{ user_id: string; users: User }>)
+          .map((m) => m.users);
+        setAllMembers(members);
+      } catch (err) {
+        if (!cancelled) {
+          console.error('Failed to load chat members:', err);
+          setLoadError(true);
+        }
+      } finally {
+        if (!cancelled) setIsLoading(false);
+      }
+    })();
 
-      setAvailableMembers(members);
+    return () => {
+      cancelled = true;
     };
+  }, [isOpen, chatId]);
 
-    fetchMembers();
-  }, [isOpen, chatId, currentParticipantIds]);
+  const availableMembers = useMemo(
+    () => allMembers.filter((u) => !currentParticipantIds.includes(u.id)),
+    [allMembers, currentParticipantIds]
+  );
 
   return (
     <IonModal isOpen={isOpen} onDidDismiss={onClose}>
@@ -67,7 +95,15 @@ const AddParticipantPicker: React.FC<AddParticipantPickerProps> = ({
         </IonToolbar>
       </IonHeader>
       <IonContent>
-        {availableMembers.length === 0 ? (
+        {isLoading ? (
+          <div style={{ padding: '2rem', textAlign: 'center' }}>
+            <IonSpinner name="crescent" />
+          </div>
+        ) : loadError ? (
+          <div style={{ padding: '2rem', textAlign: 'center', color: 'hsl(var(--muted-foreground))' }}>
+            <p>{t('errors.generic')}</p>
+          </div>
+        ) : availableMembers.length === 0 ? (
           <div style={{ padding: '2rem', textAlign: 'center', color: 'hsl(var(--muted-foreground))' }}>
             {t('call.maxParticipants')}
           </div>

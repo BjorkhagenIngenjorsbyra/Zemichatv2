@@ -14,7 +14,6 @@ export { default as LinkPreview } from './LinkPreview';
 export { extractUrl } from './LinkPreview';
 export { default as MessageContextMenu } from './MessageContextMenu';
 export { default as ForwardPicker } from './ForwardPicker';
-export { default as GifPicker } from './GifPicker';
 export { default as StickerPicker } from './StickerPicker';
 export { default as MentionAutocomplete } from './MentionAutocomplete';
 export { default as PollCreator } from './PollCreator';

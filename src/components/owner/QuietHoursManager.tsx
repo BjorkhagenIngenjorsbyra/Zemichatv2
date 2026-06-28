@@ -5,20 +5,12 @@ import {
   IonItem,
   IonLabel,
   IonToggle,
-  IonButton,
   IonIcon,
   IonSpinner,
-  IonDatetime,
-  IonModal,
-  IonHeader,
-  IonToolbar,
-  IonTitle,
-  IonContent,
-  IonButtons,
+  useIonToast,
 } from '@ionic/react';
 import { timeOutline } from 'ionicons/icons';
 import { getTexterSettings, updateTexterSettings } from '../../services/members';
-import { type TexterSettings } from '../../types/database';
 
 interface QuietHoursManagerProps {
   userId: string;
@@ -38,34 +30,37 @@ const DAYS_OF_WEEK = [
 
 /**
  * Manager component for Owners to configure quiet hours for a Texter.
+ *
+ * Time entry uses native <input type="time"> rather than an IonDatetime modal:
+ * the modal rendered as an unstyled box in dark mode with no confirm button and
+ * saved on every wheel tick (Fable round-3 flagged it as unusable). The native
+ * control brings the OS/browser time picker — consistent dark-mode rendering,
+ * its own confirm, 24h locale formatting, and built-in accessibility.
  */
 export const QuietHoursManager: React.FC<QuietHoursManagerProps> = ({
   userId,
 }) => {
   const { t } = useTranslation();
-  const [, setSettings] = useState<TexterSettings | null>(null);
+  const [present] = useIonToast();
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [isEnabled, setIsEnabled] = useState(false);
   const [startTime, setStartTime] = useState('21:00');
   const [endTime, setEndTime] = useState('07:00');
   const [selectedDays, setSelectedDays] = useState<number[]>([0, 1, 2, 3, 4, 5, 6]);
-  const [showStartPicker, setShowStartPicker] = useState(false);
-  const [showEndPicker, setShowEndPicker] = useState(false);
 
   const loadSettings = useCallback(async () => {
     const { settings: texterSettings } = await getTexterSettings(userId);
-    setSettings(texterSettings);
 
     if (texterSettings) {
       const hasQuietHours = !!texterSettings.quiet_hours_start;
       setIsEnabled(hasQuietHours);
 
       if (texterSettings.quiet_hours_start) {
-        setStartTime(texterSettings.quiet_hours_start);
+        setStartTime(texterSettings.quiet_hours_start.substring(0, 5));
       }
       if (texterSettings.quiet_hours_end) {
-        setEndTime(texterSettings.quiet_hours_end);
+        setEndTime(texterSettings.quiet_hours_end.substring(0, 5));
       }
       if (texterSettings.quiet_hours_days) {
         setSelectedDays(texterSettings.quiet_hours_days);
@@ -79,70 +74,85 @@ export const QuietHoursManager: React.FC<QuietHoursManagerProps> = ({
     loadSettings();
   }, [loadSettings]);
 
+  // This is a child-safety control: if a save silently fails, the Owner would
+  // believe a quiet-hours restriction is active when it isn't. Revert the
+  // optimistic change and surface the failure on error.
+  const saveFailed = () => {
+    present({ message: t('errors.generic'), duration: 3000, color: 'danger' });
+  };
+
   const handleToggleEnabled = async (enabled: boolean) => {
+    const prev = isEnabled;
     setIsEnabled(enabled);
     setIsSaving(true);
 
-    if (enabled) {
-      // Enable with current settings
-      await updateTexterSettings(userId, {
-        quiet_hours_start: startTime,
-        quiet_hours_end: endTime,
-        quiet_hours_days: selectedDays,
-      });
-    } else {
-      // Disable by clearing values
-      await updateTexterSettings(userId, {
-        quiet_hours_start: null,
-        quiet_hours_end: null,
-        quiet_hours_days: null,
-      });
-    }
+    const { error } = enabled
+      ? await updateTexterSettings(userId, {
+          quiet_hours_start: startTime,
+          quiet_hours_end: endTime,
+          quiet_hours_days: selectedDays,
+        })
+      : await updateTexterSettings(userId, {
+          quiet_hours_start: null,
+          quiet_hours_end: null,
+          quiet_hours_days: null,
+        });
 
     setIsSaving(false);
+    if (error) {
+      console.error('Failed to update quiet hours:', error);
+      setIsEnabled(prev);
+      saveFailed();
+    }
   };
 
   const handleSaveTime = async (type: 'start' | 'end', time: string) => {
-    const timeOnly = time.split('T')[1]?.substring(0, 5) || time.substring(0, 5);
+    // Native time inputs yield "HH:MM"; ignore an empty/cleared value.
+    const timeOnly = (time || '').substring(0, 5);
+    if (!/^\d{2}:\d{2}$/.test(timeOnly)) return;
 
+    const prev = type === 'start' ? startTime : endTime;
     if (type === 'start') {
       setStartTime(timeOnly);
-      setShowStartPicker(false);
     } else {
       setEndTime(timeOnly);
-      setShowEndPicker(false);
     }
 
     if (isEnabled) {
       setIsSaving(true);
-      await updateTexterSettings(userId, {
+      const { error } = await updateTexterSettings(userId, {
         [type === 'start' ? 'quiet_hours_start' : 'quiet_hours_end']: timeOnly,
       });
       setIsSaving(false);
+      if (error) {
+        console.error('Failed to update quiet hours time:', error);
+        if (type === 'start') setStartTime(prev);
+        else setEndTime(prev);
+        saveFailed();
+      }
     }
   };
 
   const handleToggleDay = async (day: number) => {
+    const prev = selectedDays;
     const newDays = selectedDays.includes(day)
       ? selectedDays.filter((d) => d !== day)
-      : [...selectedDays, day].sort();
+      : [...selectedDays, day].sort((a, b) => a - b);
 
     setSelectedDays(newDays);
 
     if (isEnabled) {
       setIsSaving(true);
-      await updateTexterSettings(userId, {
+      const { error } = await updateTexterSettings(userId, {
         quiet_hours_days: newDays,
       });
       setIsSaving(false);
+      if (error) {
+        console.error('Failed to update quiet hours days:', error);
+        setSelectedDays(prev);
+        saveFailed();
+      }
     }
-  };
-
-  const formatTime = (time: string): string => {
-    // 24-hour format — matches the time picker and Swedish/Nordic convention
-    // (the app is Swedish-primary). Avoids the AM/PM inconsistency Fable flagged.
-    const [hours, minutes] = time.split(':');
-    return `${hours.padStart(2, '0')}:${(minutes ?? '00').padStart(2, '0')}`;
   };
 
   if (isLoading) {
@@ -175,18 +185,36 @@ export const QuietHoursManager: React.FC<QuietHoursManagerProps> = ({
 
         {isEnabled && (
           <>
-            <IonItem button onClick={() => setShowStartPicker(true)} className="time-item">
+            <IonItem className="time-item">
               <IonLabel>
                 <h3>{t('quietHours.startTime')}</h3>
-                <p>{formatTime(startTime)}</p>
               </IonLabel>
+              <input
+                type="time"
+                className="time-input"
+                value={startTime}
+                disabled={isSaving}
+                aria-label={t('quietHours.startTime')}
+                onChange={(e) => handleSaveTime('start', e.target.value)}
+                data-testid="quiet-hours-start"
+                slot="end"
+              />
             </IonItem>
 
-            <IonItem button onClick={() => setShowEndPicker(true)} className="time-item">
+            <IonItem className="time-item">
               <IonLabel>
                 <h3>{t('quietHours.endTime')}</h3>
-                <p>{formatTime(endTime)}</p>
               </IonLabel>
+              <input
+                type="time"
+                className="time-input"
+                value={endTime}
+                disabled={isSaving}
+                aria-label={t('quietHours.endTime')}
+                onChange={(e) => handleSaveTime('end', e.target.value)}
+                data-testid="quiet-hours-end"
+                slot="end"
+              />
             </IonItem>
           </>
         )}
@@ -196,68 +224,25 @@ export const QuietHoursManager: React.FC<QuietHoursManagerProps> = ({
         <div className="days-section">
           <h4 className="days-title">{t('quietHours.activeDays')}</h4>
           <div className="days-grid">
-            {DAYS_OF_WEEK.map((day) => (
-              <button
-                key={day.value}
-                className={`day-button ${selectedDays.includes(day.value) ? 'selected' : ''}`}
-                onClick={() => handleToggleDay(day.value)}
-                disabled={isSaving}
-                data-testid={`day-button-${day.value}`}
-              >
-                {t(day.labelKey).charAt(0)}
-              </button>
-            ))}
+            {DAYS_OF_WEEK.map((day) => {
+              const selected = selectedDays.includes(day.value);
+              return (
+                <button
+                  key={day.value}
+                  className={`day-button ${selected ? 'selected' : ''}`}
+                  onClick={() => handleToggleDay(day.value)}
+                  disabled={isSaving}
+                  aria-pressed={selected}
+                  aria-label={t(day.labelKey)}
+                  data-testid={`day-button-${day.value}`}
+                >
+                  {t(day.labelKey).charAt(0)}
+                </button>
+              );
+            })}
           </div>
         </div>
       )}
-
-      {/* Start Time Picker Modal */}
-      <IonModal isOpen={showStartPicker} onDidDismiss={() => setShowStartPicker(false)}>
-        <IonHeader>
-          <IonToolbar>
-            <IonTitle>{t('quietHours.selectStartTime')}</IonTitle>
-            <IonButtons slot="end">
-              <IonButton onClick={() => setShowStartPicker(false)}>
-                {t('common.cancel')}
-              </IonButton>
-            </IonButtons>
-          </IonToolbar>
-        </IonHeader>
-        <IonContent className="ion-padding">
-          <IonDatetime
-            presentation="time"
-            value={`2024-01-01T${startTime}:00`}
-            onIonChange={(e) => {
-              const value = e.detail.value as string;
-              if (value) handleSaveTime('start', value);
-            }}
-          />
-        </IonContent>
-      </IonModal>
-
-      {/* End Time Picker Modal */}
-      <IonModal isOpen={showEndPicker} onDidDismiss={() => setShowEndPicker(false)}>
-        <IonHeader>
-          <IonToolbar>
-            <IonTitle>{t('quietHours.selectEndTime')}</IonTitle>
-            <IonButtons slot="end">
-              <IonButton onClick={() => setShowEndPicker(false)}>
-                {t('common.cancel')}
-              </IonButton>
-            </IonButtons>
-          </IonToolbar>
-        </IonHeader>
-        <IonContent className="ion-padding">
-          <IonDatetime
-            presentation="time"
-            value={`2024-01-01T${endTime}:00`}
-            onIonChange={(e) => {
-              const value = e.detail.value as string;
-              if (value) handleSaveTime('end', value);
-            }}
-          />
-        </IonContent>
-      </IonModal>
 
       <style>{`
         .quiet-hours-manager {
@@ -320,10 +305,21 @@ export const QuietHoursManager: React.FC<QuietHoursManagerProps> = ({
           color: hsl(var(--foreground));
         }
 
-        .time-item p {
-          font-size: 0.85rem;
-          color: hsl(var(--primary));
-          font-weight: 500;
+        /* Native time field, themed to read clearly in dark mode. */
+        .time-input {
+          color-scheme: dark light;
+          background: hsl(var(--background));
+          color: hsl(var(--foreground));
+          border: 1px solid hsl(var(--border));
+          border-radius: 0.5rem;
+          padding: 0.4rem 0.6rem;
+          font-size: 0.95rem;
+          font-weight: 600;
+          font-family: inherit;
+        }
+
+        .time-input:disabled {
+          opacity: 0.5;
         }
 
         .days-section {
@@ -351,7 +347,7 @@ export const QuietHoursManager: React.FC<QuietHoursManagerProps> = ({
           border-radius: 50%;
           border: 2px solid hsl(var(--border));
           background: transparent;
-          color: hsl(var(--muted-foreground));
+          color: hsl(var(--foreground));
           font-weight: 600;
           font-size: 0.85rem;
           cursor: pointer;

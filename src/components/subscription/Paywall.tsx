@@ -51,6 +51,21 @@ const Paywall: React.FC<PaywallProps> = ({ blocking = false }) => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [purchaseError, setPurchaseError] = useState<string | null>(null);
 
+  // Store-localized price for a plan from the fetched offering. Falling back to
+  // the hardcoded PLAN_PRICING table (only while offerings load) would otherwise
+  // show a price that can differ from what the user is actually charged — wrong
+  // currency/storefront, or stale if store pricing changed (App Store review
+  // risk). RevenueCat's priceString is just the amount; the period is appended
+  // at render.
+  const storePriceFor = (planType: PlanType): string | null => {
+    if (!currentOffering) return null;
+    const productId = PLAN_PRICING[planType].productId;
+    const pkg = currentOffering.availablePackages.find(
+      (p) => p.product.identifier === productId
+    );
+    return pkg?.product.priceString ?? null;
+  };
+
   // Paywall is interactive when:
   //  - offerings have loaded (currentOffering present)
   //  - context is not in a global loading state
@@ -97,14 +112,12 @@ const Paywall: React.FC<PaywallProps> = ({ blocking = false }) => {
         return;
       }
 
-      const success = await purchase(pkg);
+      const { success, userCancelled } = await purchase(pkg);
       if (success) {
         hidePaywall();
-      } else {
-        // RevenueCat returned false. This typically means the user cancelled,
-        // but it can also mean a sandbox/StoreKit error. Show a generic
-        // failure message — cancellation is harmless, surfacing it briefly
-        // is better than a dead button.
+      } else if (!userCancelled) {
+        // Only show a failure on a real error — a deliberate cancel is not a
+        // failure and shouldn't pop an error toast.
         setPurchaseError(t('paywall.errorPurchaseFailed'));
       }
     } catch (err) {
@@ -119,7 +132,17 @@ const Paywall: React.FC<PaywallProps> = ({ blocking = false }) => {
     setPurchaseError(null);
     setIsProcessing(true);
     try {
-      await restore();
+      const { success, restored } = await restore();
+      if (!success) {
+        setPurchaseError(t('errors.generic'));
+      } else if (restored) {
+        // An entitlement came back — close the paywall.
+        hidePaywall();
+      } else {
+        // Restore succeeded but there was nothing to restore (the common case)
+        // — give explicit feedback instead of an unresponsive-looking paywall.
+        setPurchaseError(t('paywall.restoreNoPurchases'));
+      }
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'unknown error';
       setPurchaseError(t('paywall.errorRestoreFailed', { error: msg }));
@@ -205,10 +228,20 @@ const Paywall: React.FC<PaywallProps> = ({ blocking = false }) => {
                 )}
                 <h3>{plan.name}</h3>
                 <div className="price">
-                  <span className="amount">{plan.price}</span>
-                  <span className="period">
-                    {` kr/${t('paywall.month')}`}
-                  </span>
+                  {(() => {
+                    const storePrice = storePriceFor(PLAN_ID_TO_TYPE[plan.id]);
+                    return storePrice ? (
+                      <>
+                        <span className="amount">{storePrice}</span>
+                        <span className="period">{`/${t('paywall.month')}`}</span>
+                      </>
+                    ) : (
+                      <>
+                        <span className="amount">{plan.price}</span>
+                        <span className="period">{` kr/${t('paywall.month')}`}</span>
+                      </>
+                    );
+                  })()}
                 </div>
                 <ul className="features">
                   {plan.features.map((feature, i) => (

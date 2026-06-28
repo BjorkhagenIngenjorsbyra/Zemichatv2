@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { useHistory } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Virtuoso } from 'react-virtuoso';
@@ -25,6 +25,7 @@ import {
   IonItemOptions,
   IonItemOption,
   IonPopover,
+  useIonToast,
   RefresherEventDetail,
 } from '@ionic/react';
 import {
@@ -63,12 +64,13 @@ const ChatList: React.FC = () => {
   const { t } = useTranslation();
   const history = useHistory();
   const { profile } = useAuthContext();
+  const [presentToast] = useIonToast();
   const [chats, setChats] = useState<ChatWithDetails[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const typingMap = useTypingList(
-    chats.map((c) => c.id),
-    profile?.id || ''
-  );
+  // Memoize the id list so useTypingList doesn't tear down and recreate every
+  // typing subscription on each render of this frequently re-rendering page.
+  const chatIds = useMemo(() => chats.map((c) => c.id), [chats]);
+  const typingMap = useTypingList(chatIds, profile?.id || '');
   const [showArchived, setShowArchived] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
   const contentRef = useRef<HTMLIonContentElement>(null);
@@ -81,21 +83,35 @@ const ChatList: React.FC = () => {
   const [previewMessages, setPreviewMessages] = useState<MessageWithSender[]>([]);
   const [previewEvent, setPreviewEvent] = useState<MouseEvent | null>(null);
   const longPressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Suppress the click that follows a long-press so the chat doesn't open
+  // underneath the preview popover.
+  const longPressFiredRef = useRef(false);
+  // Token so a late getChatMessages resolution can't repopulate the preview
+  // after it was dismissed or switched to another chat.
+  const previewReqRef = useRef(0);
 
   const handleHeaderClick = () => {
     contentRef.current?.scrollToTop(300);
   };
 
-  const handleChatLongPress = useCallback(async (chat: ChatWithDetails, event: React.MouseEvent | React.TouchEvent) => {
+  const openPreview = useCallback((chat: ChatWithDetails, event: MouseEvent | null) => {
     hapticMedium();
-    const nativeEvent = 'nativeEvent' in event ? event.nativeEvent as MouseEvent : null;
+    longPressFiredRef.current = true;
     setPreviewChat(chat);
-    setPreviewEvent(nativeEvent);
+    setPreviewEvent(event);
 
-    // Load recent messages for preview
-    const { messages: recentMsgs } = await getChatMessages(chat.id, 5);
-    setPreviewMessages(recentMsgs);
+    const reqId = ++previewReqRef.current;
+    getChatMessages(chat.id, 5)
+      .then(({ messages: recentMsgs }) => {
+        if (reqId === previewReqRef.current) setPreviewMessages(recentMsgs);
+      })
+      .catch((err) => console.error('Failed to load preview messages:', err));
   }, []);
+
+  const handleChatLongPress = useCallback((chat: ChatWithDetails, event: React.MouseEvent | React.TouchEvent) => {
+    const nativeEvent = 'nativeEvent' in event ? (event.nativeEvent as MouseEvent) : null;
+    openPreview(chat, nativeEvent);
+  }, [openPreview]);
 
   const handleLongPressStart = useCallback((chat: ChatWithDetails) => {
     longPressTimerRef.current = setTimeout(() => {
@@ -104,14 +120,9 @@ const ChatList: React.FC = () => {
         clientX: window.innerWidth / 2,
         clientY: window.innerHeight / 3,
       });
-      hapticMedium();
-      setPreviewChat(chat);
-      setPreviewEvent(syntheticEvent);
-      getChatMessages(chat.id, 5).then(({ messages: recentMsgs }) => {
-        setPreviewMessages(recentMsgs);
-      });
+      openPreview(chat, syntheticEvent);
     }, 500);
-  }, []);
+  }, [openPreview]);
 
   const handleLongPressEnd = useCallback(() => {
     if (longPressTimerRef.current) {
@@ -120,10 +131,22 @@ const ChatList: React.FC = () => {
     }
   }, []);
 
+  // Clear any pending long-press timer if the page unmounts mid-press.
+  useEffect(() => () => {
+    if (longPressTimerRef.current) clearTimeout(longPressTimerRef.current);
+  }, []);
+
   const loadChats = useCallback(async () => {
-    const { chats: chatList } = await getMyChats();
-    setChats(chatList);
-    setIsLoading(false);
+    try {
+      const { chats: chatList } = await getMyChats();
+      setChats(chatList);
+    } catch (err) {
+      // A thrown rejection previously left the skeleton spinning forever and
+      // (via handleRefresh) never completed the pull-to-refresh.
+      console.error('Failed to load chats:', err);
+    } finally {
+      setIsLoading(false);
+    }
   }, []);
 
   useEffect(() => {
@@ -178,14 +201,18 @@ const ChatList: React.FC = () => {
   const formatLastMessageTime = (dateStr: string): string => {
     const date = new Date(dateStr);
     const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
-    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+    // Compare calendar days, not raw ms — otherwise "yesterday 23:30" viewed at
+    // 08:00 reads as a time-of-day, and the today/yesterday boundary drifts with
+    // the time of day instead of the date.
+    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+    const startOfDate = new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime();
+    const dayDiff = Math.round((startOfToday - startOfDate) / 86_400_000);
 
-    if (diffDays === 0) {
+    if (dayDiff <= 0) {
       return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    } else if (diffDays === 1) {
+    } else if (dayDiff === 1) {
       return t('common.yesterday') || 'Yesterday';
-    } else if (diffDays < 7) {
+    } else if (dayDiff < 7) {
       return date.toLocaleDateString([], { weekday: 'short' });
     } else {
       return date.toLocaleDateString([], { month: 'short', day: 'numeric' });
@@ -218,11 +245,25 @@ const ChatList: React.FC = () => {
   };
 
   const openChat = (chatId: string) => {
+    // Swallow the click synthesized right after a long-press so we don't
+    // navigate into the chat underneath the just-opened preview popover.
+    if (longPressFiredRef.current) {
+      longPressFiredRef.current = false;
+      return;
+    }
     history.push(`/chat/${chatId}`);
   };
 
   const openNewChat = () => {
     history.push('/new-chat');
+  };
+
+  // Patch a single chat's flags locally instead of refetching the whole list
+  // for a one-field toggle — the section split (pinned/active/archived) and
+  // mute icon both derive from these flags, so a local patch re-renders
+  // correctly without the network round-trip.
+  const patchChat = (chatId: string, changes: Partial<ChatWithDetails>) => {
+    setChats((prev) => prev.map((c) => (c.id === chatId ? { ...c, ...changes } : c)));
   };
 
   const handlePin = async (chat: ChatWithDetails) => {
@@ -231,12 +272,12 @@ const ChatList: React.FC = () => {
     } else {
       const { error } = await pinChatWithLimit(chat.id);
       if (error) {
-        // Max 3 pinned - could show toast
-        console.warn(error.message);
+        // Max 3 pinned — tell the user why nothing happened.
+        presentToast({ message: error.message || t('errors.generic'), duration: 2500, color: 'warning' });
         return;
       }
     }
-    loadChats();
+    patchChat(chat.id, { isPinned: !chat.isPinned });
   };
 
   const handleArchive = async (chat: ChatWithDetails) => {
@@ -245,13 +286,13 @@ const ChatList: React.FC = () => {
     } else {
       await archiveChat(chat.id);
     }
-    loadChats();
+    patchChat(chat.id, { isArchived: !chat.isArchived });
   };
 
   const handleMute = async (chat: ChatWithDetails) => {
     if (chat.isMuted) {
       await unmuteChat(chat.id);
-      loadChats();
+      patchChat(chat.id, { isMuted: false });
     } else {
       setMuteTarget(chat);
     }
@@ -260,8 +301,8 @@ const ChatList: React.FC = () => {
   const handleMuteDuration = async (duration: 'hour' | '8hours' | 'week' | 'always') => {
     if (!muteTarget) return;
     await muteChat(muteTarget.id, duration);
+    patchChat(muteTarget.id, { isMuted: true });
     setMuteTarget(null);
-    loadChats();
   };
 
   const renderChatItem = (chat: ChatWithDetails, index: number) => {
@@ -493,6 +534,7 @@ const ChatList: React.FC = () => {
                 <button
                   className="section-header clickable"
                   onClick={() => setShowArchived(!showArchived)}
+                  aria-expanded={showArchived}
                 >
                   <IonIcon icon={archive} />
                   <span>
@@ -519,7 +561,7 @@ const ChatList: React.FC = () => {
           slot="fixed"
           className="safe-fab"
         >
-          <IonFabButton onClick={openNewChat} className="new-chat-fab" data-testid="new-chat-fab">
+          <IonFabButton onClick={openNewChat} className="new-chat-fab" data-testid="new-chat-fab" aria-label={t('a11y.newChat', 'Ny chatt')}>
             <IonIcon icon={add} />
           </IonFabButton>
         </IonFab>
@@ -677,8 +719,10 @@ const ChatList: React.FC = () => {
           }
 
           /* Force the IonLabel parent to honour overflow on its children
-             so chat name + preview can ellipsis correctly inside IonItem. */
-          ion-item ion-label {
+             so chat name + preview can ellipsis correctly inside IonItem.
+             Scoped to .chat-item — an unscoped ion-item ion-label rule would
+             leak onto every other page's items while this page stays mounted. */
+          .chat-item ion-label {
             min-width: 0;
             overflow: hidden;
           }
@@ -736,13 +780,13 @@ const ChatList: React.FC = () => {
             height: 4px;
             border-radius: 50%;
             background: hsl(var(--primary));
-            animation: typing-bounce 1.4s infinite ease-in-out;
+            animation: chatlist-typing-bounce 1.4s infinite ease-in-out;
           }
 
           .typing-dots-inline span:nth-child(2) { animation-delay: 0.2s; }
           .typing-dots-inline span:nth-child(3) { animation-delay: 0.4s; }
 
-          @keyframes typing-bounce {
+          @keyframes chatlist-typing-bounce {
             0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
             30% { transform: translateY(-2px); opacity: 1; }
           }
@@ -824,6 +868,9 @@ const ChatList: React.FC = () => {
           setPreviewChat(null);
           setPreviewMessages([]);
           setPreviewEvent(null);
+          // Reset so a desktop context-menu preview (no trailing click) can't
+          // suppress the next legitimate tap.
+          longPressFiredRef.current = false;
         }}
         className="chat-preview-popover"
       >

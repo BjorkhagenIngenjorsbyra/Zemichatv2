@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useHistory } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
@@ -36,8 +36,14 @@ const MFASetup: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [isVerifying, setIsVerifying] = useState(false);
   const [secretCopied, setSecretCopied] = useState(false);
+  // Guard against React 18 StrictMode running the effect twice, which would
+  // create two unverified TOTP factors.
+  const didInitRef = useRef(false);
 
   useEffect(() => {
+    if (didInitRef.current) return;
+    didInitRef.current = true;
+
     const initSetup = async () => {
       // Check if MFA is already enabled
       const { enabled } = await isMFAEnabled();
@@ -151,7 +157,20 @@ const MFASetup: React.FC = () => {
                 </div>
               </div>
 
-              <IonButton expand="block" onClick={() => setStep('verify')} className="continue-button">
+              {error && (
+                <IonText color="danger" className="error-text">
+                  <p>{error}</p>
+                </IonText>
+              )}
+
+              {/* Block proceeding when enrollment failed (no factor / QR) — the
+                  verify step would otherwise dead-end with no factor to confirm. */}
+              <IonButton
+                expand="block"
+                onClick={() => setStep('verify')}
+                className="continue-button"
+                disabled={!factorId}
+              >
                 {t('common.next')}
               </IonButton>
 
@@ -177,6 +196,8 @@ const MFASetup: React.FC = () => {
                   placeholder="000000"
                   maxlength={6}
                   inputmode="numeric"
+                  autocomplete="one-time-code"
+                  aria-label={t('mfa.enterCode')}
                   className="code-input"
                 />
               </div>
@@ -250,7 +271,7 @@ const MFASetup: React.FC = () => {
             color: hsl(var(--secondary));
           }
 
-          h2 {
+          .mfa-setup-container h2 {
             text-align: center;
             font-size: 1.5rem;
             font-weight: 700;

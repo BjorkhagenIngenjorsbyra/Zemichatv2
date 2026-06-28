@@ -1,7 +1,10 @@
 import { useState, useRef, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { IonIcon } from '@ionic/react';
 import { play, pause } from 'ionicons/icons';
 import { useSignedMediaUrl } from '../../hooks/useSignedMediaUrl';
+import { formatSeconds } from '../../utils/datetime';
+import './VoiceMessage.css';
 
 interface VoiceMessageProps {
   /** Storage path (preferred) or legacy public URL. */
@@ -13,6 +16,7 @@ const VoiceMessage: React.FC<VoiceMessageProps> = ({
   mediaUrl,
   mediaMetadata,
 }) => {
+  const { t } = useTranslation();
   const audioRef = useRef<HTMLAudioElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
@@ -34,7 +38,12 @@ const VoiceMessage: React.FC<VoiceMessageProps> = ({
     };
 
     const handleLoadedMetadata = () => {
-      setDuration(audio.duration || metadata?.duration || 0);
+      // Chrome's MediaRecorder webm blobs carry no duration header, so
+      // audio.duration is Infinity here (and Infinity is truthy, so a plain
+      // `||` fallback doesn't catch it). Prefer the duration captured at record
+      // time; only fall back to audio.duration when it is finite.
+      const audioDur = Number.isFinite(audio.duration) ? audio.duration : 0;
+      setDuration(metadata?.duration || audioDur);
     };
 
     const handleEnded = () => {
@@ -72,7 +81,13 @@ const VoiceMessage: React.FC<VoiceMessageProps> = ({
     if (isPlaying) {
       audio.pause();
     } else {
-      audio.play();
+      // play() rejects if the media can't start (autoplay policy, decode error,
+      // src not ready) — catch it so it isn't an unhandled rejection and the UI
+      // doesn't get stuck showing a "playing" state.
+      audio.play().catch((err) => {
+        console.error('[VoiceMessage] play failed:', err);
+        setIsPlaying(false);
+      });
     }
   };
 
@@ -98,18 +113,13 @@ const VoiceMessage: React.FC<VoiceMessageProps> = ({
     setPlaybackRate(newRate);
   };
 
-  const formatTime = (seconds: number): string => {
-    const mins = Math.floor(seconds / 60);
-    const secs = Math.floor(seconds % 60);
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
-  };
 
   const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
 
   if (!mediaUrl) {
     return (
       <div className="voice-error">
-        <span>Voice message unavailable</span>
+        <span>{t('voice.unavailable')}</span>
       </div>
     );
   }
@@ -121,7 +131,7 @@ const VoiceMessage: React.FC<VoiceMessageProps> = ({
       <button
         className="play-button"
         onClick={togglePlay}
-        aria-label={isPlaying ? 'Pause' : 'Play'}
+        aria-label={isPlaying ? t('a11y.pauseVoice') : t('a11y.playVoice')}
       >
         <IonIcon icon={isPlaying ? pause : play} />
       </button>
@@ -131,6 +141,7 @@ const VoiceMessage: React.FC<VoiceMessageProps> = ({
           <input
             type="range"
             className="progress-slider"
+            aria-label={t('a11y.seek')}
             min={0}
             max={duration || 100}
             value={currentTime}
@@ -143,123 +154,17 @@ const VoiceMessage: React.FC<VoiceMessageProps> = ({
 
         <div className="time-row">
           <span className="time-display">
-            {formatTime(currentTime)} / {formatTime(duration)}
+            {formatSeconds(currentTime)} / {formatSeconds(duration)}
           </span>
           <button
             className="rate-button"
             onClick={togglePlaybackRate}
-            aria-label={`Playback speed: ${playbackRate}x`}
+            aria-label={t('a11y.playbackSpeed', { rate: playbackRate })}
           >
             {playbackRate}x
           </button>
         </div>
       </div>
-
-      <style>{`
-        .voice-message {
-          display: flex;
-          align-items: center;
-          gap: 0.75rem;
-          min-width: 200px;
-          padding: 0.25rem 0;
-        }
-
-        .play-button {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          width: 2.5rem;
-          height: 2.5rem;
-          border-radius: 50%;
-          background: hsl(var(--primary));
-          color: hsl(var(--primary-foreground));
-          border: none;
-          cursor: pointer;
-          flex-shrink: 0;
-          font-size: 1.25rem;
-        }
-
-        .message-bubble.own .play-button {
-          background: hsl(var(--primary-foreground));
-          color: hsl(var(--primary));
-        }
-
-        .play-button:active {
-          transform: scale(0.95);
-        }
-
-        .voice-controls {
-          flex: 1;
-          min-width: 0;
-        }
-
-        .progress-container {
-          width: 100%;
-          padding: 0.25rem 0;
-        }
-
-        .progress-slider {
-          width: 100%;
-          height: 4px;
-          appearance: none;
-          border-radius: 2px;
-          cursor: pointer;
-        }
-
-        .progress-slider::-webkit-slider-thumb {
-          appearance: none;
-          width: 12px;
-          height: 12px;
-          border-radius: 50%;
-          background: currentColor;
-          cursor: pointer;
-        }
-
-        .progress-slider::-moz-range-thumb {
-          width: 12px;
-          height: 12px;
-          border-radius: 50%;
-          background: currentColor;
-          cursor: pointer;
-          border: none;
-        }
-
-        .time-row {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          margin-top: 0.25rem;
-        }
-
-        .time-display {
-          font-size: 0.75rem;
-          opacity: 0.85;
-        }
-
-        .rate-button {
-          font-size: 0.7rem;
-          padding: 0.125rem 0.375rem;
-          border-radius: 0.25rem;
-          background: hsl(var(--muted) / 0.3);
-          border: none;
-          cursor: pointer;
-          color: inherit;
-          opacity: 0.85;
-        }
-
-        .rate-button:hover {
-          opacity: 1;
-        }
-
-        .voice-error {
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          min-height: 50px;
-          color: hsl(var(--muted-foreground));
-          font-size: 0.875rem;
-        }
-      `}</style>
     </div>
   );
 };

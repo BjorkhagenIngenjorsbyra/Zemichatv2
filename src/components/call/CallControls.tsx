@@ -41,6 +41,7 @@ const CallControls: React.FC<CallControlsProps> = ({
         className={`control-button ${activeCall.isMuted ? 'active' : ''}`}
         fill="clear"
         onClick={toggleMute}
+        aria-pressed={activeCall.isMuted}
         aria-label={activeCall.isMuted ? t('call.unmute') : t('call.mute')}
       >
         <IonIcon icon={activeCall.isMuted ? micOff : mic} />
@@ -51,6 +52,7 @@ const CallControls: React.FC<CallControlsProps> = ({
         className={`control-button ${activeCall.isSpeakerOn ? 'active' : ''}`}
         fill="clear"
         onClick={toggleSpeaker}
+        aria-pressed={activeCall.isSpeakerOn}
         aria-label={activeCall.isSpeakerOn ? t('call.speakerOff') : t('call.speakerOn')}
       >
         <IonIcon icon={activeCall.isSpeakerOn ? volumeHigh : volumeLow} />
@@ -62,6 +64,7 @@ const CallControls: React.FC<CallControlsProps> = ({
           className={`control-button ${!activeCall.isVideoEnabled ? 'active' : ''}`}
           fill="clear"
           onClick={toggleVideo}
+          aria-pressed={!activeCall.isVideoEnabled}
           aria-label={activeCall.isVideoEnabled ? t('call.videoOff') : t('call.videoOn')}
         >
           <IonIcon icon={activeCall.isVideoEnabled ? videocam : videocamOff} />
@@ -74,6 +77,7 @@ const CallControls: React.FC<CallControlsProps> = ({
           className={`control-button ${activeCall.isScreenSharing ? 'active' : ''}`}
           fill="clear"
           onClick={toggleScreenShare}
+          aria-pressed={activeCall.isScreenSharing}
           aria-label={activeCall.isScreenSharing ? t('call.stopShare') : t('call.shareScreen')}
         >
           <IonIcon icon={desktop} />

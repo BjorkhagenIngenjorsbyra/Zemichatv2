@@ -23,7 +23,7 @@ const ForgotPassword: React.FC = () => {
     setError(null);
     setIsLoading(true);
 
-    const { error: resetError } = await resetPassword(email);
+    const { error: resetError } = await resetPassword(email.trim());
 
     if (resetError) {
       setError(resetError.message);

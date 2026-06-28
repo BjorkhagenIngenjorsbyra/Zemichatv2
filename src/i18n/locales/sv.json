@@ -1,8 +1,13 @@
 {
   "errors": {
+    "generic": "Något gick fel. Försök igen.",
     "boundaryMessage": "Något gick fel. Försök igen.",
     "boundaryRetry": "Försök igen",
     "boundaryHome": "Till startsidan"
+  },
+  "voice": {
+    "micDenied": "Mikrofonåtkomst krävs för att spela in. Aktivera den i enhetens inställningar.",
+    "unavailable": "Röstmeddelandet är inte tillgängligt"
   },
   "sessions": {
     "title": "Aktiva enheter",
@@ -28,6 +33,7 @@
     "next": "Nästa",
     "done": "Klar",
     "close": "Stäng",
+    "justNow": "Nu",
     "confirm": "Bekräfta",
     "or": "eller",
     "and": "och",
@@ -209,7 +215,19 @@
   },
   "gif": {
     "searchPlaceholder": "Sök GIF...",
-    "noResults": "Inga GIF:ar hittades"
+    "noResults": "Inga GIF:ar hittades",
+    "categories": {
+      "trending": "Trendigt",
+      "reactions": "Reaktioner",
+      "love": "Kärlek",
+      "funny": "Roligt",
+      "happy": "Glad",
+      "sad": "Ledsen",
+      "yes": "Ja",
+      "no": "Nej",
+      "thanks": "Tack",
+      "wow": "Wow"
+    }
   },
   "sticker": {
     "title": "Stickers"
@@ -236,7 +254,9 @@
   },
   "image": {
     "save": "Spara bild",
-    "share": "Dela"
+    "share": "Dela",
+    "unavailable": "Bilden är inte tillgänglig",
+    "loadFailed": "Det gick inte att läsa in bilden"
   },
   "actions": {
     "pin": "Fäst",
@@ -260,8 +280,8 @@
     "canSendVideo": "Kan skicka video",
     "canSendDocuments": "Kan skicka dokument",
     "canShareLocation": "Kan dela plats",
-    "canVoiceCall": "Kan röstsamtal",
-    "canVideoCall": "Kan videosamtal",
+    "canVoiceCall": "Kan ringa röstsamtal",
+    "canVideoCall": "Kan ringa videosamtal",
     "canScreenShare": "Kan dela skärm",
     "accountActions": "Kontoåtgärder",
     "deactivate": "Inaktivera",
@@ -328,7 +348,7 @@
   "ownerApprovals": {
     "title": "Vän-godkännanden",
     "noRequests": "Inga väntande godkännanden",
-    "noRequestsDescription": "Dina Texters har inte fått några vänförfrågningar än",
+    "noRequestsDescription": "Det finns inga vänförfrågningar att granska just nu.",
     "requestCount": "{{count}} väntande förfrågningar",
     "requestCount_one": "{{count}} väntande förfrågan",
     "approve": "Godkänn",
@@ -346,9 +366,12 @@
     "confirmYes": "JA, TILLKALLA",
     "confirmNo": "Avbryt",
     "sent": "Vuxen tillkallad",
+    "failed": "Larmet kunde inte skickas. Försök igen.",
     "alertReceived": "Tillkalla Vuxen från {{name}}",
     "viewLocation": "Visa plats",
     "acknowledge": "Bekräfta",
+    "acknowledged": "Bekräftad",
+    "autoCancelIn": "Avbryts om {{seconds}}s",
     "unacknowledged": "Obekräftade larm",
     "noAlerts": "Inga larm"
   },
@@ -428,6 +451,7 @@
     "planPlusRinga": "Plus med samtal",
     "subscribe": "Prenumerera på {{plan}}",
     "restorePurchases": "Återställ köp",
+    "restoreNoPurchases": "Inga tidigare köp att återställa hittades.",
     "termsText": "Betalning debiteras ditt App Store- eller Google Play-konto. Prenumerationen förnyas automatiskt om den inte avbryts minst 24 timmar före periodens slut.",
     "termsTextIos": "Betalning debiteras ditt App Store-konto. Prenumerationen förnyas automatiskt om den inte avbryts minst 24 timmar före periodens slut. Du hanterar prenumerationen i App Store-inställningarna.",
     "termsTextAndroid": "Betalning debiteras ditt Google Play-konto. Prenumerationen förnyas automatiskt om den inte avbryts minst 24 timmar före periodens slut. Du hanterar prenumerationen i Google Play-inställningarna.",
@@ -522,6 +546,7 @@
     "callEnding": "Samtalet avslutas...",
     "maxDurationReached": "Maximal samtalstid uppnådd",
     "noAnswer": "Inget svar",
+    "groupFull": "Samtalet är fullt (max 6 deltagare).",
     "unavailable": "Inte tillgänglig",
     "error": "Något gick fel. Försök igen senare.",
     "microphoneError": "Mikrofonen är inte tillåten. Gå till telefonens inställningar → Zemichat → Behörigheter och slå på Mikrofon.",
@@ -646,7 +671,7 @@
     "descriptionLabel": "Beskrivning",
     "descriptionPlaceholder": "Berätta mer i detalj...",
     "emailLabel": "E-post för svar",
-    "emailPlaceholder": "din@email.se",
+    "emailPlaceholder": "namn@exempel.se",
     "attachScreenshot": "Bifoga skärmbild",
     "submitButton": "Skicka",
     "submitting": "Skickar...",
@@ -880,12 +905,23 @@
     "attach": "Bifoga",
     "selectReaction": "Välj reaktion",
     "moreReactions": "Fler reaktioner",
+    "reactWith": "Reagera med {{emoji}}",
+    "seek": "Spola",
+    "playVoice": "Spela upp röstmeddelande",
+    "pauseVoice": "Pausa röstmeddelande",
+    "playbackSpeed": "Uppspelningshastighet {{rate}}x",
+    "recordVoice": "Spela in röstmeddelande",
+    "stopRecording": "Stoppa inspelning",
+    "cancelRecording": "Avbryt inspelning",
     "cancel": "Avbryt",
     "sendVoiceMessage": "Skicka röstmeddelande",
     "openDashboard": "Översikt",
     "acceptFriendRequest": "Godkänn vänförfrågan",
     "rejectFriendRequest": "Avslå vänförfrågan",
     "searchMessages": "Sök meddelanden",
-    "close": "Stäng"
+    "close": "Stäng",
+    "previousImage": "Föregående bild",
+    "nextImage": "Nästa bild",
+    "preview": "Förhandsvisning"
   }
 }

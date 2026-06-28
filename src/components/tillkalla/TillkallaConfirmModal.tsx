@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   IonModal,
@@ -30,26 +30,37 @@ export const TillkallaConfirmModal: React.FC<TillkallaConfirmModalProps> = ({
 }) => {
   const { t } = useTranslation();
   const [countdown, setCountdown] = useState(AUTO_CANCEL_SECONDS);
+  // Hold onCancel in a ref so an inline arrow from the parent doesn't tear down
+  // and recreate the interval every render (which made the countdown drift).
+  const onCancelRef = useRef(onCancel);
+  useEffect(() => {
+    onCancelRef.current = onCancel;
+  }, [onCancel]);
 
-  // Auto-cancel countdown
+  // Auto-cancel countdown. Freeze it while a confirm is in flight (isLoading) so
+  // the interval can't fire onCancel mid-send and dismiss the modal while the
+  // alert request is still running (panic-flow race).
   useEffect(() => {
     if (!isOpen) {
       setCountdown(AUTO_CANCEL_SECONDS);
       return;
     }
+    if (isLoading) return; // paused — don't tick during the send
 
     const interval = setInterval(() => {
-      setCountdown((prev) => {
-        if (prev <= 1) {
-          onCancel();
-          return AUTO_CANCEL_SECONDS;
-        }
-        return prev - 1;
-      });
+      setCountdown((prev) => (prev <= 1 ? 0 : prev - 1));
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [isOpen, onCancel]);
+  }, [isOpen, isLoading]);
+
+  // Trigger the actual cancel as a side effect when the countdown reaches 0 —
+  // never inside the state updater (which React may run twice under StrictMode).
+  useEffect(() => {
+    if (isOpen && !isLoading && countdown === 0) {
+      onCancelRef.current();
+    }
+  }, [countdown, isOpen, isLoading]);
 
   const handleConfirm = () => {
     hapticHeavy();
@@ -71,7 +82,7 @@ export const TillkallaConfirmModal: React.FC<TillkallaConfirmModalProps> = ({
         <p className="modal-message">{t('tillkalla.confirmMessage')}</p>
 
         <div className="countdown">
-          <span>{t('common.cancel')} in {countdown}s</span>
+          <span>{t('tillkalla.autoCancelIn', { seconds: countdown })}</span>
         </div>
 
         <div className="button-container">
@@ -135,10 +146,10 @@ export const TillkallaConfirmModal: React.FC<TillkallaConfirmModalProps> = ({
         .tillkalla-icon {
           font-size: 4rem;
           color: hsl(var(--destructive));
-          animation: pulse 1s ease-in-out infinite;
+          animation: tillkalla-pulse 1s ease-in-out infinite;
         }
 
-        @keyframes pulse {
+        @keyframes tillkalla-pulse {
           0%, 100% {
             transform: scale(1);
             opacity: 1;

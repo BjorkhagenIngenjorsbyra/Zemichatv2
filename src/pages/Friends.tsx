@@ -76,18 +76,32 @@ const Friends: React.FC = () => {
   const [unfriendError, setUnfriendError] = useState<string | null>(null);
 
   const loadData = useCallback(async () => {
-    const [friendsResult, requestsResult, settingsResult] = await Promise.all([
-      getMyFriends(),
-      getPendingRequests(),
-      getAllFriendSettings(),
-    ]);
+    try {
+      const [friendsResult, requestsResult, settingsResult] = await Promise.all([
+        getMyFriends(),
+        getPendingRequests(),
+        getAllFriendSettings(),
+      ]);
 
-    setFriends(friendsResult.friends);
-    setIncomingRequests(requestsResult.incoming);
-    setOutgoingRequests(requestsResult.outgoing);
-    setFriendSettingsMap(settingsResult.settings);
+      // Apply each result independently and log (rather than swallow) failures,
+      // so one failing fetch doesn't blank the others.
+      if (friendsResult.error) console.error('[Friends] getMyFriends failed:', friendsResult.error);
+      else setFriends(friendsResult.friends);
 
-    setIsLoading(false);
+      if (requestsResult.error) console.error('[Friends] getPendingRequests failed:', requestsResult.error);
+      else {
+        setIncomingRequests(requestsResult.incoming);
+        setOutgoingRequests(requestsResult.outgoing);
+      }
+
+      if (settingsResult.error) console.error('[Friends] getAllFriendSettings failed:', settingsResult.error);
+      else setFriendSettingsMap(settingsResult.settings);
+    } catch (err) {
+      // Defensive: a rejection here previously left the spinner stuck forever.
+      console.error('[Friends] loadData failed:', err);
+    } finally {
+      setIsLoading(false);
+    }
   }, []);
 
   useEffect(() => {
@@ -119,6 +133,10 @@ const Friends: React.FC = () => {
     if (!error) {
       await loadData();
       refreshCounts();
+    } else {
+      // Same swallowed-failure class as the unfriend fix (#42): give feedback
+      // instead of letting the user tap a dead button.
+      setUnfriendError(t('errors.generic'));
     }
   };
 
@@ -127,6 +145,8 @@ const Friends: React.FC = () => {
     if (!error) {
       setIncomingRequests((prev) => prev.filter((r) => r.id !== friendshipId));
       refreshCounts();
+    } else {
+      setUnfriendError(t('errors.generic'));
     }
   };
 
@@ -137,6 +157,8 @@ const Friends: React.FC = () => {
     });
     if (!error && chat) {
       history.push(`/chat/${chat.id}`);
+    } else {
+      setUnfriendError(t('errors.generic'));
     }
   };
 
@@ -148,6 +170,8 @@ const Friends: React.FC = () => {
     if (!error && chat) {
       history.push(`/chat/${chat.id}`);
       await initiateCall(chat.id, type === 'video' ? CallType.VIDEO : CallType.VOICE);
+    } else {
+      setUnfriendError(t('errors.generic'));
     }
   };
 
@@ -341,7 +365,7 @@ const Friends: React.FC = () => {
           slot="fixed"
           className="safe-fab"
         >
-          <IonFabButton routerLink="/add-friend" data-testid="add-friend-fab">
+          <IonFabButton routerLink="/add-friend" data-testid="add-friend-fab" aria-label={t('a11y.addFriend', 'Lägg till vän')}>
             <IonIcon icon={personAddOutline} />
           </IonFabButton>
         </IonFab>

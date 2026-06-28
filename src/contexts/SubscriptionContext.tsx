@@ -49,8 +49,8 @@ interface SubscriptionContextValue {
 
   // Actions
   refreshStatus: () => Promise<void>;
-  purchase: (pkg: RevenueCatPackage) => Promise<boolean>;
-  restore: () => Promise<boolean>;
+  purchase: (pkg: RevenueCatPackage) => Promise<{ success: boolean; userCancelled: boolean }>;
+  restore: () => Promise<{ success: boolean; restored: boolean }>;
   startTrial: (planType?: PlanType) => Promise<boolean>;
   showPaywall: (feature?: string) => void;
   hidePaywall: () => void;
@@ -89,8 +89,12 @@ export function SubscriptionProvider({ children }: SubscriptionProviderProps) {
   const [paywallFeature, setPaywallFeature] = useState<string | null>(null);
 
   // Initialize RevenueCat when user logs in
+  // Key on profile.id, not the whole profile object: AuthContext hands out a
+  // fresh profile reference on any profile change, which would otherwise
+  // re-initialize and re-login RevenueCat on every such update.
+  const profileId = profile?.id;
   useEffect(() => {
-    if (!isAuthenticated || !profile) {
+    if (!isAuthenticated || !profileId) {
       setStatus(null);
       setIsLoading(false);
       return;
@@ -101,13 +105,13 @@ export function SubscriptionProvider({ children }: SubscriptionProviderProps) {
       setError(null);
 
       // Initialize SDK
-      const { error: initError } = await initializeRevenueCat(profile.id);
+      const { error: initError } = await initializeRevenueCat(profileId);
       if (initError) {
         console.error('Failed to initialize RevenueCat:', initError);
       }
 
       // Login to RevenueCat
-      const { error: loginError } = await loginRevenueCat(profile.id);
+      const { error: loginError } = await loginRevenueCat(profileId);
       if (loginError) {
         console.error('Failed to login to RevenueCat:', loginError);
       }
@@ -136,7 +140,7 @@ export function SubscriptionProvider({ children }: SubscriptionProviderProps) {
     };
 
     init();
-  }, [isAuthenticated, profile]);
+  }, [isAuthenticated, profileId]);
 
   // Cleanup on logout
   useEffect(() => {
@@ -191,7 +195,7 @@ export function SubscriptionProvider({ children }: SubscriptionProviderProps) {
     setIsLoading(false);
   }, []);
 
-  const purchase = useCallback(async (pkg: RevenueCatPackage): Promise<boolean> => {
+  const purchase = useCallback(async (pkg: RevenueCatPackage): Promise<{ success: boolean; userCancelled: boolean }> => {
     setIsLoading(true);
     const { success, status: newStatus, error: purchaseError } = await purchasePackage(pkg);
     if (purchaseError) {
@@ -201,23 +205,27 @@ export function SubscriptionProvider({ children }: SubscriptionProviderProps) {
       setError(null);
     }
     setIsLoading(false);
-    return success;
+    // The service reports a deliberate cancel as success:false with no error —
+    // surface that so the paywall doesn't show a failure toast on cancel.
+    return { success, userCancelled: !success && !purchaseError };
   }, []);
 
-  const restore = useCallback(async (): Promise<boolean> => {
+  const restore = useCallback(async (): Promise<{ success: boolean; restored: boolean }> => {
     setIsLoading(true);
     const { status: newStatus, error: restoreError } = await restorePurchases();
     if (restoreError) {
       setError(restoreError);
       setIsLoading(false);
-      return false;
+      return { success: false, restored: false };
     }
     if (newStatus) {
       setStatus(newStatus);
       setError(null);
     }
     setIsLoading(false);
-    return true;
+    // restored = an active entitlement actually came back (the common
+    // "nothing to restore" case must give explicit feedback, not silence).
+    return { success: true, restored: !!newStatus?.isActive };
   }, []);
 
   const startTrial = useCallback(async (planType?: PlanType): Promise<boolean> => {

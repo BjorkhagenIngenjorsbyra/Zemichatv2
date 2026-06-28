@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useHistory, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
@@ -19,10 +19,11 @@ import {
   IonButton,
   IonCheckbox,
   IonFooter,
+  useIonToast,
 } from '@ionic/react';
 import { personOutline, personAddOutline } from 'ionicons/icons';
 import { getMyFriends, type FriendWithUser } from '../services/friend';
-import { createChat } from '../services/chat';
+import { createChat, getMyChats } from '../services/chat';
 import { getAvatarColor, getInitial } from '../utils/userDisplay';
 import type { User } from '../types/database';
 
@@ -30,8 +31,8 @@ const NewChat: React.FC = () => {
   const { t } = useTranslation();
   const history = useHistory();
   const location = useLocation();
+  const [present] = useIonToast();
   const [contacts, setContacts] = useState<User[]>([]);
-  const [filteredContacts, setFilteredContacts] = useState<User[]>([]);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [searchText, setSearchText] = useState('');
   const [isLoading, setIsLoading] = useState(true);
@@ -41,34 +42,36 @@ const NewChat: React.FC = () => {
   const preselectedId = new URLSearchParams(location.search).get('add');
 
   const loadContacts = useCallback(async () => {
-    const { friends } = await getMyFriends();
-    const friendUsers = friends.map((f: FriendWithUser) => f.user);
-    setContacts(friendUsers);
-    setFilteredContacts(friendUsers);
-    setIsLoading(false);
+    try {
+      const { friends } = await getMyFriends();
+      const friendUsers = friends.map((f: FriendWithUser) => f.user);
+      setContacts(friendUsers);
 
-    if (preselectedId) {
-      setSelectedIds(new Set([preselectedId]));
+      // Only honor ?add= if it's an actual friend — a stale/hand-crafted URL
+      // must not preselect a non-friend id that then gets passed to createChat.
+      if (preselectedId && friendUsers.some((u) => u.id === preselectedId)) {
+        setSelectedIds(new Set([preselectedId]));
+      }
+    } catch (err) {
+      console.error('Failed to load contacts:', err);
+      present({ message: t('errors.generic'), duration: 2500, color: 'danger' });
+    } finally {
+      setIsLoading(false);
     }
-  }, [preselectedId]);
+  }, [preselectedId, present, t]);
 
   useEffect(() => {
     loadContacts();
   }, [loadContacts]);
 
-  useEffect(() => {
-    if (!searchText.trim()) {
-      setFilteredContacts(contacts);
-      return;
-    }
-
+  const filteredContacts = useMemo(() => {
+    if (!searchText.trim()) return contacts;
     const search = searchText.toLowerCase();
-    const filtered = contacts.filter((c) => {
+    return contacts.filter((c) => {
       const name = c.display_name?.toLowerCase() || '';
       const zemi = c.zemi_number?.toLowerCase() || '';
       return name.includes(search) || zemi.includes(search);
     });
-    setFilteredContacts(filtered);
   }, [searchText, contacts]);
 
   const toggleContact = (contactId: string) => {
@@ -91,6 +94,26 @@ const NewChat: React.FC = () => {
     const memberIds = Array.from(selectedIds);
     const isGroup = memberIds.length > 1;
 
+    // For a 1:1 chat, navigate to the existing thread with that friend instead
+    // of inserting a duplicate (#412). Best-effort: skip on lookup failure.
+    if (!isGroup) {
+      try {
+        const friendId = memberIds[0];
+        const { chats } = await getMyChats();
+        const existing = chats.find((c) => {
+          if (c.is_group) return false;
+          const active = c.members.filter((m) => !m.left_at);
+          return active.length === 2 && active.some((m) => m.user_id === friendId);
+        });
+        if (existing) {
+          history.replace(`/chat/${existing.id}`);
+          return;
+        }
+      } catch (err) {
+        console.error('Existing-chat lookup failed, creating new:', err);
+      }
+    }
+
     const { chat, error } = await createChat({
       memberIds,
       isGroup,
@@ -98,12 +121,16 @@ const NewChat: React.FC = () => {
 
     if (error) {
       console.error('Failed to create chat:', error);
+      present({ message: t('errors.generic'), duration: 2500, color: 'danger' });
       setIsCreating(false);
       return;
     }
 
     if (chat) {
       history.replace(`/chat/${chat.id}`);
+    } else {
+      // No error but no chat returned — don't leave the button spinning.
+      setIsCreating(false);
     }
   };
 

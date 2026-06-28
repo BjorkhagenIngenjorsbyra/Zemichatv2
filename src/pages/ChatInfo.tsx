@@ -16,6 +16,7 @@ import {
   IonIcon,
   IonAlert,
   IonInput,
+  useIonToast,
 } from '@ionic/react';
 import { personAddOutline, logOutOutline } from 'ionicons/icons';
 import { useAuthContext } from '../contexts/AuthContext';
@@ -24,15 +25,14 @@ import { getSharedMedia, updateChatName, leaveChat } from '../services/chatInfo'
 import { usePresence } from '../hooks/usePresence';
 import { type User } from '../types/database';
 import { getAvatarColor, getInitial } from '../utils/userDisplay';
-import { useSignedMediaUrl } from '../hooks/useSignedMediaUrl';
+import { resolveMediaUrls } from '../services/storage';
 import ReportButton from '../components/ReportButton';
 
 /**
  * Thumbnail that resolves a chat-media storage path to a signed URL.
  * chat-media is private (audit fix #18).
  */
-const SharedMediaThumb: React.FC<{ path: string }> = ({ path }) => {
-  const url = useSignedMediaUrl(path);
+const SharedMediaThumb: React.FC<{ url: string | null }> = ({ url }) => {
   if (!url) return <div className="media-thumb media-thumb-loading" />;
   return (
     <div className="media-thumb">
@@ -46,9 +46,24 @@ const ChatInfo: React.FC = () => {
   const history = useHistory();
   const { chatId } = useParams<{ chatId: string }>();
   const { profile } = useAuthContext();
+  const [present] = useIonToast();
 
   const [chat, setChat] = useState<ChatWithDetails | null>(null);
+  const [loadError, setLoadError] = useState(false);
   const [sharedMedia, setSharedMedia] = useState<string[]>([]);
+  // Resolve all shared-media signed URLs once per list change (deduped, cached)
+  // instead of one useSignedMediaUrl hook per thumbnail — which fired N separate
+  // resolutions and re-ran whenever a thumb remounted on scroll.
+  const [resolvedMedia, setResolvedMedia] = useState<Map<string, string>>(new Map());
+  useEffect(() => {
+    let cancelled = false;
+    resolveMediaUrls(sharedMedia).then((m) => {
+      if (!cancelled) setResolvedMedia(m);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [sharedMedia]);
   const [isLoading, setIsLoading] = useState(true);
   const [editingName, setEditingName] = useState(false);
   const [newName, setNewName] = useState('');
@@ -64,21 +79,36 @@ const ChatInfo: React.FC = () => {
 
   const loadData = useCallback(async () => {
     if (!chatId) return;
+    setLoadError(false);
 
-    const [chatResult, mediaResult] = await Promise.all([
-      getChat(chatId),
-      getSharedMedia(chatId),
-    ]);
+    try {
+      const [chatResult, mediaResult] = await Promise.all([
+        getChat(chatId),
+        getSharedMedia(chatId),
+      ]);
 
-    if (!chatResult.chat) {
-      history.replace('/chats');
-      return;
+      if (chatResult.error) {
+        // Transient failure — don't kick the user out of the chat; offer retry.
+        console.error('Failed to load chat:', chatResult.error);
+        setLoadError(true);
+        return;
+      }
+
+      if (!chatResult.chat) {
+        // Affirmatively not a member / chat deleted.
+        history.replace('/chats');
+        return;
+      }
+
+      setChat(chatResult.chat);
+      setSharedMedia(mediaResult.urls);
+      setNewName(chatResult.chat.name || '');
+    } catch (err) {
+      console.error('Failed to load chat info:', err);
+      setLoadError(true);
+    } finally {
+      setIsLoading(false);
     }
-
-    setChat(chatResult.chat);
-    setSharedMedia(mediaResult.urls);
-    setNewName(chatResult.chat.name || '');
-    setIsLoading(false);
   }, [chatId, history]);
 
   useEffect(() => {
@@ -87,14 +117,27 @@ const ChatInfo: React.FC = () => {
 
   const handleSaveName = async () => {
     if (!chatId || !newName.trim()) return;
-    await updateChatName(chatId, newName.trim());
+    const { error } = await updateChatName(chatId, newName.trim());
+    if (error) {
+      // Only mutate local state on success — otherwise the UI diverges from
+      // the server and shows a rename that didn't persist.
+      console.error('Failed to update chat name:', error);
+      present({ message: t('errors.generic'), duration: 2500, color: 'danger' });
+      return;
+    }
     setChat((prev) => prev ? { ...prev, name: newName.trim() } : prev);
     setEditingName(false);
   };
 
   const handleLeave = async () => {
     if (!chatId) return;
-    await leaveChat(chatId);
+    const { error } = await leaveChat(chatId);
+    if (error) {
+      // Stay in the chat if the server rejected the leave.
+      console.error('Failed to leave chat:', error);
+      present({ message: t('errors.generic'), duration: 2500, color: 'danger' });
+      return;
+    }
     history.replace('/chats');
   };
 
@@ -119,6 +162,32 @@ const ChatInfo: React.FC = () => {
           </IonToolbar>
         </IonHeader>
         <IonContent />
+      </IonPage>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <IonPage>
+        <IonHeader>
+          <IonToolbar>
+            <IonButtons slot="start">
+              <IonBackButton defaultHref={`/chat/${chatId}`} />
+            </IonButtons>
+            <IonTitle>{t('chatInfo.title')}</IonTitle>
+          </IonToolbar>
+        </IonHeader>
+        <IonContent fullscreen>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: '1rem', padding: '2rem', textAlign: 'center' }}>
+            <p style={{ color: 'hsl(var(--muted-foreground))', margin: 0 }}>{t('errors.generic')}</p>
+            <button
+              onClick={() => { setIsLoading(true); loadData(); }}
+              style={{ background: 'hsl(var(--primary))', color: 'hsl(var(--primary-foreground))', border: 'none', borderRadius: '9999px', padding: '0.5rem 1.25rem', fontSize: '0.875rem', fontWeight: 600, fontFamily: 'inherit', cursor: 'pointer' }}
+            >
+              {t('errors.boundaryRetry')}
+            </button>
+          </div>
+        </IonContent>
       </IonPage>
     );
   }
@@ -170,15 +239,31 @@ const ChatInfo: React.FC = () => {
                   {t('common.save')}
                 </button>
               </div>
-            ) : (
-              <h2
-                className="info-name"
-                onClick={chat?.is_group && chat.created_by === profile?.id ? () => setEditingName(true) : undefined}
-                style={chat?.is_group && chat.created_by === profile?.id ? { cursor: 'pointer' } : undefined}
-              >
-                {getChatDisplayName()}
-              </h2>
-            )}
+            ) : (() => {
+              const canEditName = !!(chat?.is_group && chat.created_by === profile?.id);
+              return (
+                <h2
+                  className="info-name"
+                  onClick={canEditName ? () => setEditingName(true) : undefined}
+                  role={canEditName ? 'button' : undefined}
+                  tabIndex={canEditName ? 0 : undefined}
+                  onKeyDown={
+                    canEditName
+                      ? (e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            setEditingName(true);
+                          }
+                        }
+                      : undefined
+                  }
+                  aria-label={canEditName ? t('chatInfo.editGroupName') : undefined}
+                  style={canEditName ? { cursor: 'pointer' } : undefined}
+                >
+                  {getChatDisplayName()}
+                </h2>
+              );
+            })()}
 
             {/* 1-on-1: show last seen */}
             {!chat?.is_group && lastSeenText && (
@@ -246,8 +331,8 @@ const ChatInfo: React.FC = () => {
               <p className="empty-text">{t('chatInfo.noSharedMedia')}</p>
             ) : (
               <div className="media-grid">
-                {sharedMedia.map((url, index) => (
-                  <SharedMediaThumb key={index} path={url} />
+                {sharedMedia.map((path) => (
+                  <SharedMediaThumb key={path} url={resolvedMedia.get(path) ?? null} />
                 ))}
               </div>
             )}

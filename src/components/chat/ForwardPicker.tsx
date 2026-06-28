@@ -43,13 +43,18 @@ const ForwardPicker: React.FC<ForwardPickerProps> = ({
         .then(({ chats: fetchedChats }) => {
           setChats(fetchedChats.filter((c) => !c.isArchived));
         })
+        .catch((err) => {
+          // Without this, a rejected getMyChats was an unhandled rejection.
+          console.error('[ForwardPicker] getMyChats failed:', err);
+        })
         .finally(() => {
           setIsLoading(false);
         });
 
-      setTimeout(() => {
+      const focusId = setTimeout(() => {
         searchbarRef.current?.setFocus();
       }, 300);
+      return () => clearTimeout(focusId);
     } else {
       setSearchQuery('');
       setChats([]);

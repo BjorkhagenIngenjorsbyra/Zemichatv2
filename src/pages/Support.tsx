@@ -214,6 +214,14 @@ const Support: React.FC = () => {
                     )}
                   </IonButton>
 
+                  {!canSubmit && !isSubmitting && (
+                    <p
+                      style={{ fontSize: '0.8rem', color: 'hsl(var(--muted-foreground))', textAlign: 'center', margin: '0.5rem 0 0' }}
+                    >
+                      {t('support.requiredHint', 'Fyll i ämne, beskrivning och en giltig e-postadress för att kunna skicka.')}
+                    </p>
+                  )}
+
                   {submitError && (
                     <p className="error-text">{submitError}</p>
                   )}
@@ -263,12 +271,12 @@ const Support: React.FC = () => {
 
           /* Override Ionic's default dark IonItem background that the
              accordion header inherits — looks broken on light theme. */
-          ion-accordion-group ion-item {
+          .support-container ion-accordion-group ion-item {
             --background: hsl(var(--card));
             --color: hsl(var(--foreground));
             --border-color: hsl(var(--border));
           }
-          ion-accordion {
+          .support-container ion-accordion {
             background: hsl(var(--card));
             border: 1px solid hsl(var(--border));
             border-radius: 0.75rem;

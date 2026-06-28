@@ -156,8 +156,21 @@ async function validateOutboundUrl(rawUrl: string): Promise<URL> {
   if (parsed.username || parsed.password) {
     throw new Error('userinfo_disallowed');
   }
+  assertAllowedPort(parsed);
   await assertPublicHostname(parsed.hostname);
   return parsed;
+}
+
+/**
+ * Only allow the default web ports. A public host can still expose internal
+ * services on odd ports (e.g. :6379 Redis, :9200 Elasticsearch, :2375 Docker);
+ * restricting to 80/443 closes that SSRF vector. An empty port means the
+ * protocol default (80/443), which is fine.
+ */
+function assertAllowedPort(parsed: URL): void {
+  if (parsed.port !== '' && parsed.port !== '80' && parsed.port !== '443') {
+    throw new Error('port_disallowed');
+  }
 }
 
 /**
@@ -194,6 +207,7 @@ async function safeFetchHtml(initialUrl: URL, signal: AbortSignal): Promise<Resp
       if (nextUrl.username || nextUrl.password) {
         throw new Error('redirect_userinfo_disallowed');
       }
+      assertAllowedPort(nextUrl);
       await assertPublicHostname(nextUrl.hostname);
       currentUrl = nextUrl;
       // Drain any body to release the connection.

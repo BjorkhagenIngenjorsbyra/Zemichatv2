@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Network } from '@capacitor/network';
 import { Capacitor } from '@capacitor/core';
@@ -7,9 +7,27 @@ const OfflineBanner: React.FC = () => {
   const { t } = useTranslation();
   const [isOffline, setIsOffline] = useState(false);
   const [showBanner, setShowBanner] = useState(false);
+  // Track the "back online" auto-hide timer so a quick offline→online→offline
+  // flip doesn't leave a stale timeout that hides the banner while still offline.
+  const hideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     let removeListener: (() => void) | undefined;
+
+    const clearHideTimer = () => {
+      if (hideTimerRef.current) {
+        clearTimeout(hideTimerRef.current);
+        hideTimerRef.current = null;
+      }
+    };
+
+    const scheduleHide = () => {
+      clearHideTimer();
+      hideTimerRef.current = setTimeout(() => {
+        hideTimerRef.current = null;
+        setShowBanner(false);
+      }, 2000);
+    };
 
     if (Capacitor.isNativePlatform()) {
       // Native: use Capacitor Network plugin
@@ -21,10 +39,11 @@ const OfflineBanner: React.FC = () => {
       const listenerPromise = Network.addListener('networkStatusChange', (status) => {
         setIsOffline(!status.connected);
         if (!status.connected) {
+          clearHideTimer();
           setShowBanner(true);
         } else {
           // Show "back online" briefly, then hide
-          setTimeout(() => setShowBanner(false), 2000);
+          scheduleHide();
         }
       });
 
@@ -38,10 +57,11 @@ const OfflineBanner: React.FC = () => {
 
       const handleOnline = () => {
         setIsOffline(false);
-        setTimeout(() => setShowBanner(false), 2000);
+        scheduleHide();
       };
 
       const handleOffline = () => {
+        clearHideTimer();
         setIsOffline(true);
         setShowBanner(true);
       };
@@ -57,6 +77,7 @@ const OfflineBanner: React.FC = () => {
 
     return () => {
       removeListener?.();
+      clearHideTimer();
     };
   }, []);
 

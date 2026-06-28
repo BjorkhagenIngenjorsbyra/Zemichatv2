@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { IonItem, IonAvatar, IonLabel, IonIcon } from '@ionic/react';
 import { getDisplayName, getInitial, getAvatarColor } from '../../utils/userDisplay';
@@ -10,6 +11,7 @@ import {
 import { type CallHistoryEntry } from '../../services/callHistory';
 import { CallStatus } from '../../types/database';
 import { formatTimeOrDate } from '../../utils/datetime';
+import './CallHistoryItem.css';
 
 interface CallHistoryItemProps {
   entry: CallHistoryEntry;
@@ -39,10 +41,10 @@ const CallHistoryItem: React.FC<CallHistoryItemProps> = ({
   const isMissed = entry.status === CallStatus.MISSED && !isOutgoing;
   const isVideo = entry.type === 'video';
 
-  // Determine display name + avatar
-  const other = isOutgoing
-    ? entry.otherParticipant || entry.initiator
-    : entry.initiator;
+  // Determine display name + avatar. For an outgoing call the initiator IS the
+  // current user, so falling back to it showed the user themselves as the
+  // counterpart — use only otherParticipant (getDisplayName handles null).
+  const other = isOutgoing ? entry.otherParticipant : entry.initiator;
   const displayName = getDisplayName(other);
   const avatarUrl = other?.avatar_url;
 
@@ -89,71 +91,8 @@ const CallHistoryItem: React.FC<CallHistoryItemProps> = ({
       <span slot="end" className="call-time">
         {formatTime(entry.started_at)}
       </span>
-
-      <style>{`
-        .call-history-item {
-          --background: hsl(var(--card));
-          --border-color: hsl(var(--border));
-        }
-
-        .call-history-item h2 {
-          color: hsl(var(--foreground));
-          font-weight: 600;
-          font-size: 0.95rem;
-          margin: 0;
-        }
-
-        .call-avatar {
-          width: 44px;
-          height: 44px;
-        }
-
-        .call-avatar-placeholder {
-          width: 100%;
-          height: 100%;
-          background: hsl(var(--primary));
-          color: hsl(var(--primary-foreground));
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-weight: 700;
-          font-size: 1.1rem;
-          border-radius: 50%;
-        }
-
-        .missed-name {
-          color: hsl(var(--destructive)) !important;
-        }
-
-        .call-meta {
-          display: flex;
-          align-items: center;
-          gap: 0.3rem;
-          font-size: 0.8rem;
-          color: hsl(var(--muted-foreground));
-        }
-
-        .call-meta ion-icon {
-          font-size: 0.85rem;
-        }
-
-        .direction-icon.missed {
-          color: hsl(var(--destructive));
-        }
-
-        .call-duration {
-          margin-left: 0.25rem;
-          color: hsl(var(--foreground) / 0.5);
-        }
-
-        .call-time {
-          font-size: 0.75rem;
-          color: hsl(var(--muted-foreground));
-          white-space: nowrap;
-        }
-      `}</style>
     </IonItem>
   );
 };
 
-export default CallHistoryItem;
+export default memo(CallHistoryItem);

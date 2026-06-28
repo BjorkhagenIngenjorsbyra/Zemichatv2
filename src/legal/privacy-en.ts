@@ -34,7 +34,7 @@ export default `
 <tr><td>Reactions</td><td>Emoji reactions on messages</td></tr>
 </tbody>
 </table>
-<p><strong>Important:</strong> When a user deletes a message, a "soft delete" is performed. The message is marked as deleted but remains in the database. This is part of the transparency model &mdash; Team Owner can still see that a message was sent and deleted.</p>
+<p><strong>Important:</strong> When a user deletes a message, a "soft delete" is performed. The message is marked as deleted but remains in the database. This is part of the transparency model — Team Owner can still see that a message was sent and deleted.</p>
 <h3>2.3 Location data</h3>
 <p>We do <strong>not</strong> collect location data on an ongoing basis. Location data is stored <strong>only</strong> in the following cases:</p>
 <ul>
@@ -55,7 +55,7 @@ export default `
 <table>
 <thead><tr><th>Data</th><th>Description</th></tr></thead>
 <tbody>
-<tr><td>Subscription plan</td><td>Which plan your team has (free, basic, family, premium)</td></tr>
+<tr><td>Subscription plan</td><td>Which plan your team has (free, basic, pro)</td></tr>
 <tr><td>Trial period</td><td>Start date and expiration date for the trial period</td></tr>
 </tbody>
 </table>
@@ -67,15 +67,15 @@ export default `
 <thead><tr><th>Data category</th><th>Purpose</th><th>Legal basis (GDPR)</th></tr></thead>
 <tbody>
 <tr><td>Account information</td><td>Create and manage your account, identify you in the app</td><td>Contract (Art. 6.1b)</td></tr>
-<tr><td>Messages and media</td><td>Deliver the chat functionality &mdash; sending and receiving messages</td><td>Contract (Art. 6.1b)</td></tr>
-<tr><td>Edit history</td><td>Transparency &mdash; Team Owner can see changes to Texters' messages</td><td>Legitimate interest (Art. 6.1f)</td></tr>
-<tr><td>Location data (Tillkalla Vuxen)</td><td>Child safety &mdash; help parents locate their child in an emergency</td><td>Legitimate interest (Art. 6.1f)</td></tr>
+<tr><td>Messages and media</td><td>Deliver the chat functionality — sending and receiving messages</td><td>Contract (Art. 6.1b)</td></tr>
+<tr><td>Edit history</td><td>Transparency — Team Owner can see changes to Texters' messages</td><td>Legitimate interest (Art. 6.1f)</td></tr>
+<tr><td>Location data (Tillkalla Vuxen)</td><td>Child safety — help parents locate their child in an emergency</td><td>Legitimate interest (Art. 6.1f)</td></tr>
 <tr><td>Device information</td><td>Send push notifications and manage active sessions</td><td>Consent (Art. 6.1a)</td></tr>
-<tr><td>Texter settings</td><td>Parental controls &mdash; let Team Owner manage which features the child can access</td><td>Legitimate interest/Consent (Art. 6.1f/a)</td></tr>
-<tr><td>Friend relationships</td><td>Social functionality &mdash; manage contacts and friend requests</td><td>Contract (Art. 6.1b)</td></tr>
-<tr><td>Call logs</td><td>Call history &mdash; display previous calls</td><td>Contract (Art. 6.1b)</td></tr>
+<tr><td>Texter settings</td><td>Parental controls — let Team Owner manage which features the child can access</td><td>Legitimate interest/Consent (Art. 6.1f/a)</td></tr>
+<tr><td>Friend relationships</td><td>Social functionality — manage contacts and friend requests</td><td>Contract (Art. 6.1b)</td></tr>
+<tr><td>Call logs</td><td>Call history — display previous calls</td><td>Contract (Art. 6.1b)</td></tr>
 <tr><td>Subscription data</td><td>Manage your subscription and access to features</td><td>Contract (Art. 6.1b)</td></tr>
-<tr><td>Reports</td><td>Safety and moderation &mdash; handle user reports</td><td>Legitimate interest (Art. 6.1f)</td></tr>
+<tr><td>Reports</td><td>Safety and moderation — handle user reports</td><td>Legitimate interest (Art. 6.1f)</td></tr>
 <tr><td>Anonymized deletion log</td><td>Legal traceability upon account deletion</td><td>Legitimate interest (Art. 6.1f)</td></tr>
 </tbody>
 </table>
@@ -85,7 +85,7 @@ export default `
 <ul>
 <li>All communication between your device and our servers uses <strong>HTTPS/TLS</strong> (encrypted in transit).</li>
 <li>The database uses encryption at rest.</li>
-<li>Passwords are stored as cryptographic hashes &mdash; we can never see your password in plain text.</li>
+<li>Passwords are stored as cryptographic hashes — we can never see your password in plain text.</li>
 </ul>
 <h3>4.2 Access control (Row Level Security)</h3>
 <p>We use <strong>Row Level Security (RLS)</strong> in the database. This means every database request is checked against strict rules that ensure:</p>
@@ -112,7 +112,7 @@ export default `
 <p>We never share your data with third parties for marketing purposes. The following service providers are used for the app to function:</p>
 <h3>5.1 Supabase (database and infrastructure)</h3>
 <ul>
-<li><strong>What:</strong> All app data is stored with Supabase &mdash; database, file storage, and authentication.</li>
+<li><strong>What:</strong> All app data is stored with Supabase — database, file storage, and authentication.</li>
 <li><strong>Where:</strong> EU-based servers.</li>
 <li><strong>Data:</strong> All data described in this policy.</li>
 <li><strong>Privacy policy:</strong> <a href="https://supabase.com/privacy" target="_blank" rel="noopener noreferrer">https://supabase.com/privacy</a></li>
@@ -127,7 +127,7 @@ export default `
 <h3>5.3 RevenueCat (payments and subscriptions)</h3>
 <ul>
 <li><strong>What:</strong> RevenueCat handles subscriptions and purchases via the App Store and Google Play.</li>
-<li><strong>Where:</strong> USA (Privacy Shield / Standard Contractual Clauses).</li>
+<li><strong>Where:</strong> USA (EU-U.S. Data Privacy Framework (DPF) / Standard Contractual Clauses).</li>
 <li><strong>Data:</strong> Anonymized purchase ID and subscription plan. RevenueCat has <strong>no</strong> access to your personal data, messages, or chat content.</li>
 <li><strong>Privacy policy:</strong> <a href="https://www.revenuecat.com/privacy" target="_blank" rel="noopener noreferrer">https://www.revenuecat.com/privacy</a></li>
 </ul>
@@ -150,9 +150,9 @@ export default `
 <p>Children use the app with the <strong>Texter</strong> role. A Texter:</p>
 <ul>
 <li>Is created by a parent/guardian (Team Owner).</li>
-<li>Logs in with a Zemi number and password &mdash; <strong>no email address required</strong>.</li>
+<li>Logs in with a Zemi number and password — <strong>no email address required</strong>.</li>
 <li>Has limited functionality controlled by the Team Owner.</li>
-<li>Cannot approve friend requests on their own &mdash; this is done by the Team Owner.</li>
+<li>Cannot approve friend requests on their own — this is done by the Team Owner.</li>
 </ul>
 <h3>6.2 Parental oversight (the transparency model)</h3>
 <p>The Team Owner has full insight into Texters' communication. This means that:</p>
@@ -180,7 +180,7 @@ export default `
 <ul>
 <li><strong>Team Owner</strong> can delete the entire team (including all members and all data) via <strong>Settings &gt; Delete account</strong>.</li>
 <li>Upon deletion, all data is removed: profiles, messages, media files, friend relationships, call logs, and all other personal data.</li>
-<li>An anonymized log entry is kept for legal traceability. This contains no personal data &mdash; only a SHA-256 hash of the team name and the number of members.</li>
+<li>An anonymized log entry is kept for legal traceability. This contains no personal data — only a SHA-256 hash of the team name and the number of members.</li>
 </ul>
 <h3>7.4 Right to rectification (Art. 16)</h3>
 <p>You can update your profile information (name, profile picture, status message) directly in the app via Settings.</p>
@@ -194,9 +194,9 @@ export default `
 <p>We use <strong>no</strong> analytics or tracking services (such as Google Analytics, Facebook Pixel, or similar).</p>
 <p>The only local storage we use is:</p>
 <ul>
-<li><strong>Authentication token</strong> &mdash; to keep you logged in between sessions.</li>
-<li><strong>Language setting</strong> &mdash; to remember your chosen language.</li>
-<li><strong>Onboarding status</strong> &mdash; to know if you have completed the introduction guide.</li>
+<li><strong>Authentication token</strong> — to keep you logged in between sessions.</li>
+<li><strong>Language setting</strong> — to remember your chosen language.</li>
+<li><strong>Onboarding status</strong> — to know if you have completed the introduction guide.</li>
 </ul>
 <p>This data is stored locally on your device and is never sent to any third party.</p>
 <hr>
@@ -207,7 +207,7 @@ export default `
 <tr><td>Account information</td><td>Until the account is deleted</td></tr>
 <tr><td>Messages and media</td><td>Until the account is deleted</td></tr>
 <tr><td>Call logs</td><td>Until the account is deleted</td></tr>
-<tr><td>Call signals (ring/decline)</td><td>Short period &mdash; automatically cleaned up</td></tr>
+<tr><td>Call signals (ring/decline)</td><td>Short period — automatically cleaned up</td></tr>
 <tr><td>Push tokens</td><td>Until the account is deleted or the token is unregistered</td></tr>
 <tr><td>Sessions</td><td>Until the account is deleted</td></tr>
 <tr><td>Anonymized deletion log</td><td>Permanent (contains no personal data)</td></tr>

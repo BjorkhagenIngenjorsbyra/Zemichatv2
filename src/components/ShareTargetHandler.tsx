@@ -64,14 +64,24 @@ const ShareTargetHandler: React.FC = () => {
     [isAuthenticated, hasProfile, history]
   );
 
-  // ---- Initialize native listener ----
+  // Keep the latest handler in a ref so the once-registered native listener
+  // always sees current auth state. Registering handleShareData directly (it is
+  // only set once, guarded by initializedRef) would permanently capture the
+  // boot-time isAuthenticated/hasProfile (false), routing post-login shares
+  // down the 'not authenticated' path.
+  const handlerRef = useRef(handleShareData);
+  useEffect(() => {
+    handlerRef.current = handleShareData;
+  }, [handleShareData]);
+
+  // ---- Initialize native listener (once) with a stable wrapper ----
   useEffect(() => {
     if (initializedRef.current) return;
     initializedRef.current = true;
 
     initializeShareTarget();
-    setShareHandler((data) => handleShareData(data));
-  }, [handleShareData]);
+    setShareHandler((data) => handlerRef.current(data));
+  }, []);
 
   // ---- After login, check for pending share data ----
   useEffect(() => {
@@ -98,9 +108,13 @@ const ShareTargetHandler: React.FC = () => {
       .then(({ chats: fetched }) => {
         setChats(fetched.filter((c) => !c.isArchived));
       })
+      .catch((err) => {
+        console.error('[ShareTarget] getMyChats failed:', err);
+      })
       .finally(() => setIsLoading(false));
 
-    setTimeout(() => searchbarRef.current?.setFocus(), 300);
+    const focusId = setTimeout(() => searchbarRef.current?.setFocus(), 300);
+    return () => clearTimeout(focusId);
   }, [isPickerOpen]);
 
   // ---- Helpers (reused from ForwardPicker pattern) ----
@@ -149,15 +163,17 @@ const ShareTargetHandler: React.FC = () => {
         });
         if (error) throw error;
       } else {
-        // Upload and send each image
-        for (const item of shareData.items) {
+        // Upload and send each image. The shared caption belongs to the set,
+        // so attach it to the first image only — not repeated on every one.
+        for (let i = 0; i < shareData.items.length; i++) {
+          const item = shareData.items[i];
           const file = sharedItemToFile(item);
           const uploadResult = await uploadImage(file, chatId);
           if (uploadResult.error) throw uploadResult.error;
 
           const { error } = await sendMessage({
             chatId,
-            content: shareData.text || undefined,
+            content: i === 0 ? (shareData.text || undefined) : undefined,
             type: MessageType.IMAGE,
             mediaUrl: uploadResult.url!,
             mediaMetadata: uploadResult.metadata as unknown as Record<string, unknown>,

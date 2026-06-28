@@ -1,5 +1,5 @@
 import { supabase } from './supabase';
-import { MessageType, type Message, type User } from '../types/database';
+import { MessageType, type Message, type User, type MessageEdit } from '../types/database';
 import type { RealtimeChannel } from '@supabase/supabase-js';
 import { trackEvent } from './analytics';
 
@@ -326,6 +326,26 @@ export async function editMessage(
   }
 
   return { error: null };
+}
+
+/**
+ * Fetch the edit history (previous versions) of a message, oldest first.
+ * Backed by the message_edits table, which a DB trigger populates with the old
+ * content on every content change. RLS (message_edits_select_owner_oversight)
+ * lets the overseeing Owner read it — this powers the Owner-facing history view
+ * so an edit can't be used to hide what was originally written (PRD 8.4).
+ */
+export async function getMessageEdits(
+  messageId: string
+): Promise<{ edits: MessageEdit[]; error: Error | null }> {
+  const { data, error } = await supabase
+    .from('message_edits')
+    .select('id, message_id, old_content, edited_at')
+    .eq('message_id', messageId)
+    .order('edited_at', { ascending: true });
+
+  if (error) return { edits: [], error: new Error(error.message) };
+  return { edits: (data || []) as MessageEdit[], error: null };
 }
 
 /**

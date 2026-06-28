@@ -81,6 +81,29 @@ serve(async (req) => {
       );
     }
 
+    // Group-call participant cap (Fable #4/6). The channel == chatId, so every
+    // active chat member can join. The client pre-checks MAX_GROUP_CALL_PARTICIPANTS
+    // (src/types/call.ts) but a modified client can bypass it, blowing the Agora
+    // free-tier cap. This is the authoritative gate: no join token is issued for
+    // an oversized channel. Uses serviceClient for an RLS-independent member count.
+    const { data: withinCapacity, error: capacityError } = await serviceClient
+      .rpc('chat_call_within_capacity', { p_chat_id: chatId });
+
+    if (capacityError) {
+      console.error('Call capacity check failed:', capacityError);
+      return new Response(
+        JSON.stringify({ error: 'Capacity check failed' }),
+        { status: 500, headers: { ...cors, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    if (withinCapacity === false) {
+      return new Response(
+        JSON.stringify({ error: 'Call group is full' }),
+        { status: 403, headers: { ...cors, 'Content-Type': 'application/json' } }
+      );
+    }
+
     const { data: userProfile, error: profileError } = await supabase
       .from('users')
       .select('role')

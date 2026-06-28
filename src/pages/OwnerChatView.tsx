@@ -36,9 +36,10 @@ import { useSignedMediaUrl } from '../hooks/useSignedMediaUrl';
  * (audit fix #18).
  */
 const OversightImage: React.FC<{ mediaUrl: string }> = ({ mediaUrl }) => {
+  const { t } = useTranslation();
   const url = useSignedMediaUrl(mediaUrl);
   if (!url) return null;
-  return <img src={url} alt="Image" className="message-image" />;
+  return <img src={url} alt={t('message.image')} className="message-image" />;
 };
 
 const OwnerChatView: React.FC = () => {
@@ -49,31 +50,45 @@ const OwnerChatView: React.FC = () => {
   const [chat, setChat] = useState<ChatWithDetails | null>(null);
   const [messages, setMessages] = useState<(Message & { sender?: User })[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const contentRef = useRef<HTMLIonContentElement>(null);
 
   const loadData = useCallback(async () => {
     if (!chatId) return;
+    setLoadError(false);
 
-    // Get chat details
-    const { chat: chatData } = await getChat(chatId);
-    if (!chatData) {
-      history.replace('/oversight');
-      return;
+    try {
+      // Get chat details
+      const { chat: chatData } = await getChat(chatId);
+      if (!chatData) {
+        // Affirmatively not a member / chat gone — leave oversight.
+        history.replace('/oversight');
+        return;
+      }
+      setChat(chatData);
+
+      // Get messages (including deleted ones for transparency)
+      const { messages: chatMessages, error } = await getOversightMessages(chatId);
+      if (error) {
+        // For an oversight feature, never present a load failure as "no
+        // messages" — that wrongly reassures the parent there is nothing to see.
+        console.error('Failed to load messages:', error);
+        setLoadError(true);
+        return;
+      }
+      setMessages(chatMessages);
+
+      // Scroll to bottom
+      setTimeout(() => {
+        contentRef.current?.scrollToBottom(300);
+      }, 100);
+    } catch (err) {
+      // A thrown rejection previously left the spinner stuck forever.
+      console.error('Failed to load oversight chat:', err);
+      setLoadError(true);
+    } finally {
+      setIsLoading(false);
     }
-    setChat(chatData);
-
-    // Get messages (including deleted ones for transparency)
-    const { messages: chatMessages, error } = await getOversightMessages(chatId);
-    if (error) {
-      console.error('Failed to load messages:', error);
-    }
-    setMessages(chatMessages);
-    setIsLoading(false);
-
-    // Scroll to bottom
-    setTimeout(() => {
-      contentRef.current?.scrollToBottom(300);
-    }, 100);
   }, [chatId, history]);
 
   useEffect(() => {
@@ -254,6 +269,13 @@ const OwnerChatView: React.FC = () => {
           <div className="loading-state">
             <IonSpinner name="crescent" />
           </div>
+        ) : loadError ? (
+          <div className="empty-state">
+            <p>{t('errors.generic')}</p>
+            <button className="oversight-retry-btn" onClick={() => { setIsLoading(true); loadData(); }}>
+              {t('errors.boundaryRetry')}
+            </button>
+          </div>
         ) : messages.length === 0 ? (
           <div className="empty-state">
             <p>{t('oversight.noMessages')}</p>
@@ -329,10 +351,24 @@ const OwnerChatView: React.FC = () => {
 
           .empty-state {
             display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
             justify-content: center;
             align-items: center;
             height: 100%;
             color: hsl(var(--muted-foreground));
+          }
+
+          .oversight-retry-btn {
+            background: hsl(var(--primary));
+            color: hsl(var(--primary-foreground));
+            border: none;
+            border-radius: 9999px;
+            padding: 0.5rem 1.25rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
           }
 
           .messages-container {

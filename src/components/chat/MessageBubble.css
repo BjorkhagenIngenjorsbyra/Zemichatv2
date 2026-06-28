@@ -1,0 +1,258 @@
+/* Styles for MessageBubble. Moved out of an inline <style> block that was
+ * rendered inside every bubble instance (100 messages = 100 duplicate <style>
+ * tags, each parsed by the browser and churned on virtualization). Imported
+ * once at module scope so the rules live in the bundle a single time. */
+
+.swipe-container {
+  position: relative;
+  transition: transform 0.1s ease-out;
+  display: flex;
+  align-items: center;
+  max-width: 85%;
+}
+
+.reply-indicator {
+  position: absolute;
+  left: -40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: hsl(var(--primary) / 0.2);
+  border-radius: 50%;
+  transition: opacity 0.1s ease;
+}
+
+.reply-icon {
+  font-size: 1rem;
+}
+
+.message-bubble {
+  padding: 0.5rem 0.75rem;
+  border-radius: 1.25rem;
+  position: relative;
+}
+
+.message-bubble.own {
+  background: hsl(var(--primary));
+  color: #fff;
+  border-bottom-right-radius: 0.25rem;
+}
+
+.message-bubble.other {
+  background: hsl(var(--bubble-received, var(--card)));
+  color: hsl(var(--foreground));
+  border-bottom-left-radius: 0.25rem;
+}
+
+.message-bubble.message-highlighted {
+  animation: highlight-flash 1.6s ease-out;
+}
+
+@keyframes highlight-flash {
+  0%   { box-shadow: 0 0 0 4px hsl(var(--primary) / 0.55); }
+  100% { box-shadow: 0 0 0 0 hsl(var(--primary) / 0); }
+}
+
+.sender-name {
+  display: block;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: hsl(var(--accent));
+  margin-bottom: 0.15rem;
+}
+
+.message-content {
+  margin: 0;
+  word-wrap: break-word;
+  white-space: pre-wrap;
+  line-height: 1.4;
+}
+
+/* Links inside messages */
+.message-content a,
+.message-bubble.own .message-content a {
+  color: #c4b5fd;
+  text-decoration: underline;
+}
+
+.message-bubble.other .message-content a {
+  color: hsl(var(--primary));
+  text-decoration: underline;
+}
+
+.message-footer {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 0.25rem;
+  margin-top: 0.15rem;
+}
+
+.message-time {
+  font-size: 0.65rem;
+  opacity: 0.75;
+}
+
+/* Edge-to-edge media in bubbles */
+.message-bubble:has(.image-message),
+.message-bubble:has(.gif-message),
+.message-bubble:has(.video-message) {
+  padding: 0;
+  overflow: hidden;
+}
+
+.message-bubble:has(.image-message) .sender-name,
+.message-bubble:has(.gif-message) .sender-name,
+.message-bubble:has(.video-message) .sender-name {
+  padding: 0.5rem 0.75rem 0.15rem;
+}
+
+.message-bubble:has(.image-message) .message-footer,
+.message-bubble:has(.gif-message) .message-footer,
+.message-bubble:has(.video-message) .message-footer {
+  padding: 0.15rem 0.75rem 0.4rem;
+}
+
+.edited-tag {
+  font-style: italic;
+}
+
+.read-status {
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: -1px;
+  transition: color 0.3s ease, opacity 0.3s ease;
+}
+
+.read-status.sent {
+  opacity: 0.65;
+}
+
+.read-status.delivered {
+  opacity: 0.7;
+}
+
+.read-status.read {
+  color: hsl(200 100% 60%);
+  opacity: 1;
+}
+
+.video-message video {
+  width: 100%;
+  max-height: 300px;
+  display: block;
+}
+
+.message-caption {
+  margin: 0.25rem 0 0 0;
+  padding: 0 0.75rem;
+  font-size: 0.9rem;
+}
+
+.document-message {
+  display: flex;
+  align-items: center;
+}
+
+.document-link {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: inherit;
+  text-decoration: none;
+}
+
+.document-link:hover {
+  text-decoration: underline;
+}
+
+.document-icon {
+  font-size: 1.5rem;
+}
+
+.document-name {
+  font-size: 0.9rem;
+  word-break: break-all;
+}
+
+.location-message {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.location-icon {
+  font-size: 1.25rem;
+}
+
+.deleted-bubble {
+  opacity: 0.6;
+}
+
+.deleted-message-text {
+  margin: 0;
+  font-style: italic;
+  font-size: 0.85rem;
+}
+
+.owner-deleted-banner {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: hsl(0 70% 50%);
+  background: hsl(0 70% 50% / 0.1);
+  border-radius: 0.35rem;
+  padding: 0.25rem 0.5rem;
+  margin-bottom: 0.35rem;
+}
+
+.forwarded-tag {
+  display: block;
+  font-size: 0.7rem;
+  font-style: italic;
+  opacity: 0.7;
+  margin-bottom: 0.25rem;
+}
+
+.message-gif {
+  width: 100%;
+  max-width: 300px;
+  max-height: 300px;
+  object-fit: contain;
+  display: block;
+}
+
+.gif-message {
+  min-width: 150px;
+}
+
+.gif-message .message-caption {
+  padding: 0.25rem 0.75rem;
+}
+
+.sticker-message {
+  font-size: 4rem;
+  line-height: 1.2;
+  display: block;
+  text-align: center;
+}
+
+.message-bubble.sticker-only {
+  background: transparent !important;
+  border: none !important;
+  padding: 0;
+}
+
+.message-bubble.own .mention-highlight {
+  font-weight: 600;
+  color: #c4b5fd;
+}
+
+.message-bubble.other .mention-highlight {
+  font-weight: 600;
+  color: hsl(var(--primary));
+}

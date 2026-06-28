@@ -120,10 +120,18 @@ const AuthCallbackHandler: React.FC = () => {
 
   useEffect(() => {
     const hash = window.location.hash;
-    if (hash && hash.includes('type=signup')) {
+    if (!hash) return;
+    if (hash.includes('type=signup')) {
       // Email verification callback — clear the hash and show confirmation
       window.location.hash = '';
       history.replace('/email-confirmed');
+    } else if (hash.includes('type=recovery')) {
+      // Password-reset deep link. Do NOT clear the hash here — supabase-js
+      // detectSessionInUrl needs to read the recovery token to establish the
+      // session before /reset-password can update the password. Previously
+      // this fell through to the catch-all and dumped the user on /welcome
+      // with the token unconsumed.
+      history.replace('/reset-password');
     }
   }, [history]);
 
@@ -236,20 +244,11 @@ const App: React.FC = () => (
               <TexterTour />
             </PrivateRoute>
 
-            {/* Tab pages - main navigation with bottom tab bar */}
-            <PrivateRoute path="/chats">
-              <TabLayout />
-            </PrivateRoute>
-            <PrivateRoute path="/wall">
-              <TabLayout />
-            </PrivateRoute>
-            <PrivateRoute path="/friends">
-              <TabLayout />
-            </PrivateRoute>
-            <PrivateRoute path="/calls">
-              <TabLayout />
-            </PrivateRoute>
-            <PrivateRoute path="/settings">
+            {/* Tab pages - main navigation with bottom tab bar. One route with
+                an array path keeps TabLayout mounted across tab switches; five
+                separate routes remounted it on every switch, dropping scroll
+                position/state and re-running data fetches + realtime subs (#88). */}
+            <PrivateRoute path={['/chats', '/wall', '/friends', '/calls', '/settings']}>
               <TabLayout />
             </PrivateRoute>
 

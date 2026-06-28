@@ -62,6 +62,20 @@ export async function getAgoraToken(
   }
 }
 
+/**
+ * Deterministic Agora numeric UID for a user UUID.
+ *
+ * MUST stay identical to the derivation in the `agora-token` edge function
+ * (supabase/functions/agora-token/index.ts) — that is what actually stamps the
+ * UID into each user's join token, so this is how the client maps a remote
+ * Agora UID back to a Supabase user id (e.g. to put the right video on the
+ * right tile). Last 32 bits of the UUID, clamped to Agora's int-uid range.
+ */
+export function agoraUidForUser(userId: string): number {
+  const hex = userId.replace(/-/g, '').slice(-8);
+  return parseInt(hex, 16) % 2147483647;
+}
+
 // ============================================================
 // PERMISSION PRE-CHECK
 // ============================================================

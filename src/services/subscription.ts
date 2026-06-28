@@ -510,7 +510,9 @@ function createMockOffering(): RevenueCatOffering {
         packageType: 'MONTHLY',
         product: {
           identifier: PLAN_PRICING[PlanType.BASIC].productId,
-          priceString: `${PLAN_PRICING[PlanType.BASIC].price} kr/mån`,
+          // priceString is the store-localized price only (no period) — the
+          // period suffix is added at render time, like real RevenueCat products.
+          priceString: `${PLAN_PRICING[PlanType.BASIC].price} kr`,
           price: PLAN_PRICING[PlanType.BASIC].price,
           currencyCode: 'SEK',
           title: 'Plus',
@@ -522,7 +524,7 @@ function createMockOffering(): RevenueCatOffering {
         packageType: 'MONTHLY',
         product: {
           identifier: PLAN_PRICING[PlanType.PRO].productId,
-          priceString: `${PLAN_PRICING[PlanType.PRO].price} kr/mån`,
+          priceString: `${PLAN_PRICING[PlanType.PRO].price} kr`,
           price: PLAN_PRICING[PlanType.PRO].price,
           currencyCode: 'SEK',
           title: 'Plus Ringa',

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { IonIcon } from '@ionic/react';
 import { close } from 'ionicons/icons';
@@ -26,20 +26,45 @@ const PACK_LABELS: Record<PackKey, string> = {
   food: '🍕',
 };
 
+// Accessible names for the pack tabs (the visible label is just an emoji).
+const PACK_A11Y: Record<PackKey, string> = {
+  smileys: 'Smileys',
+  gestures: 'Gestures',
+  animals: 'Animals',
+  food: 'Food',
+};
+
 const StickerPicker: React.FC<StickerPickerProps> = ({ isOpen, onClose, onSelect }) => {
   const { t } = useTranslation();
   const [activePack, setActivePack] = useState<PackKey>('smileys');
+
+  // Allow Escape to dismiss (keyboard / screen-reader users).
+  useEffect(() => {
+    if (!isOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [isOpen, onClose]);
 
   if (!isOpen) return null;
 
   const stickers = STICKER_PACKS[activePack];
 
   return (
-    <div className="sticker-picker-overlay">
-      <div className="sticker-picker">
+    <>
+      <div className="sticker-backdrop" onClick={onClose} aria-hidden="true" />
+      <div className="sticker-picker-overlay">
+      <div
+        className="sticker-picker"
+        role="dialog"
+        aria-modal="true"
+        aria-label={t('sticker.title')}
+      >
         <div className="sticker-picker-header">
           <span className="sticker-title">{t('sticker.title')}</span>
-          <button className="sticker-close-btn" onClick={onClose}>
+          <button className="sticker-close-btn" onClick={onClose} aria-label={t('common.close')}>
             <IonIcon icon={close} />
           </button>
         </div>
@@ -51,6 +76,8 @@ const StickerPicker: React.FC<StickerPickerProps> = ({ isOpen, onClose, onSelect
               key={key}
               className={`sticker-tab ${activePack === key ? 'active' : ''}`}
               onClick={() => setActivePack(key)}
+              aria-label={PACK_A11Y[key]}
+              aria-pressed={activePack === key}
             >
               {PACK_LABELS[key]}
             </button>
@@ -177,8 +204,19 @@ const StickerPicker: React.FC<StickerPickerProps> = ({ isOpen, onClose, onSelect
         .sticker-item:active {
           transform: scale(1.2);
         }
+
+        .sticker-backdrop {
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: rgba(0, 0, 0, 0.2);
+          z-index: 199;
+        }
       `}</style>
     </div>
+    </>
   );
 };
 

@@ -7,6 +7,7 @@ import {
   IonButton,
   IonIcon,
   IonSpinner,
+  useIonToast,
 } from '@ionic/react';
 import { checkmarkCircle, sparkles } from 'ionicons/icons';
 import { useSubscription } from '../contexts/SubscriptionContext';
@@ -16,6 +17,7 @@ import { PLAN_FEATURES, PLAN_PRICING } from '../types/subscription';
 const ChoosePlan: React.FC = () => {
   const { t } = useTranslation();
   const history = useHistory();
+  const [present] = useIonToast();
   const { status, isLoading, startTrial } = useSubscription();
 
   // Skip for returning users who already have a trial or paid plan
@@ -29,10 +31,27 @@ const ChoosePlan: React.FC = () => {
   const [isProcessing, setIsProcessing] = useState(false);
 
   const handleSelectPlan = async (planType: PlanType) => {
+    // The free tier isn't a trial — starting a "trial" of FREE would make the
+    // returning-user/paywall logic treat a free user as trialing.
+    if (planType === PlanType.FREE) {
+      history.replace('/chats');
+      return;
+    }
     setIsProcessing(true);
-    await startTrial(planType);
-    setIsProcessing(false);
-    history.replace('/chats');
+    try {
+      const success = await startTrial(planType);
+      if (success) {
+        history.replace('/chats');
+      } else {
+        // Don't route onward without a plan actually set; let the user retry.
+        present({ message: t('errors.generic'), duration: 3000, color: 'danger' });
+      }
+    } catch (err) {
+      console.error('Failed to start trial:', err);
+      present({ message: t('errors.generic'), duration: 3000, color: 'danger' });
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   const plans = [

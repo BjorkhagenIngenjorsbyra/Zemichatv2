@@ -19,6 +19,7 @@ import {
   IonRefresherContent,
   IonAlert,
   IonActionSheet,
+  useIonToast,
   RefresherEventDetail,
 } from '@ionic/react';
 import {
@@ -36,6 +37,8 @@ import {
 } from '../services/friend';
 import { type User } from '../types/database';
 import { SkeletonLoader, EmptyStateIllustration } from '../components/common';
+import { getInitial, getAvatarColor } from '../utils/userDisplay';
+import { getOptimizedAvatarUrl } from '../utils/imageUrl';
 
 interface TexterRequestGroup {
   texter: User;
@@ -44,9 +47,11 @@ interface TexterRequestGroup {
 
 const OwnerApprovals: React.FC = () => {
   const { t } = useTranslation();
+  const [present] = useIonToast();
   const [texterGroups, setTexterGroups] = useState<TexterRequestGroup[]>([]);
-  const [totalCount, setTotalCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
+  // Derived from the grouped list — no separate counter to keep in sync.
+  const totalCount = texterGroups.reduce((n, g) => n + g.requests.length, 0);
   const [processingIds, setProcessingIds] = useState<Set<string>>(new Set());
   const [showDenyConfirm, setShowDenyConfirm] = useState<{
     request: PendingRequestWithUser;
@@ -56,20 +61,67 @@ const OwnerApprovals: React.FC = () => {
   } | null>(null);
 
   const loadData = useCallback(async () => {
-    const { requestsByTexter, totalCount: count, error } = await getAllTexterPendingRequests();
+    try {
+      const { requestsByTexter, error } = await getAllTexterPendingRequests();
 
-    if (error) {
-      console.error('Failed to load approvals:', error);
+      if (error) {
+        console.error('Failed to load approvals:', error);
+        present({ message: t('errors.generic'), duration: 2500, color: 'danger' });
+        return;
+      }
+
+      // Convert Map to array for rendering
+      const groups: TexterRequestGroup[] = Array.from(requestsByTexter.values());
+      setTexterGroups(groups);
+    } catch (err) {
+      // A thrown rejection previously left the skeleton loader up forever.
+      console.error('Failed to load approvals:', err);
+      present({ message: t('errors.generic'), duration: 2500, color: 'danger' });
+    } finally {
       setIsLoading(false);
-      return;
     }
+  }, [present, t]);
 
-    // Convert Map to array for rendering
-    const groups: TexterRequestGroup[] = Array.from(requestsByTexter.values());
-    setTexterGroups(groups);
-    setTotalCount(count);
-    setIsLoading(false);
+  // Remove a handled request from the grouped list (totalCount derives from it).
+  const removeRequestFromList = useCallback((id: string) => {
+    setTexterGroups((prev) =>
+      prev
+        .map((group) => ({
+          ...group,
+          requests: group.requests.filter((r) => r.id !== id),
+        }))
+        .filter((group) => group.requests.length > 0)
+    );
   }, []);
+
+  // Shared processing-set bookkeeping + error feedback for approve/reject so a
+  // failed action surfaces to the Owner instead of silently leaving the row.
+  const processRequest = useCallback(
+    async (id: string, action: () => Promise<{ error: unknown }>): Promise<boolean> => {
+      setProcessingIds((prev) => new Set(prev).add(id));
+      try {
+        const { error } = await action();
+        if (error) {
+          console.error('Approval action failed:', error);
+          present({ message: t('errors.generic'), duration: 2500, color: 'danger' });
+          return false;
+        }
+        removeRequestFromList(id);
+        return true;
+      } catch (err) {
+        console.error('Approval action threw:', err);
+        present({ message: t('errors.generic'), duration: 2500, color: 'danger' });
+        return false;
+      } finally {
+        setProcessingIds((prev) => {
+          const newSet = new Set(prev);
+          newSet.delete(id);
+          return newSet;
+        });
+      }
+    },
+    [present, t, removeRequestFromList]
+  );
 
   useEffect(() => {
     loadData();
@@ -80,94 +132,47 @@ const OwnerApprovals: React.FC = () => {
     event.detail.complete();
   };
 
-  const handleApprove = async (request: PendingRequestWithUser) => {
-    setProcessingIds((prev) => new Set(prev).add(request.id));
+  const handleApprove = (request: PendingRequestWithUser) =>
+    processRequest(request.id, () => approveTexterRequest(request.id));
 
-    const { error } = await approveTexterRequest(request.id);
-
-    if (error) {
-      console.error('Failed to approve:', error);
-    } else {
-      // Remove from list
-      setTexterGroups((prev) =>
-        prev
-          .map((group) => ({
-            ...group,
-            requests: group.requests.filter((r) => r.id !== request.id),
-          }))
-          .filter((group) => group.requests.length > 0)
-      );
-      setTotalCount((prev) => prev - 1);
-    }
-
-    setProcessingIds((prev) => {
-      const newSet = new Set(prev);
-      newSet.delete(request.id);
-      return newSet;
-    });
-  };
-
-  const handleReject = async (request: PendingRequestWithUser) => {
-    setProcessingIds((prev) => new Set(prev).add(request.id));
-
-    const { error } = await rejectTexterRequest(request.id);
-
-    if (error) {
-      console.error('Failed to reject:', error);
-    } else {
-      // Remove from list
-      setTexterGroups((prev) =>
-        prev
-          .map((group) => ({
-            ...group,
-            requests: group.requests.filter((r) => r.id !== request.id),
-          }))
-          .filter((group) => group.requests.length > 0)
-      );
-      setTotalCount((prev) => prev - 1);
-    }
-
-    setProcessingIds((prev) => {
-      const newSet = new Set(prev);
-      newSet.delete(request.id);
-      return newSet;
-    });
-  };
+  const handleReject = (request: PendingRequestWithUser) =>
+    processRequest(request.id, () => rejectTexterRequest(request.id));
 
   const handleDenyFuture = async (request: PendingRequestWithUser) => {
     setProcessingIds((prev) => new Set(prev).add(request.id));
 
-    // First reject the request
-    await rejectTexterRequest(request.id);
+    try {
+      // First reject the request. Only proceed to deny future requests if the
+      // reject actually succeeded — otherwise we'd report "denied" while the
+      // pending request is still live.
+      const { error: rejectError } = await rejectTexterRequest(request.id);
 
-    // Then deny future requests
-    const { error } = await denyFutureRequests(
-      request.addressee_id,
-      request.requester_id
-    );
+      if (rejectError) {
+        console.error('Failed to reject request before denying future:', rejectError);
+        present({ message: t('errors.generic'), duration: 2500, color: 'danger' });
+        return;
+      }
 
-    if (error) {
-      console.error('Failed to deny future:', error);
-    } else {
-      // Remove from list
-      setTexterGroups((prev) =>
-        prev
-          .map((group) => ({
-            ...group,
-            requests: group.requests.filter((r) => r.id !== request.id),
-          }))
-          .filter((group) => group.requests.length > 0)
+      const { error } = await denyFutureRequests(
+        request.addressee_id,
+        request.requester_id
       );
-      setTotalCount((prev) => prev - 1);
+
+      if (error) {
+        console.error('Failed to deny future:', error);
+        present({ message: t('errors.generic'), duration: 2500, color: 'danger' });
+        return;
+      }
+
+      removeRequestFromList(request.id);
+    } finally {
+      setProcessingIds((prev) => {
+        const newSet = new Set(prev);
+        newSet.delete(request.id);
+        return newSet;
+      });
+      setShowDenyConfirm(null);
     }
-
-    setProcessingIds((prev) => {
-      const newSet = new Set(prev);
-      newSet.delete(request.id);
-      return newSet;
-    });
-
-    setShowDenyConfirm(null);
   };
 
   return (
@@ -209,14 +214,14 @@ const OwnerApprovals: React.FC = () => {
                   <IonAvatar className="texter-avatar">
                     {group.texter.avatar_url ? (
                       <img
-                        src={group.texter.avatar_url}
+                        src={getOptimizedAvatarUrl(group.texter.avatar_url, 48)}
                         alt={group.texter.display_name || ''}
                         loading="lazy"
                         decoding="async"
                       />
                     ) : (
-                      <div className="avatar-placeholder small">
-                        {group.texter.display_name?.charAt(0)?.toUpperCase() || '?'}
+                      <div className="avatar-placeholder small" style={{ background: getAvatarColor(group.texter) }}>
+                        {getInitial(group.texter)}
                       </div>
                     )}
                   </IonAvatar>
@@ -239,16 +244,14 @@ const OwnerApprovals: React.FC = () => {
                         <IonAvatar slot="start" className="requester-avatar">
                           {request.requester.avatar_url ? (
                             <img
-                              src={request.requester.avatar_url}
+                              src={getOptimizedAvatarUrl(request.requester.avatar_url, 48)}
                               alt={request.requester.display_name || ''}
                               loading="lazy"
                               decoding="async"
                             />
                           ) : (
-                            <div className="avatar-placeholder">
-                              {request.requester.display_name
-                                ?.charAt(0)
-                                ?.toUpperCase() || '?'}
+                            <div className="avatar-placeholder" style={{ background: getAvatarColor(request.requester) }}>
+                              {getInitial(request.requester)}
                             </div>
                           )}
                         </IonAvatar>
@@ -281,6 +284,7 @@ const OwnerApprovals: React.FC = () => {
                               size="small"
                               onClick={() => handleReject(request)}
                               className="action-button"
+                              aria-label={t('ownerApprovals.reject')}
                             >
                               <IonIcon icon={close} slot="icon-only" />
                             </IonButton>
@@ -290,6 +294,7 @@ const OwnerApprovals: React.FC = () => {
                               size="small"
                               onClick={() => handleApprove(request)}
                               className="action-button"
+                              aria-label={t('ownerApprovals.approve')}
                             >
                               <IonIcon icon={checkmark} slot="icon-only" />
                             </IonButton>
@@ -299,6 +304,7 @@ const OwnerApprovals: React.FC = () => {
                               size="small"
                               onClick={() => setShowActionSheet({ request })}
                               className="more-button"
+                              aria-label={t('ownerApprovals.moreActions')}
                             >
                               <IonIcon icon={ellipsisVertical} slot="icon-only" />
                             </IonButton>

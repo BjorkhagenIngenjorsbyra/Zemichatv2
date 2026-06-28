@@ -54,20 +54,34 @@ const Dashboard: React.FC = () => {
   const isOwner = profile?.role === UserRole.OWNER;
 
   const loadMembers = useCallback(async () => {
-    const { members: teamMembers } = await getTeamMembers();
-    setMembers(teamMembers);
+    const { members: teamMembers, error } = await getTeamMembers();
+    if (error) {
+      console.error('[Dashboard] loadMembers failed:', error);
+    } else {
+      setMembers(teamMembers);
+    }
     setIsLoading(false);
   }, []);
 
   const loadApprovalsCount = useCallback(async () => {
     if (!isOwner) return;
-    const { totalCount } = await getAllTexterPendingRequests();
+    const { totalCount, error } = await getAllTexterPendingRequests();
+    if (error) {
+      console.error('[Dashboard] loadApprovalsCount failed:', error);
+      return;
+    }
     setPendingApprovalsCount(totalCount);
   }, [isOwner]);
 
   const loadTillkallaAlerts = useCallback(async () => {
     if (!isOwner) return;
-    const { alerts } = await getUnacknowledgedAlerts();
+    const { alerts, error } = await getUnacknowledgedAlerts();
+    if (error) {
+      // Child-safety surface: on a transient failure, log and keep whatever was
+      // already shown rather than silently clobbering the alert list to empty.
+      console.error('[Dashboard] loadTillkallaAlerts failed:', error);
+      return;
+    }
     setTillkallaAlerts(alerts);
   }, [isOwner]);
 
@@ -98,9 +112,13 @@ const Dashboard: React.FC = () => {
   }, [profile, history]);
 
   const handleRefresh = async (event: CustomEvent<RefresherEventDetail>) => {
-    await Promise.all([loadMembers(), loadApprovalsCount(), loadTillkallaAlerts()]);
-    await refreshProfile();
-    event.detail.complete();
+    try {
+      await Promise.all([loadMembers(), loadApprovalsCount(), loadTillkallaAlerts()]);
+      await refreshProfile();
+    } finally {
+      // Always end the pull-to-refresh spinner, even if a loader rejected.
+      event.detail.complete();
+    }
   };
 
   const handleTexterCreated = () => {
@@ -158,7 +176,10 @@ const Dashboard: React.FC = () => {
             </div>
           )}
 
-          {/* Owner Management Actions */}
+          {/* Owner Management Actions — Owner-only. RLS blocks the underlying
+              actions regardless, but a Super/Texter landing here shouldn't see
+              owner management UI at all. */}
+          {isOwner && (
           <div className="section">
             <h3 className="section-title">{t('dashboard.quickActions')}</h3>
             <IonList className="action-list" data-testid="dashboard-actions">
@@ -203,6 +224,7 @@ const Dashboard: React.FC = () => {
               </IonItem>
             </IonList>
           </div>
+          )}
 
           {/* Team Members */}
           <div className="section">
@@ -239,7 +261,7 @@ const Dashboard: React.FC = () => {
                     >
                       <IonAvatar slot="start" className="member-avatar">
                         {member.avatar_url ? (
-                          <img src={member.avatar_url} alt={member.display_name || 'Avatar'} loading="lazy" decoding="async" />
+                          <img src={member.avatar_url} alt={member.display_name || t('dashboard.unnamed')} loading="lazy" decoding="async" />
                         ) : (
                           <div className="avatar-placeholder small" style={{ background: getAvatarColor(member) }}>
                             {getInitial(member)}

@@ -7,6 +7,13 @@ import { useAuthContext } from '../../contexts/AuthContext';
 import { isMFAEnabled, disableMFA } from '../../services/mfa';
 import { UserRole } from '../../types/database';
 
+// Feature flag: Supabase Auth TOTP enroll is currently disabled server-side
+// ("MFA enroll is disabled for TOTP"), so the whole setup flow is broken. Hide
+// the entry until the full TOTP feature (incl. recovery codes) ships — a broken
+// security flow erodes trust more than an absent one. Flip to true once the
+// backend + recovery flow are in place.
+const TWO_FACTOR_UI_ENABLED = false;
+
 /**
  * Two-factor authentication entry point in Settings. Opt-in, and only offered to
  * Owners and Supers (the adults) — Texters are never burdened with 2FA. Links to
@@ -24,11 +31,19 @@ export const TwoFactorSetting: React.FC = () => {
   const isOwnerOrSuper = profile?.role === UserRole.OWNER || profile?.role === UserRole.SUPER;
 
   useEffect(() => {
-    if (!isOwnerOrSuper) return;
-    isMFAEnabled().then(({ enabled: e }) => setEnabled(e));
-  }, [isOwnerOrSuper]);
+    if (!TWO_FACTOR_UI_ENABLED || !isOwnerOrSuper) return;
+    isMFAEnabled()
+      .then(({ enabled: e }) => setEnabled(e))
+      .catch((err) => {
+        // Don't leave the status stuck on the spinner; fall back to "disabled"
+        // (shows the Enable button) and surface the failure.
+        console.error('Failed to read MFA status:', err);
+        setEnabled(false);
+        setToast(t('errors.generic'));
+      });
+  }, [isOwnerOrSuper, t]);
 
-  if (!isOwnerOrSuper) return null;
+  if (!TWO_FACTOR_UI_ENABLED || !isOwnerOrSuper) return null;
 
   const handleDisable = async () => {
     setBusy(true);
@@ -37,6 +52,10 @@ export const TwoFactorSetting: React.FC = () => {
     if (!error) {
       setEnabled(false);
       setToast(t('mfa.disabledToast'));
+    } else {
+      // Was silent — MFA stayed enabled but the UI gave no feedback.
+      console.error('Failed to disable MFA:', error);
+      setToast(t('errors.generic'));
     }
   };
 

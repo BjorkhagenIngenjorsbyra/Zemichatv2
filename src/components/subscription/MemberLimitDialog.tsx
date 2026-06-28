@@ -118,22 +118,36 @@ const MemberLimitDialog: React.FC = () => {
             </div>
 
             {/* Other members */}
-            {otherMembers.map((member) => (
+            {otherMembers.map((member) => {
+              const isSelected = selectedIds.has(member.id);
+              const isDisabled = !isSelected && selectedIds.size >= maxOthers;
+              return (
               <div
                 key={member.id}
-                className={`member-limit-item ${selectedIds.has(member.id) ? 'selected' : ''}`}
+                className={`member-limit-item ${isSelected ? 'selected' : ''}`}
+                role="checkbox"
+                aria-checked={isSelected}
+                aria-disabled={isDisabled}
+                tabIndex={0}
                 onClick={() => toggleMember(member.id)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    toggleMember(member.id);
+                  }
+                }}
               >
                 <IonCheckbox
-                  checked={selectedIds.has(member.id)}
-                  disabled={!selectedIds.has(member.id) && selectedIds.size >= maxOthers}
+                  checked={isSelected}
+                  disabled={isDisabled}
                 />
                 <IonLabel>
                   <h3>{member.display_name || member.zemi_number}</h3>
                   <p>{member.role === UserRole.SUPER ? t('roles.super') : t('roles.texter')}</p>
                 </IonLabel>
               </div>
-            ))}
+              );
+            })}
           </div>
 
           <p className="member-limit-hint">

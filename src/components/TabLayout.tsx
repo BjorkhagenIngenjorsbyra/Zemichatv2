@@ -35,14 +35,16 @@ const TabLayout: React.FC = () => {
 
     if (profile.role === UserRole.TEXTER) {
       // Texter: check texter_settings.can_access_wall
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('texter_settings')
         .select('can_access_wall')
         .eq('user_id', profile.id)
         .maybeSingle();
 
       const typed = data as unknown as { can_access_wall: boolean } | null;
-      setWallVisible(typed?.can_access_wall ?? true);
+      // Fail closed for a child: a query error, RLS denial, or missing settings
+      // row must NOT grant wall access (Fable code review — was `?? true`).
+      setWallVisible(!error && (typed?.can_access_wall ?? false));
     } else {
       // Owner/Super: check own wall_enabled
       setWallVisible(profile.wall_enabled ?? true);

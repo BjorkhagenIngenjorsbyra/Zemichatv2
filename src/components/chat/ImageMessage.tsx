@@ -3,8 +3,21 @@ import { useTranslation } from 'react-i18next';
 import { IonSpinner, IonModal, IonIcon } from '@ionic/react';
 import { chevronBack, chevronForward, close, download, shareSocial } from 'ionicons/icons';
 import { Capacitor } from '@capacitor/core';
+import { Filesystem, Directory } from '@capacitor/filesystem';
+import { Share } from '@capacitor/share';
 import { useSignedMediaUrl } from '../../hooks/useSignedMediaUrl';
 import { resolveMediaUrl } from '../../services/storage';
+import './ImageMessage.css';
+
+/** Read a Blob as a base64 string (no data: prefix) for Filesystem.writeFile. */
+function blobToBase64(blob: Blob): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve((reader.result as string).split(',')[1] ?? '');
+    reader.onerror = () => reject(reader.error);
+    reader.readAsDataURL(blob);
+  });
+}
 
 interface ImageMessageProps {
   /** Storage path (preferred) or legacy public URL. */
@@ -177,6 +190,15 @@ const ImageMessage: React.FC<ImageMessageProps> = ({
   }, [scale]);
 
   const handleTouchEnd = useCallback((e: React.TouchEvent) => {
+    // Taps that end on an overlay button (close/save/share/gallery arrows) must
+    // not be hijacked by the container's tap-to-close / swipe logic, which would
+    // dismiss the modal before the button's own click handler runs.
+    if ((e.target as HTMLElement | null)?.closest('button')) {
+      isPinchingRef.current = false;
+      isPanningRef.current = false;
+      return;
+    }
+
     if (isPinchingRef.current) {
       isPinchingRef.current = false;
       lastDistRef.current = 0;
@@ -229,14 +251,20 @@ const ImageMessage: React.FC<ImageMessageProps> = ({
 
     try {
       if (Capacitor.isNativePlatform()) {
-        // On native, use Filesystem + MediaLibrary
+        // A <a download> anchor is a no-op in a Capacitor WebView. Write the
+        // image to the cache dir and hand it to the OS share sheet, which offers
+        // "Save Image"/"Save to Photos". (A dedicated media-library plugin would
+        // allow a one-tap direct save — tracked in docs/ISSUES.md.)
         const response = await fetch(url);
         const blob = await response.blob();
-        const a = document.createElement('a');
-        a.href = URL.createObjectURL(blob);
-        a.download = metadata?.fileName || `image_${Date.now()}.jpg`;
-        a.click();
-        URL.revokeObjectURL(a.href);
+        const base64 = await blobToBase64(blob);
+        const fileName = metadata?.fileName || `image_${Date.now()}.jpg`;
+        const written = await Filesystem.writeFile({
+          path: fileName,
+          data: base64,
+          directory: Directory.Cache,
+        });
+        await Share.share({ title: fileName, url: written.uri, dialogTitle: t('image.save') });
       } else {
         // Web fallback: trigger download
         const a = document.createElement('a');
@@ -248,7 +276,7 @@ const ImageMessage: React.FC<ImageMessageProps> = ({
     } catch (err) {
       console.error('Failed to save image:', err);
     }
-  }, [currentUrl, metadata?.fileName]);
+  }, [currentUrl, metadata?.fileName, t]);
 
   // Share image externally
   const handleShareImage = useCallback(async () => {
@@ -298,7 +326,7 @@ const ImageMessage: React.FC<ImageMessageProps> = ({
   if (!mediaUrl) {
     return (
       <div className="image-error">
-        <span>Image unavailable</span>
+        <span>{t('image.unavailable')}</span>
       </div>
     );
   }
@@ -319,7 +347,7 @@ const ImageMessage: React.FC<ImageMessageProps> = ({
 
         {hasError ? (
           <div className="image-error">
-            <span>Failed to load image</span>
+            <span>{t('image.loadFailed')}</span>
           </div>
         ) : thumbUrl ? (
           <img
@@ -360,15 +388,15 @@ const ImageMessage: React.FC<ImageMessageProps> = ({
           onTouchEnd={handleTouchEnd}
         >
           {/* Top bar buttons */}
-          <button className="fullscreen-close" onClick={closeFullscreen}>
+          <button className="fullscreen-close" onClick={closeFullscreen} aria-label={t('a11y.close')}>
             <IonIcon icon={close} />
           </button>
 
           <div className="fullscreen-actions">
-            <button className="fullscreen-action-btn" onClick={handleSaveImage} title={t('image.save')}>
+            <button className="fullscreen-action-btn" onClick={handleSaveImage} title={t('image.save')} aria-label={t('image.save')}>
               <IonIcon icon={download} />
             </button>
-            <button className="fullscreen-action-btn" onClick={handleShareImage} title={t('image.share')}>
+            <button className="fullscreen-action-btn" onClick={handleShareImage} title={t('image.share')} aria-label={t('image.share')}>
               <IonIcon icon={shareSocial} />
             </button>
           </div>
@@ -392,6 +420,7 @@ const ImageMessage: React.FC<ImageMessageProps> = ({
                 <button
                   className="gallery-nav gallery-prev"
                   onClick={(e) => { e.stopPropagation(); goPrev(); }}
+                  aria-label={t('a11y.previousImage')}
                 >
                   <IonIcon icon={chevronBack} />
                 </button>
@@ -400,6 +429,7 @@ const ImageMessage: React.FC<ImageMessageProps> = ({
                 <button
                   className="gallery-nav gallery-next"
                   onClick={(e) => { e.stopPropagation(); goNext(); }}
+                  aria-label={t('a11y.nextImage')}
                 >
                   <IonIcon icon={chevronForward} />
                 </button>
@@ -411,168 +441,6 @@ const ImageMessage: React.FC<ImageMessageProps> = ({
           )}
         </div>
       </IonModal>
-
-      <style>{`
-        .image-message {
-          cursor: pointer;
-          min-width: 150px;
-        }
-
-        .image-loading {
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          min-height: 100px;
-          max-height: 300px;
-          background: hsl(var(--muted) / 0.3);
-        }
-
-        .message-image {
-          width: 100%;
-          max-height: 300px;
-          object-fit: cover;
-          display: block;
-        }
-
-        .message-image.hidden {
-          display: none;
-        }
-
-        .image-caption {
-          margin: 0.25rem 0 0 0;
-          padding: 0 0.75rem;
-          font-size: 0.9rem;
-          line-height: 1.4;
-        }
-
-        .image-error {
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          min-height: 100px;
-          background: hsl(var(--muted) / 0.3);
-          border-radius: 0.5rem;
-          color: hsl(var(--muted-foreground));
-          font-size: 0.875rem;
-        }
-
-        .fullscreen-container {
-          position: relative;
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          width: 100%;
-          height: 100%;
-          background: rgba(0, 0, 0, 0.95);
-          overflow: hidden;
-          touch-action: none;
-          user-select: none;
-          -webkit-user-select: none;
-        }
-
-        .fullscreen-close {
-          position: absolute;
-          top: env(safe-area-inset-top, 0.75rem);
-          right: 0.75rem;
-          z-index: 10;
-          width: 2.5rem;
-          height: 2.5rem;
-          border-radius: 50%;
-          background: rgba(0, 0, 0, 0.5);
-          border: none;
-          color: #fff;
-          font-size: 1.5rem;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          cursor: pointer;
-          margin-top: 0.5rem;
-        }
-
-        .fullscreen-actions {
-          position: absolute;
-          top: env(safe-area-inset-top, 0.75rem);
-          left: 0.75rem;
-          z-index: 10;
-          display: flex;
-          gap: 0.5rem;
-          margin-top: 0.5rem;
-        }
-
-        .fullscreen-action-btn {
-          width: 2.5rem;
-          height: 2.5rem;
-          border-radius: 50%;
-          background: rgba(0, 0, 0, 0.5);
-          border: none;
-          color: #fff;
-          font-size: 1.25rem;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          cursor: pointer;
-        }
-
-        .fullscreen-action-btn:active {
-          background: rgba(255, 255, 255, 0.2);
-        }
-
-        .fullscreen-image {
-          max-width: 100%;
-          max-height: 100%;
-          object-fit: contain;
-          will-change: transform;
-          pointer-events: none;
-        }
-
-        .fullscreen-image-modal {
-          --background: transparent;
-        }
-
-        .fullscreen-image-modal::part(content) {
-          background: transparent !important;
-        }
-
-        .gallery-nav {
-          position: absolute;
-          top: 50%;
-          transform: translateY(-50%);
-          z-index: 10;
-          width: 2.5rem;
-          height: 2.5rem;
-          border-radius: 50%;
-          background: rgba(0, 0, 0, 0.5);
-          border: none;
-          color: #fff;
-          font-size: 1.5rem;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          cursor: pointer;
-        }
-
-        .gallery-prev {
-          left: 0.75rem;
-        }
-
-        .gallery-next {
-          right: 0.75rem;
-        }
-
-        .gallery-counter {
-          position: absolute;
-          bottom: env(safe-area-inset-bottom, 1rem);
-          left: 50%;
-          transform: translateX(-50%);
-          background: rgba(0, 0, 0, 0.6);
-          color: #fff;
-          padding: 0.3rem 0.75rem;
-          border-radius: 9999px;
-          font-size: 0.8rem;
-          font-weight: 500;
-          margin-bottom: 0.5rem;
-        }
-      `}</style>
     </>
   );
 };

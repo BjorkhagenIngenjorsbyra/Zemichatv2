@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { type User } from '../../types/database';
 
 interface MentionAutocompleteProps {
@@ -13,21 +14,28 @@ const MentionAutocomplete: React.FC<MentionAutocompleteProps> = ({
   onSelect,
   visible,
 }) => {
+  const { t } = useTranslation();
   if (!visible || members.length === 0) return null;
 
+  // Drop members whose joined user object is missing so onSelect never
+  // receives undefined (its signature is non-nullable).
+  const lowerQuery = query.toLowerCase();
   const filtered = members.filter((m) => {
-    const name = m.user?.display_name?.toLowerCase() || '';
-    return name.includes(query.toLowerCase());
+    if (!m.user) return false;
+    const name = m.user.display_name?.toLowerCase() || '';
+    return name.includes(lowerQuery);
   });
 
   if (filtered.length === 0) return null;
 
   return (
-    <div className="mention-autocomplete">
+    <div className="mention-autocomplete" role="listbox" aria-label={t('chat.mentionList', 'Mention a member')}>
       {filtered.slice(0, 5).map((m) => (
         <button
           key={m.user_id}
           className="mention-item"
+          role="option"
+          aria-selected="false"
           onClick={() => onSelect(m.user)}
         >
           <div className="mention-avatar">
@@ -56,10 +64,10 @@ const MentionAutocomplete: React.FC<MentionAutocompleteProps> = ({
           margin-bottom: 0.25rem;
           overflow: hidden;
           z-index: 50;
-          animation: fadeIn 0.15s ease-out;
+          animation: mention-fade-in 0.15s ease-out;
         }
 
-        @keyframes fadeIn {
+        @keyframes mention-fade-in {
           from { opacity: 0; transform: translateY(4px); }
           to { opacity: 1; transform: translateY(0); }
         }
