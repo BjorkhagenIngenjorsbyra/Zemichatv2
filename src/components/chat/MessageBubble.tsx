@@ -282,11 +282,11 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
 
     switch (readStatus) {
       case 'sent':
-        return <span className="read-status sent">âœ“</span>;
+        return <span className="read-status sent">✓</span>;
       case 'delivered':
-        return <span className="read-status delivered">âœ“âœ“</span>;
+        return <span className="read-status delivered">✓✓</span>;
       case 'read':
-        return <span className="read-status read">âœ“âœ“</span>;
+        return <span className="read-status read">✓✓</span>;
       default:
         return null;
     }
